@@ -162,8 +162,13 @@ public class Recording extends SerializableEntity<Recording> {
 					}*/
 				} else {
 					//bestand is helemaal niet leesbaar, best verwijderen..
-					getCompressedVideoFile().delete();
-					videoFile = cacheVideoFile();
+					//TODO kuis code op..
+					if (getCompressedVideoFile().delete()) {
+						videoFile = cacheVideoFile();
+					} else {
+						recordingStatus = RecordingStatus.UNCOMPRESSED;
+						videoFile = getUncompressedVideoFile();
+					}
 				}
 			} else if (getUncompressedVideoFile().canReadAndExists()) {
 				recordingStatus = RecordingStatus.UNCOMPRESSED;
