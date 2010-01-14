@@ -51,7 +51,7 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-						<!-- plugin>
+			<!-- plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>keytool-maven-plugin</artifactId>
 				<version>1.0-beta-2-SNAPSHOT</version>
@@ -115,15 +115,18 @@
 
 						<!-- only required for generating the keystore -->
 						<!--
-							<dnameCn>${keystore.dnameCn}</dnameCn>
-							<dnameOu>${keystore.dnameOu}</dnameOu>
-							<dnameO>${keystore.dnameO}</dnameO>
-							<dnameL>${keystore.dnameL}</dnameL>
-							<dnameSt>${keystore.dnameSt}</dnameSt>
-							<dnameC>${keystore.dnameC}></dnameC> <keystoreConfig>
-							<delete>false</delete> <gen>true</gen> </keystoreConfig>
+						<dnameCn>${keystore.dnameCn}</dnameCn>
+						<dnameOu>${keystore.dnameOu}</dnameOu>
+						<dnameO>${keystore.dnameO}</dnameO>
+						<dnameL>${keystore.dnameL}</dnameL>
+						<dnameSt>${keystore.dnameSt}</dnameSt>
+						<dnameC>${keystore.dnameC}></dnameC>
+						<keystoreConfig>
+							<delete>false</delete>
+							<gen>true</gen>
+						</keystoreConfig>
 
-							<verify>true</verify>
+						<verify>true</verify>
 						-->
 						<!-- KEYSTORE MANAGEMENT -->
 					</sign>
@@ -297,7 +300,7 @@
 		<dependency>
 			<groupId>org.jdesktop.bsaf</groupId>
 			<artifactId>bsaf</artifactId>
-			<version>1.9-m4</version>
+			<version>1.9-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.netbeans</groupId>
@@ -318,13 +321,14 @@
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
-			<version>1.1.2</version>
+			<!--version>1.2</version-->
+			<version>2.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>persistence-api</artifactId>
-			<version>1.0</version>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -369,13 +373,18 @@
 			</releases>
 		</pluginRepository>
 	</pluginRepositories>
-	<!-- distributionManagement>
-		<snapshotRepository>
+	<distributionManagement>
+		<!--snapshotRepository>
 			<id>runwalk-ftp</id>
 			<name>runwalk-repo</name>
-			<url>${ftp.url}/maven2</url>
+			<url>ftp://${ftp.url}/maven2</url>
+		</snapshotRepository-->
+		<snapshotRepository>
+			<id>local-repo</id>
+			<name>local-repo</name>
+			<url>${localRepository}</url>
 		</snapshotRepository>
-	</distributionManagement-->
+	</distributionManagement>
 	<profiles>
 		<!-- This profile could be used for remote deployment -->
 		<profile>
@@ -390,8 +399,36 @@
 				<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
 				<jdbc.user>remoteUser</jdbc.user>
 				<jdbc.password>remotePwd</jdbc.password>			
-				<codeBase>${project.url}/$(ftp.remoteDir}</codeBase>
+				<codeBase>${project.url}/$(ftp.remotedir}</codeBase>
 			</properties>
+		</profile>
+		<!-- Profile to test the webstart app with the remote db -->
+		<profile>
+			<id>testRemote</id>
+			<activation>
+				<property>
+					<name>testRemote</name>
+				</property>
+			</activation>
+			<properties>
+				<!-- Test JDBC properties -->
+				<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
+				<jdbc.user>remoteUser</jdbc.user>
+				<jdbc.password>remotePwd</jdbc.password>			
+			</properties>
+		</profile>
+		<profile>
+			<id>local</id>
+			<activation>
+      			<activeByDefault>true</activeByDefault>
+   			</activation>
+   			<properties>
+   				<!-- Default JDBC properties -->
+   				<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
+				<jdbc.user>localUser</jdbc.user>
+				<jdbc.password>localPwd</jdbc.password>
+   				<codeBase>file:///${project.build.directory}/</codeBase>
+   			</properties> 
 		</profile>
 	</profiles>
 	<properties>
@@ -408,19 +445,17 @@
 		<keystore.password>yourPwd</keystore.password>
 		<!-- JNLP file generation properties -->
 		<mainClass>com.runwalk.video.RunwalkVideoApp</mainClass>
+		<codeBase>file:///${project.build.directory}/</codeBase>
 		<libFolder>lib</libFolder>
 		<libFolderPath>${project.build.directory}/${libFolder}</libFolderPath>
 		<codeBase>file:///${project.build.directory}/</codeBase>
 		<jnlpOutputFilename>runwalk.jnlp</jnlpOutputFilename>
 		<!-- JNLP deployment properties -->
-		<ftp.url>ftp://your-ftp-server.com</ftp.url>
+		<ftp.url>your-ftp-server.com</ftp.url>
 		<ftp.user>ftpUser</ftp.user>
 		<ftp.password>ftpPwd</ftp.password>
 		<ftp.remotedir>ftpDir</ftp.remotedir>
 		<!-- Default JDBC properties -->
-		<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
-		<jdbc.user>localUser</jdbc.user>
-		<jdbc.password>localPwd</jdbc.password>
 		<jdbc.driverClass>com.mysql.jdbc.Driver</jdbc.driverClass>
 		<!-- JPA properties -->
 		<jpa.persistenceProvider>org.eclipse.persistence.jpa.PersistenceProvider</jpa.persistenceProvider>
