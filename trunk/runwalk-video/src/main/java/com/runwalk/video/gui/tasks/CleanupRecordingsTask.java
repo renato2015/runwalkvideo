@@ -6,7 +6,6 @@ import java.io.FileFilter;
 import javax.swing.JOptionPane;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.util.ApplicationSettings;
 import com.runwalk.video.util.ApplicationUtil;
 
 import de.humatic.dsj.DSJException;
@@ -14,9 +13,12 @@ import de.humatic.dsj.DSJException;
 public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 
 		int filesDeleted = 0, fileCount = 0;
+		
+		private File scanDirectory;
 
-		public CleanupRecordingsTask() {
+		public CleanupRecordingsTask(File scanDirectory) {
 			super("cleanupRecordingsTask");
+			this.scanDirectory = scanDirectory;
 		}
 
 		@Override
@@ -50,18 +52,11 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 				}
 
 			};
-
-			File[] listFiles = ApplicationSettings.getInstance().getUncompressedVideoDir().listFiles(fileFilter);
+			File[] listFiles = scanDirectory.listFiles(fileFilter);
 			fileCount = listFiles.length;
 			String dlogTitle = null;
-			boolean success = true;
-			if (fileCount == 0) {
-				dlogTitle = getResourceString("endMessage");
-				JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
-						getResourceString("noFilesFoundMessage"), dlogTitle, JOptionPane.INFORMATION_MESSAGE);
-				success = !cancel(true);
-				RunwalkVideoApp.getApplication().getTableActions().setCleanupEnabled(success);
-			} else {
+			boolean success = fileCount >= 0;
+			if (fileCount > 0) {
 				dlogTitle = getResourceString("startMessage");
 				int chosenOption = JOptionPane.showConfirmDialog(RunwalkVideoApp.getApplication().getMainFrame(), 
 						getResourceString("filesFoundMessage", fileCount), dlogTitle, JOptionPane.OK_CANCEL_OPTION);
@@ -73,8 +68,6 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 							success = false;
 						}
 					}
-				} else {
-					success = !cancel(true);
 				}
 			}
 			return success;
@@ -85,7 +78,10 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 			try {
 				String dialogMsg = getResourceString("finishedMessage", filesDeleted); 
 				String dialogTitle = getResourceString("endMessage");
-				if (get()) {
+				if (fileCount == 0) {
+					JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
+							getResourceString("noFilesFoundMessage"), dialogTitle, JOptionPane.INFORMATION_MESSAGE);
+				} else if (get()) {
 					JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
 							dialogMsg, dialogTitle, JOptionPane.PLAIN_MESSAGE);
 				} else {
@@ -93,10 +89,8 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 							dialogMsg + getResourceString("endErrorMessage", fileCount - filesDeleted),
 							dialogTitle, JOptionPane.WARNING_MESSAGE); 
 				}
-				RunwalkVideoApp.getApplication().getTableActions().setCleanupEnabled(!get());
 			} catch (Exception e) {
-				logger.error(e);
-				RunwalkVideoApp.getApplication().getTableActions().setCleanupEnabled(true);
+				getLogger().error(e);
 			} 
 		}
 	}

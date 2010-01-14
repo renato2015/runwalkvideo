@@ -17,16 +17,15 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
 	protected Void doInBackground() throws Exception {
         InputStream serverInput = ClientHttpRequest.post(
                 new java.net.URL(getResourceString("destfolder")), 
-                new Object[] {
-                		"logfile", ApplicationSettings.getInstance().getLogFile()
-                             });
+                new Object[] {"logfile", ApplicationSettings.getInstance().getLogFile()
+                	});
         BufferedReader reader = new BufferedReader(new InputStreamReader(serverInput));
         String line = null;
         StringBuffer output = new StringBuffer();
         while ((line = reader.readLine()) != null) {
         	output.append(line);
         }
-        logger.debug(output);
+        getLogger().debug(output);
         return null;
 	}
 

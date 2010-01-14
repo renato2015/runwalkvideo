@@ -16,28 +16,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
-@Entity
-@Table(schema = "testdb", name = "clients")
-//@SecondaryTable(name = "all_analysis_dates")
-@NamedQuery(name="findAllClients", query="SELECT distinct c from Client c LEFT JOIN FETCH c.analyses")
-/*@NamedNativeQuery(
-		name="findAllClientInfo",
-		query="SELECT MAX(analysis.date) AS last_analysis, analysis.clientid FROM analysis, clients WHERE clients.id = analysis.clientid GROUP BY clientid",
-		resultSetMapping="ClientMapping"
-)
-@NamedQuery(name = "findAllClients", query = "SELECT cl FROM Client cl")
+import org.jdesktop.observablecollections.ObservableCollections;
+import org.jdesktop.observablecollections.ObservableList;
+import org.jdesktop.observablecollections.ObservableCollections.ObservableListHelper;
 
-@SqlResultSetMapping(name="ClientMapping", 
-		entities={@EntityResult(entityClass=Client.class)},
-		columns={@ColumnResult(name="TEMP.last_analysis")}
-)*/
-//SELECT clients.*, TEMP.last_analysis FROM clients LEFT OUTER JOIN (SELECT MAX(analysis.date) AS last_analysis, analysis.clientid FROM analysis, clients WHERE clients.id = analysis.clientid GROUP BY clientid) AS TEMP ON TEMP.clientid = clients.id
-//CREATE OR REPLACE VIEW `testdb`.`all_analysis_dates` AS SELECT clients.id, analysis_dates.last_analysis_date FROM clients LEFT OUTER JOIN analysis_dates ON analysis_dates.clientid = clients.id 
+@Entity
+@SuppressWarnings("serial")
+@Table(schema = "testdb", name = "clients")
+@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.unobservableAnalyses")
 public class Client extends SerializableEntity<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ORGANIZATION = "organization";
@@ -51,7 +43,7 @@ public class Client extends SerializableEntity<Client> {
 	@Column(name = NAME)
 	private String name;
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	private List<Analysis> analyses;
+	private List<Analysis> unobservableAnalyses;
 	@Column(name = "address1")
 	private String address;
 	@ManyToOne
@@ -76,15 +68,10 @@ public class Client extends SerializableEntity<Client> {
 	private Date birthdate;
 	@Column(name = "male")
 	private Integer male;
-/*	@Column(name="last_analysis_date", table="all_analysis_dates", insertable=false, updatable=false)
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastAnalysisDate;*/
 	@Transient
 	private Date lastAnalysisDate;
-//	@OneToOne(cascade={})
-//	@JoinColumn(name="id",referencedColumnName="id",insertable=false, updatable=false)
-//	@JoinColumn(name = "id",referencedColumnName="clientid", updatable=false, insertable=false)  
-//	private AnalysisInfo analysisInfo;
+	@Transient
+	private ObservableList<Analysis> analyses;
 
 	public Client() {
 		super();
@@ -162,24 +149,39 @@ public class Client extends SerializableEntity<Client> {
 		this.mail = mail;
 	}
 
-	public List<Analysis> getAnalyses() {
-		List<Analysis> emptyList = Collections.emptyList();
-		return (analyses == null) ? emptyList : Collections.unmodifiableList(analyses);
+	@PostLoad
+	private void initObservableList() {
+		if (unobservableAnalyses == null) {
+			unobservableAnalyses = new ArrayList<Analysis>();
+		}
+		if (analyses == null) {
+			analyses = ObservableCollections.observableList(unobservableAnalyses);
+		}
+	}
+	
+	public int getAnalysisCount() {
+		return getAnalyses().size();
+	}
+	
+	public ObservableList<Analysis> getAnalyses() {
+		if (analyses == null) {
+			initObservableList();
+		}
+		return analyses;
 	}
 
 	public void removeAnalysis(Analysis analysis) {
-		if (analysis != null && analyses != null && !analyses.isEmpty()) {
-			analyses.remove(analysis);
-			setLastAnalysisDate(analyses.isEmpty() ? null : analyses.get(analyses.size() - 1).getCreationDate());
+		if (analysis != null && getAnalyses().contains(analysis)) {
+			getAnalyses().remove(analysis);
+			setLastAnalysisDate(getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysisCount() - 1).getCreationDate());
 		}
 	}
 
-	public void addAnalysis(Analysis analysis) {
-		if (analyses == null) {
-			analyses = new ArrayList<Analysis>();
-		}
-		analyses.add(analysis);
+	public int addAnalysis(Analysis analysis) {
+		getAnalyses().add(analysis);
+		int index = getAnalyses().indexOf(analysis);
 		setLastAnalysisDate(analysis.getCreationDate());
+		return index;
 	}
 
 	public String getOrganization() {
@@ -207,29 +209,23 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public Date getLastAnalysisDate() {
-		/*if (lastAnalysisDate == null && analysisInfo != null) {
-			setLastAnalysisDate(analysisInfo.getLastAnalysisDate());
-		}
-		return lastAnalysisDate;*/
-		if (lastAnalysisDate == null && analyses != null && !analyses.isEmpty()) {
-			Collections.sort(analyses);
-			lastAnalysisDate = analyses.get(analyses.size()-1).getCreationDate();
+		if (lastAnalysisDate == null && !getAnalyses().isEmpty()) {
+			Collections.sort(getAnalyses());
+			lastAnalysisDate = getAnalyses().get(getAnalysisCount()-1).getCreationDate();
 		}
 		return lastAnalysisDate;
 	}
 	
 	private void setLastAnalysisDate(Date lastAnalysisDate) {
-		/*if (analysisInfo != null) {
-			analysisInfo.setLastAnalysisDate(lastAnalysisDate);
-		}*/
 		firePropertyChange(LAST_ANALYSIS_DATE, this.lastAnalysisDate, this.lastAnalysisDate = lastAnalysisDate);
 	}
 
 	@Override
 	public int hashCode() {
-		//TODO this implementation isn error prone.. hashcode will not be constant during object's lifecycle
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((getFirstname() == null) ? 0 : getFirstname().hashCode());
+		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
 		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
@@ -237,13 +233,11 @@ public class Client extends SerializableEntity<Client> {
 	@Override
 	public boolean equals(Object obj) {
 		boolean result = false;
-		if (getClass() == obj.getClass()) {
+		if (obj != null && getClass() == obj.getClass()) {
 			Client other = (Client) obj;
-			if (getId() == null && other.getId() == null) {
-				result = this == other;
-			} else {
-				result = getId().equals(other.getId());
-			}
+			result = getFirstname() != null ? getFirstname().equals(other.getFirstname()) : other.getFirstname() == null;
+			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}
@@ -254,13 +248,7 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public int compareTo(Client o) {
-		int result;
-		if (this.equals(o)) {
-			result = 0;
-		} else {
-			result = getId().compareTo(o.getId());
-		}
-		return result;
+		return this.equals(o) ? 0 : getId().compareTo(o.getId());
 	}
 
 }

@@ -13,6 +13,7 @@ import javax.swing.event.TableModelListener;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.observablecollections.ObservableCollections;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
@@ -28,6 +29,8 @@ public abstract class AbstractTableModel<T extends SerializableEntity<T>> extend
 	private ResourceMap modelResourceMap;
 
 	protected final Logger logger;
+
+	protected final List<T> emptyList = Collections.emptyList();
 	
 	public static <T> void persistEntity(SerializableEntity<T> item) {
 		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
@@ -109,7 +112,7 @@ public abstract class AbstractTableModel<T extends SerializableEntity<T>> extend
 	}
 
 	public void setItemList(Collection<T> resultList) {
-		itemList = new ArrayList<T>(resultList);
+		itemList = ObservableCollections.observableList(new ArrayList<T>(resultList != null ? resultList : emptyList));
 	}
 
 	public void setSelectedIndex(int selectedIndex) {

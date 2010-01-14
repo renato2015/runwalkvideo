@@ -10,18 +10,20 @@ import javax.persistence.Query;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.gui.actions.RecordingStatus;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.util.ApplicationSettings;
 
 public class PrepareSyncTask extends AbstractTask<String, Void> {
 
-		public PrepareSyncTask() {
+		private List<Analysis> analyses;
+
+		public PrepareSyncTask(List<Analysis> analyses) {
 			super("preparesync");
+			this.analyses = analyses;
 		}
 
 		@Override 
 		protected String doInBackground() {
-			RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().update();
 			File cameraRoot  = ApplicationSettings.getInstance().getCameraDir();	
 			if (cameraRoot.exists() && cameraRoot.isDirectory() && cameraRoot.canRead()) {
 				message("startMessage");
@@ -42,7 +44,7 @@ public class PrepareSyncTask extends AbstractTask<String, Void> {
 					matcher.reset();
 				}
 				//now choose the most appropriate movie from the filtered list..
-				int analysisCount = RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().getItemCount();
+				int analysisCount = analyses.size();
 				if (analysisCount == 0) return "noItemsFoundMessage";
 				if (movieList.size() == 0) {
 //					for(Analysis analysis : RunwalkVideoApp.getApplication().getConversionTableModel().getItemList()) {
@@ -54,7 +56,7 @@ public class PrepareSyncTask extends AbstractTask<String, Void> {
 				for (int i = analysisCount - 1; i >= 0; i--) {
 					message("mapProgressMessage");
 					if (movieList.size() > 0) {
-						Analysis analysis = RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().getItem(i);
+						Analysis analysis = analyses.get(i);
 						long smallestDifference = Long.MAX_VALUE;
 						for (File movie : movieList) {
 							long timeDifference = Math.abs(analysis.getCreationDate().getTime() - movie.lastModified());
@@ -80,17 +82,16 @@ public class PrepareSyncTask extends AbstractTask<String, Void> {
 		@Override
 		protected void finished() {
 			super.finished();
-			RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().update();
 			try {
 				if (get().startsWith("no")) 
 					throw new Exception(get()); 
 				else {
 					message(get());
-					RunwalkVideoApp.getApplication().getSyncActions().setSyncEnabled(true);
+//					RunwalkVideoApp.getApplication().getSyncActions().setSyncEnabled(true);
 				}
 			}
 			catch(Exception e) {
-				RunwalkVideoApp.getApplication().getSyncActions().setSyncEnabled(false);
+//				RunwalkVideoApp.getApplication().getSyncActions().setSyncEnabled(false);
 				errorMessage(e.getMessage());
 			}
 

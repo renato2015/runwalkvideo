@@ -1,45 +1,67 @@
 package com.runwalk.video.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.awt.Component;
+import java.beans.Beans;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.Query;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.beansbinding.AbstractBindingListener;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.Converter;
+import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.Validator;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
+import org.jdesktop.el.impl.util.ReflectionUtil;
+import org.jdesktop.observablecollections.ObservableCollections;
+import org.jdesktop.swingbinding.JComboBoxBinding;
+import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 
+import com.jidesoft.swing.AutoCompletion;
+import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
-import com.runwalk.video.entities.Client;
 import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
 
+/**
+ * TODO validatie met hibernate validators implementeren
+ * verder opkuisen met 
+ * 
+ * @author jekkos
+ *
+ */
+@SuppressWarnings("serial")
+public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 
-public class ClientInfoPanel extends JPanel {
+	private JTextField nameField, firstnameField;
 
-	private static final long serialVersionUID = 1L;
-	private JTextField addressField, emailField, nameField, firstnameField, organizationField, taxField, phoneField;
-	private JComboBox postcodeField, locationField;
-	private List<City> cityList;
-
-	private HashMap<String, City> locationMap, postalMap;
-
+	@SuppressWarnings("unchecked")
 	public ClientInfoPanel() {
-		setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+		super(new JPanel(new org.netbeans.lib.awtextra.AbsoluteLayout()));
 		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(ClientInfoPanel.class);
-
+		
 		JLabel nameLabel = new JLabel();
 		nameLabel.setFont(ApplicationSettings.MAIN_FONT);
 		nameLabel.setText(resourceMap.getString("nameLabel.text")); // NOI18N
@@ -77,213 +99,258 @@ public class ClientInfoPanel extends JPanel {
 
 		//Create some undo and redo actions
 		UndoableEditListener undoListener = RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener();
-		
-		class CitySelectionListener implements ActionListener {
-			private HashMap<String, City> map;
 
-			public CitySelectionListener(HashMap<String, City> map) {
-				this.map = map;
-			}
-
-			public void actionPerformed(ActionEvent e) {
-				//only fire when selected
-				String obj = ((JComboBox) e.getSource()).getSelectedItem().toString();
-				if (obj.equals("")) {
-					emptyLocationBoxes();
-					return;
-				}
-				City selected = map.get(obj);
-				if (selected == null) {
-					//TODO Add postal code to database (later)
-					return;
-				}
-				if (!selected.equals(RunwalkVideoApp.getApplication().getSelectedClient().getCity())) {
-					RunwalkVideoApp.getApplication().getSelectedClient().setCity(selected);
-					RunwalkVideoApp.getApplication().setSaveNeeded(true);
-				}
-				setCity(selected);			
-			}
-		}
+		JTable clientTable = RunwalkVideoApp.getApplication().getClientTable();
+		BindingGroup bindingGroup = new BindingGroup();
 		
-		//Register all changes made in the text fields and enable saving accordingly
-		KeyListener changeListener = new KeyListener() {
-			public void keyPressed(KeyEvent e) { }
-			public void keyReleased(KeyEvent e) { }
-			public void keyTyped(KeyEvent e) {
-				RunwalkVideoApp.getApplication().setSaveNeeded(true);
+		//component value binding
+		BeanProperty<JTextField, String> textFieldValue = BeanProperty.create("text");
+		BeanProperty<JTextField, String> textFieldValueOnFocusLost = BeanProperty.create("text_ON_FOCUS_LOST");
+		Binding<JTable, String, JTextField, String> valueBinding = null;
+
+		//component enabling binding
+		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${selectedElement != null}");
+		BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("enabled");
+		Binding<JTable, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
+		
+		/**
+		 * Converts first characters to uppercase
+		 */
+		class FirstCharacterToUpperCaseConverter extends Converter<String, String> {
+			
+			@Override
+			public String convertForward(String arg0) {
+				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
+			
+			@Override
+			public String convertReverse(String arg0) {
+				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
+			}
+			
 		};
-
+		
 		firstnameField = new JTextField();
 		firstnameField.setFont(ApplicationSettings.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
-		firstnameField.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) { }
-			public void keyReleased(KeyEvent e) { 
-				String firstname = ApplicationUtil.firstLettersToUpperCase(firstnameField.getText());
-				setFirstname(firstname);
-				RunwalkVideoApp.getApplication().getSelectedClient().setFirstname(firstname);
-				RunwalkVideoApp.getApplication().getClientTableModel().updateSelectedRow();
-			}
-			public void keyTyped(KeyEvent e) {	}
-		});
-		firstnameField.addKeyListener(changeListener);
+		ELProperty<JTable, String> firstname = ELProperty.create("${selectedElement.firstname}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, firstname, firstnameField, textFieldValue);
+		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, firstnameField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(firstnameField, new  AbsoluteConstraints(120, 20, 110, 20));
-
+		
 		nameField = new JTextField();
-		nameField.setFont(ApplicationSettings.MAIN_FONT);
 		nameField.getDocument().addUndoableEditListener(undoListener);
-		nameField.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) { }
-			public void keyReleased(KeyEvent e) { 
-				String name = ApplicationUtil.firstLettersToUpperCase(nameField.getText());
-				setClientName(name);
-				RunwalkVideoApp.getApplication().getSelectedClient().setName(name);
-				RunwalkVideoApp.getApplication().getClientTableModel().updateSelectedRow();
-			}
-			public void keyTyped(KeyEvent e) {	}
-		});
-		nameField.addKeyListener(changeListener);
+		nameField.setFont(ApplicationSettings.MAIN_FONT);
+		ELProperty<JTable, String> name = ELProperty.create("${selectedElement.name}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, name, nameField, textFieldValue);
+		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, nameField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(nameField, new  AbsoluteConstraints(235, 20, 225, 20));
 
-		organizationField = new JTextField();
-		organizationField.getDocument().addUndoableEditListener(undoListener);
-		organizationField.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) { }
-			public void keyReleased(KeyEvent e) {
-				if (nameField.getText().equals("")) {
-					String organization = ApplicationUtil.firstLettersToUpperCase(organizationField.getText());
-					RunwalkVideoApp.getApplication().getSelectedClient().setOrganization(organization);
-					RunwalkVideoApp.getApplication().getClientTableModel().updateSelectedRow();
-				}
-			}
-			public void keyTyped(KeyEvent e) {	}
-		});
-		organizationField.addKeyListener(changeListener);
-		organizationField.setFont(ApplicationSettings.MAIN_FONT);
-		add(organizationField, new  AbsoluteConstraints(120, 50, 150, 20));
+		JTextField organisationField = new JTextField();
+		organisationField.getDocument().addUndoableEditListener(undoListener);
+		ELProperty<JTable, String> organization = ELProperty.create("${selectedElement.organization}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, organization, organisationField, textFieldValue);
+		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, organisationField, enabled);
+		bindingGroup.addBinding(enabledBinding);
+		organisationField.setFont(ApplicationSettings.MAIN_FONT);
+		add(organisationField, new  AbsoluteConstraints(120, 50, 150, 20));
 
-		taxField = new JTextField();
+		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
-		taxField.addKeyListener(changeListener);
 		taxField.setFont(ApplicationSettings.MAIN_FONT);
+		ELProperty<JTable, String> taxNo = ELProperty.create("${selectedElement.btwnr}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, taxNo, taxField, textFieldValue);
+		valueBinding.setValidator(new Validator () {
+			
+			public Validator.Result validate(Object arg) {
+				String regexPattern = "[0-9]{9}";
+				Pattern pattern = Pattern.compile(regexPattern);
+				Matcher matcher = pattern.matcher(arg.toString());
+				if(!matcher.matches()){
+					return new Result(null, "Btwnr. moet 9 cijfers bevatten");
+				}
+				return null;    
+			}
+		});
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, taxField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(taxField, new  AbsoluteConstraints(320, 50, 140, 20));
 
-		emailField = new JTextField();
+		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
-		emailField.addKeyListener(changeListener);
 		emailField.setFont(ApplicationSettings.MAIN_FONT);
+		ELProperty<JTable, String> email = ELProperty.create("${selectedElement.emailAddress}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, email, emailField, textFieldValueOnFocusLost);
+		valueBinding.setValidator(new Validator() {
+					
+					public Validator.Result validate(Object arg) {        
+						String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
+						Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+						Matcher matcher = pattern.matcher(arg.toString());
+						if(!matcher.matches()){
+							return new Result(null, "Email adres is niet correct geformatteerd");
+						}
+						return null;
+					}
+				}
+		);
+		valueBinding.addBindingListener(new AbstractBindingListener() {
+			
+			@Override
+			public void syncFailed(Binding binding1, SyncFailure syncfailure) {
+				//TODO display validation failures here..
+				getLogger().error(syncfailure.toString());
+			}
+			
+		});
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, emailField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(emailField, new  AbsoluteConstraints(120, 80, 340, 20));
 
-		addressField = new JTextField();
+		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
-		addressField.addKeyListener(changeListener);
 		addressField.setFont(ApplicationSettings.MAIN_FONT);
+		ELProperty<JTable, String> address = ELProperty.create("${selectedElement.address}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, address, addressField, textFieldValue);
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, addressField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(addressField, new AbsoluteConstraints(120, 110, 340, 20));
 
-		phoneField = new JTextField();
+		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
-		phoneField.addKeyListener(changeListener);
 		phoneField.setFont(ApplicationSettings.MAIN_FONT);
+		ELProperty<JTable, String> phone = ELProperty.create("${selectedElement.phone}");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, phone, phoneField, textFieldValue);
+		bindingGroup.addBinding(valueBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, phoneField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(phoneField, new AbsoluteConstraints(120, 140, 120, 20));
 
-		Query query = RunwalkVideoApp.getApplication().createQuery("select DISTINCT OBJECT(city) from City city"); // NOI18N
-		cityList = query.getResultList();
+		Query cityQuery = Beans.isDesignTime() ? null : RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
+		List<City> cityList = ObservableCollections.observableList(cityQuery.getResultList());
+		
+		ELProperty<JTable, City> city = ELProperty.create("${selectedElement.city}");
+		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
 
-		postalMap = new HashMap<String, City>();
-		locationMap = new HashMap<String, City>();
-		postalMap.put("", null);
-		locationMap.put("", null);
-		for(int i = 0; i < cityList.size();i++) {
-			locationMap.put(cityList.get(i).getName(), cityList.get(i));
-			postalMap.put("" + cityList.get(i).getCode(), cityList.get(i));
+		final JComboBox locationField = new JComboBox();
+		JComboBoxBinding<City, List<City>, JComboBox> cityBinding = SwingBindings.createJComboBoxBinding(UpdateStrategy.READ_WRITE, cityList, locationField);
+		bindingGroup.addBinding(cityBinding);
+		Binding<JTable, City, JComboBox, City> comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, city, locationField, selectedItem, "locationBinding");
+		comboBoxBinding.setSourceNullValue(null);
+		comboBoxBinding.setSourceUnreadableValue(null);
+		bindingGroup.addBinding(comboBoxBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, locationField, enabled);
+		bindingGroup.addBinding(enabledBinding);
+
+		final JComboBox zipcodeField = new JComboBox();
+		cityBinding = SwingBindings.createJComboBoxBinding(UpdateStrategy.READ_WRITE, cityList, zipcodeField);
+		bindingGroup.addBinding(cityBinding);
+		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, city, zipcodeField, selectedItem, "zipcodeBinding");
+		comboBoxBinding.setSourceNullValue(null);
+		comboBoxBinding.setSourceUnreadableValue(null);
+		bindingGroup.addBinding(comboBoxBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, zipcodeField, enabled);
+		bindingGroup.addBinding(enabledBinding);
+		
+		class CityInfoRenderer extends DefaultListCellRenderer {
+
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				JLabel result = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				City city = (City) value;
+				result.setText(city.getCode() + " " + city.getName());
+				return result;
+			}
 		}
 
-		List<String> postcodes = new ArrayList<String>(postalMap.keySet());
-		Collections.sort(postcodes);
-		
-		postcodeField = new Java2sAutoComboBox(postcodes);
-		postcodeField.addKeyListener(changeListener);
-		postcodeField.setFont(ApplicationSettings.MAIN_FONT);
-		postcodeField.addActionListener(new CitySelectionListener(postalMap));
-		add(postcodeField, new  AbsoluteConstraints(120, 170, 70, 20));
+		class CityInfoEditor extends BasicComboBoxEditor {
 
-		List<String> locations = new ArrayList<String>(locationMap.keySet());
-		Collections.sort(locations);
-		locationField = new Java2sAutoComboBox(locations);
+			private String methodName;
+			private Class<?> methodClass;
+
+			public CityInfoEditor(ComboBoxEditor origEditor, Class<?> methodClass, String methodName) {
+				super();
+				this.methodName = methodName;
+				this.methodClass = methodClass;
+				editor.setBorder(((JComponent) origEditor.getEditorComponent()).getBorder());
+			}
+
+			@Override
+			public void setItem(Object anObject) {
+				if (anObject != null && methodClass.isAssignableFrom(anObject.getClass())) {
+					Method method = ReflectionUtil.getMethod(anObject, methodName, new Class<?>[] {});
+					try {
+						super.setItem(method.invoke(anObject, new Object[] {}));
+					} catch (IllegalAccessException e) {
+						getLogger().error(e);
+					} catch (InvocationTargetException e) {
+						getLogger().error(e);
+					}
+				} else {
+					super.setItem(anObject);
+				}
+			}
+
+			@Override
+			public Object getItem() {
+				Object value = super.getItem();
+				City selectedCity = null;
+				List<?> resultList = null;
+				if (value instanceof String) {
+					selectedCity = (City) locationField.getSelectedItem();
+					Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByName");
+					query.setParameter("name", value);
+					resultList = query.getResultList();
+				} else if (int.class.isAssignableFrom(value.getClass()) || value instanceof Integer) {
+					selectedCity = (City) zipcodeField.getSelectedItem();
+					if (!value.equals(selectedCity.getCode())) {
+						Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByZipCode");
+						query.setParameter("zipCode", value);
+						resultList = query.getResultList();
+					}
+				}
+				return resultList != null && resultList.size() > 0 ? resultList.get(0) : selectedCity;
+			}
+		};
+		
+		locationField.setEditor(new CityInfoEditor(locationField.getEditor(), City.class, "getName"));
+		locationField.setRenderer(new CityInfoRenderer());
+		locationField.setEditable(true);
 		locationField.setFont(ApplicationSettings.MAIN_FONT);
-		locationField.addKeyListener(changeListener);
-		locationField.addActionListener(new CitySelectionListener(locationMap));
-		add(locationField, new AbsoluteConstraints(200, 170, 170, 20));
+		add(locationField, new AbsoluteConstraints(250, 170, 170, 20));
+
+		new AutoCompletion(locationField, new ComboBoxSearchable(locationField) {
+			@Override
+			protected String convertElementToString(Object object) {
+				return ((City) object).getName();
+			}
+		});
+
+		zipcodeField.setEditor(new CityInfoEditor(zipcodeField.getEditor(), City.class, "getCode"));
+		zipcodeField.setRenderer(new CityInfoRenderer());
+		zipcodeField.setEditable(true);
+		zipcodeField.setFont(ApplicationSettings.MAIN_FONT);
+		add(zipcodeField, new  AbsoluteConstraints(120, 170, 120, 20));
+
+		new AutoCompletion(zipcodeField, new ComboBoxSearchable(zipcodeField) {
+			@Override
+			protected String convertElementToString(Object object) {
+				return Integer.toString(((City) object).getCode());
+			}
+		});
+		bindingGroup.bind();
 		
-		setEnabled(false);
-	}
-
-	/**
-	 * Save changes to the selected client record.
-	 * @param theClient The client to be updated.
-	 */
-	public void showDetails(Client theClient) {
-		phoneField.setText(theClient.getPhoneNumber());
-		organizationField.setText(theClient.getOrganization());
-		addressField.setText(theClient.getAddress());
-		emailField.setText(theClient.getEmailAddress());
-		setClientName(theClient.getName());
-		setFirstname(theClient.getFirstname());
-		setTaxField(theClient.getTaxNumber());
-		setCity(theClient.getCity());
-		RunwalkVideoApp.getApplication().getApplicationActions().discardAllEdits();
-	}
-
-
-	private void emptyLocationBoxes() {
-		if (!postcodeField.getSelectedItem().toString().equals("")) {
-			postcodeField.setSelectedItem("");
-		}
-		if (!locationField.getSelectedItem().toString().equals("")) {
-			locationField.setSelectedItem("");
-		}
-		RunwalkVideoApp.getApplication().getSelectedClient().setCity(null);
-	}
-
-	private void setCity(City city) {
-		if (city == null) {
-			emptyLocationBoxes();
-		} else {
-			String code =  "" + city.getCode();
-			if (!code.equals(postcodeField.getSelectedItem())) {
-				postcodeField.setSelectedItem(code);
-			}
-			if (!city.getName().equals(locationField.getSelectedItem())) 
-				locationField.setSelectedItem(city.getName());
-		}
-	}
-
-	/**
-	 * Save all changes made.
-	 * @return a boolean that indicates whether all changed values were validated and changed.
-	 */
-	public boolean saveData() {
-		if (!taxField.getText().equals("")) {
-			if (!FieldValidation.isNumeric(taxField.getText()) || (taxField.getText().length() != 9)) {
-				RunwalkVideoApp.getApplication().showError("Voer een geldige BTW nummer in!");
-				return false;
-			}
-			RunwalkVideoApp.getApplication().getSelectedClient().setTaxNumber(Integer.parseInt(taxField.getText()));
-		}
-		if (!FieldValidation.isEmailValid(emailField.getText()) && !emailField.getText().equals("")) {
-			RunwalkVideoApp.getApplication().showError("Voer een geldig e-mail adres in!");
-			return false;
-		}
-		if (!FieldValidation.isNumeric(phoneField.getText()) && phoneField.getText().length() != 0 ) {
-			RunwalkVideoApp.getApplication().showError("Voer een geldige telefoonnummer in: gebruik enkel cijfers.");
-			return false;
-		}
-		RunwalkVideoApp.getApplication().getSelectedClient().setPhoneNumber(phoneField.getText());
-		RunwalkVideoApp.getApplication().getSelectedClient().setOrganization(organizationField.getText());
-		RunwalkVideoApp.getApplication().getSelectedClient().setEmailAddress(emailField.getText().toLowerCase());
-		RunwalkVideoApp.getApplication().getSelectedClient().setAddress(addressField.getText());
-		return true;
 	}
 
 	public void setFirstname(String firstname) {
@@ -294,33 +361,8 @@ public class ClientInfoPanel extends JPanel {
 		nameField.setText(name);
 	}
 
-	private void setTaxField(Integer taxNumber) {
-		String taxString = ""+taxNumber;
-		if (taxString.equals("null") || taxString.equals("0")) {
-			taxField.setText("");
-		} else {
-			taxField.setText(taxString);
-		}
-	}
-	
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-		firstnameField.setEnabled(enabled);
-		nameField.setEnabled(enabled);
-		organizationField.setEnabled(enabled);
-		taxField.setEnabled(enabled);
-		emailField.setEnabled(enabled);
-		addressField.setEnabled(enabled);
-		phoneField.setEnabled(enabled);
-		locationField.setEnabled(enabled);
-		postcodeField.setEnabled(enabled);
-	}
-
-
-	@Override
 	public void requestFocus() {
-		super.requestFocus();
+		getComponent().requestFocus();
 		firstnameField.requestFocus();
 	}
 

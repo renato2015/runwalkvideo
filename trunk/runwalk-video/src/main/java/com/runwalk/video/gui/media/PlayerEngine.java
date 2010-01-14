@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.mediaplayer;
+package com.runwalk.video.gui.media;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -17,6 +17,7 @@ import org.jdesktop.application.Action;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.util.ApplicationSettings;
 import com.runwalk.video.util.ApplicationUtil;
 
 import de.humatic.dsj.DSCapture;
@@ -37,19 +38,19 @@ public class PlayerEngine extends AbstractBean {
 					DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
 					DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
 			)
+			
 	);
 
 	private final static Logger logger = Logger.getLogger(PlayerEngine.class);
 
 	private boolean isPlaying = false;
-	private Recording movieMetaInfo;
+	private Recording playingRecording, currentRecording;
 
 	private DSCapture dsCaptureGraph = null;
 	private DSMovie dsMovieGraph = null;
 
-	private float rate = 0.5f;
 	private float[] rates = new float[] {0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f};
-	private int rateIndex = Arrays.binarySearch(rates, rate);
+	private int rateIndex = ApplicationSettings.getInstance().getSettings().getRateIndex();
 
 	private DSFilterInfo selectedDevice = null;
 	private int selectedFormat = -1;
@@ -66,7 +67,7 @@ public class PlayerEngine extends AbstractBean {
 	 */
 	private boolean rejectPauseFilter = false;
 
-	private CameraDialog cameraSelectionDialog;
+	private JDialog cameraSelectionDialog;
 	
 	private boolean enableCustomFramerate = false;
 	private float framerate;
@@ -167,31 +168,13 @@ public class PlayerEngine extends AbstractBean {
 		this.selectedDevice = dsi[0][selectedIndex];
 	}
 
-	public void selectCaptureDevice() {
-		Object[] devices = queryCaptureDevices();
-		String selectedDevice =  (String) JOptionPane.showInputDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
-				"Kies een opname-apparaat:",
-				"Kies opname-apparaat..",
-				JOptionPane.PLAIN_MESSAGE,
-				null,
-				devices ,
-				devices[0]);
-		if (selectedDevice == null) {
-			RunwalkVideoApp.getInstance().exit();
-		}
-		setCaptureDevice(Arrays.asList(devices).indexOf(selectedDevice));
-		//		this.selectedDevice = dsi[0][];
-		//		selectedDevice.setPreferredFormat(DSFilterInfo.SHOW_DLG_SAVE);
-	}
-
 	@Action
 	public void initCaptureGraph() {
 		//initialize capture component.
 		ApplicationUtil.disposeDSGraph(getCaptureGraph());
 		//		setCaptureDevice();
 		if (cameraSelectionDialog == null) {
-			cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame());
+			cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame()).getComponent();
 		}
 		cameraSelectionDialog.setLocationRelativeTo(RunwalkVideoApp.getApplication().getMainFrame());
 		RunwalkVideoApp.getApplication().show(cameraSelectionDialog);
@@ -204,16 +187,13 @@ public class PlayerEngine extends AbstractBean {
 		return selectedDevice;
 	}
 
-	public  void switchPlay() {
+	public void switchPlay() {
 		if (isPlaying()) {
 			pause();
 		} else {
-			ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-			ImageIcon playIcon = new ImageIcon(contextClassLoader.getResource("com/runwalk/video/gui/mediaplayer/resources/icons/player_pause.png"));
-			RunwalkVideoApp.getApplication().getPlayerGUI().play_pause.setIcon(playIcon);
-			RunwalkVideoApp.getApplication().getPlayerGUI().playTimer.restart();
+//			RunwalkVideoApp.getApplication().getPlayerPanel().playTimer.restart();
 			getDSMovieGraph().play();
-			getDSMovieGraph().setRate(rate);
+			getDSMovieGraph().setRate(getRate());
 			setPlaying(true);
 			RunwalkVideoApp.getApplication().showMessage("Afspelen aan "+ getRate() + "x gestart.");
 		}
@@ -310,11 +290,11 @@ public class PlayerEngine extends AbstractBean {
 		}
 	}
 
-	public void initMovieComponent(Recording movie) {
-		setMovie(movie);
+	public void initMovieComponent(Recording recording) {
+		setRecording(recording);
 		String path = null;
 		try {
-			path = movie.getVideoFilePath();
+			path = recording.getVideoFilePath();
 			if (getDSMovieGraph() == null) {
 				createDSMovieGraph(path);
 			} else {
@@ -337,13 +317,13 @@ public class PlayerEngine extends AbstractBean {
 					"Fout bij openen filmpje",
 					JOptionPane.ERROR_MESSAGE);
 		}
-		RunwalkVideoApp.getApplication().showMessage("Bestand \"" + movie.getVideoFileName() + "\" afspelen...");
-		RunwalkVideoApp.getApplication().getPlayerGUI().play_pause.setEnabled(true);
+		RunwalkVideoApp.getApplication().showMessage("Bestand \"" + recording.getVideoFileName() + "\" afspelen...");
 	}
 
 	public void disposeDSMovieGraph() {
 		ApplicationUtil.disposeDSGraph(getDSMovieGraph());
 		dsMovieGraph = null;
+		playingRecording = null;
 	}
 
 	private void createDSMovieGraph(String path) {
@@ -361,14 +341,10 @@ public class PlayerEngine extends AbstractBean {
 	}
 
 	public void open() {
-
 	}
 
 	private void suspendPlayer() {
-		RunwalkVideoApp.getApplication().getPlayerGUI().playTimer.stop();
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		ImageIcon pauseIcon = new ImageIcon(contextClassLoader.getResource("com/runwalk/video/gui/mediaplayer/resources/icons/player_play.png"));
-		RunwalkVideoApp.getApplication().getPlayerGUI().play_pause.setIcon(pauseIcon);
+//		RunwalkVideoApp.getApplication().getPlayerPanel().playTimer.stop();
 		setPlaying(false);
 	}
 
@@ -387,7 +363,7 @@ public class PlayerEngine extends AbstractBean {
 
 	public void forward() {
 		if (isPlaying() && rateIndex < rates.length - 1) {
-			setRate(rates[++rateIndex]);
+			setRate(++rateIndex);
 		} else if (!isPlaying()) {
 			switchPlay();
 		}
@@ -396,9 +372,10 @@ public class PlayerEngine extends AbstractBean {
 
 	public void backward() {
 		if (rateIndex > 0) {
-			setRate(rates[--rateIndex]);
+			setRate(--rateIndex);
 			if (isPlaying()) {
 				getDSMovieGraph().setRate(getRate());
+				ApplicationSettings.getInstance().getSettings().setRateIndex(rateIndex);
 			}
 		} else {
 			pause();
@@ -409,8 +386,8 @@ public class PlayerEngine extends AbstractBean {
 		if (isPlaying()) {
 			switchPlay();
 		}
-		getMovie().sortKeyframes();
-		for (Keyframe frame : getMovie().getKeyframes()) {
+		getRecording().sortKeyframes();
+		for (Keyframe frame : getRecording().getKeyframes()) {
 			if (frame.getPosition() > getPosition()) {
 				setPosition(frame.getPosition());
 				logger .debug("NEXT: Keyframe position " + getPosition() + " " + frame.getPosition());
@@ -423,12 +400,12 @@ public class PlayerEngine extends AbstractBean {
 		if (isPlaying()) {
 			switchPlay();
 		}
-		getMovie().sortKeyframes();
-		for (int i = getMovie().getKeyframeCount()-1; i >= 0; i--) {
-			Keyframe frame = getMovie().getKeyframes().get(i);
+		getRecording().sortKeyframes();
+		for (int i = getRecording().getKeyframeCount()-1; i >= 0; i--) {
+			Keyframe frame = getRecording().getKeyframes().get(i);
 			if (frame.getPosition() < getPosition()) {
 				setPosition(frame.getPosition());
-				logger.debug(movieMetaInfo.getVideoFileName() + " Vorige: Keyframe " + i + " " + getPosition() + " " + frame.getPosition());
+				logger.debug(playingRecording.getVideoFileName() + " Vorige: Keyframe " + i + " " + getPosition() + " " + frame.getPosition());
 				return;
 			}
 		}
@@ -451,40 +428,16 @@ public class PlayerEngine extends AbstractBean {
 		getDSMovieGraph().setVolume( getDSMovieGraph().getVolume() / 1.25f);
 	}
 
-	public boolean switchVolume() {
-		if (getDSMovieGraph().getVolume() > 0) {
-			savedVolume = getDSMovieGraph().getVolume();
-			getDSMovieGraph().setVolume(0);
-			RunwalkVideoApp.getApplication().showMessage("Volume staat af.");
-			return true;
-		}
-		else {
-			getDSMovieGraph().setVolume(savedVolume);
-			RunwalkVideoApp.getApplication().showMessage("Volume staat terug aan.");
-			return false;
-		}
-	}
-
-	public void toggleFullScreen() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		GraphicsDevice selectedDevice = gs[gs.length-1];
-		if (getDSMovieGraph() != null) {
-			if (dsMovieGraph.isFullScreen()) {
-				dsMovieGraph.leaveFullScreen();
+	public void mute() {
+		if (getDSMovieGraph() != null ) {
+			if (getDSMovieGraph().getVolume() > 0) {
+				savedVolume = getDSMovieGraph().getVolume();
+				getDSMovieGraph().setVolume(0);
+				RunwalkVideoApp.getApplication().showMessage("Volume staat af.");
+			} else {
+				getDSMovieGraph().setVolume(savedVolume);
+				RunwalkVideoApp.getApplication().showMessage("Volume staat terug aan.");
 			}
-			else {
-				dsMovieGraph.goFullScreen(selectedDevice, 2);
-			}
-		}
-		else {
-			if (dsCaptureGraph.isFullScreen()) {
-				dsCaptureGraph.leaveFullScreen();
-			}
-			else {
-				dsCaptureGraph.goFullScreen(selectedDevice, 2);
-			}
-
 		}
 	}
 
@@ -514,21 +467,30 @@ public class PlayerEngine extends AbstractBean {
 		return dsMovieGraph;
 	}
 
-	public Recording getMovie() {
-		return movieMetaInfo;
+	public Recording getRecording() {
+		return playingRecording;
 	}
 
-	private void setMovie(Recording movie) {
-		this.movieMetaInfo = movie;
+	private void setRecording(Recording recording) {
+		this.playingRecording = recording;
+	}
+	
+	public Recording getCurrentRecording() {
+		return currentRecording;
 	}
 
-	private void setRate(float rate) {
-		this.rate = rate;
+	public void setCurrentRecording(Recording currentRecording) {
+		this.currentRecording = currentRecording;
+	}
+
+	private void setRate(int rate) {
+		this.rateIndex = rate;
+		ApplicationSettings.getInstance().getSettings().setRateIndex(rate);
 		RunwalkVideoApp.getApplication().showMessage("Afspelen aan " + ApplicationUtil.round(getRate(), 3) + " x");
 	}
 
-	private float getRate() {
-		return rate;
+	float getRate() {
+		return rates[rateIndex];
 	}
 
 	public DSFilterInfo getCaptureEncoder() {

@@ -1,84 +1,116 @@
 package com.runwalk.video.gui;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
+import javax.persistence.Query;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.RowSorter;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.Converter;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.jdesktop.swingbinding.JTableBinding;
+import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.ApplicationUtil;
 
-public class ClientTablePanel extends AbstractTablePanel {
+public class ClientTablePanel extends AbstractTablePanel<Client> {
+	
+	private static final String SAVE_NEEDED = "saveNeeded";
 
-	private static final long serialVersionUID = 1L;
-
-	private JPanel buttonPanel;
-	private JButton saveButton;
 	private JTextField searchField;
 
-	private TableRowSorter<ClientTableModel> sorter;
+	private JTableBinding<Client, ClientTablePanel, JTable> jTableSelectionBinding;
 
-	private JLabel theLabel;
-	private Icon searchOverlay, search;
+	private boolean saveNeeded = false;
 
-	public ClientTablePanel(AbstractTableModel<Client> model) {
-		super(model);
-		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(ClientTablePanel.class);
-		setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), resourceMap.getString("borderPanel.border.title"), TitledBorder.LEFT, TitledBorder.TOP, ApplicationSettings.MAIN_FONT.deriveFont(12))); // NOI18N
-		
+	@SuppressWarnings("unchecked")
+	public ClientTablePanel() {
+		String borderTitle = getResourceMap().getString("borderPanel.border.title");
+		getComponent().setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, ApplicationSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
-		getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			//Selection changed!!
-			public void valueChanged(ListSelectionEvent e) {
-				RunwalkVideoApp.getApplication().getClientInfoPanel().setEnabled(isRowSelected());
-				RunwalkVideoApp.getApplication().getTableActions().setClientSelected(isRowSelected());
-				
-				if (isRowSelected()) {
-					int selected = getTable().getSelectedRow();
-					int selectedModelIndex = getTable().convertRowIndexToModel(selected);
-					if (getGenericTableModel().getSelectedIndex() != -1) {
-						if (!RunwalkVideoApp.getApplication().getClientInfoPanel().saveData()) { 
-							int previousSelected = getGenericTableModel().getSelectedIndex();
-							makeRowVisible(previousSelected);
-							getTable().setFocusable(false);
-							RunwalkVideoApp.getApplication().getTableActions().setClientSelected(false);
-							return;
-						}
-					}
-					getGenericTableModel().setSelectedIndex(selectedModelIndex);
-					//TODO herorganiseer delete en validatie hier..
-					//TODO merge saveChanges and the saveData method in clientinfopanel??
-					RunwalkVideoApp.getApplication().getAnalysisTableModel().update();
-					getTable().setFocusable(true);
-					RunwalkVideoApp.getApplication().getClientInfoPanel().showDetails(RunwalkVideoApp.getApplication().getSelectedClient());
-					RunwalkVideoApp.getApplication().getAnalysisTablePanel().clearComments();
+		
+		update();
+		
+		BeanProperty<ClientTablePanel, List<Client>> clients = BeanProperty.create("itemList");
+		jTableSelectionBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, this, clients, getTable());
+		BeanProperty<Client, Long> id = BeanProperty.create("id");
+		JTableBinding<Client, ClientTablePanel, JTable>.ColumnBinding columnBinding = jTableSelectionBinding.addColumnBinding(id);
+		columnBinding.setColumnName("Id");
+		columnBinding.setColumnClass(Long.class);
+		columnBinding.setEditable(false);
+		
+		BeanProperty<Client, String> firstname = BeanProperty.create("firstname");
+		columnBinding = jTableSelectionBinding.addColumnBinding(firstname);
+		columnBinding.setColumnName("Voornaam");
+		columnBinding.setColumnClass(String.class);
+		
+		BeanProperty<Client, String> name = BeanProperty.create("name");
+		columnBinding = jTableSelectionBinding.addColumnBinding(name);
+		columnBinding.setColumnName("Naam");
+		columnBinding.setColumnClass(String.class);
+		
+		BeanProperty<Client, Date> lastAnalysisDate = BeanProperty.create("lastAnalysisDate");
+		columnBinding = jTableSelectionBinding.addColumnBinding(lastAnalysisDate);
+		columnBinding.setColumnName("Datum laatste analyse");
+		columnBinding.setColumnClass(String.class);
+		columnBinding.setEditable(false);
+		columnBinding.setConverter(new Converter<Date, String>() {
+
+			@Override
+			public String convertForward(Date arg0) {
+				return ApplicationUtil.formatDate(arg0, ApplicationUtil.EXTENDED_DATE_FORMATTER);
+			}
+
+			@Override
+			public Date convertReverse(String arg0) {
+				try {
+					return DateFormat.getInstance().parse(arg0);
+				} catch (ParseException e) {
+					return null;
 				}
 			}
 		});
+		BindingGroup bindingGroup = new BindingGroup();
+		jTableSelectionBinding.setSourceUnreadableValue(Collections.emptyList());
+		jTableSelectionBinding.setSourceNullValue(Collections.emptyList());
+		bindingGroup.addBinding(jTableSelectionBinding);
+		jTableSelectionBinding.bind();
+		
 		getTable().getColumnModel().getColumn(0).setMinWidth(30);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(30);
 		getTable().getColumnModel().getColumn(0).setMaxWidth(30);
@@ -92,27 +124,31 @@ public class ClientTablePanel extends AbstractTablePanel {
 		JScrollPane masterScrollPane = new JScrollPane();
 		masterScrollPane.setViewportView(getTable());
 
-		buttonPanel = new JPanel();
+		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new AbsoluteLayout());
 
-		setSecondButton(new JButton(RunwalkVideoApp.getApplication().getTableActionMap().get("addClient")));
+		setSecondButton(new JButton(getAction("addClient")));
 		getSecondButton().setFont(ApplicationSettings.MAIN_FONT);
 		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(0, 0, -1, -1));
 
-		setFirstButton(new JButton(RunwalkVideoApp.getApplication().getTableActionMap().get("deleteClient")));
+		setFirstButton(new JButton(getAction("deleteClient")));
 		getFirstButton().setFont(ApplicationSettings.MAIN_FONT);
 		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(110, 0, -1, -1));
 		
-		saveButton = new  JButton(RunwalkVideoApp.getApplication().getApplicationActionMap().get("save"));
+		JButton saveButton = new  JButton(getAction("save"));
 		saveButton.setFont(ApplicationSettings.MAIN_FONT);
 		buttonPanel.add(saveButton, new AbsoluteConstraints(230, 0, -1, -1));
 
 		JPanel searchPanel = new JPanel();
 		
-		search = resourceMap.getIcon("searchPanel.searchIcon");
-		searchOverlay = resourceMap.getIcon("searchPanel.searchOverlayIcon");
+		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
+		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
-		theLabel = new JLabel(resourceMap.getString("searchPanel.searchFieldLabel.text"));
+		searchField = new JTextField();
+		searchField.setPreferredSize(new Dimension(100,20));
+		searchField.setFont(ApplicationSettings.MAIN_FONT);
+		
+		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
 		theLabel.setFont(ApplicationSettings.MAIN_FONT);
 		theLabel.setIcon(search);
 		theLabel.addMouseListener(new MouseAdapter() {
@@ -128,36 +164,54 @@ public class ClientTablePanel extends AbstractTablePanel {
 				theLabel.setIcon(search);
 			}
 		});
-		
-		searchField = new JTextField();
-		getSearchField().setPreferredSize(new Dimension(100,20));
-		getSearchField().setFont(ApplicationSettings.MAIN_FONT);
-		getSearchField().getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) { }
-			public void insertUpdate(DocumentEvent e) {
-				setSearchFilter();
-			}
-			public void removeUpdate(DocumentEvent e) {	
-				setSearchFilter();
-			}
-		});
-		getSearchField().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setSearchFilter();
-			}
-		});
-		getSearchField().setVisible(true);
 
 		searchPanel.add(theLabel);
-		searchPanel.add(getSearchField());
+		searchPanel.add(searchField);
 		
-		sorter = new TableRowSorter<ClientTableModel>(RunwalkVideoApp.getApplication().getClientTableModel());
-		getTable().setRowSorter(getSorter());
+        BeanProperty<JTable, RowSorter<? extends TableModel>> rowSorter = BeanProperty.create("rowSorter");
+		BeanProperty<JTextField, String> mask = BeanProperty.create("text");
+		Binding<JTable, RowSorter<? extends TableModel>, JTextField, String> rowSorterBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getTable(), rowSorter, searchField, mask);
+		rowSorterBinding.setSourceUnreadableValue("");
+		rowSorterBinding.setSourceNullValue("");
+		rowSorterBinding.setConverter(new Converter<RowSorter<? extends TableModel>, String>() {
+
+			@Override
+			public String convertForward(RowSorter<? extends TableModel> rowSorter) {
+				return rowSorter.toString();
+			}
+
+			@Override
+			public RowSorter<? extends TableModel> convertReverse(String mask) {
+				 TableRowSorter<? extends TableModel> sorter = new TableRowSorter<TableModel>(getTable().getModel());
+
+			        // The following statement makes the filter case-sensitive. If you want 
+			        //filter to work in a case-insensitive way, uncomment the line below, comment 
+			        //the 7 code lines below
+			        //sorter.setRowFilter(RowFilter.regexFilter(".*" + mask + ".*"));
+
+			        //The following 7 lines create a case-insensitive filter. If you want 
+			        //the filter to be case-sensitive, comment them out and uncomment the 
+			        //line above
+			        String m = mask.toString();
+			        StringBuilder sb = new StringBuilder();
+			        for (int i = 0; i < m.length(); i++) {
+			            char c = m.charAt(i);
+			            sb.append('[').append(Character.toLowerCase(c)).append(Character.toUpperCase(c)).append(']');
+			        }
+			        sorter.setRowFilter(RowFilter.regexFilter(".*" + sb + ".*"));
+			        return sorter;
+			}
+		
+		});
+		bindingGroup.addBinding(rowSorterBinding);
+		bindingGroup.bind();
+		clearSearch();
 		
 		buttonPanel.add(searchPanel, new AbsoluteConstraints(370, 0, 180, -1));
 
 		//Layout the this panel..
-		GroupLayout groupLayout = new GroupLayout(this);
+		GroupLayout groupLayout = new GroupLayout(getComponent());
 		setLayout(groupLayout);
 		groupLayout.setHorizontalGroup(
 				groupLayout.createParallelGroup(GroupLayout.LEADING)
@@ -182,30 +236,78 @@ public class ClientTablePanel extends AbstractTablePanel {
 
 	}
 	
-	private void setSearchFilter() {
-        StringBuilder sb = new StringBuilder();
-        String text = getSearchField().getText();
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            sb.append('[').append(Character.toLowerCase(c)).append(Character.toUpperCase(c)).append(']');
-        }
-		RowFilter<ClientTableModel, Integer> filter = RowFilter.regexFilter(".*" + sb  + ".*");
-		getSorter().setRowFilter(filter);
+	@Action(enabledProperty=SAVE_NEEDED)
+	public Task<List<Client>, Void> save() {
+		final Task<List<Client>, Void> saveTask = new SaveTask(getItemList());
+		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<List<Client>> event) {
+				if (event.getValue() != null) {
+					setItemList(event.getValue());
+				}
+			}
+			
+		});
+		return saveTask;
+	}
+
+	public boolean isSaveNeeded() {
+		return saveNeeded ;
+	}
+
+	public void setSaveNeeded(boolean saveNeeded) {
+		this.saveNeeded = saveNeeded;
+		this.firePropertyChange(SAVE_NEEDED, !isSaveNeeded(), isSaveNeeded());
 	}
 	
-	public void clearSearch() {
-		RowFilter<ClientTableModel, Integer> filter = RowFilter.regexFilter(".*.*");
-		getSorter().setRowFilter(filter);
-		getSearchField().setText("");
+	@Action
+	public void addClient() {
+		Client client = new Client();
+		AbstractTableModel.persistEntity(client);
+		getItemList().add(client);
+		refreshTableBindings();
+		clearSearch();
+		int clientCount = getItemList().size() - 1;
+		int selectedRow = clientCount > 0 ? getTable().convertRowIndexToView(clientCount) : 0;
+		makeRowVisible(selectedRow);
+		getApplication().getClientInfoPanel().requestFocus();
+		setSaveNeeded(true);
 	}
 
-	private TableRowSorter<ClientTableModel> getSorter() {
-		return sorter;
+	@Action(enabledProperty = ROW_SELECTED)
+	public void deleteClient() {
+		int n = JOptionPane.showConfirmDialog(
+				RunwalkVideoApp.getApplication().getMainFrame(),
+				getResourceMap().getString("deleteClient.confirmDialog.text"),
+				getResourceMap().getString("deleteClient.Action.text"),
+				JOptionPane.WARNING_MESSAGE,
+				JOptionPane.OK_CANCEL_OPTION);
+		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION)	return;
+		
+		int selectedRow = getTable().getSelectedRow();
+		Client clientToDelete = getSelectedItem();
+		getItemList().remove(clientToDelete);
+		AbstractTableModel.deleteEntity(clientToDelete);
+		//select previous records..
+		if (selectedRow > 0) {
+			makeRowVisible(selectedRow-1);
+		} else {
+			clearItemSelection();
+		}
+		getLogger().debug("Client " + clientToDelete.getId() +  " (" + clientToDelete.getName() + ") deleted.");
+		setSaveNeeded(true);
+	}
+	
+	private void clearSearch() {
+		searchField.setText("");
 	}
 
-	private JTextField getSearchField() {
-		return searchField;
+	@Override
+	public void update() {
+		Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
+		setItemList(query.getResultList());	
+		refreshTableBindings();
 	}
-
 
 }

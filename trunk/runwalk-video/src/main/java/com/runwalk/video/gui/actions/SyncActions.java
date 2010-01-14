@@ -9,6 +9,8 @@ import com.runwalk.video.gui.tasks.SyncTask;
 
 public class SyncActions extends AbstractBean {
 	
+	private static final String SCAN_ENABLED = "scanEnabled";
+	private static final String SYNC_ENABLED = "syncEnabled";
 	private boolean syncEnabled, scanEnabled;
 	
 	public boolean isScanEnabled() {
@@ -17,10 +19,10 @@ public class SyncActions extends AbstractBean {
 
 	public void setScanEnabled(boolean scanEnabled) {
 		this.scanEnabled = scanEnabled;
-		this.firePropertyChange("scanEnabled", !isScanEnabled(), isScanEnabled());
+		this.firePropertyChange(SCAN_ENABLED, !isScanEnabled(), isScanEnabled());
 	}
 	
-	@Action(enabledProperty = "syncEnabled")
+	@Action(enabledProperty = SYNC_ENABLED)
 	public Task<Boolean, Void> synchronize() {
 		setSyncEnabled(false);
 		setScanEnabled(false);
@@ -33,11 +35,11 @@ public class SyncActions extends AbstractBean {
 
 	public void setSyncEnabled(boolean enabled) {
 		this.syncEnabled = enabled;
-		this.firePropertyChange("syncEnabled", !isSyncEnabled(), isSyncEnabled());
+		this.firePropertyChange(SYNC_ENABLED, !isSyncEnabled(), isSyncEnabled());
 	}
 	
-	@Action(enabledProperty="scanEnabled")
+	@Action(enabledProperty=SCAN_ENABLED)
 	public Task<String, Void> preparesync() {
-		return new PrepareSyncTask();
+		return new PrepareSyncTask(null);
 	}
 }
