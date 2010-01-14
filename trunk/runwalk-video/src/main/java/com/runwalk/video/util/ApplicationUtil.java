@@ -5,6 +5,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.Action;
@@ -22,7 +23,7 @@ public class ApplicationUtil {
 	public static final SimpleDateFormat DURATION_FORMATTER = new SimpleDateFormat("mm:ss");
 	public static final SimpleDateFormat EXTENDED_DURATION_FORMATTER = new SimpleDateFormat("mm:ss.SSS");
 	//date formats
-	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yy");
+	public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd-MM-yy");
 	public static final SimpleDateFormat EXTENDED_DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH'h'mm'm'ss");
 
@@ -59,6 +60,17 @@ public class ApplicationUtil {
 			result = new String[] {str.substring(0, indexOf), str.substring(indexOf+1)};
 		} else {
 			result = new String[] {str, null};
+		}
+		return result;
+	}
+	
+	public static Date granularity(Date date, int precision) {
+		Date result = null;
+		if (date != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			cal.set(precision, 0);
+			result = cal.getTime();
 		}
 		return result;
 	}

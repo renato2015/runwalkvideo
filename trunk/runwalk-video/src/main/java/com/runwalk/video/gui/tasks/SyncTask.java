@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.actions.RecordingStatus;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.util.ApplicationUtil;
 
 public class SyncTask extends AbstractTask<Boolean, Void>{ 
@@ -72,7 +72,7 @@ public class SyncTask extends AbstractTask<Boolean, Void>{
 			errorMessage(getResourceMap().getString(resourceName("endErrorMessage"), new Integer(errorCount)));
 		} finally {
 			String syncMsg = getResourceMap().getString(resourceName("lastSyncMessage")) + ApplicationUtil.formatDate(new Date(System.currentTimeMillis()), new SimpleDateFormat("dd/MM/yyyy HH:mm"));
-			RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setStatusMessage(syncMsg);
+			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
 		}
 	}
 

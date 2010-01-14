@@ -13,6 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -23,57 +24,54 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultEditorKit;
 
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Action;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.actions.ResourceInjector;
+import com.runwalk.video.util.ResourceInjector;
 
-public class VideoMenuBar extends JMenuBar implements PropertyChangeListener {
-
-	private static final long serialVersionUID = 1L;
+public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements PropertyChangeListener {
 
 	private HashMap<JCheckBoxMenuItem, Component> boxWindowMap = new HashMap<JCheckBoxMenuItem, Component>();
 	private HashMap<Component, JCheckBoxMenuItem> windowBoxMap = new HashMap<Component, JCheckBoxMenuItem>();
 	private JMenu windowMenu;
+	private JDialog aboutBox;
 
 	public VideoMenuBar() {
-		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(VideoMenuBar.class);
-
+		super(new JMenuBar());
 		JSeparator separator = new JSeparator();
-		JMenu fileMenu = new  JMenu(resourceMap.getString("fileMenu.text"));
-		JMenuItem newClientMenuItem = new JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("addClient"));
+		JMenu fileMenu = new  JMenu(getResourceMap().getString("fileMenu.text"));
+		JMenuItem newClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("addClient"));
 		fileMenu.add(newClientMenuItem);
-		JMenuItem deleteClientMenuItem = new JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("deleteClient"));
+		JMenuItem deleteClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("deleteClient"));
 		fileMenu.add(deleteClientMenuItem);
 		fileMenu.add(separator);
 
-		JMenuItem createAnalysisItem = new  JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("addAnalysis"));
+		JMenuItem createAnalysisItem = new  JMenuItem( getApplication().getAnalysisTablePanel().getAction("addAnalysis"));
 		fileMenu.add(createAnalysisItem);
-		JMenuItem deleteAnalysisItem = new  JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("deleteAnalysis"));
+		JMenuItem deleteAnalysisItem = new  JMenuItem( getApplication().getAnalysisTablePanel().getAction("deleteAnalysis"));
 		fileMenu.add(deleteAnalysisItem);
 		fileMenu.add(new JSeparator());
 
-		JMenuItem refreshMenuItem = new  JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("refresh"));
+		JMenuItem refreshMenuItem = new  JMenuItem( getApplication().getClientTablePanel().getAction("refresh"));
 		fileMenu.add(refreshMenuItem);
-		JMenuItem saveMenuItem = new  JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("save"));
+		JMenuItem saveMenuItem = new  JMenuItem( getApplication().getClientTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
 
-		//		JMenuItem perparesyncMenuItem = new JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("preparesync"));
+		//		JMenuItem perparesyncMenuItem = new JMenuItem( getApplication().getTableActionMap().get("preparesync"));
 		//		fileMenu.add(perparesyncMenuItem);
-		//		JMenuItem syncMenuItem = new  JMenuItem(RunwalkVideoApp.getApplication().getTableActionMap().get("synchronize"));
+		//		JMenuItem syncMenuItem = new  JMenuItem( getApplication().getTableActionMap().get("synchronize"));
 		//		fileMenu.add(syncMenuItem);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem exitMenuItem = new  JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("exit"));
+		JMenuItem exitMenuItem = new  JMenuItem( getApplication().getApplicationActionMap().get("exit"));
 		fileMenu.add(exitMenuItem);
-		add(fileMenu);
+		getComponent().add(fileMenu);
 
 		//the edit menu?
-		JMenu editMenu = new JMenu(resourceMap.getString("editMenu.text"));
-		JMenuItem undo = new JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("undo"));
+		JMenu editMenu = new JMenu(getResourceMap().getString("editMenu.text"));
+		JMenuItem undo = new JMenuItem( getApplication().getApplicationActionMap().get("undo"));
 		editMenu.add(undo);
-		JMenuItem redo = new JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("redo"));
+		JMenuItem redo = new JMenuItem( getApplication().getApplicationActionMap().get("redo"));
 		editMenu.add(redo);
 		editMenu.add(new JSeparator());
 		JMenuItem cut = new JMenuItem(ResourceInjector.injectResources(new DefaultEditorKit.CutAction(), "cut"));
@@ -82,47 +80,55 @@ public class VideoMenuBar extends JMenuBar implements PropertyChangeListener {
 		editMenu.add(copy);
 		JMenuItem paste = new JMenuItem(ResourceInjector.injectResources(new DefaultEditorKit.PasteAction(), "paste"));
 		editMenu.add(paste);
-		add(editMenu);
-		
+		getComponent().add(editMenu);
+
 		//TODO refactor this into an Action object..
-		JMenu videoMenu = new JMenu(resourceMap.getString("videoMenu.text"));
+		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
 		JMenuItem cameraItem = new JMenuItem("startCapturer");
 		JMenuItem initCameraItem = new JMenuItem("initCaptureGraph");
-		
-		JCheckBoxMenuItem rejectFilterItem = new JCheckBoxMenuItem("Verwijder Pause Filter");
-		rejectFilterItem.setSelected(RunwalkVideoApp.getApplication().getPlayer().rejectPauseFilter());
+
+/*		JCheckBoxMenuItem rejectFilterItem = new JCheckBoxMenuItem("Verwijder Pause Filter");
+		rejectFilterItem.setSelected( getApplication().getPlayerEngine().rejectPauseFilter());
 		rejectFilterItem.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				boolean rejectPauseFilter = (e.getStateChange() == ItemEvent.SELECTED) ? true : false;
-				RunwalkVideoApp.getApplication().getPlayer().setRejectPauseFilter(rejectPauseFilter);
+				getApplication().getPlayerEngine().setRejectPauseFilter(rejectPauseFilter);
 			}
 		});
 		videoMenu.add(rejectFilterItem);
 		videoMenu.add(new JSeparator());
-		videoMenu.add(new JMenuItem(RunwalkVideoApp.getApplication().getPlayerActionMap().get("setCaptureEncoder")));
-		videoMenu.add(new JMenuItem(RunwalkVideoApp.getApplication().getPlayerActionMap().get("setFrameRate")));
-		videoMenu.add(new JMenuItem(RunwalkVideoApp.getApplication().getPlayerActionMap().get("viewFilterProperties")));
+		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("setCaptureEncoder")));
+		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("setFrameRate")));
+		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("viewFilterProperties")));
 		videoMenu.add(new JSeparator());
 		videoMenu.add(cameraItem);
 		videoMenu.add(initCameraItem);
-		videoMenu.add(RunwalkVideoApp.getApplication().getPlayerActionMap().get("toggleCamera"));
+		videoMenu.add( getApplication().getPlayerActionMap().get("toggleCamera"));*/
 		videoMenu.add(new JSeparator());
-		videoMenu.add(RunwalkVideoApp.getApplication().getApplicationActionMap().get("selectVideoDir"));
-		
-		add(videoMenu);
+		videoMenu.add( getApplication().getApplicationActionMap().get("selectVideoDir"));
 
-		windowMenu = new JMenu(resourceMap.getString("windowMenu.text"));
-		add(windowMenu);
+		getComponent().add(videoMenu);
 
-		JMenu helpMenu = new  JMenu(resourceMap.getString("helpMenu.text"));
-		JMenuItem aboutMenuItem = new JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("about"));
-		JMenuItem uploadLogFiles = new JMenuItem(RunwalkVideoApp.getApplication().getApplicationActionMap().get("uploadLogFiles"));
+		windowMenu = new JMenu(getResourceMap().getString("windowMenu.text"));
+		getComponent().add(windowMenu);
+
+		JMenu helpMenu = new  JMenu(getResourceMap().getString("helpMenu.text"));
+		JMenuItem aboutMenuItem = new JMenuItem( getAction("about"));
+		JMenuItem uploadLogFiles = new JMenuItem( getApplication().getApplicationActionMap().get("uploadLogFiles"));
 		helpMenu.add(uploadLogFiles);
 		helpMenu.add(new JSeparator());
 		helpMenu.add(aboutMenuItem);
-		add(helpMenu);
+		getComponent().add(helpMenu);
 	}
 
+	@Action
+	public void about() {
+		if (aboutBox == null) {
+			aboutBox = new RunwalkVideoAboutBox(getApplication().getMainFrame()).getComponent();
+		}
+		aboutBox.setLocationRelativeTo(getApplication().getMainFrame());
+		getApplication().show(aboutBox);
+	}
 
 	public void addWindow(Component component) {
 		if (component instanceof JInternalFrame) {
@@ -139,8 +145,7 @@ public class VideoMenuBar extends JMenuBar implements PropertyChangeListener {
 					setCheckboxSelection(frame);
 				}
 			});
-		}
-		else if (component instanceof Window) {
+		} else if (component instanceof Window) {
 			final Window window = (Window) component;
 			window.addWindowListener(new WindowAdapter() {
 
@@ -172,9 +177,11 @@ public class VideoMenuBar extends JMenuBar implements PropertyChangeListener {
 
 	public void removeWindow(Component component) {
 		JCheckBoxMenuItem boxMenuItem = windowBoxMap.get(component);
-		windowMenu.remove(boxMenuItem);
-		boxWindowMap.remove(boxMenuItem);
-		windowBoxMap.remove(component);
+		if (boxMenuItem != null) {
+			windowMenu.remove(boxMenuItem);
+			boxWindowMap.remove(boxMenuItem);
+			windowBoxMap.remove(component);
+		}
 	}
 
 	public void setCheckboxSelection(Component component) {

@@ -2,7 +2,6 @@ package com.runwalk.video.entities;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +23,7 @@ import org.apache.log4j.Logger;
 
 import com.runwalk.video.entities.VideoFile.CompressedVideoFile;
 import com.runwalk.video.entities.VideoFile.UncompressedVideoFile;
-import com.runwalk.video.gui.actions.RecordingStatus;
+import com.runwalk.video.gui.AbstractTableModel;
 import com.runwalk.video.util.ApplicationUtil;
 
 @SuppressWarnings("serial")
@@ -32,6 +31,16 @@ import com.runwalk.video.util.ApplicationUtil;
 @Table(schema="testdb", name="movies")
 public class Recording extends SerializableEntity<Recording> {
 	
+	private static final String RECORDED = "recorded";
+
+	private static final String COMPRESSED = "compressed";
+
+	private static final String RECORDING_STATUS = "recordingStatus";
+
+	private static final String DURATION = "duration";
+
+	private static final String KEYFRAME_COUNT = "keyframeCount";
+
 	public static final String VIDEO_CONTAINER_FORMAT = ".avi";
 	
 	@Id
@@ -65,7 +74,11 @@ public class Recording extends SerializableEntity<Recording> {
 	@Transient
 	private RecordingStatus recordingStatus;
 
+	@Transient
+	private boolean compressed, recorded;
+
 	protected Recording() { }
+	
 
 	public Recording(String fileName) {
 		this.videoFileName = fileName;
@@ -82,8 +95,8 @@ public class Recording extends SerializableEntity<Recording> {
 		return id;
 	}
 
-	public String formatDuration(SimpleDateFormat formatter) {
-		return ApplicationUtil.formatDate(new Date(getDuration()), formatter);
+	public String getFormattedDuration(SimpleDateFormat format) {
+		return ApplicationUtil.formatDate(new Date(getDuration()), format);
 	}
 
 	public long getDuration() {
@@ -97,8 +110,15 @@ public class Recording extends SerializableEntity<Recording> {
 		return duration;
 	}
 	
-	public void addKeyframe(Keyframe frame) {
-		keyframes.add(frame);
+	public void setDuration(long duration) {
+		this.firePropertyChange(DURATION, this.duration, this.duration = duration);
+	}
+	
+	public void addKeyframe(int stamp) {
+		Keyframe snapshot = new Keyframe(this, stamp);
+		AbstractTableModel.persistEntity(snapshot);
+		keyframes.add(snapshot);
+		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount()-1, getKeyframeCount());
 	}
 
 	public void sortKeyframes() {
@@ -107,9 +127,9 @@ public class Recording extends SerializableEntity<Recording> {
 
 	public List<Keyframe> getKeyframes() {
 		if (this.keyframes == null) {
-			return Collections.emptyList();
+			this.keyframes = Collections.emptyList();
 		}
-		return new ArrayList<Keyframe>(this.keyframes);
+		return Collections.unmodifiableList(keyframes);
 	}
 
 	public int getKeyframeCount() {
@@ -130,7 +150,7 @@ public class Recording extends SerializableEntity<Recording> {
 			videoFile = null;
 			cacheVideoFile();
 		} else {
-			this.recordingStatus = status;
+			this.firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
 		}
 		this.statuscode = recordingStatus.getCode();
 	}
@@ -147,7 +167,7 @@ public class Recording extends SerializableEntity<Recording> {
 		if (videoFile == null || !videoFile.canReadAndExists())  {
 			if (getCompressedVideoFile().exists()) {
 				if (getCompressedVideoFile().canRead()) {
-					recordingStatus = RecordingStatus.COMPRESSED;
+					firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.COMPRESSED);
 					videoFile = getCompressedVideoFile();
 					/*try {
 						if (hasDuplicateFiles() && getCompressedVideoFile().getDuration() != getUncompressedVideoFile().getDuration()) {
@@ -166,16 +186,16 @@ public class Recording extends SerializableEntity<Recording> {
 					if (getCompressedVideoFile().delete()) {
 						videoFile = cacheVideoFile();
 					} else {
-						recordingStatus = RecordingStatus.UNCOMPRESSED;
+						firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
 						videoFile = getUncompressedVideoFile();
 					}
 				}
 			} else if (getUncompressedVideoFile().canReadAndExists()) {
-				recordingStatus = RecordingStatus.UNCOMPRESSED;
+				firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
 				videoFile = getUncompressedVideoFile();
 			} else {
 				Logger.getLogger(Recording.class).warn("No videofile found for recording with filename " + getVideoFileName());
-				recordingStatus = RecordingStatus.NON_EXISTANT_FILE;
+				firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.NON_EXISTANT_FILE);
 				return videoFile = null;
 			}
 		}
@@ -223,40 +243,45 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	public boolean isCompressed() {
-		return getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().canReadAndExists();
+		boolean compressed = getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().canReadAndExists();
+		firePropertyChange(COMPRESSED, this.compressed, this.compressed = compressed);
+		return this.compressed;
 	}
 
 	public boolean isRecorded() {
-		return isUncompressed() || isCompressed();
+		boolean recorded = isUncompressed() || isCompressed();
+		firePropertyChange(RECORDED, this.recorded, this.recorded = recorded);
+		return this.recorded;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((videoFileName == null) ? 0 : videoFileName.hashCode());
+		result = prime * result + ((getVideoFileName() == null) ? 0 : getVideoFileName().hashCode());
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Recording) {
+		boolean result = false;
+		if (obj != null && getClass() == obj.getClass()) {
 			Recording other = (Recording) obj;
-			return getId().equals(other.getId()) && getVideoFileName().equals(other.getVideoFileName());
+			result = getVideoFileName() != null ? getVideoFileName().equals(other.getVideoFileName()) : other.getVideoFileName() == null;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
-		return false;
+		return result;
 	}
 
 	public int compareTo(Recording o) {
-		return lastModified.compareTo(o.lastModified);
+		return this.equals(o) ? 0 : lastModified.compareTo(o.lastModified);
 	}
 
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + " [id=" + id + ", statuscode=" + statuscode	+ ", videoFileName=" + videoFileName + "]";
 	}
-
 
 
 }

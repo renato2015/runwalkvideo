@@ -13,9 +13,6 @@ import javax.swing.JProgressBar;
 import javax.swing.Timer;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.TaskMonitor;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
@@ -23,8 +20,7 @@ import org.netbeans.lib.awtextra.AbsoluteLayout;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.util.ApplicationSettings;
 
-public class StatusPanel extends JPanel {
-	private static final long serialVersionUID = 1L;
+public class StatusPanel extends ComponentDecorator<JPanel> {
 	
 	private int busyIconIndex = 0;
 	private final Icon[] busyIcons = new Icon[15];
@@ -36,13 +32,10 @@ public class StatusPanel extends JPanel {
 	private final JLabel statusAnimationLabel;
 	private JLabel statusMessageLabel;
 	
-	private final static Logger logger = Logger.getLogger(StatusPanel.class);
-
 	private TaskMonitor taskMonitor;
 
 	public StatusPanel() {
-		super(new AbsoluteLayout());
-		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(StatusPanel.class);
+		super(new JPanel(new AbsoluteLayout()));
 		statusMessageLabel = new JLabel();
 		statusMessageLabel.setFont(ApplicationSettings.MAIN_FONT);
 		statusAnimationLabel = new JLabel();
@@ -57,17 +50,18 @@ public class StatusPanel extends JPanel {
 		add(progressBar, new AbsoluteConstraints(440, 5, 140, 20));
 	
 		
-		final int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
+		final int messageTimeout = getResourceMap().getInteger("StatusBar.messageTimeout");
 		messageTimer = new Timer(messageTimeout, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				statusMessageLabel.setText("");
 			}
 		});
 		messageTimer.setRepeats(false);
-		final int busyAnimationRate = resourceMap.getInteger("StatusBar.busyAnimationRate");
+		final int busyAnimationRate = getResourceMap().getInteger("StatusBar.busyAnimationRate");
 
-		for (int i = 0; i < busyIcons.length; i++)
-			busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
+		for (int i = 0; i < busyIcons.length; i++) {
+			busyIcons[i] = getResourceMap().getIcon("StatusBar.busyIcons[" + i + "]");
+		}
 
 		busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -75,9 +69,8 @@ public class StatusPanel extends JPanel {
 				statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
 			}
 		});
-		idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
+		idleIcon = getResourceMap().getIcon("StatusBar.idleIcon");
 		statusAnimationLabel.setIcon(idleIcon);
-//		progressBar.setVisible(false);
 		
 		// connecting action tasks to status bar via TaskMonitor
 		taskMonitor = new TaskMonitor(RunwalkVideoApp.getApplication().getContext());
@@ -90,14 +83,11 @@ public class StatusPanel extends JPanel {
 						busyIconIndex = 0;
 						busyIconTimer.start();
 					}
-//					progressBar.setVisible(true);
 					progressBar.setIndeterminate(true);
-//					progressBar.setValue(0);
 				}
 				else if ("done".equals(propertyName)) {
 					busyIconTimer.stop();
 					statusAnimationLabel.setIcon(idleIcon);
-//					progressBar.setVisible(false);
 					progressBar.setIndeterminate(false);
 					progressBar.setValue(0);
 				}
@@ -108,12 +98,10 @@ public class StatusPanel extends JPanel {
 				}
 				else if ("errorMessage".equals(propertyName)) {
 					final String text = (String) evt.getNewValue();
-					RunwalkVideoApp.getApplication().showError(text == null ? "" : text);
-//					messageTimer.restart();
+					showErrorMessage(text == null ? "" : text);
 				}
 				else if ("progress".equals(propertyName)) {
 					final int value = (Integer) evt.getNewValue();
-//					progressBar.setVisible(true);
 					progressBar.setIndeterminate(false);
 					progressBar.setValue(value);
 				}
@@ -128,12 +116,12 @@ public class StatusPanel extends JPanel {
 	}
 	
 	public void showMessage(String msg) {
-		logger.log(Level.INFO, msg);
+		getLogger().log(Level.INFO, msg);
 		showMessage(Color.black, msg);
 	}
 	
 	public void showErrorMessage(String error) {
-		logger.log(Level.ERROR, error);
+		getLogger().log(Level.ERROR, error);
 		showMessage(Color.red, error);
 	}
 	

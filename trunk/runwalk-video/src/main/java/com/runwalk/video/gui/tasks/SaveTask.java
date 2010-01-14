@@ -7,53 +7,52 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.SerializableEntity;
 
-public class SaveTask extends AbstractTask<Void, Void> {
+public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List<T>, Void> {
+	
+	private List<T> itemList;
 
-	public SaveTask() {
+	public SaveTask(List<T> itemList) {
 		super("save");
+		this.itemList = itemList;
 	}
 
-	@Override protected Void doInBackground() {
+	@Override 
+	protected List<T> doInBackground() {
 		message("startMessage");
-		int numberOfClients = RunwalkVideoApp.getApplication().getClientTableModel().getItemCount();
+		int listSize = itemList.size();
+		List<T> newList = new ArrayList<T>(listSize);
 		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
 		EntityTransaction tx = null;
 		try {
 			tx = em.getTransaction();
 			tx.begin();
-			List<Client> newList = new ArrayList<Client>(numberOfClients);
-			for(int i = 0; i < numberOfClients; i ++) {
-				Client client = RunwalkVideoApp.getApplication().getClientTableModel().getItem(i);
-				Client mergedClient = em.merge(client);
-				if (mergedClient == null) {
+			for(int i = 0; i < listSize; i ++) {
+				T item = itemList.get(i);
+				T mergedItem = em.merge(item);
+				if (mergedItem == null) {
 					newList = null;
-					setProgress(numberOfClients, 0, numberOfClients);
+					setProgress(listSize, 0, listSize);
 					break;
 				}
-				newList.add(mergedClient);
-				setProgress(i, 0, numberOfClients);
+				newList.add(mergedItem);
+				setProgress(i, 0, listSize);
 			}
 			tx.commit();
-			if (newList != null) {
-				RunwalkVideoApp.getApplication().getClientTableModel().setItemList(newList);
-			}
 		} catch(Exception e) {
-			logger.error("Exception thrown while saving item list.", e);
+			getLogger().error("Exception thrown while saving item list.", e);
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
 		} finally {
 			em.close();
 		}
-		
-		return null;
+		return newList;
 	}
 	
-	@Override protected void finished() {
-		RunwalkVideoApp.getApplication().getAnalysisTableModel().update();
-		RunwalkVideoApp.getApplication().setSaveNeeded(false);
+	@Override 
+	protected void finished() {
 		message("endMessage");
 	}
 }

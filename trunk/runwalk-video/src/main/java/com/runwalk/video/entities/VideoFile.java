@@ -36,7 +36,7 @@ public abstract class VideoFile extends File {
 			canRead = canRead && getDuration() != 0;
 		} catch(DSJException e) {
 			String hresultToHexString = DSJException.hresultToHexString(e.getErrorCode());
-			Logger.getLogger(getClass()).error("Failed to read meta info from " + getClass().getSimpleName() +  " with name " + getName() + " (hex error code: " + hresultToHexString + ")", e);
+			Logger.getLogger(getClass()).error("Failed to read meta info from " + getClass().getSimpleName() +  " with name " + getName() + " (hex code: 0x" + hresultToHexString + ")", e);
 			canRead = false;
 		}
 		return canRead;

@@ -7,7 +7,9 @@ import org.jdesktop.application.Task;
 import com.runwalk.video.RunwalkVideoApp;
 
 public abstract class AbstractTask<T, V> extends Task<T, V> {
-	protected final Logger logger;
+	private static final String ERROR_MESSAGE = "errorMessage";
+	
+	private final Logger logger;
 	
 	@SuppressWarnings("deprecation")
 	public AbstractTask(String name) {
@@ -18,7 +20,7 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
     protected void errorMessage(String formatResourceKey, Object... args) { 
     	ResourceMap resourceMap = getResourceMap();
     	if (resourceMap != null) {
-    		firePropertyChange("errorMessage", getMessage(), getResourceString(formatResourceKey, args));
+    		firePropertyChange(ERROR_MESSAGE, getMessage(), getResourceString(formatResourceKey, args));
     	}
     }
 
@@ -34,6 +36,10 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
     		result = getResourceMap().getString(resourceName(string), args);
     	}
     	return result;
+	}
+
+	protected Logger getLogger() {
+		return logger;
 	}
 	
 }

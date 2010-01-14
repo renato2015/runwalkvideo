@@ -1,4 +1,6 @@
-package com.runwalk.video.gui.actions;
+package com.runwalk.video.entities;
+
+import com.runwalk.video.util.ResourceInjector;
 
 
 public enum RecordingStatus {
@@ -54,7 +56,7 @@ public enum RecordingStatus {
 	}
 	
 	public String getDescription() {
-		return ResourceInjector.injectResources(resourceKey, TableActions.class);
+		return ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
 	}
 	
 	public boolean isErroneous() {

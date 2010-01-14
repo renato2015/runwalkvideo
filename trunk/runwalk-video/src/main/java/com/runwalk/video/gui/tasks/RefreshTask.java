@@ -1,32 +1,30 @@
 package com.runwalk.video.gui.tasks;
 
-import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.gui.AbstractTablePanel;
 
-public class RefreshTask extends AbstractTask<Void, Void> {
+public class RefreshTask extends AbstractTask<Boolean, Void> {
 
-		public RefreshTask() {
+		private AbstractTablePanel<?> tablePanel;
+		
+		public RefreshTask(AbstractTablePanel<?> panel) {
 			super("refresh");
+			this.tablePanel = panel;
 		}
 
-		@Override protected Void doInBackground() {
+		@Override 
+		protected Boolean doInBackground() {
+			boolean success = true;
 			try {
-				setProgress(0, 0, 3);
 				message("startMessage");
-				RunwalkVideoApp.getApplication().getClientTableModel().update();
-				setProgress(1, 0, 3);
-				RunwalkVideoApp.getApplication().getAnalysisTableModel().update();
-				setProgress(2, 0, 3);
-				RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().update();
-				setProgress(3, 0, 3);
+				setProgress(0, 0, 1);
 				message("fetchMessage");
-			} 
-			catch(Exception ignore) {
+				tablePanel.update();
+				setProgress(1, 0, 1);
+				message("endMessage");
+			} catch(Exception ignore) {
 				errorMessage(ignore.getLocalizedMessage());
+				success = false;
 			}
-			return null;
-		}
-		@Override protected void finished() {
-			message("endMessage");
-			RunwalkVideoApp.getApplication().setSaveNeeded(false);
+			return success;
 		}
 	}

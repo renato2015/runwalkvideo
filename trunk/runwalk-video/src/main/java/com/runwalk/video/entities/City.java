@@ -7,15 +7,21 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(schema="testdb", name = "city")
-public class City implements Serializable {
-    @Transient
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+@NamedQueries(value={
+		@NamedQuery(name="findByZipCode", query="SELECT DISTINCT c from City c WHERE c.code = :zipCode ORDER BY c.code ASC"),
+		@NamedQuery(name="findByName", query="SELECT DISTINCT c from City c WHERE c.name = :name ORDER BY c.code ASC"),
+		@NamedQuery(name="findAllCities", query="SELECT DISTINCT c from City c ORDER BY c.code ASC")
+})
+public class City extends SerializableEntity<City> {
+	
 	@Id
 	@Column(name="id")
 	private Long id;
@@ -65,19 +71,18 @@ public class City implements Serializable {
 	@Override
 	public boolean equals(Object obj) {
 		boolean result = false;
-		if (obj != null && getClass().equals(obj.getClass())) {
-			City city = (City) obj;
-			result = city.getCode() == this.getCode() && city.getName().equals(getName());
+		if (obj != null && getClass() == obj.getClass()) {
+			City other = (City) obj;
+			result = getCode() != null ? getCode().equals(other.getCode()) : other.getCode() == null;
+			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
+	@Override
+	public int compareTo(City arg0) {
+		return this.equals(arg0) ? 0 : getCode().compareTo(arg0.getCode());
+	}
 	
 }

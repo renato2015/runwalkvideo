@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(schema="testdb", name="keyframes")
 public class Keyframe extends SerializableEntity<Keyframe> {
 	@Id
@@ -23,8 +24,6 @@ public class Keyframe extends SerializableEntity<Keyframe> {
 
 	@Column(name="position")
 	private int position;
-
-	private static final long serialVersionUID = 1L;
 
 	protected Keyframe() { }
 

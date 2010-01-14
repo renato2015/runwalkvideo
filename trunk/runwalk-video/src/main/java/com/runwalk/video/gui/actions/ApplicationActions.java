@@ -3,7 +3,6 @@ package com.runwalk.video.gui.actions;
 import java.awt.Toolkit;
 import java.io.File;
 
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -15,18 +14,15 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.RunwalkVideoAboutBox;
-import com.runwalk.video.gui.tasks.RefreshTask;
-import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.util.ApplicationSettings;
 
 public class ApplicationActions extends AbstractBean {
+	private static final String REDO_ENABLED = "redoEnabled";
+	private static final String UNDO_ENABLED = "undoEnabled";
 	private UndoManager undo = new UndoManager();
-	private JDialog aboutBox;
 	private boolean undoEnabled;
 	private boolean redoEnabled;
-	private boolean saveNeeded = false;
 
 	private class MyUndoableEditListener implements UndoableEditListener {
 		public void undoableEditHappened(UndoableEditEvent e) {
@@ -45,7 +41,7 @@ public class ApplicationActions extends AbstractBean {
 		setUndoEnabled(undo.canUndo());
 	}
 
-	@Action(enabledProperty="undoEnabled")
+	@Action(enabledProperty=UNDO_ENABLED)
 	public void undo() {
 		try {
 			undo.undo();
@@ -56,7 +52,7 @@ public class ApplicationActions extends AbstractBean {
 		updateUndoActions();
 	}
 
-	@Action(enabledProperty="redoEnabled")
+	@Action(enabledProperty=REDO_ENABLED)
 	public void redo() {
 		try {
 			undo.redo();
@@ -81,12 +77,12 @@ public class ApplicationActions extends AbstractBean {
 
 	public void setUndoEnabled(boolean undoEnabled) {
 		this.undoEnabled = undoEnabled;
-		this.firePropertyChange("undoEnabled", !isUndoEnabled(), isUndoEnabled());
+		this.firePropertyChange(UNDO_ENABLED, !isUndoEnabled(), isUndoEnabled());
 	}
 
 	public void setRedoEnabled(boolean redoEnabled) {
 		this.redoEnabled = redoEnabled;
-		this.firePropertyChange("redoEnabled", !isRedoEnabled(), isRedoEnabled());
+		this.firePropertyChange(REDO_ENABLED, !isRedoEnabled(), isRedoEnabled());
 	}
 
 	@Action
@@ -94,15 +90,6 @@ public class ApplicationActions extends AbstractBean {
 		RunwalkVideoApp.getApplication().exit();
 	}
 
-	@Action
-	public void about() {
-		if (aboutBox == null) {
-			aboutBox = new RunwalkVideoAboutBox(RunwalkVideoApp.getApplication().getMainFrame());
-		}
-		aboutBox.setLocationRelativeTo(RunwalkVideoApp.getApplication().getMainFrame());
-		RunwalkVideoApp.getApplication().show(aboutBox);
-	}
-	
 	@Action
 	public void selectVideoDir() {
 		File chosenDir = ApplicationSettings.getInstance().getVideoDir();
@@ -112,25 +99,6 @@ public class ApplicationActions extends AbstractBean {
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	ApplicationSettings.getInstance().setVideoDir(chooser.getSelectedFile());
 	    }
-	}
-	
-	@Action(enabledProperty="saveNeeded")
-	public Task<Void, Void> save() {
-		return new SaveTask();
-	}
-
-	public boolean isSaveNeeded() {
-		return saveNeeded;
-	}
-
-	public void setSaveNeeded(boolean saveNeeded) {
-		this.saveNeeded = saveNeeded;
-		this.firePropertyChange("saveNeeded", !isSaveNeeded(), isSaveNeeded());
-	}
-
-	@Action(block=Task.BlockingScope.ACTION)
-	public Task<Void, Void> refresh() {
-		return new RefreshTask();
 	}
 	
 	@Action

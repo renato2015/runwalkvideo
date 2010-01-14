@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -13,43 +14,121 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.observablecollections.ObservableCollections;
+import org.jdesktop.swingbinding.JTableBinding;
+
+import com.runwalk.video.entities.Analysis;
+import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.ApplicationSettings;
 
-public abstract class AbstractTablePanel extends JPanel {
+public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends ComponentDecorator<JPanel> {
 
-	private static final long serialVersionUID = 1L;
+	private static final String SELECTED_ITEM = "selectedItem";
+	protected static final String ROW_SELECTED = "rowSelected";
 	private JTable table;
 	private JButton firstButton, secondButton;
-
-	public  AbstractTablePanel(AbstractTableModel<?> model, LayoutManager mgr) {
-		super(mgr);
-		table = new JTable(model);
+	private Boolean rowSelected = false;
+	private List<T> itemList;
+	private T selectedItem;
+	protected JTableBinding<Analysis, ?, JTable> jTableSelectionBinding;
+	//	private JTableBinding<Analysis, List<Analysis>, JTable> jTableSelectionBinding;
+	
+	public  AbstractTablePanel(LayoutManager mgr) {
+		super(new JPanel(mgr));
+		table = new JTable();
 		getTable().getTableHeader().setFont(ApplicationSettings.MAIN_FONT);
 		getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		getTable().setShowGrid(false);
 		getTable().setAutoCreateRowSorter(true);
+		getTable().setUpdateSelectionOnSort(false);
 		getTable().setFont(ApplicationSettings.MAIN_FONT);
+		
+		//selectedItem binding
+		BindingGroup bindingGroup = new BindingGroup();
+		BeanProperty<JTable, T> selectedElement = BeanProperty.create("selectedElement");
+		BeanProperty<AbstractTablePanel<T>, T> localSelectedElement = BeanProperty.create(SELECTED_ITEM);
+		Binding<JTable, T, ? extends AbstractTablePanel<T>, T> selectedElementBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getTable(), 
+				selectedElement , this, localSelectedElement);
+		selectedElementBinding.setSourceNullValue(null);
+		selectedElementBinding.setSourceUnreadableValue(null);
+		bindingGroup.addBinding(selectedElementBinding);
+		
+		//rowSelected binding
+		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${selectedElement != null}");
+		BeanProperty<AbstractTablePanel<T>, Boolean> localIsSelected = BeanProperty.create(ROW_SELECTED);
+		Binding<JTable, Boolean, ? extends AbstractTablePanel<T>, Boolean> rowSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getTable(), 
+				isSelected , this, localIsSelected);
+		rowSelectedBinding.setSourceNullValue(false);
+		rowSelectedBinding.setSourceUnreadableValue(false);
+		bindingGroup.addBinding(rowSelectedBinding);
+		bindingGroup.bind();
 	}
 	
-	public AbstractTablePanel(AbstractTableModel<?> model) {
-		this(model, null);
+	public AbstractTablePanel() {
+		this(null);
 	}
 	
-	protected AbstractTableModel<?> getGenericTableModel() {
-		return (AbstractTableModel<?>) getTable().getModel();
+	@Action
+	public abstract void update();
+	
+	/**
+	 * This calls the implementation of the {@link #update()} method in a created {@link Task}.
+	 * @return the created task
+	 */
+	@Action(block=Task.BlockingScope.ACTION)
+	public Task<Boolean, Void> refresh() {
+		return new RefreshTask(this);
 	}
 
 	public boolean isRowSelected() {
-		return getTable().getSelectedRow() != -1;
+//		return getTable().getSelectedRow() != -1;
+		return this.rowSelected;
 	}
-
+	
+	public void setRowSelected(boolean rowSelected) {
+		this.firePropertyChange(ROW_SELECTED, this.rowSelected, this.rowSelected = rowSelected);
+	}
+	
+	/**
+	 * Verwijder het huidig geselecteerde item.
+	 */
+	public void clearItemSelection() {
+		getTable().clearSelection();
+	}
+	
+	public void setSelectedItem(T selectedItem) {
+		this.firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
+	}
+	
+	public T getSelectedItem() {
+		return selectedItem;
+	}
+	
 	public JTable getTable() {
 		return table;
 	}
+	
+	protected void refreshTableBindings() {
+		if (jTableSelectionBinding != null) {
+			jTableSelectionBinding.refreshAndNotify();
+		}
+	}
 
 	public void makeRowVisible(int row) {
-		getTable().setRowSelectionInterval(row, row);
-		getTable().scrollRectToVisible(getTable().getCellRect(row, 0, true));
+		if (row != -1) {
+			getTable().setRowSelectionInterval(row, row);
+			getTable().scrollRectToVisible(getTable().getCellRect(row, 0, true));
+		}
 	}
 
 	public JButton getFirstButton() {
@@ -66,6 +145,30 @@ public abstract class AbstractTablePanel extends JPanel {
 
 	public void setSecondButton(JButton newButton) {
 		this.secondButton = newButton;
+	}
+	
+	/**
+	 * TODO dit kan efficienter!!
+	 * 
+	 * er zijn blijkbaar issues als je de referentie naar de gebruikte list veranderd.. 
+	 * de JTable lijkt daar niet goed op te reageren
+	 * @param newList
+	 */
+	public void setItemList(List<T> itemList) {
+		if (this.itemList != null) {
+			this.itemList.retainAll(itemList);
+			if (!this.itemList.containsAll(itemList)) {
+				itemList.removeAll(this.itemList);
+				this.itemList.addAll(this.itemList);
+			}
+		} else {
+			this.itemList = ObservableCollections.observableList(itemList);
+		}
+		this.firePropertyChange("itemList", this.itemList, this.itemList);
+	}
+	
+	public List<T> getItemList() {
+		return itemList;
 	}
 	
 	protected class CustomJTableRenderer implements TableCellRenderer {

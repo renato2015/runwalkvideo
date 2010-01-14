@@ -9,12 +9,13 @@ import javax.swing.JOptionPane;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.entities.VideoFile;
-import com.runwalk.video.gui.actions.RecordingStatus;
 import com.runwalk.video.util.ApplicationUtil;
 
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
+import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
@@ -26,63 +27,86 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private boolean finished = false;
 	private DSMovie graph;
 	private Recording recording;
+	private List<Recording> recordings;
+	private DSFilterInfo transcoder;
 
-	public CompressTask() {
+	public CompressTask(List<Recording> recordings, DSFilterInfo transcoder) {
 		super("compress");
+		this.transcoder = transcoder;
+		this.recordings = recordings;
 		setUserCanCancel(true);
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		switch(DSJUtils.getEventType(evt)) {
 		case DSMovie.EXPORT_DONE : {
-			logger.debug("Export completed.."); 
+			getLogger().debug("Export completed.."); 
 			finished = true;
 			break;
 		} case DSMovie.EXPORT_PROGRESS : {
 			progress = DSJUtils.getEventValue_int(evt);
 			int totalProgress = conversionCounter * part + (progress / conversionCount);
-			logger.debug("progress:" + progress + " total progress: " + totalProgress); 
+			getLogger().debug("progress:" + progress + " total progress: " + totalProgress); 
 			setProgress(totalProgress);
 			break;
 		} case DSMovie.EXPORT_STARTED: {
-			logger.debug("Export started");
+			getLogger().debug("Export started");
 			finished = false;
 			break;
 		}
 		}
 	}
-
+	
 	@Override
 	protected Boolean doInBackground() {
 		message(getResourceString("startMessage"));
-		List<Recording> conversionList = RunwalkVideoApp.getApplication().getAnalysisOverviewTableModel().getUncompressedRecordings();
-		conversionCount = conversionList.size();
+		conversionCount = recordings.size();
 		part = 100 / conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
-			recording = conversionList.get(conversionCounter);
+			recording = recordings.get(conversionCounter);
 			RecordingStatus statusCode = recording.getRecordingStatus();
 			VideoFile sourceFile = recording.getUncompressedVideoFile();
 			VideoFile newFile = recording.getCompressedVideoFile();
 			try {
 				recording.setRecordingStatus(RecordingStatus.READY);
-				graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.RENDER_NATIVE, this);
-				DSFilterInfo filterInfo = RunwalkVideoApp.getApplication().getPlayerEngine().getTranscoder();
+				int loadResult = 0;
+				if (graph == null) {
+					graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.JAVA_POLL /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/, this);
+				} else {
+					try {
+						loadResult = graph.loadFile(sourceFile.getAbsolutePath(), 0);
+					} catch(DSJException exc) {
+						getLogger().debug("Rebuilding graph for file " + sourceFile.getName());
+						ApplicationUtil.disposeDSGraph(graph);
+						graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.JAVA_POLL /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/, this);
+					}
+				}
 				setProgress(conversionCounter * part);
 				message("progressMessage",  conversionCounter + 1, conversionCount);
-				graph.export(newFile.getAbsolutePath(), filterInfo, DSFilterInfo.doNotRender());
+				int result = graph.export(newFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
+				if (result < 0 || loadResult < 0) {
+					//reconnect failed.. exception will be thrown here in future versions..
+					getLogger().error("graph reconnect failed!");
+					errorCount++;
+					finished = true;
+				}
 				recording.setRecordingStatus(RecordingStatus.COMPRESSING);
 				while(!finished) {
 					Thread.yield();
 				}
-				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+				statusCode = RecordingStatus.COMPRESSED;
 			} catch(Throwable thr) {
 				finished = true;
-				recording.setRecordingStatus(RecordingStatus.DSJ_ERROR);
-				logger.error(statusCode.getDescription() + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
+				statusCode = RecordingStatus.DSJ_ERROR;
+				getLogger().error(statusCode.getDescription() + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
-				ApplicationUtil.disposeDSGraph(graph);
+				graph.stop();
+				recording.setRecordingStatus(statusCode);
 			}
+		}
+		if (graph != null) {
+			ApplicationUtil.disposeDSGraph(graph);
 		}
 		return (errorCount == 0);
 	}
@@ -99,15 +123,13 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				recording.getCompressedVideoFile().delete();
 			}
 			recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-			RunwalkVideoApp.getApplication().setSaveNeeded(true);
 		}
 	}
 
 	@Override
 	protected void finished() {
 		try {
-			RunwalkVideoApp.getApplication().setSaveNeeded(true);
-			message("endMessage"); //$NON-NLS-1$
+			message("endMessage"); 
 			String dlogMessage = getResourceString("finishedMessage", conversionCount);
 			String dlogTitle = getResourceString("endMessage");
 			if (get()) {
@@ -117,13 +139,13 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),dlogMessage + 
 						getResourceString("errorMessage", errorCount), dlogTitle, JOptionPane.WARNING_MESSAGE); 					
 			}
-			RunwalkVideoApp.getApplication().getTableActions().setCleanupEnabled(true);
 		} catch (Exception e) {
-			errorMessage("endErrorMessage", errorCount); //$NON-NLS-1$
-			RunwalkVideoApp.getApplication().getTableActions().setCompressionEnabled(true);
+			errorMessage("endErrorMessage", errorCount);
 		} finally {
-			String syncMsg = getResourceString("lastSyncMessage", ApplicationUtil.formatDate(new Date(), ApplicationUtil.DATE_FORMAT)); 
-			RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setStatusMessage(syncMsg);
+			String syncMsg = getResourceString("lastSyncMessage", ApplicationUtil.formatDate(new Date(), ApplicationUtil.DATE_FORMATTER)); 
+			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
 		}
 	}
+	
+	
 }

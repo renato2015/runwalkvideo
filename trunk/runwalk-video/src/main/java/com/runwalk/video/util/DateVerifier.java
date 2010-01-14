@@ -18,7 +18,7 @@ import javax.swing.JOptionPane;
             }
 
 
-            String failedVerificationMessage = "Date must be in the MMM DD, YYYY format. For example: Apr 17, 2008";
+            String failedVerificationMessage = "Date must be in the dd/mm/yyyy. For example: Apr 17, 2008";
             JOptionPane.showMessageDialog(null, //no owner frame
                                           failedVerificationMessage, 
                                           "Invalid Date Format", //title

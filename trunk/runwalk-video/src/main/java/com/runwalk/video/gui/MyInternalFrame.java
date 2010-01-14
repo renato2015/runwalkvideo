@@ -1,6 +1,7 @@
 package com.runwalk.video.gui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
@@ -11,16 +12,13 @@ import javax.swing.JInternalFrame;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
-import com.runwalk.video.util.ApplicationSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
  * An abstract class that can be ineherited to create an in application frame.
  * @author Jeroen Peelaerts
  */
-public class MyInternalFrame extends BaseInternalFrame {
-
-	private static final long serialVersionUID = 1L;
+public class MyInternalFrame extends ComponentDecorator<BaseInternalFrame> {
 
 	/**
 	 * Create a new JInternalFrame.
@@ -32,11 +30,22 @@ public class MyInternalFrame extends BaseInternalFrame {
 	}
 	
 	public MyInternalFrame(String title, boolean resizable) {
-		super(title, resizable, true);
-		setName(title);
-		setFont(ApplicationSettings.MAIN_FONT);
-		setDefaultCloseOperation(HIDE_ON_CLOSE);
-		setResizable(resizable);
+		super(new BaseInternalFrame(title, resizable, true));
+		getComponent().setName(title);
+		getComponent().setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
+		getComponent().setResizable(resizable);
+	}
+	
+	public void pack() {
+		getComponent().pack();
+	}
+	
+	public void setVisible(boolean visible) {
+		getComponent().setVisible(visible);
+	}
+	
+	public Container getContentPane() {
+		return getComponent().getContentPane();
 	}
 
 	public static class InternalFrameState extends WindowState {
