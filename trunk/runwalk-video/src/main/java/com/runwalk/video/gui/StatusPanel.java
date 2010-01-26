@@ -18,7 +18,7 @@ import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 public class StatusPanel extends ComponentDecorator<JPanel> {
 	
@@ -37,7 +37,7 @@ public class StatusPanel extends ComponentDecorator<JPanel> {
 	public StatusPanel() {
 		super(new JPanel(new AbsoluteLayout()));
 		statusMessageLabel = new JLabel();
-		statusMessageLabel.setFont(ApplicationSettings.MAIN_FONT);
+		statusMessageLabel.setFont(AppSettings.MAIN_FONT);
 		statusAnimationLabel = new JLabel();
 		progressBar = new JProgressBar();
 		// status bar initialization - message timeout, idle icon and busy

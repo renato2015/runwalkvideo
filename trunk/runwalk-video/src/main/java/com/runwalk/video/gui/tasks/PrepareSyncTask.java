@@ -11,7 +11,7 @@ import javax.persistence.Query;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 public class PrepareSyncTask extends AbstractTask<String, Void> {
 
@@ -24,7 +24,7 @@ public class PrepareSyncTask extends AbstractTask<String, Void> {
 
 		@Override 
 		protected String doInBackground() {
-			File cameraRoot  = ApplicationSettings.getInstance().getCameraDir();	
+			File cameraRoot  = AppSettings.getInstance().getCameraDir();	
 			if (cameraRoot.exists() && cameraRoot.isDirectory() && cameraRoot.canRead()) {
 				message("startMessage");
 

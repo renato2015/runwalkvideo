@@ -1,5 +1,6 @@
 package com.runwalk.video;
 
+import java.awt.Container;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
@@ -8,6 +9,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.swing.ActionMap;
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
@@ -23,14 +25,14 @@ import com.runwalk.video.gui.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.AnalysisTablePanel;
 import com.runwalk.video.gui.ClientInfoPanel;
 import com.runwalk.video.gui.ClientTablePanel;
-import com.runwalk.video.gui.MainInternalFrame;
+import com.runwalk.video.gui.ComponentDecorator;
+import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.MyInternalFrame;
 import com.runwalk.video.gui.StatusPanel;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
-import com.runwalk.video.gui.actions.SyncActions;
-import com.runwalk.video.gui.media.PlayerInternalFrame;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.gui.media.MediaControls;
+import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
@@ -48,8 +50,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private  AnalysisTablePanel analysisPanel;
 	private  AnalysisOverviewTablePanel overviewPanel;
 	private  ClientInfoPanel clientInfoPanel;
-	private PlayerInternalFrame playerInternalFrame;
-	private MainInternalFrame mainInternalFrame;
+	private MediaControls mediaControls;
+	private ClientMainView clientMainView;
 
 	private VideoMenuBar menuBar;
 
@@ -72,7 +74,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 * Main method launching the application.
 	 */
 	public static void main(String[] args) {
-		ApplicationSettings.configureLog4j();
+		AppSettings.configureLog4j();
 		/*if (System.getProperty( "javawebstart.version" ) == null) {
 			StringBuilder dllPathBuilder = new StringBuilder(System.getProperty("user.dir"));
 			if (args.length > 0) {
@@ -92,15 +94,15 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private void loadUIState() throws IOException {
 		getContext().getSessionStorage().putProperty(MyInternalFrame.class, new MyInternalFrame.InternalFrameProperty());
 		getContext().getSessionStorage().restore(getMainFrame(), "desktopPane.xml");
-		getContext().getSessionStorage().restore(getPlayerInternalFrame(), "controlFrame.xml");
-		getContext().getSessionStorage().restore(getMainInternalFrame(), "mainFrame.xml");
+		getContext().getSessionStorage().restore(getMediaControls().getComponent(), "controlFrame.xml");
+		getContext().getSessionStorage().restore(getClientMainView().getComponent(), "mainFrame.xml");
 	}
 
 	private void saveUIState() throws IOException {
 		getContext().getSessionStorage().save(getMainFrame(), "desktopPane.xml");
-		getContext().getSessionStorage().save(getMainInternalFrame(), "mainFrame.xml");
-		if (getPlayerInternalFrame() != null) {
-			getContext().getSessionStorage().save(getPlayerInternalFrame(), "controlFrame.xml");
+		getContext().getSessionStorage().save(getMainView().getComponent(), "mainFrame.xml");
+		if (getMediaControls() != null) {
+			getContext().getSessionStorage().save(getMediaControls().getComponent(), "controlFrame.xml");
 		}
 	}
 
@@ -109,7 +111,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 */
 	@Override 
 	protected void startup() {
-		ApplicationSettings.getInstance().loadSettings();
+		AppSettings.getInstance().loadSettings();
 		String puName = getContext().getResourceMap().getString("Application.persistenceUnitName");
 		emFactory = Persistence.createEntityManagerFactory(puName);
 		//the actions that the user can undertake?
@@ -124,9 +126,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 		menuBar = new VideoMenuBar();
 
-		playerInternalFrame = new PlayerInternalFrame();
-		playerInternalFrame.startCapturer();
-		mainInternalFrame = new MainInternalFrame();
+		mediaControls = new MediaControls();
+		mediaControls.startCapturer();
+		clientMainView = new ClientMainView();
 		
 		//add all internal frames from here!!!
 		getMainFrame().setJMenuBar(getMenuBar().getComponent());
@@ -135,8 +137,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		getMainFrame().add(pane);
 		
 		//add the window to the WINDOW menu
-		addInternalFrame(getPlayerInternalFrame());
-		addInternalFrame(getMainInternalFrame());
+		addComponent(getMediaControls());
+		addComponent(getClientMainView());
 
 		show(getMainFrame());
 
@@ -147,11 +149,15 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 	}
 	
-	public void addInternalFrame(BaseInternalFrame frame) {
-		frame.pack();
-		frame.setVisible(true);
-		getMenuBar().addWindow(frame);
-		pane.add(frame);
+	public void addComponent(ComponentDecorator<? extends Container> decorator) {
+		Container container = decorator.getComponent();
+		if (decorator.getComponent() instanceof JInternalFrame) {
+			JInternalFrame jInternalFrame = (JInternalFrame) container;
+			jInternalFrame.pack();
+			pane.add(jInternalFrame);
+		}
+		decorator.setVisible(true);
+		getMenuBar().addWindow(decorator);
 	}
 
 	@Override 
@@ -168,9 +174,16 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 		Task<Void, Void> uploadTask = getApplicationActions().uploadLogFiles();
 		uploadTask.execute();
-		ApplicationSettings.getInstance().saveSettings();
+		AppSettings.getInstance().saveSettings();
+		while (!uploadTask.isDone() || saveTask != null && !saveTask.isDone()) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				LOGGER.error(e);
+			}
+		}
 		try {
-			if (getPlayerPanel() != null) {
+			if (getMediaControls() != null) {
 				
 			}
 			saveUIState();
@@ -179,13 +192,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			LOGGER.error("Failed to save UI state", e);
 			System.exit(1);
 		}
-		while (!uploadTask.isDone() || saveTask != null && !saveTask.isDone()) {
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				LOGGER.error(e);
-			}
-		}
 	}
 
 	//Getters & Setters for the main objects in this program
@@ -193,13 +199,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public ApplicationActions getApplicationActions() {
 		return applicationActions;
 	}
-
-	public BaseInternalFrame getPlayerInternalFrame() {
-		return playerInternalFrame.getComponent();
-	}
 	
-	public BaseInternalFrame getMainInternalFrame() {
-		return mainInternalFrame.getComponent();
+	public ClientMainView getClientMainView() {
+		return clientMainView;
 	}
 
 	public VideoMenuBar getMenuBar() {
@@ -226,8 +228,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		return clientInfoPanel;
 	}
 
-	public PlayerInternalFrame getPlayerPanel() {
-		return playerInternalFrame;
+	public MediaControls getMediaControls() {
+		return mediaControls;
 	}
 
 	//some convenience methods

@@ -11,7 +11,7 @@ import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.entities.VideoFile;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
@@ -77,7 +77,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 						loadResult = graph.loadFile(sourceFile.getAbsolutePath(), 0);
 					} catch(DSJException exc) {
 						getLogger().debug("Rebuilding graph for file " + sourceFile.getName());
-						ApplicationUtil.disposeDSGraph(graph);
+						AppUtil.disposeDSGraph(graph);
 						graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.JAVA_POLL /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/, this);
 					}
 				}
@@ -106,7 +106,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			}
 		}
 		if (graph != null) {
-			ApplicationUtil.disposeDSGraph(graph);
+			AppUtil.disposeDSGraph(graph);
 		}
 		return (errorCount == 0);
 	}
@@ -116,7 +116,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		super.cancelled();
 		if (graph != null) {
 			graph.cancelExport();
-			ApplicationUtil.disposeDSGraph(graph);
+			AppUtil.disposeDSGraph(graph);
 		}
 		if (recording != null) {
 			if (recording.getCompressedVideoFile().exists()) {
@@ -142,7 +142,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		} catch (Exception e) {
 			errorMessage("endErrorMessage", errorCount);
 		} finally {
-			String syncMsg = getResourceString("lastSyncMessage", ApplicationUtil.formatDate(new Date(), ApplicationUtil.DATE_FORMATTER)); 
+			String syncMsg = getResourceString("lastSyncMessage", AppUtil.formatDate(new Date(), AppUtil.DATE_FORMATTER)); 
 			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
 		}
 	}

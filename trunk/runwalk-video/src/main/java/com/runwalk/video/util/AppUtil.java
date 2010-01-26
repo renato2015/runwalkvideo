@@ -8,17 +8,21 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.entities.SerializableEntity;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJUtils;
 
-public class ApplicationUtil {
+public class AppUtil {
 	//duration formats
 	public static final SimpleDateFormat DURATION_FORMATTER = new SimpleDateFormat("mm:ss");
 	public static final SimpleDateFormat EXTENDED_DURATION_FORMATTER = new SimpleDateFormat("mm:ss.SSS");
@@ -27,12 +31,12 @@ public class ApplicationUtil {
 	public static final SimpleDateFormat EXTENDED_DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH'h'mm'm'ss");
 
-	private ApplicationUtil() {
+	private AppUtil() {
 
 	}
 
 	public static File getCompressedVideoFile(String fileName) {
-		File file = new File(ApplicationSettings.getInstance().getVideoDir(), fileName);
+		File file = new File(AppSettings.getInstance().getVideoDir(), fileName);
 		return file.exists() ? file : null;
 	}
 
@@ -134,6 +138,45 @@ public class ApplicationUtil {
 				fullscreenFrame.dispose();
 			}
 			graph.dispose();
+		}
+	}
+
+	public static <T> void persistEntity(SerializableEntity<T> item) {
+		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
+		EntityTransaction tx = null;
+		try {
+			tx = em.getTransaction();
+			tx.begin();
+			em.persist(item);
+			tx.commit();
+			Logger.getLogger(AppUtil.class).debug(item.getClass().getSimpleName() + " with ID " + item.getId() + " was persisted.");
+		} catch(Exception e) {
+			Logger.getLogger(AppUtil.class).error("Exception thrown while persisting entity." , e);
+			if (tx != null && tx.isActive()) {
+				tx.rollback();
+			}
+		} finally {
+			em.close();
+		}
+	}
+
+	public static <T> void deleteEntity(SerializableEntity<T> detachedItem) {
+		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
+		EntityTransaction tx = null;
+		try {
+			tx = em.getTransaction();
+			tx.begin();
+			SerializableEntity<T> mergedItem = em.merge(detachedItem);
+			em.remove(mergedItem);
+			tx.commit();
+			Logger.getLogger(AppUtil.class).debug(detachedItem.getClass().getSimpleName() + " with ID " + detachedItem.getId() + " removed from persistence.");
+		} catch(Exception e) {
+			Logger.getLogger(AppUtil.class).error("Exception thrown while deleting entity.", e);
+			if (tx != null && tx.isActive()) {
+				tx.rollback();
+			}
+		} finally {
+			em.close();
 		}
 	}
 }

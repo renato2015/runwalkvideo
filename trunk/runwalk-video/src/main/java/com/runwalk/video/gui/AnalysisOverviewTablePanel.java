@@ -33,8 +33,8 @@ import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.tasks.CleanupRecordingsTask;
 import com.runwalk.video.gui.tasks.CompressTask;
-import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppUtil;
 
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
@@ -98,7 +98,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public String convertForward(Date arg0) {
-				return ApplicationUtil.formatDate(arg0, ApplicationUtil.EXTENDED_DATE_FORMATTER);
+				return AppUtil.formatDate(arg0, AppUtil.EXTENDED_DATE_FORMATTER);
 			}
 
 			@Override
@@ -129,7 +129,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public String convertForward(Long duration) {
-				return duration == null ? "<geen>" : ApplicationUtil.formatDate(new Date(duration), ApplicationUtil.DURATION_FORMATTER);
+				return duration == null ? "<geen>" : AppUtil.formatDate(new Date(duration), AppUtil.DURATION_FORMATTER);
 			}
 
 			@Override
@@ -189,13 +189,13 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		add(overviewScrollPane, new AbsoluteConstraints(10, 20, 550, 140));
 
 		JButton deleteDuplicateButton = new JButton(getAction("cleanup"));
-		deleteDuplicateButton.setFont(ApplicationSettings.MAIN_FONT);
+		deleteDuplicateButton.setFont(AppSettings.MAIN_FONT);
 		add(deleteDuplicateButton, new AbsoluteConstraints(235, 170, -1, -1));
 		setSecondButton(new JButton(getAction("compress")));
-		getSecondButton().setFont(ApplicationSettings.MAIN_FONT);
+		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton(), new AbsoluteConstraints(370, 170, -1, -1));
 		setFirstButton(new JButton(getAction("refresh")));
-		getFirstButton().setFont(ApplicationSettings.MAIN_FONT);
+		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		add(getFirstButton(), new AbsoluteConstraints(470, 170, -1, -1));
 
 	}
@@ -226,7 +226,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Action(enabledProperty=CLEANUP_ENABLED)
 	public Task<Boolean, Void> cleanup() {
-		final Task<Boolean, Void> cleanupTask = new CleanupRecordingsTask(ApplicationSettings.getInstance().getUncompressedVideoDir());
+		final Task<Boolean, Void> cleanupTask = new CleanupRecordingsTask(AppSettings.getInstance().getUncompressedVideoDir());
 		cleanupTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 			
 			@Override
@@ -242,7 +242,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
 
-		final CompressTask compressTask = new CompressTask(getUncompressedRecordings(), ApplicationSettings.getInstance().getSettings().getTranscoder());
+		final CompressTask compressTask = new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
 		compressTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 			
 			@Override

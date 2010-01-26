@@ -1,16 +1,11 @@
 package com.runwalk.video.entities;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @SuppressWarnings("serial")
 @Entity
@@ -80,7 +75,6 @@ public class City extends SerializableEntity<City> {
 		return result;
 	}
 
-	@Override
 	public int compareTo(City arg0) {
 		return this.equals(arg0) ? 0 : getCode().compareTo(arg0.getCode());
 	}

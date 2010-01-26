@@ -13,7 +13,7 @@ import org.jdesktop.application.Action;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
@@ -24,17 +24,15 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 
 	public static final String POSITION = "position";
 
-	private static final String ENABLE_CUSTOM_FRAMERATE = "enableCustomFramerate";
-
 	public static final String PLAYING = "playing";
 
-	private final static float[] PLAY_RATES = ApplicationSettings.PLAY_RATES;
+	private final static float[] PLAY_RATES = AppSettings.PLAY_RATES;
 
 	private boolean playing = false;
 
-	private int rateIndex = ApplicationSettings.getInstance().getSettings().getRateIndex();
+	private int playRateIndex = AppSettings.getInstance().getRateIndex();
 
-	private boolean enableFramerate = false;
+	private boolean customFramerateEnabled = false;
 
 	private float framerate;
 
@@ -47,7 +45,6 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		setTimer(new Timer(50, null));
 		getTimer().addActionListener(new ActionListener() {
 
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
 					if (getPosition() == 0) {
@@ -57,10 +54,10 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 				}
 			}
 		});
-		playFile(recording);
+		loadFile(recording);
 	}
 
-	public void playFile(Recording recording) {
+	public void loadFile(Recording recording) {
 		setRecording(recording);
 		String path = null;
 		try {
@@ -71,11 +68,11 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 				getFiltergraph().loadFile(path , 0);
 			}
 		} catch(DSJException e) {
-			JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
+			/*JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
 					"Er heeft zich een fout voorgedaan bij het openen van een filmpje.\n" +
 					"Probeer het gerust nog eens opnieuw.",
 					"Fout bij openen filmpje",
-					JOptionPane.ERROR_MESSAGE);
+					JOptionPane.ERROR_MESSAGE);*/
 			getLogger().error("Movie initialization failed.", e);
 			disposeFiltergraph();
 			initFiltergraph(path);
@@ -90,22 +87,22 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	private void initFiltergraph(String path) {
 		getLogger().debug("Movie path opened : " + path);
 		int flags = DSFiltergraph.D3D9 | DSMovie.INIT_PAUSED;
-		if (enableFramerate) {
+		if (customFramerateEnabled) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
 		setFiltergraph(new DSMovie(path, flags, getPropertyChangeListeners()[0]));
-		if (enableFramerate) {
+		if (customFramerateEnabled) {
 			getFiltergraph().setMasterFrameRate(framerate);
 		}
 		getFiltergraph().lockAspectRatio(true);
 		getFiltergraph().setRecueOnStop(true);
 	}
 
-	@Action(enabledProperty=ENABLE_CUSTOM_FRAMERATE)
-	public void setFrameRate() {
+	@Action
+	public void setCustomFramerate() {
 		try {
 			if (getFiltergraph() != null && getFiltergraph().getActive()) {
-				enableFramerate = true;
+				customFramerateEnabled = true;
 				String prefferredRate = JOptionPane.showInputDialog(RunwalkVideoApp.getApplication().getMainFrame(), 
 						"Geef een framerate in..", "Set framerate op capture device", JOptionPane.PLAIN_MESSAGE);
 				framerate = Float.parseFloat(prefferredRate);
@@ -130,7 +127,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		} else {
 			getTimer().restart();
 			getFiltergraph().play();
-			getFiltergraph().setRate(getRate());
+			getFiltergraph().setRate(getPlayRate());
 			setPlaying(true);
 		}
 		return isPlaying();
@@ -153,21 +150,16 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	}
 	
 	public void forward() {
-		if (isPlaying() && rateIndex < PLAY_RATES.length - 1) {
-			setRate(++rateIndex);
+		if (isPlaying() && playRateIndex < PLAY_RATES.length - 1) {
+			setPlayRateIndex(++playRateIndex);
 		} else if (!isPlaying()) {
 			togglePlay();
 		}
-		getFiltergraph().setRate(getRate());
 	}
 
 	public void backward() {
-		if (rateIndex > 0) {
-			setRate(--rateIndex);
-			if (isPlaying()) {
-				getFiltergraph().setRate(getRate());
-				ApplicationSettings.getInstance().getSettings().setRateIndex(rateIndex);
-			}
+		if (playRateIndex > 0) {
+			setPlayRateIndex(--playRateIndex);
 		} else {
 			pause();
 		}
@@ -235,16 +227,17 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		getFiltergraph().setVolume( getFiltergraph().getVolume() / 1.25f);
 	}
 
-	public float getRate() {
-		return PLAY_RATES[rateIndex];
+	public float getPlayRate() {
+		return PLAY_RATES[playRateIndex];
 	}
 
-	public void setRate(int rate) {
-		this.rateIndex = rate;
-		getFiltergraph().setRate(getRate());
+	private void setPlayRateIndex(int rate) {
+		this.playRateIndex = rate;
+		AppSettings.getInstance().setRateIndex(this.playRateIndex);
+		getFiltergraph().setRate(getPlayRate());
 	}
 
-	public void setPlaying(boolean playing) {
+	private void setPlaying(boolean playing) {
 		firePropertyChange(PLAYING, this.playing, this.playing = playing);
 	}
 

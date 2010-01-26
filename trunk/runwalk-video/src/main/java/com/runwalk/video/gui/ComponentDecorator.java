@@ -16,7 +16,7 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 public abstract class ComponentDecorator<T extends Container> extends AbstractBean {
 	/**
@@ -26,10 +26,14 @@ public abstract class ComponentDecorator<T extends Container> extends AbstractBe
 	
 	private ApplicationContext context;
 	
-	protected ComponentDecorator(T component) {
-		this.component = component;
-		getComponent().setFont(ApplicationSettings.MAIN_FONT);
+	protected ComponentDecorator() {
 		this.context = Application.getInstance().getContext();
+	}
+	
+	protected ComponentDecorator(T component) {
+		this();
+		this.component = component;
+		getComponent().setFont(AppSettings.MAIN_FONT);
 	}
 	
 	protected ComponentDecorator(T component, String name) {
@@ -37,13 +41,22 @@ public abstract class ComponentDecorator<T extends Container> extends AbstractBe
 		setName(name);
 		//ready to inject resources..
 	}
-	
+
 	public void add(Component comp, Object obj) {
+//		comp.setFont(ApplicationSettings.MAIN_FONT);
 		getComponent().add(comp, obj);
+	}
+	
+	public void add(Component comp) {
+		add(comp, null);
 	}
 	
 	public void setName(String name) {
 		getComponent().setName(name);
+	}
+	
+	public String getName() {
+		return getComponent().getName();
 	}
 	
 	public void setPreferredSize(Dimension dimension) {
@@ -54,8 +67,20 @@ public abstract class ComponentDecorator<T extends Container> extends AbstractBe
 		getComponent().setEnabled(enabled);
 	}
 	
+	public boolean isVisible() {
+		return getComponent().isVisible();
+	}
+	
 	public void setVisible(boolean visible) {
 		getComponent().setVisible(visible);
+	}
+	
+	public boolean isAncestorOf(Component component) {
+		return getComponent().isAncestorOf(component);
+	}
+	
+	public void remove(Component asComponent) {
+		getComponent().remove(asComponent);
 	}
 	
 	protected RunwalkVideoApp getApplication() {
@@ -72,6 +97,10 @@ public abstract class ComponentDecorator<T extends Container> extends AbstractBe
 	
 	protected ApplicationContext getContext() {
 		return context;
+	}
+	
+	protected void setComponent(T component) {
+		this.component = component;
 	}
 	
 	public T getComponent() {

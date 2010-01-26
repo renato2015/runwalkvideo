@@ -5,9 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -29,7 +26,7 @@ import com.runwalk.video.RunwalkVideoApp;
 import de.humatic.dsj.DSFilterInfo;
 
 @SuppressWarnings("serial")
-public class ApplicationSettings implements Serializable {
+public class AppSettings implements Serializable {
 
 	public final static float[] PLAY_RATES = new float[] {0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f};
 	
@@ -45,9 +42,7 @@ public class ApplicationSettings implements Serializable {
 	public final static String FILE_ENCODING = "UTF-8";
 	
 	private final static String FILE_APPENDER_NAME = "A1";
-	//FIXME logger is instantiated too early..
-	private static Logger logger;
-
+	
 	private final static String CAMERADIR_RESOURCENAME = "Application.cameraDir";
 
 	private final static String VIDEODIR_RESOURCENAME = "Application.videoDir";
@@ -56,7 +51,9 @@ public class ApplicationSettings implements Serializable {
 
 	private final static String TEMP_VIDEO_DIRNAME = "uncompressed";
 
-	private final static ApplicationSettings INSTANCE = new ApplicationSettings();
+	private static Logger logger;
+
+	private final static AppSettings INSTANCE = new AppSettings();
 
 	private File logFile;
 
@@ -64,11 +61,11 @@ public class ApplicationSettings implements Serializable {
 	
 	private Settings settings;
 	
-	private ApplicationSettings() {
+	private AppSettings() {
 		settings = new Settings();
 	}
 
-	public synchronized static ApplicationSettings getInstance() {
+	public synchronized static AppSettings getInstance() {
 		return INSTANCE;
 	}
 	
@@ -128,33 +125,33 @@ public class ApplicationSettings implements Serializable {
 	}
 
 	public void setVideoDir(File dir) {
-		settings.setVideoDir(dir.getAbsolutePath());
+		settings.videoDir = dir.getAbsolutePath();
 	}
 
 	public File getDirectory(String path, String resourceName) {
-		File dir = ApplicationUtil.parseDir(path);
+		File dir = AppUtil.parseDir(path);
 		if (path == null || dir == null) {
-			String defaultDir = ApplicationUtil.getString(this, resourceName);
-			dir = ApplicationUtil.parseDir(defaultDir);
+			String defaultDir = AppUtil.getString(this, resourceName);
+			dir = AppUtil.parseDir(defaultDir);
 			if (dir == null) {
 				dir = new File(System.getProperty("user.dir"));
 			}
-			settings.setVideoDir(dir.getAbsolutePath());
+			settings.videoDir = dir.getAbsolutePath();
 		}
 		return dir;
 	}
 
 	public File getCameraDir() {
-		return getDirectory(settings.getCameraDir(), CAMERADIR_RESOURCENAME);
+		return getDirectory(settings.cameraDir, CAMERADIR_RESOURCENAME);
 	}
 
 	public File getVideoDir() {
-		return getDirectory(settings.getVideoDir(), VIDEODIR_RESOURCENAME);
+		return getDirectory(settings.videoDir, VIDEODIR_RESOURCENAME);
 	}
 
 	public File getUncompressedVideoDir() {
 		File tempDir = new File(getVideoDir(), TEMP_VIDEO_DIRNAME);
-		if (!ApplicationUtil.parseDir(tempDir)) {
+		if (!AppUtil.parseDir(tempDir)) {
 			try {
 				boolean success = tempDir.mkdir();
 				if (success) {
@@ -180,12 +177,28 @@ public class ApplicationSettings implements Serializable {
 		PropertyConfigurator.configure(Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties"));
 		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
 		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
-		logger = Logger.getLogger(ApplicationSettings.class);
+		logger = Logger.getLogger(AppSettings.class);
 		logger.debug("Logging to file with location " +appndr.getFile());
 	}
 	
-	public Settings getSettings() {
-		return settings;
+	public float getSavedVolume() {
+		return settings.savedVolume;
+	}
+
+	public void setSavedVolume(float savedVolume) {
+		settings.savedVolume = savedVolume;
+	}
+	
+	public int getRateIndex() {
+		return settings.rateIndex;
+	}
+
+	public void setRateIndex(int rateIndex) {
+		settings.rateIndex = rateIndex;
+	}
+
+	public DSFilterInfo getTranscoder() {
+		return DSFilterInfo.filterInfoForName(settings.transcoderName);
 	}
 	
 	@XmlRootElement
@@ -196,44 +209,11 @@ public class ApplicationSettings implements Serializable {
 		@XmlElement
 		private int rateIndex = 3;
 		
+		@XmlElement
 		private float savedVolume;
-		//TODO hoe dit naar xml schrijven?
-		@XmlTransient
-		private DSFilterInfo transcoder = ApplicationSettings.VIDEO_ENCODERS[2];
-		
-		public float getSavedVolume() {
-			return savedVolume;
-		}
 
-		public void setSavedVolume(float savedVolume) {
-			this.savedVolume = savedVolume;
-		}
-
-		private String getVideoDir() {
-			return videoDir;
-		}
-		
-		private String getCameraDir() {
-			return cameraDir;
-		}
-
-		private void setVideoDir(String videoDir) {
-			this.videoDir = videoDir;
-		}
-		
-		@XmlTransient
-		public int getRateIndex() {
-			return rateIndex;
-		}
-
-		public void setRateIndex(int rateIndex) {
-			this.rateIndex = rateIndex;
-		}
-
-		@XmlTransient
-		public DSFilterInfo getTranscoder() {
-			return transcoder;
-		}
+		@XmlElement
+		private String transcoderName = AppSettings.VIDEO_ENCODERS[2].getName();
 		
 	}
 }

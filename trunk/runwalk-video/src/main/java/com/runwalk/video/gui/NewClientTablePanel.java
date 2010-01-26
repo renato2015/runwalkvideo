@@ -85,8 +85,8 @@ import com.runwalk.video.entities.Articles;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppUtil;
 
 /**
  *
@@ -205,7 +205,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		ObservableList<Articles> articleList = ObservableCollections.observableList(query.getResultList());
 
 		JComboBox shoes = new JComboBox();
-		shoes.setFont(ApplicationSettings.MAIN_FONT);
+		shoes.setFont(AppSettings.MAIN_FONT);
 		JComboBoxBinding<Articles, List<Articles>, JComboBox> cb = SwingBindings.createJComboBoxBinding(AutoBinding.UpdateStrategy.READ, articleList, shoes);
 		cb.bind();
 
@@ -221,7 +221,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 			@Override
 			public String convertForward(Long arg0) {
-				return arg0 == null ? "<geen>" : ApplicationUtil.formatDate(new Date(arg0), ApplicationUtil.DURATION_FORMATTER);
+				return arg0 == null ? "<geen>" : AppUtil.formatDate(new Date(arg0), AppUtil.DURATION_FORMATTER);
 			}
 
 			@Override
@@ -243,11 +243,11 @@ public class NewClientTablePanel extends AbstractTablePanel {
 			public JButton convertForward(final Recording recording) {
 				final JButton button = new JButton("open");
 				button.setEnabled(recording != null);
-				button.setFont(ApplicationSettings.MAIN_FONT);
+				button.setFont(AppSettings.MAIN_FONT);
 				button.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						if (button.isEnabled()) {
-							RunwalkVideoApp.getApplication().getPlayerPanel().playFile(recording);
+							RunwalkVideoApp.getApplication().getMediaControls().playFile(recording);
 						}
 					}
 				});

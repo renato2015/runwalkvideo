@@ -7,7 +7,7 @@ import javax.swing.JButton;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 public class OpenRecordingButton extends JButton {
@@ -16,11 +16,11 @@ public class OpenRecordingButton extends JButton {
 	public OpenRecordingButton(Recording recording) {
 		super("open");
 		this.recording = recording;
-		setFont(ApplicationSettings.MAIN_FONT);
+		setFont(AppSettings.MAIN_FONT);
 		addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (isEnabled()) {
-					RunwalkVideoApp.getApplication().getPlayerPanel().playFile(OpenRecordingButton.this.recording);
+					RunwalkVideoApp.getApplication().getMediaControls().playFile(OpenRecordingButton.this.recording);
 				}
 			}
 		});

@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.ClientHttpRequest;
 
 public class UploadLogFilesTask extends AbstractTask<Void, Void> {
@@ -17,7 +17,7 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
 	protected Void doInBackground() throws Exception {
         InputStream serverInput = ClientHttpRequest.post(
                 new java.net.URL(getResourceString("destfolder")), 
-                new Object[] {"logfile", ApplicationSettings.getInstance().getLogFile()
+                new Object[] {"logfile", AppSettings.getInstance().getLogFile()
                 	});
         BufferedReader reader = new BufferedReader(new InputStreamReader(serverInput));
         String line = null;
