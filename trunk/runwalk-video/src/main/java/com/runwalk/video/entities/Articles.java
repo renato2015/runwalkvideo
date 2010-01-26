@@ -9,6 +9,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(schema="testdb", name = "articles")
 public class Articles implements Serializable {
 	@Id
@@ -32,8 +33,6 @@ public class Articles implements Serializable {
 	
 	@Column(name="subcategory")
 	private int subcategory;
-
-	private static final long serialVersionUID = 1L;
 
 	public Articles() {
 		super();

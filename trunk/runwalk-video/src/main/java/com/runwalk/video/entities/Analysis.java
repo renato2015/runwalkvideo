@@ -17,7 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
@@ -75,11 +75,11 @@ public class Analysis extends SerializableEntity<Analysis> {
 	 * @return timestamp in a string
 	 */
 	public String getTimeStamp() {
-		return ApplicationUtil.formatDate(getCreationDate(), ApplicationUtil.EXTENDED_DATE_FORMATTER);
+		return AppUtil.formatDate(getCreationDate(), AppUtil.EXTENDED_DATE_FORMATTER);
 	}
 	
 	public Date getCreationDate() {
-		return ApplicationUtil.granularity(creationDate, Calendar.MILLISECOND);
+		return AppUtil.granularity(creationDate, Calendar.MILLISECOND);
 	}
 
 	public String getComments() {
@@ -141,7 +141,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	 * @return De fileName van het terug te vinden filmpje
 	 */
 	private String getRecordingFileName() {
-		String date = ApplicationUtil.formatDate(getCreationDate(), ApplicationUtil.DATE_FORMATTER);
+		String date = AppUtil.formatDate(getCreationDate(), AppUtil.DATE_FORMATTER);
 		int analysisCount = getClient().getAnalyses().size();
 		String prefix = analysisCount == 0 ? "" : analysisCount + "_";
 		return prefix + getClient().getName() + "_" + getClient().getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;

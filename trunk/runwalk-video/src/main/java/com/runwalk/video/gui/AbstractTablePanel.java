@@ -26,10 +26,9 @@ import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.swingbinding.JTableBinding;
 
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.gui.tasks.RefreshTask;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends ComponentDecorator<JPanel> {
 
@@ -46,12 +45,12 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public  AbstractTablePanel(LayoutManager mgr) {
 		super(new JPanel(mgr));
 		table = new JTable();
-		getTable().getTableHeader().setFont(ApplicationSettings.MAIN_FONT);
+		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
 		getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		getTable().setShowGrid(false);
 		getTable().setAutoCreateRowSorter(true);
 		getTable().setUpdateSelectionOnSort(false);
-		getTable().setFont(ApplicationSettings.MAIN_FONT);
+		getTable().setFont(AppSettings.MAIN_FONT);
 		
 		//selectedItem binding
 		BindingGroup bindingGroup = new BindingGroup();

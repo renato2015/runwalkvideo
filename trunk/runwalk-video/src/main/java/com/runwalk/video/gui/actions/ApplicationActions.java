@@ -15,7 +15,7 @@ import org.jdesktop.application.Task;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.util.AppSettings;
 
 public class ApplicationActions extends AbstractBean {
 	private static final String REDO_ENABLED = "redoEnabled";
@@ -92,12 +92,12 @@ public class ApplicationActions extends AbstractBean {
 
 	@Action
 	public void selectVideoDir() {
-		File chosenDir = ApplicationSettings.getInstance().getVideoDir();
+		File chosenDir = AppSettings.getInstance().getVideoDir();
 		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = chooser.showDialog(RunwalkVideoApp.getApplication().getMainFrame(), "Selecteer");
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    	ApplicationSettings.getInstance().setVideoDir(chooser.getSelectedFile());
+	    	AppSettings.getInstance().setVideoDir(chooser.getSelectedFile());
 	    }
 	}
 	

@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Arrays;
 
 import javax.swing.JOptionPane;
@@ -15,7 +14,8 @@ import org.jdesktop.application.Action;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.entities.VideoFile;
+import com.runwalk.video.util.AppSettings;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSFilterInfo;
@@ -30,7 +30,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 
 	public static final String CAPTURE_DEVICE = "captureDevice";
 
-	private static final DSFilterInfo[] VIDEO_ENCODERS = ApplicationSettings.VIDEO_ENCODERS;
+	private static final DSFilterInfo[] VIDEO_ENCODERS = AppSettings.VIDEO_ENCODERS;
 
 	private static DSFilterInfo[][] dsi;
 
@@ -126,7 +126,6 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 			cameraSelectionDialog = new CameraDialog(getApplication().getMainFrame());
 			cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
 
-				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
 					if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
 						if (!evt.getNewValue().equals(evt.getOldValue())) {
@@ -164,7 +163,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		getApplication().getStatusPanel().setIndeterminate(true);
 		timeStarted = System.currentTimeMillis();
 
-		File destFile = getRecording().getUncompressedVideoFile();
+		VideoFile destFile = getRecording().getUncompressedVideoFile();
 
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
 		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(),	DSFilterInfo.doNotRender(),	true);

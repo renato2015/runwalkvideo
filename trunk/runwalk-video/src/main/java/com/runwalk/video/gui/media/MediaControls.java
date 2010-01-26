@@ -34,7 +34,6 @@ import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
@@ -43,9 +42,9 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.MyInternalFrame;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppUtil;
 
-public class PlayerInternalFrame extends MyInternalFrame implements PropertyChangeListener {
+public class MediaControls extends MyInternalFrame implements PropertyChangeListener {
 	
 	public static final String STOP_ENABLED = "stopEnabled";
 
@@ -68,16 +67,16 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 
 	private AbstractButton playButton;
 	
-	public PlayerInternalFrame() {
+	public MediaControls() {
 		super("Media controls", false);
 
 		BindingGroup bindingGroup = new BindingGroup();
-		BeanProperty<PlayerInternalFrame, Boolean> controlsEnabled = BeanProperty.create("controlsEnabled");
-		ELProperty<PlayerInternalFrame, Boolean> controlsDisabled = ELProperty.create("${!controlsEnabled}");
+		BeanProperty<MediaControls, Boolean> controlsEnabled = BeanProperty.create("controlsEnabled");
+//		ELProperty<PlayerInternalFrame, Boolean> controlsDisabled = ELProperty.create("${!controlsEnabled}");
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 		
 		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${!selectedElement.recording.recorded}");
-		BeanProperty<PlayerInternalFrame, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
+		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getAnalysisTablePanel().getTable(), isSelected, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 			
@@ -91,27 +90,26 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 		enabledBinding.setSourceUnreadableValue(false);
 		enabledBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(enabledBinding);
-		bindingGroup.bind();
 		
 		buttonPanel = new JPanel();
 		buttonPanel.setPreferredSize(new Dimension(620,40));
 		buttonPanel.setLayout(new java.awt.FlowLayout());
 		
-		createJButton("previousSnapshot", controlsEnabled, bindingGroup); 
-		createJButton("slower", controlsEnabled, bindingGroup); 
-		createJButton("record", controlsEnabled, bindingGroup);
+		createJButton("previousSnapshot"); 
+		createJButton("slower"); 
+		createJButton("record");
 		
-		createJButton("stop", controlsEnabled, bindingGroup); 
-		playButton = createJToggleButton("play", controlsEnabled, "play.Action.pressedIcon", bindingGroup); 
-		createJButton("faster", controlsEnabled, bindingGroup); 
-		createJButton("nextSnapshot", controlsEnabled, bindingGroup); 
-		createJButton("makeSnapshot", controlsEnabled, bindingGroup); 
-		createJButton("decreaseVolume", controlsEnabled, bindingGroup); 
-		createJButton("increaseVolume", controlsEnabled, bindingGroup); 
-		createJToggleButton("mute", controlsEnabled, "mute.Action.pressedIcon", bindingGroup); 
-		createJButton("showCaptureSettings", controlsDisabled, bindingGroup); 
-		createJButton("showCameraSettings", controlsDisabled, bindingGroup); 
-		createJButton("fullScreen", controlsDisabled, bindingGroup); 
+		createJButton("stop"); 
+		playButton = createJToggleButton("play", "play.Action.pressedIcon"); 
+		createJButton("faster"); 
+		createJButton("nextSnapshot"); 
+		createJButton("makeSnapshot"); 
+		createJButton("decreaseVolume"); 
+		createJButton("increaseVolume"); 
+		createJToggleButton("mute", "mute.Action.pressedIcon"); 
+		createJButton("showCaptureSettings"); 
+		createJButton("showCameraSettings"); 
+		createJButton("fullScreen"); 
 		
 		setSlider(new JSlider(JSlider.HORIZONTAL, 0, 1000, 0));
 		getSlider().setPaintTicks(false);
@@ -121,6 +119,7 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 		BeanProperty<JSlider, Boolean> sliderEnabled = BeanProperty.create("enabled");
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, controlsEnabled, getSlider(), sliderEnabled);
 		bindingGroup.addBinding(enabledBinding);
+		bindingGroup.bind();
 		clearLabels();
 
 		// Listener for the scroll
@@ -147,24 +146,24 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 //		bindingGroup.bind();
 	}
 	
-	private AbstractButton createJToggleButton(String actionName, Property<PlayerInternalFrame, Boolean> sourceProperty, String iconResourceName, BindingGroup bindingGroup) {
-		AbstractButton button = createButton(actionName, sourceProperty, true, bindingGroup);
+	private AbstractButton createJToggleButton(String actionName, String iconResourceName) {
+		AbstractButton button = createButton(actionName, true);
 		button.setSelectedIcon(getResourceMap().getIcon(iconResourceName));
 		return button;
 	}
 	
-	private AbstractButton createJButton(String actionName, Property<PlayerInternalFrame, Boolean> sourceProperty, BindingGroup bindingGroup) {
-		return createButton(actionName, sourceProperty, false, bindingGroup);
+	private AbstractButton createJButton(String actionName) {
+		return createButton(actionName, false);
 	}
 	
-	private AbstractButton createButton(String actionName, Property<PlayerInternalFrame, Boolean> sourceProperty, boolean toggleButton, BindingGroup bindingGroup) {
+	private AbstractButton createButton(String actionName, boolean toggleButton) {
 		//TODO bindings zijn niet meer nodig.. acties nemen dit over.
-		BeanProperty<AbstractButton, Boolean> buttonEnabled = BeanProperty.create("enabled");
 		javax.swing.Action action = getAction(actionName);
 		AbstractButton button = toggleButton ? new JToggleButton(action) : new JButton(action);
 		button.setMargin(new Insets(0, 0, 0, 0));
-		Binding<?, Boolean, ?, Boolean> enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, sourceProperty, button, buttonEnabled);
-		bindingGroup.addBinding(enabledBinding);
+//		BeanProperty<AbstractButton, Boolean> buttonEnabled = BeanProperty.create("enabled");
+//		Binding<?, Boolean, ?, Boolean> enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, sourceProperty, button, buttonEnabled);
+//		bindingGroup.addBinding(enabledBinding);
 		buttonPanel.add(button);
 		return button;
 	}
@@ -187,7 +186,7 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 	@Action(enabledProperty=CONTROLS_ENABLED)
 	public void play() {
 		if (player.togglePlay()) {
-			getApplication().showMessage("Afspelen aan "+ player.getRate() + "x gestart.");
+			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 			setStopEnabled(true);
 		}
 	}
@@ -210,13 +209,13 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 	@Action(enabledProperty=CONTROLS_ENABLED)
 	public void slower() {
 		player.backward();
-		getApplication().showMessage("Afspelen aan "+ player.getRate() + "x gestart.");
+		getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 	}
 	
 	@Action(enabledProperty=CONTROLS_ENABLED)
 	public void faster() {
 		player.forward();
-		getApplication().showMessage("Afspelen aan "+ player.getRate() + "x gestart.");
+		getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 	}
 	
 	@Action(enabledProperty=CONTROLS_DISABLED)
@@ -360,7 +359,7 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 		getSlider().updateUI();
 		getSlider().revalidate();
 		getApplication().showMessage("Snapshot genomen op " + 
-				ApplicationUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"))); 
+				AppUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"))); 
 		getApplication().setSaveNeeded(true);
 	}
 
@@ -400,7 +399,7 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 
 			});
 		} else {
-			player.playFile(recording);
+			player.loadFile(recording);
 		}
 		player.toFront();
 		getSlider().setValue(0);
@@ -432,8 +431,8 @@ public class PlayerInternalFrame extends MyInternalFrame implements PropertyChan
 	private void updateTimeStamps() {
 		int position = player.getPosition();
 		getSlider().setValue(getSliderPosition(position));
-		String elapsedTime = ApplicationUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"));
-		String totalTime = ApplicationUtil.formatDate(new Date(player.getDuration()), new SimpleDateFormat("mm:ss.SSS"));
+		String elapsedTime = AppUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"));
+		String totalTime = AppUtil.formatDate(new Date(player.getDuration()), new SimpleDateFormat("mm:ss.SSS"));
 		time.setText(elapsedTime + " / " + totalTime);
 	}
 

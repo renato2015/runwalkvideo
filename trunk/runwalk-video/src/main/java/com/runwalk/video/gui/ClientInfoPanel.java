@@ -27,9 +27,12 @@ import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.PropertyStateEvent;
+import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.Binding.SyncFailure;
@@ -43,7 +46,8 @@ import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
-import com.runwalk.video.util.ApplicationSettings;
+import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.util.AppSettings;
 
 /**
  * TODO validatie met hibernate validators implementeren
@@ -63,42 +67,52 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(ClientInfoPanel.class);
 		
 		JLabel nameLabel = new JLabel();
-		nameLabel.setFont(ApplicationSettings.MAIN_FONT);
+		nameLabel.setFont(AppSettings.MAIN_FONT);
 		nameLabel.setText(resourceMap.getString("nameLabel.text")); // NOI18N
 		add(nameLabel, new  AbsoluteConstraints(20, 20, -1, 20));
 
 		JLabel organizationLabel = new JLabel();
-		organizationLabel.setFont(ApplicationSettings.MAIN_FONT);
+		organizationLabel.setFont(AppSettings.MAIN_FONT);
 		organizationLabel.setText(resourceMap.getString("organisationLabel.text")); // NOI18N
 		add(organizationLabel, new AbsoluteConstraints(20, 50, -1, 20));
 
 		JLabel taxLabel = new JLabel();
-		taxLabel.setFont(ApplicationSettings.MAIN_FONT);
+		taxLabel.setFont(AppSettings.MAIN_FONT);
 		taxLabel.setText(resourceMap.getString("btwLabel.text"));
 		add(taxLabel, new AbsoluteConstraints(275, 50, -1, 20));
 
 		JLabel emailLabel = new JLabel();
-		emailLabel.setFont(ApplicationSettings.MAIN_FONT);
+		emailLabel.setFont(AppSettings.MAIN_FONT);
 		emailLabel.setText(resourceMap.getString("emailLabel.text")); // NOI18N
 		add(emailLabel, new AbsoluteConstraints(20, 80, -1, 20));
 
 		JLabel addressLabel = new JLabel();
-		addressLabel.setFont(ApplicationSettings.MAIN_FONT);
+		addressLabel.setFont(AppSettings.MAIN_FONT);
 		addressLabel.setText(resourceMap.getString("addressLabel.text")); // NOI18N
 		add(addressLabel, new AbsoluteConstraints(20, 110, -1, 20));
 
 		JLabel telephoneLabel = new JLabel();
-		telephoneLabel.setFont(ApplicationSettings.MAIN_FONT);
+		telephoneLabel.setFont(AppSettings.MAIN_FONT);
 		telephoneLabel.setText(resourceMap.getString("telephoneLabel.text")); // NOI18N
 		add(telephoneLabel, new AbsoluteConstraints(20, 140, -1, 20));
 
 		JLabel locationLabel = new JLabel();
-		locationLabel.setFont(ApplicationSettings.MAIN_FONT);
+		locationLabel.setFont(AppSettings.MAIN_FONT);
 		locationLabel.setText(resourceMap.getString("locationLabel.text")); // NOI18N
 		add(locationLabel, new  AbsoluteConstraints(20, 170, -1, 20));		
 
 		//Create some undo and redo actions
 		UndoableEditListener undoListener = RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener();
+		
+		BindingListener bindingListener = new AbstractBindingListener() {
+
+			@Override
+			public void targetChanged(Binding binding, PropertyStateEvent event) {
+				getApplication().getSelectedClient().setDirty(true);
+				getApplication().setSaveNeeded(true);
+			}
+			
+		};
 
 		JTable clientTable = RunwalkVideoApp.getApplication().getClientTable();
 		BindingGroup bindingGroup = new BindingGroup();
@@ -131,7 +145,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		};
 		
 		firstnameField = new JTextField();
-		firstnameField.setFont(ApplicationSettings.MAIN_FONT);
+		firstnameField.setFont(AppSettings.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
 		ELProperty<JTable, String> firstname = ELProperty.create("${selectedElement.firstname}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, firstname, firstnameField, textFieldValue);
@@ -143,7 +157,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		
 		nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
-		nameField.setFont(ApplicationSettings.MAIN_FONT);
+		nameField.setFont(AppSettings.MAIN_FONT);
 		ELProperty<JTable, String> name = ELProperty.create("${selectedElement.name}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, name, nameField, textFieldValue);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
@@ -160,12 +174,12 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, organisationField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		organisationField.setFont(ApplicationSettings.MAIN_FONT);
+		organisationField.setFont(AppSettings.MAIN_FONT);
 		add(organisationField, new  AbsoluteConstraints(120, 50, 150, 20));
 
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
-		taxField.setFont(ApplicationSettings.MAIN_FONT);
+		taxField.setFont(AppSettings.MAIN_FONT);
 		ELProperty<JTable, String> taxNo = ELProperty.create("${selectedElement.btwnr}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, taxNo, taxField, textFieldValue);
 		valueBinding.setValidator(new Validator () {
@@ -187,7 +201,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
-		emailField.setFont(ApplicationSettings.MAIN_FONT);
+		emailField.setFont(AppSettings.MAIN_FONT);
 		ELProperty<JTable, String> email = ELProperty.create("${selectedElement.emailAddress}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, email, emailField, textFieldValueOnFocusLost);
 		valueBinding.setValidator(new Validator() {
@@ -219,7 +233,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
-		addressField.setFont(ApplicationSettings.MAIN_FONT);
+		addressField.setFont(AppSettings.MAIN_FONT);
 		ELProperty<JTable, String> address = ELProperty.create("${selectedElement.address}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, address, addressField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
@@ -229,7 +243,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
-		phoneField.setFont(ApplicationSettings.MAIN_FONT);
+		phoneField.setFont(AppSettings.MAIN_FONT);
 		ELProperty<JTable, String> phone = ELProperty.create("${selectedElement.phone}");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, phone, phoneField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
@@ -327,7 +341,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		locationField.setEditor(new CityInfoEditor(locationField.getEditor(), City.class, "getName"));
 		locationField.setRenderer(new CityInfoRenderer());
 		locationField.setEditable(true);
-		locationField.setFont(ApplicationSettings.MAIN_FONT);
+		locationField.setFont(AppSettings.MAIN_FONT);
 		add(locationField, new AbsoluteConstraints(250, 170, 170, 20));
 
 		new AutoCompletion(locationField, new ComboBoxSearchable(locationField) {
@@ -340,7 +354,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 		zipcodeField.setEditor(new CityInfoEditor(zipcodeField.getEditor(), City.class, "getCode"));
 		zipcodeField.setRenderer(new CityInfoRenderer());
 		zipcodeField.setEditable(true);
-		zipcodeField.setFont(ApplicationSettings.MAIN_FONT);
+		zipcodeField.setFont(AppSettings.MAIN_FONT);
 		add(zipcodeField, new  AbsoluteConstraints(120, 170, 120, 20));
 
 		new AutoCompletion(zipcodeField, new ComboBoxSearchable(zipcodeField) {
@@ -349,6 +363,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 				return Integer.toString(((City) object).getCode());
 			}
 		});
+		bindingGroup.addBindingListener(bindingListener);
 		bindingGroup.bind();
 		
 	}

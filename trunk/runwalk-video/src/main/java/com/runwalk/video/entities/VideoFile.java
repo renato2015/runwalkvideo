@@ -1,69 +1,21 @@
 package com.runwalk.video.entities;
 
-import java.io.File;
-
-import org.apache.log4j.Logger;
-
-import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
-
 import de.humatic.dsj.DSJException;
 
-@SuppressWarnings("serial")
-public abstract class VideoFile extends File {
+public interface VideoFile {
 
-	private int duration;
-	
-	protected VideoFile(File file, String name) {
-		super(file, name);
-	}
+	public abstract int getDuration() throws DSJException;
 
-	int getDuration() throws DSJException  {
-		if (duration == 0) {
-			duration = ApplicationUtil.getMovieDuration(getAbsolutePath());
-		}
-		return duration;
-	}
-	
-	public boolean canReadAndExists() {
-		return exists() && canRead();
-	}
-	
-	@Override
-	public boolean canRead() {
-		boolean canRead = super.canRead();
-		try {
-			canRead = canRead && getDuration() != 0;
-		} catch(DSJException e) {
-			String hresultToHexString = DSJException.hresultToHexString(e.getErrorCode());
-			Logger.getLogger(getClass()).error("Failed to read meta info from " + getClass().getSimpleName() +  " with name " + getName() + " (hex code: 0x" + hresultToHexString + ")", e);
-			canRead = false;
-		}
-		return canRead;
-	}
+	public abstract boolean canReadAndExists();
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + " [duration=" + duration + ", file=" + getAbsolutePath() + "]";
-	}
-	
-	
-	@SuppressWarnings("serial")
-	public static class CompressedVideoFile extends VideoFile {
+	public abstract boolean canRead();
 
-		CompressedVideoFile(String fileName) {
-			super(ApplicationSettings.getInstance().getVideoDir(), fileName);
-		}
-		
-	}
-	
-	@SuppressWarnings("serial")
-	public static class UncompressedVideoFile extends VideoFile {
+	public abstract String getAbsolutePath();
 
-		UncompressedVideoFile(String fileName) {
-			super(ApplicationSettings.getInstance().getUncompressedVideoDir(), fileName);
-		}
-		
-	}
-	
+	public abstract boolean exists();
+
+	public abstract boolean delete();
+
+	public abstract String getName();
+
 }

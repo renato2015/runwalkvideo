@@ -22,15 +22,17 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.eclipse.persistence.annotations.JoinFetch;
+import org.eclipse.persistence.annotations.JoinFetchType;
 import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.observablecollections.ObservableList;
-import org.jdesktop.observablecollections.ObservableCollections.ObservableListHelper;
 
 @Entity
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
 @NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.unobservableAnalyses")
 public class Client extends SerializableEntity<Client> {
+	private static final String CITY = "city";
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ORGANIZATION = "organization";
 	public static final String FIRSTNAME = "firstname";
@@ -42,7 +44,8 @@ public class Client extends SerializableEntity<Client> {
 	private Long id;
 	@Column(name = NAME)
 	private String name;
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
+	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> unobservableAnalyses;
 	@Column(name = "address1")
 	private String address;
@@ -110,7 +113,7 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public void setCity(City city) {
-		firePropertyChange("city", this.city, this.city = city);
+		firePropertyChange(CITY, this.city, this.city = city);
 	}
 
 	public String getPostalcode() {
@@ -154,7 +157,7 @@ public class Client extends SerializableEntity<Client> {
 		if (unobservableAnalyses == null) {
 			unobservableAnalyses = new ArrayList<Analysis>();
 		}
-		if (analyses == null) {
+		if (analyses == null || !unobservableAnalyses.isEmpty()) {
 			analyses = ObservableCollections.observableList(unobservableAnalyses);
 		}
 	}
@@ -164,7 +167,7 @@ public class Client extends SerializableEntity<Client> {
 	}
 	
 	public ObservableList<Analysis> getAnalyses() {
-		if (analyses == null) {
+		if (analyses == null || !unobservableAnalyses.isEmpty() && analyses.isEmpty()) {
 			initObservableList();
 		}
 		return analyses;

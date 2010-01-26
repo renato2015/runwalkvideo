@@ -22,6 +22,7 @@ import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
@@ -40,8 +41,8 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Articles;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppUtil;
 
 public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
@@ -73,7 +74,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public String convertForward(Date arg0) {
-				return ApplicationUtil.formatDate(arg0, ApplicationUtil.EXTENDED_DATE_FORMATTER);
+				return AppUtil.formatDate(arg0, AppUtil.EXTENDED_DATE_FORMATTER);
 			}
 
 			@Override
@@ -88,21 +89,27 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		ObservableList<Articles> articleList = ObservableCollections.observableList(query.getResultList());
 
 		JComboBox shoes = new JComboBox();
-		shoes.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				RunwalkVideoApp.getApplication().setSaveNeeded(true);
-			}
-		});
-		shoes.setFont(ApplicationSettings.MAIN_FONT);
+		shoes.setFont(AppSettings.MAIN_FONT);
 		JComboBoxBinding<Articles, List<Articles>, JComboBox> cb = SwingBindings.createJComboBoxBinding(AutoBinding.UpdateStrategy.READ, articleList, shoes);
 		cb.bind();
 
+		BindingListener changeListener = new AbstractBindingListener() {
+
+			@Override
+			public void targetChanged(Binding binding, PropertyStateEvent event) {
+				getApplication().getSelectedClient().setDirty(true);
+				getApplication().setSaveNeeded(true);
+			}
+			
+		};
+		
 		//article binding
 		BeanProperty<Analysis, Articles> article = BeanProperty.create("article");
 		columnBinding = jTableSelectionBinding.addColumnBinding(article);
 		columnBinding.setColumnName("Gekozen artikel");
 		columnBinding.setColumnClass(Articles.class);
 		columnBinding.setEditor(new DefaultCellEditor(shoes));
+		columnBinding.addBindingListener(changeListener);
 
 		//recording keyframe count binding
 		ELProperty<Analysis, Integer> recordingKeyframeCount = ELProperty.create("${recording.keyframeCount}");
@@ -110,6 +117,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		columnBinding.setColumnName("Aantal keyframes");
 		columnBinding.setColumnClass(Integer.class);
 		columnBinding.setEditable(false);
+		columnBinding.addBindingListener(changeListener);
 
 		//recording duration binding
 		ELProperty<Analysis, Long> recordingDuration = ELProperty.create("${recording.duration}");
@@ -117,11 +125,12 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		columnBinding.setColumnName("Duur video");
 		columnBinding.setColumnClass(Long.class);
 		columnBinding.setEditable(false);
+		columnBinding.addBindingListener(changeListener);
 		columnBinding.setConverter(new Converter<Long, String>() {
 
 			@Override
 			public String convertForward(Long duration) {
-				return duration == null ? "<geen>" : ApplicationUtil.formatDate(new Date(duration), ApplicationUtil.DURATION_FORMATTER);
+				return duration == null ? "<geen>" : AppUtil.formatDate(new Date(duration), AppUtil.DURATION_FORMATTER);
 			}
 
 			@Override
@@ -179,11 +188,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		buttonPanel.setLayout(new AbsoluteLayout());
 
 		setSecondButton(new JButton(RunwalkVideoApp.getApplication().getContext().getActionMap(this).get("addAnalysis")));
-		getSecondButton().setFont(ApplicationSettings.MAIN_FONT);
+		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(10, 0, -1, -1));
 
 		setFirstButton(new JButton(RunwalkVideoApp.getApplication().getContext().getActionMap(this).get("deleteAnalysis")));
-		getFirstButton().setFont(ApplicationSettings.MAIN_FONT);
+		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(130, 0, -1, -1));
 
 		getComponent().add(buttonPanel, new AbsoluteConstraints(0, 130, -1, 30));
@@ -192,7 +201,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener());
-		comments.setFont(ApplicationSettings.MAIN_FONT);
+		comments.setFont(AppSettings.MAIN_FONT);
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
@@ -203,6 +212,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
 		Binding<JTable, String, JTextArea, String> commentsBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getTable(), 
 				selectedElementComments, comments, jTextAreaValue, "commentsBinding");
+		commentsBinding.addBindingListener(changeListener);
 		bindingGroup.addBinding(commentsBinding);
 
 		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${selectedElement != null}");
@@ -219,7 +229,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		clientSelectedBinding.setSourceNullValue(false);
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
-
 		bindingGroup.bind();
 	}
 
@@ -231,15 +240,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public void addAnalysis() {
 		//insert a new analysis record
 		final Client selectedClient = RunwalkVideoApp.getApplication().getSelectedClient();
-		if ((selectedClient.getName() == null || selectedClient.getFirstname() == null) && selectedClient.getOrganization() == null) {
+		selectedClient.setDirty(true);
+		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
 			JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(), 
-					"Voer eerst een naam en voornaam in voor deze klant!", 
+					"Voer eerst een naam in voor deze klant!", 
 					"Fout aanmaken analyse", 
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		Analysis analysis = new Analysis(selectedClient);
-		AbstractTableModel.persistEntity(analysis);
+		AppUtil.persistEntity(analysis);
 		//update tables ..
 		int modelIndex = selectedClient.addAnalysis(analysis);
 		int viewIndex;
@@ -263,8 +273,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 
 		getLogger().debug("Analysis " + analysis.getId() + " for client " + selectedClient.getId() + " (" + selectedClient.getName() +  ") added.");
-		getApplication().getPlayerPanel().captureFrameToFront();
-		getApplication().setSaveNeeded(true);
+		getApplication().getMediaControls().captureFrameToFront();
 	}
 
 	@Action(enabledProperty = "rowSelected")
@@ -296,7 +305,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				RunwalkVideoApp.getApplication().getAnalysisOverviewTable().clearItemSelection();
 			}*/
 
-			AbstractTableModel.deleteEntity(selectedAnalysis);
+			AppUtil.deleteEntity(selectedAnalysis);
 			getLogger().debug("Analysis " + selectedAnalysis.getId() + " for client " + selectedAnalysis.getClient().getId() + " (" + selectedAnalysis.getClient().getName() + ") deleted."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		}
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 

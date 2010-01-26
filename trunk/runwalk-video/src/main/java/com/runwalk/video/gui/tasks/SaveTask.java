@@ -30,16 +30,20 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 			tx.begin();
 			for(int i = 0; i < listSize; i ++) {
 				T item = itemList.get(i);
-				T mergedItem = em.merge(item);
-				if (mergedItem == null) {
-					newList = null;
-					setProgress(listSize, 0, listSize);
-					break;
+				if (item.isDirty()) {
+					T mergedItem = em.merge(item);
+					if (mergedItem == null) {
+						newList = null;
+						setProgress(listSize, 0, listSize);
+						break;
+					}
+					newList.add(mergedItem);
+//					itemList.set(i, mergedItem);
 				}
-				newList.add(mergedItem);
 				setProgress(i, 0, listSize);
 			}
 			tx.commit();
+			message("endMessage");
 		} catch(Exception e) {
 			getLogger().error("Exception thrown while saving item list.", e);
 			if (tx != null && tx.isActive()) {
@@ -49,10 +53,5 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 			em.close();
 		}
 		return newList;
-	}
-	
-	@Override 
-	protected void finished() {
-		message("endMessage");
 	}
 }

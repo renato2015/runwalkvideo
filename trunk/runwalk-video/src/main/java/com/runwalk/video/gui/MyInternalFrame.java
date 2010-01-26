@@ -40,14 +40,10 @@ public class MyInternalFrame extends ComponentDecorator<BaseInternalFrame> {
 		getComponent().pack();
 	}
 	
-	public void setVisible(boolean visible) {
-		getComponent().setVisible(visible);
-	}
-	
 	public Container getContentPane() {
 		return getComponent().getContentPane();
 	}
-
+	
 	public static class InternalFrameState extends WindowState {
 
 		public InternalFrameState() {
@@ -117,7 +113,6 @@ public class MyInternalFrame extends ComponentDecorator<BaseInternalFrame> {
 		}
 
 	}
-
 
 }
 

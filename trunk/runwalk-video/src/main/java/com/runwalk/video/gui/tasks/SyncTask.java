@@ -9,7 +9,7 @@ import java.util.Date;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppUtil;
 
 public class SyncTask extends AbstractTask<Boolean, Void>{ 
 	private int errorCount = 0;
@@ -71,7 +71,7 @@ public class SyncTask extends AbstractTask<Boolean, Void>{
 		} catch (Exception e) {
 			errorMessage(getResourceMap().getString(resourceName("endErrorMessage"), new Integer(errorCount)));
 		} finally {
-			String syncMsg = getResourceMap().getString(resourceName("lastSyncMessage")) + ApplicationUtil.formatDate(new Date(System.currentTimeMillis()), new SimpleDateFormat("dd/MM/yyyy HH:mm"));
+			String syncMsg = getResourceMap().getString(resourceName("lastSyncMessage")) + AppUtil.formatDate(new Date(System.currentTimeMillis()), new SimpleDateFormat("dd/MM/yyyy HH:mm"));
 			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
 		}
 	}

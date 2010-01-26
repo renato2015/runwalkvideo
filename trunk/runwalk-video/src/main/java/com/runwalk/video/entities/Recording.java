@@ -21,10 +21,9 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.entities.VideoFile.CompressedVideoFile;
-import com.runwalk.video.entities.VideoFile.UncompressedVideoFile;
-import com.runwalk.video.gui.AbstractTableModel;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.entities.VideoFileImpl.CompressedVideoFile;
+import com.runwalk.video.entities.VideoFileImpl.UncompressedVideoFile;
+import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
@@ -96,7 +95,7 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	public String getFormattedDuration(SimpleDateFormat format) {
-		return ApplicationUtil.formatDate(new Date(getDuration()), format);
+		return AppUtil.formatDate(new Date(getDuration()), format);
 	}
 
 	public long getDuration() {
@@ -116,7 +115,7 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	public void addKeyframe(int stamp) {
 		Keyframe snapshot = new Keyframe(this, stamp);
-		AbstractTableModel.persistEntity(snapshot);
+		AppUtil.persistEntity(snapshot);
 		keyframes.add(snapshot);
 		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount()-1, getKeyframeCount());
 	}

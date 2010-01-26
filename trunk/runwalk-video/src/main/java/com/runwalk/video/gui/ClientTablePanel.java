@@ -45,11 +45,11 @@ import org.netbeans.lib.awtextra.AbsoluteLayout;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.tasks.SaveTask;
-import com.runwalk.video.util.ApplicationSettings;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppUtil;
 
 public class ClientTablePanel extends AbstractTablePanel<Client> {
-	
+
 	private static final String SAVE_NEEDED = "saveNeeded";
 
 	private JTextField searchField;
@@ -61,11 +61,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@SuppressWarnings("unchecked")
 	public ClientTablePanel() {
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
-		getComponent().setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, ApplicationSettings.MAIN_FONT.deriveFont(12))); // NOI18N
+		getComponent().setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
-		
+
 		update();
-		
+
 		BeanProperty<ClientTablePanel, List<Client>> clients = BeanProperty.create("itemList");
 		jTableSelectionBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, this, clients, getTable());
 		BeanProperty<Client, Long> id = BeanProperty.create("id");
@@ -73,17 +73,17 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		columnBinding.setColumnName("Id");
 		columnBinding.setColumnClass(Long.class);
 		columnBinding.setEditable(false);
-		
+
 		BeanProperty<Client, String> firstname = BeanProperty.create("firstname");
 		columnBinding = jTableSelectionBinding.addColumnBinding(firstname);
 		columnBinding.setColumnName("Voornaam");
 		columnBinding.setColumnClass(String.class);
-		
+
 		BeanProperty<Client, String> name = BeanProperty.create("name");
 		columnBinding = jTableSelectionBinding.addColumnBinding(name);
 		columnBinding.setColumnName("Naam");
 		columnBinding.setColumnClass(String.class);
-		
+
 		BeanProperty<Client, Date> lastAnalysisDate = BeanProperty.create("lastAnalysisDate");
 		columnBinding = jTableSelectionBinding.addColumnBinding(lastAnalysisDate);
 		columnBinding.setColumnName("Datum laatste analyse");
@@ -93,7 +93,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public String convertForward(Date arg0) {
-				return ApplicationUtil.formatDate(arg0, ApplicationUtil.EXTENDED_DATE_FORMATTER);
+				return AppUtil.formatDate(arg0, AppUtil.EXTENDED_DATE_FORMATTER);
 			}
 
 			@Override
@@ -110,11 +110,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		jTableSelectionBinding.setSourceNullValue(Collections.emptyList());
 		bindingGroup.addBinding(jTableSelectionBinding);
 		jTableSelectionBinding.bind();
-		
+
 		getTable().getColumnModel().getColumn(0).setMinWidth(30);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(30);
 		getTable().getColumnModel().getColumn(0).setMaxWidth(30);
-//		getTable().getCellEditor().getTableCellEditorComponent(table, value, isSelected, row, column);
+		//		getTable().getCellEditor().getTableCellEditorComponent(table, value, isSelected, row, column);
 		getTable().getColumnModel().getColumn(1).setMinWidth(70);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(1).setMaxWidth(160);
@@ -128,28 +128,28 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		buttonPanel.setLayout(new AbsoluteLayout());
 
 		setSecondButton(new JButton(getAction("addClient")));
-		getSecondButton().setFont(ApplicationSettings.MAIN_FONT);
+		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(0, 0, -1, -1));
 
 		setFirstButton(new JButton(getAction("deleteClient")));
-		getFirstButton().setFont(ApplicationSettings.MAIN_FONT);
+		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(110, 0, -1, -1));
-		
+
 		JButton saveButton = new  JButton(getAction("save"));
-		saveButton.setFont(ApplicationSettings.MAIN_FONT);
+		saveButton.setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(saveButton, new AbsoluteConstraints(230, 0, -1, -1));
 
 		JPanel searchPanel = new JPanel();
-		
+
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
 		searchField = new JTextField();
 		searchField.setPreferredSize(new Dimension(100,20));
-		searchField.setFont(ApplicationSettings.MAIN_FONT);
-		
+		searchField.setFont(AppSettings.MAIN_FONT);
+
 		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
-		theLabel.setFont(ApplicationSettings.MAIN_FONT);
+		theLabel.setFont(AppSettings.MAIN_FONT);
 		theLabel.setIcon(search);
 		theLabel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent arg0) {
@@ -167,8 +167,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 		searchPanel.add(theLabel);
 		searchPanel.add(searchField);
-		
-        BeanProperty<JTable, RowSorter<? extends TableModel>> rowSorter = BeanProperty.create("rowSorter");
+
+		BeanProperty<JTable, RowSorter<? extends TableModel>> rowSorter = BeanProperty.create("rowSorter");
 		BeanProperty<JTextField, String> mask = BeanProperty.create("text");
 		Binding<JTable, RowSorter<? extends TableModel>, JTextField, String> rowSorterBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getTable(), rowSorter, searchField, mask);
@@ -183,31 +183,31 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public RowSorter<? extends TableModel> convertReverse(String mask) {
-				 TableRowSorter<? extends TableModel> sorter = new TableRowSorter<TableModel>(getTable().getModel());
+				TableRowSorter<? extends TableModel> sorter = new TableRowSorter<TableModel>(getTable().getModel());
 
-			        // The following statement makes the filter case-sensitive. If you want 
-			        //filter to work in a case-insensitive way, uncomment the line below, comment 
-			        //the 7 code lines below
-			        //sorter.setRowFilter(RowFilter.regexFilter(".*" + mask + ".*"));
+				// The following statement makes the filter case-sensitive. If you want 
+				//filter to work in a case-insensitive way, uncomment the line below, comment 
+				//the 7 code lines below
+				//sorter.setRowFilter(RowFilter.regexFilter(".*" + mask + ".*"));
 
-			        //The following 7 lines create a case-insensitive filter. If you want 
-			        //the filter to be case-sensitive, comment them out and uncomment the 
-			        //line above
-			        String m = mask.toString();
-			        StringBuilder sb = new StringBuilder();
-			        for (int i = 0; i < m.length(); i++) {
-			            char c = m.charAt(i);
-			            sb.append('[').append(Character.toLowerCase(c)).append(Character.toUpperCase(c)).append(']');
-			        }
-			        sorter.setRowFilter(RowFilter.regexFilter(".*" + sb + ".*"));
-			        return sorter;
+				//The following 7 lines create a case-insensitive filter. If you want 
+				//the filter to be case-sensitive, comment them out and uncomment the 
+				//line above
+				String m = mask.toString();
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < m.length(); i++) {
+					char c = m.charAt(i);
+					sb.append('[').append(Character.toLowerCase(c)).append(Character.toUpperCase(c)).append(']');
+				}
+				sorter.setRowFilter(RowFilter.regexFilter(".*" + sb + ".*"));
+				return sorter;
 			}
-		
+
 		});
 		bindingGroup.addBinding(rowSorterBinding);
 		bindingGroup.bind();
 		clearSearch();
-		
+
 		buttonPanel.add(searchPanel, new AbsoluteConstraints(370, 0, 180, -1));
 
 		//Layout the this panel..
@@ -235,19 +235,17 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		);
 
 	}
-	
+
 	@Action(enabledProperty=SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
-		final Task<List<Client>, Void> saveTask = new SaveTask(getItemList());
+		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getItemList());
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
 			public void succeeded(TaskEvent<List<Client>> event) {
-				if (event.getValue() != null) {
-					setItemList(event.getValue());
-				}
+				setSaveNeeded(event.getValue() == null);
 			}
-			
+
 		});
 		return saveTask;
 	}
@@ -260,11 +258,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		this.saveNeeded = saveNeeded;
 		this.firePropertyChange(SAVE_NEEDED, !isSaveNeeded(), isSaveNeeded());
 	}
-	
+
 	@Action
 	public void addClient() {
 		Client client = new Client();
-		AbstractTableModel.persistEntity(client);
+		AppUtil.persistEntity(client);
 		getItemList().add(client);
 		refreshTableBindings();
 		clearSearch();
@@ -284,11 +282,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION)	return;
-		
+
 		int selectedRow = getTable().getSelectedRow();
 		Client clientToDelete = getSelectedItem();
 		getItemList().remove(clientToDelete);
-		AbstractTableModel.deleteEntity(clientToDelete);
+		AppUtil.deleteEntity(clientToDelete);
 		//select previous records..
 		if (selectedRow > 0) {
 			makeRowVisible(selectedRow-1);
@@ -298,7 +296,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getLogger().debug("Client " + clientToDelete.getId() +  " (" + clientToDelete.getName() + ") deleted.");
 		setSaveNeeded(true);
 	}
-	
+
 	private void clearSearch() {
 		searchField.setText("");
 	}

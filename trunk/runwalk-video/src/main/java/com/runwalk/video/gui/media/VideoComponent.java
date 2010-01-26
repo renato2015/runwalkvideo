@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -13,26 +14,28 @@ import org.jdesktop.application.Action;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.gui.ComponentDecorator;
 import com.runwalk.video.gui.MyInternalFrame;
-import com.runwalk.video.util.ApplicationUtil;
+import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 
-public abstract class VideoComponent<T extends DSFiltergraph> extends MyInternalFrame {
+public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentDecorator<Container> {
 
 	private Recording recording;
 	private Frame fullScreenFrame;
 	private T filtergraph;
 	private boolean rejectPauseFilter = false;
 	private Timer timer;
+	private MyInternalFrame internalFrame;
 
 	/**
 	 * Constructor for 'normal' mode
 	 */
 	public VideoComponent(PropertyChangeListener listener) {
-		super(false);
+//		super(false);
 		addPropertyChangeListener(listener);
 	}
 
@@ -85,31 +88,46 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends MyInternal
 
 	public void toggleFullscreen(GraphicsDevice device) {
 		if (getFiltergraph().isFullScreen()) {
-			getApplication().getMenuBar().removeWindow(fullScreenFrame);
 			getFiltergraph().leaveFullScreen();
-			getComponent().add(getFiltergraph().asComponent());
-			getComponent().setName(getName());
-			getComponent().setTitle(getName());
-			getApplication().addInternalFrame(getComponent());
+			if (internalFrame == null) {
+				internalFrame = new MyInternalFrame(getName(), false);
+			} else {
+				internalFrame.setVisible(true);
+			}
+			internalFrame.add(getFiltergraph().asComponent());
 		} else {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			if (gs.length > 1) {
-				getApplication().getMenuBar().removeWindow(getComponent());
+				if (internalFrame != null) {
+//					internalFrame.remove(getFiltergraph().asComponent());
+					internalFrame.setVisible(false);
+				}
 				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
 				fullScreenFrame = getFiltergraph().getFullScreenWindow();
 				fullScreenFrame.setTitle(getName());
 				fullScreenFrame.setName(getName());
-				getApplication().getMenuBar().addWindow(getFullscreenFrame());
 			}
 		}
+		getApplication().addComponent(this);
+	}
+
+	@Override
+	public Container getComponent() {
+		Container container = null;
+		if (getFiltergraph().isFullScreen()) {
+			container = getFullscreenFrame();
+		} else {
+			container = internalFrame.getComponent();
+		}
+		return container;
 	}
 
 	public void toFront() {
 		if (getFiltergraph().isFullScreen()) {
 			getFullscreenFrame().toFront();
 		} else {
-			getComponent().toFront();
+			internalFrame.getComponent().toFront();
 		}
 	}
 
@@ -150,16 +168,12 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends MyInternal
 	}
 
 	public void disposeFiltergraph() {
-		ApplicationUtil.disposeDSGraph(getFiltergraph());
+		AppUtil.disposeDSGraph(getFiltergraph());
 		setRecording(null);
 	}
 
 	public boolean hasRecording() {
 		return getRecording() != null;
-	}
-	
-	private boolean isVisible() {
-		return getFiltergraph().isFullScreen() ? fullScreenFrame.isVisible() : getComponent().isVisible();
 	}
 
 	public boolean isActive() {
