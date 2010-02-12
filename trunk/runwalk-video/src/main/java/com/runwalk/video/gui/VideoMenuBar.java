@@ -82,28 +82,6 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 
 		//TODO refactor this into an Action object..
 		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
-		JMenuItem cameraItem = new JMenuItem("startCapturer");
-		JMenuItem initCameraItem = new JMenuItem("initCaptureGraph");
-
-/*		JCheckBoxMenuItem rejectFilterItem = new JCheckBoxMenuItem("Verwijder Pause Filter");
-		rejectFilterItem.setSelected( getApplication().getPlayerEngine().rejectPauseFilter());
-		rejectFilterItem.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				boolean rejectPauseFilter = (e.getStateChange() == ItemEvent.SELECTED) ? true : false;
-				getApplication().getPlayerEngine().setRejectPauseFilter(rejectPauseFilter);
-			}
-		});
-		videoMenu.add(rejectFilterItem);
-		videoMenu.add(new JSeparator());
-		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("setCaptureEncoder")));
-		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("setFrameRate")));
-		videoMenu.add(new JMenuItem( getApplication().getPlayerActionMap().get("viewFilterProperties")));
-		videoMenu.add(new JSeparator());
-		videoMenu.add(cameraItem);
-		videoMenu.add(initCameraItem);
-		videoMenu.add( getApplication().getPlayerActionMap().get("toggleCamera"));*/
-		videoMenu.add(new JSeparator());
-		videoMenu.add( getApplication().getApplicationActionMap().get("selectVideoDir"));
 
 		getComponent().add(videoMenu);
 
@@ -128,10 +106,18 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 		getApplication().show(aboutBox);
 	}
 
-	public void addWindow(ComponentDecorator<? extends Container> decorator) {
+	public void addWindow(ComponentDecorator<? extends Container> decorator, boolean addToMenu) {
 		Component component = decorator.getComponent();
 		if (component instanceof JInternalFrame) {
 			final JInternalFrame frame = (JInternalFrame) component;
+			frame.addPropertyChangeListener(new PropertyChangeListener() {
+
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
+				}
+				
+			});
 			frame.addInternalFrameListener(new InternalFrameAdapter() {
 
 				@Override
@@ -143,6 +129,8 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 				public void internalFrameOpened(InternalFrameEvent e) {
 					setCheckboxSelection(frame);
 				}
+				
+				
 			});
 		} else if (component instanceof Window) {
 			final Window window = (Window) component;
@@ -157,41 +145,46 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 				public void windowOpened(WindowEvent e) {
 					setCheckboxSelection(window);
 				}
+				
+				
 			});
 			window.addPropertyChangeListener(this);	
 		}
 		
-		JMenu menu = new JMenu(decorator.getName());
-		
-		JCheckBoxMenuItem checkedItem = new JCheckBoxMenuItem(component.getName());
-		checkedItem.setSelected(component.isVisible());
-		boxWindowMap.put(checkedItem, decorator);
-		windowBoxMap.put(decorator, checkedItem);
-		checkedItem.setAccelerator(KeyStroke.getKeyStroke(Character.forDigit(windowBoxMap.size(), 9), ActionEvent.CTRL_MASK));
-		checkedItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
-				boxWindowMap.get(selectedItem).setVisible(selectedItem.isSelected());
-			}
-		});
-		menu.add(checkedItem);
-		
-		ActionMap actionMap = decorator.getActionMap();
-		if (actionMap != null && actionMap.keys() != null && actionMap.keys().length > 0) {
-			menu.add(new JSeparator());
-			for (Object key : actionMap.keys()) {
-				javax.swing.Action action = actionMap.get(key);
-				JMenuItem item = new JMenuItem(action);
-				if (action.getValue(javax.swing.Action.NAME) == null) {
-					item.setText(action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString());
+		if (!boxWindowMap.containsValue(decorator) && !windowBoxMap.containsKey(decorator)) {
+			JMenu menu = new JMenu(decorator.getName());
+			
+			JCheckBoxMenuItem checkedItem = new JCheckBoxMenuItem(component.getName());
+			checkedItem.setSelected(component.isVisible());
+			boxWindowMap.put(checkedItem, decorator);
+			windowBoxMap.put(decorator, checkedItem);
+			KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.forDigit(windowBoxMap.size(), 9), ActionEvent.CTRL_MASK);
+			checkedItem.setAccelerator(keyStroke);
+			checkedItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
+					boxWindowMap.get(selectedItem).setVisible(selectedItem.isSelected());
 				}
+			});
+			menu.add(checkedItem);
+			
+			ActionMap actionMap = decorator.getActionMap();
+			if (actionMap != null && actionMap.keys() != null && actionMap.keys().length > 0) {
+				menu.add(new JSeparator());
+				for (Object key : actionMap.keys()) {
+					javax.swing.Action action = actionMap.get(key);
+					JMenuItem item = new JMenuItem(action);
+					if (action.getValue(javax.swing.Action.NAME) == null) {
+						item.setText(action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString());
+					}
 //				item.setIcon(null);
-				menu.add(item);
+					menu.add(item);
+				}
 			}
+			boolean isInternalFrame = component instanceof JInternalFrame;
+			//TODO add internal frame instance at the end of the menu and after a separator..
+			windowMenu.add(menu);
 		}
-		boolean isInternalFrame = component instanceof JInternalFrame;
-		//TODO add internal frame instance at the end of the menu and after a separator..
-		windowMenu.add(menu);
 	}
 
 	public void removeWindow(Component component) {

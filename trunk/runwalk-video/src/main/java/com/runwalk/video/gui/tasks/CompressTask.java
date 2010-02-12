@@ -108,6 +108,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		if (graph != null) {
 			AppUtil.disposeDSGraph(graph);
 		}
+		message(getResourceString("endMessage"));
 		return (errorCount == 0);
 	}
 
@@ -129,7 +130,6 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	@Override
 	protected void finished() {
 		try {
-			message("endMessage"); 
 			String dlogMessage = getResourceString("finishedMessage", conversionCount);
 			String dlogTitle = getResourceString("endMessage");
 			if (get()) {

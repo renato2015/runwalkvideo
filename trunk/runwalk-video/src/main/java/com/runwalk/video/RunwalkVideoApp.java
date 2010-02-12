@@ -24,16 +24,15 @@ import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.AnalysisTablePanel;
 import com.runwalk.video.gui.ClientInfoPanel;
+import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.ClientTablePanel;
 import com.runwalk.video.gui.ComponentDecorator;
-import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.MyInternalFrame;
 import com.runwalk.video.gui.StatusPanel;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
 import com.runwalk.video.gui.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
-import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 import de.humatic.dsj.DSEnvironment;
@@ -122,7 +121,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		clientInfoPanel = new  ClientInfoPanel();
 		analysisPanel = new  AnalysisTablePanel();
 		setSaveNeeded(false);
-		overviewPanel = new  AnalysisOverviewTablePanel();    	
+		overviewPanel = new AnalysisOverviewTablePanel();    	
 
 		menuBar = new VideoMenuBar();
 
@@ -149,15 +148,18 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 	}
 	
+	//TODO make this createOrShowComponent!!
 	public void addComponent(ComponentDecorator<? extends Container> decorator) {
 		Container container = decorator.getComponent();
 		if (decorator.getComponent() instanceof JInternalFrame) {
 			JInternalFrame jInternalFrame = (JInternalFrame) container;
-			jInternalFrame.pack();
-			pane.add(jInternalFrame);
+			if (!jInternalFrame.isShowing()) {
+				jInternalFrame.pack();
+				pane.add(jInternalFrame);
+			}
 		}
 		decorator.setVisible(true);
-		getMenuBar().addWindow(decorator);
+		getMenuBar().addWindow(decorator, true);
 	}
 
 	@Override 

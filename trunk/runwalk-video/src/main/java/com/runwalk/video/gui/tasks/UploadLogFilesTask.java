@@ -15,6 +15,7 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
 
 	@Override
 	protected Void doInBackground() throws Exception {
+		message("startMessage");
         InputStream serverInput = ClientHttpRequest.post(
                 new java.net.URL(getResourceString("destfolder")), 
                 new Object[] {"logfile", AppSettings.getInstance().getLogFile()
@@ -26,6 +27,7 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
         	output.append(line);
         }
         getLogger().debug(output);
+        message("endMessage");
         return null;
 	}
 

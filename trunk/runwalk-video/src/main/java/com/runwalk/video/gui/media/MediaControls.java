@@ -125,7 +125,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 		// Listener for the scroll
 		getSlider().addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				if (player.isActive()) {
+				if (player != null && player.isActive()) {
 					double pos = getSlider().getValue() * player.getDuration() / 1000;
 					getLogger().debug("Slide stateChanged : " + (int) pos);
 					player.setPosition((int) pos);
@@ -273,7 +273,9 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 		}
 		firePropertyChange(CONTROLS_DISABLED, !this.controlsEnabled, enable);
 		firePropertyChange(CONTROLS_ENABLED, this.controlsEnabled, this.controlsEnabled = !enable);
+		//TODO dit kunt ge binden!
 		setStopEnabled(!enable);
+		setRecordingEnabled(enable);
 	}
 	
 	public boolean isControlsEnabled() {
@@ -295,6 +297,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 	public void startCapturer() {
 		if (recorder == null) {
 			recorder = new VideoRecorder(this);
+			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			recorder.toggleFullscreen(gs[1]);
@@ -369,6 +372,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			player = new VideoPlayer(this, recording);
 			player.toggleFullscreen(gs[1]);
+			//TODO listener should also be added for internal frames??
 			player.getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
 				@Override
@@ -459,6 +463,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 
 
 	public void propertyChange(PropertyChangeEvent evt) {
+		getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
 		if (evt.getPropertyName().equals(VideoPlayer.POSITION)) {
 			//			updateTimeStamps((Integer) evt.getNewValue());
 			updateTimeStamps();

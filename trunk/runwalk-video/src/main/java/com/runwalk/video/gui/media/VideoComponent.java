@@ -30,6 +30,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	private boolean rejectPauseFilter = false;
 	private Timer timer;
 	private MyInternalFrame internalFrame;
+	private boolean fullscreen = false;
 
 	/**
 	 * Constructor for 'normal' mode
@@ -86,36 +87,47 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 		return fullScreenFrame;
 	}
 
+	//TODO dit zou een actie moeten worden, het GraphicsDevice moet vooraf gekozen worden!
+	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
 	public void toggleFullscreen(GraphicsDevice device) {
-		if (getFiltergraph().isFullScreen()) {
+		if (isFullscreen()) {
 			getFiltergraph().leaveFullScreen();
 			if (internalFrame == null) {
 				internalFrame = new MyInternalFrame(getName(), false);
+				internalFrame.add(getFiltergraph().asComponent());
 			} else {
 				internalFrame.setVisible(true);
 			}
-			internalFrame.add(getFiltergraph().asComponent());
 		} else {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			if (gs.length > 1) {
+				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
 				if (internalFrame != null) {
 //					internalFrame.remove(getFiltergraph().asComponent());
 					internalFrame.setVisible(false);
 				}
-				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
 				fullScreenFrame = getFiltergraph().getFullScreenWindow();
 				fullScreenFrame.setTitle(getName());
 				fullScreenFrame.setName(getName());
 			}
 		}
+		setFullscreen(!isFullscreen());
 		getApplication().addComponent(this);
+	}
+	
+	public boolean isFullscreen() {
+		return this.fullscreen;
+	}
+	
+	public void setFullscreen(boolean fullscreen) {
+		this.firePropertyChange("fullscreen", this.fullscreen, this.fullscreen = fullscreen);
 	}
 
 	@Override
 	public Container getComponent() {
 		Container container = null;
-		if (getFiltergraph().isFullScreen()) {
+		if (isFullscreen()) {
 			container = getFullscreenFrame();
 		} else {
 			container = internalFrame.getComponent();
@@ -124,7 +136,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	}
 
 	public void toFront() {
-		if (getFiltergraph().isFullScreen()) {
+		if (isFullscreen()) {
 			getFullscreenFrame().toFront();
 		} else {
 			internalFrame.getComponent().toFront();

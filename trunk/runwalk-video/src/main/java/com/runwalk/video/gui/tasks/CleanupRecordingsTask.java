@@ -23,7 +23,7 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 
 		@Override
 		protected Boolean doInBackground() throws Exception {
-			
+			message("startMessage");
 			/*Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createQuery("SELECT OBJECT(mov) from Movie mov WHERE mov.statuscode = " + MovieStatusCodes.COMPRESSED.getCode());
 			List<Movie> movieList = new ArrayList<Movie>(query.getResultList());
 			for (Movie movie : movieList) {
@@ -70,6 +70,7 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 					}
 				}
 			}
+			message("endMessage");
 			return success;
 		}
 		
