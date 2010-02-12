@@ -121,7 +121,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		}
 	}
 
-	public DSCapture initFiltergraph() {
+	private DSCapture initFiltergraph() {
 		if (cameraSelectionDialog == null) {
 			cameraSelectionDialog = new CameraDialog(getApplication().getMainFrame());
 			cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
@@ -148,7 +148,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		cameraSelectionDialog.setCurrentSelection(getSelectedCaptureDeviceIndex());
 		cameraSelectionDialog.getComponent().setLocationRelativeTo(getApplication().getMainFrame());
 		getApplication().show(cameraSelectionDialog.getComponent());
-		setFiltergraph(new DSCapture(DSFiltergraph.D3D9, selectedDevice, false, DSFilterInfo.doNotRender(), getPropertyChangeListeners()[0]));
+		setFiltergraph(new DSCapture(DSFiltergraph.DD7, selectedDevice, false, DSFilterInfo.doNotRender(), getPropertyChangeListeners()[0]));
 		getFiltergraph().lockAspectRatio(true);
 		return getFiltergraph();
 	}
