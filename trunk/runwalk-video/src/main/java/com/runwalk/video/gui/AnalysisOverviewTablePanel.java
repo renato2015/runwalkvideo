@@ -220,8 +220,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void setCleanupEnabled(boolean cleanUpEnabled) {
-		this.cleanupEnabled = cleanUpEnabled;
-		this.firePropertyChange(CLEANUP_ENABLED, !isCleanupEnabled(), isCleanupEnabled());
+		this.firePropertyChange(CLEANUP_ENABLED, this.cleanupEnabled, this.cleanupEnabled = cleanUpEnabled);
 	}
 
 	@Action(enabledProperty=CLEANUP_ENABLED)

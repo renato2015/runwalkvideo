@@ -7,6 +7,7 @@ import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
@@ -24,6 +25,7 @@ import de.humatic.dsj.DSFiltergraph;
 
 public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentDecorator<Container> {
 
+	public static final String FULLSCREEN = "fullscreen";
 	private Recording recording;
 	private Frame fullScreenFrame;
 	private T filtergraph;
@@ -86,6 +88,18 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	public Frame getFullscreenFrame() {
 		return fullScreenFrame;
 	}
+	
+	public JInternalFrame getInternalFrame() {
+		return internalFrame.getComponent();
+	}
+	
+	protected void updateComponentTitle() {
+		if (isFullscreen()) {
+			getFullscreenFrame().setTitle(getName());
+		} else {
+			getInternalFrame().setTitle(getName());
+		}
+	}
 
 	//TODO dit zou een actie moeten worden, het GraphicsDevice moet vooraf gekozen worden!
 	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
@@ -108,20 +122,20 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 					internalFrame.setVisible(false);
 				}
 				fullScreenFrame = getFiltergraph().getFullScreenWindow();
-				fullScreenFrame.setTitle(getName());
-				fullScreenFrame.setName(getName());
+				
 			}
 		}
 		setFullscreen(!isFullscreen());
+		updateComponentTitle();
 		getApplication().addComponent(this);
 	}
-	
+
 	public boolean isFullscreen() {
 		return this.fullscreen;
 	}
 	
 	public void setFullscreen(boolean fullscreen) {
-		this.firePropertyChange("fullscreen", this.fullscreen, this.fullscreen = fullscreen);
+		this.firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
 	}
 
 	@Override
@@ -130,7 +144,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 		if (isFullscreen()) {
 			container = getFullscreenFrame();
 		} else {
-			container = internalFrame.getComponent();
+			container = getInternalFrame();
 		}
 		return container;
 	}
@@ -165,7 +179,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 		}
 	}
 
-	@Action
+	//@Action
 	public void insertFilter(String name) {
 		DSFilterInfo filterinfo = DSFilterInfo.filterInfoForName(name);
 		if (getFiltergraph() != null) {
@@ -178,8 +192,12 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 			getFiltergraph().insertFilter(installedFilters[1], installedFilters[3], filterinfo);
 		}
 	}
-
+	
+	/**
+	 * TODO deze method ook in de compresstask gebruiken!
+	 */
 	public void disposeFiltergraph() {
+		getApplication().getMenuBar().removeWindow(this);
 		AppUtil.disposeDSGraph(getFiltergraph());
 		setRecording(null);
 	}

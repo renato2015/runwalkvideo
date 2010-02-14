@@ -132,11 +132,10 @@ public class AppUtil {
 
 	public static void disposeDSGraph(DSFiltergraph graph) {
 		if (graph != null) {
-			Frame fullscreenFrame = graph.getFullScreenWindow();
-			if (fullscreenFrame != null) {
-				RunwalkVideoApp.getApplication().getMenuBar().removeWindow(fullscreenFrame);
+			//Frame fullscreenFrame = graph.getFullScreenWindow();
+			/*if (fullscreenFrame != null) {
 				fullscreenFrame.dispose();
-			}
+			}*/
 			graph.dispose();
 		}
 	}

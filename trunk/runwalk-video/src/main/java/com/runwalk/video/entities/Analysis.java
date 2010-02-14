@@ -138,6 +138,8 @@ public class Analysis extends SerializableEntity<Analysis> {
 	 *  2. statuscode is eigenlijk ook een veld van Movie object..
 	 *  3. alle calls gerelateerd naar toestand van het bestand zou je naar de Recording entity moeten sturen (delegeren)
 	 *  
+	 *  TODO alle spaties in de bestandsnaam zouden naar een _ moeten geconverteerd worden.
+	 *  
 	 * @return De fileName van het terug te vinden filmpje
 	 */
 	private String getRecordingFileName() {
