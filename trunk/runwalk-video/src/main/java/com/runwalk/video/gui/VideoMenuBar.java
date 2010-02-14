@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -18,19 +17,21 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultEditorKit;
-import javax.xml.ws.Action;
+
+import org.jdesktop.application.Action;
 
 import com.runwalk.video.util.ResourceInjector;
 
-public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements PropertyChangeListener {
+public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 
 	private HashMap<JCheckBoxMenuItem, ComponentDecorator<? extends Container>> boxWindowMap = new HashMap<JCheckBoxMenuItem, ComponentDecorator<? extends Container>>();
-	private HashMap<ComponentDecorator<? extends Container>, JCheckBoxMenuItem> windowBoxMap = new HashMap<ComponentDecorator<? extends Container>, JCheckBoxMenuItem>();
+	private HashMap<String, JCheckBoxMenuItem> windowBoxMap = new HashMap<String, JCheckBoxMenuItem>();
 	private JMenu windowMenu;
 	private JDialog aboutBox;
 
@@ -80,9 +81,7 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 		editMenu.add(paste);
 		getComponent().add(editMenu);
 
-		//TODO refactor this into an Action object..
 		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
-
 		getComponent().add(videoMenu);
 
 		windowMenu = new JMenu(getResourceMap().getString("windowMenu.text"));
@@ -106,31 +105,24 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 		getApplication().show(aboutBox);
 	}
 
-	public void addWindow(ComponentDecorator<? extends Container> decorator, boolean addToMenu) {
-		Component component = decorator.getComponent();
+	public void addWindow(ComponentDecorator<? extends Container> componentDecorator, boolean addToMenu) {
+		Component component = componentDecorator.getComponent();
 		if (component instanceof JInternalFrame) {
 			final JInternalFrame frame = (JInternalFrame) component;
-			frame.addPropertyChangeListener(new PropertyChangeListener() {
-
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
-				}
-				
-			});
+			frame.addPropertyChangeListener(new ComponentPropertyChangeListener());
 			frame.addInternalFrameListener(new InternalFrameAdapter() {
 
 				@Override
-				public void internalFrameClosed(InternalFrameEvent e) {
+				public void internalFrameDeactivated(InternalFrameEvent e) {
 					setCheckboxSelection(frame);
 				}
 
+
 				@Override
-				public void internalFrameOpened(InternalFrameEvent e) {
+				public void internalFrameActivated(InternalFrameEvent e) {
 					setCheckboxSelection(frame);
 				}
-				
-				
+
 			});
 		} else if (component instanceof Window) {
 			final Window window = (Window) component;
@@ -145,76 +137,86 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> implements Proper
 				public void windowOpened(WindowEvent e) {
 					setCheckboxSelection(window);
 				}
-				
-				
+
+
 			});
-			window.addPropertyChangeListener(this);	
+			window.addPropertyChangeListener(new ComponentPropertyChangeListener());	
 		}
-		
-		if (!boxWindowMap.containsValue(decorator) && !windowBoxMap.containsKey(decorator)) {
-			JMenu menu = new JMenu(decorator.getName());
-			
-			JCheckBoxMenuItem checkedItem = new JCheckBoxMenuItem(component.getName());
+		JCheckBoxMenuItem checkedItem = null;
+		if (!boxWindowMap.containsValue(componentDecorator)) {
+			JMenu menu = new JMenu(componentDecorator.getName());
+
+			checkedItem = new JCheckBoxMenuItem(getAction("showWindow"));
 			checkedItem.setSelected(component.isVisible());
-			boxWindowMap.put(checkedItem, decorator);
-			windowBoxMap.put(decorator, checkedItem);
+			boxWindowMap.put(checkedItem, componentDecorator);
+			windowBoxMap.put(componentDecorator.getName(), checkedItem);
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.forDigit(windowBoxMap.size(), 9), ActionEvent.CTRL_MASK);
 			checkedItem.setAccelerator(keyStroke);
-			checkedItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
-					boxWindowMap.get(selectedItem).setVisible(selectedItem.isSelected());
-				}
-			});
 			menu.add(checkedItem);
-			
-			ActionMap actionMap = decorator.getActionMap();
+
+			ActionMap actionMap = componentDecorator.getActionMap();
 			if (actionMap != null && actionMap.keys() != null && actionMap.keys().length > 0) {
 				menu.add(new JSeparator());
-				for (Object key : actionMap.keys()) {
+				for (Object key : actionMap.allKeys()) {
 					javax.swing.Action action = actionMap.get(key);
-					JMenuItem item = new JMenuItem(action);
-					if (action.getValue(javax.swing.Action.NAME) == null) {
-						item.setText(action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString());
+					if (getContext().getActionMap().get(key) == null) {
+						JMenuItem item = new JMenuItem(action);
+						if (action.getValue(javax.swing.Action.NAME) == null) {
+							item.setText(action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString());
+						}
+						menu.add(item);
 					}
-//				item.setIcon(null);
-					menu.add(item);
 				}
 			}
 			boolean isInternalFrame = component instanceof JInternalFrame;
 			//TODO add internal frame instance at the end of the menu and after a separator..
 			windowMenu.add(menu);
-		}
+		} 
 	}
 
-	public void removeWindow(Component component) {
-		JCheckBoxMenuItem boxMenuItem = windowBoxMap.get(component);
-		if (boxMenuItem != null) {
-			windowMenu.remove(boxMenuItem);
-			boxWindowMap.remove(boxMenuItem);
-			windowBoxMap.remove(component);
+	@Action
+	public void showWindow(ActionEvent e) {
+		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
+		boxWindowMap.get(selectedItem).setVisible(selectedItem.isSelected());
+	}
+
+	public void removeWindow(ComponentDecorator<? extends Container> componentDecorator) {
+		JCheckBoxMenuItem boxItem = windowBoxMap.get(componentDecorator.getName());
+		if (boxItem != null) {
+			windowMenu.remove(boxItem);
+			boxWindowMap.remove(boxItem);
+			windowBoxMap.remove(componentDecorator.getName());
 		}
 	}
 
 	public void setCheckboxSelection(Component component) {
-		JCheckBoxMenuItem chckBox = windowBoxMap.get(component);
+		JCheckBoxMenuItem chckBox = windowBoxMap.get(component.getName());
 		if (chckBox != null) {
 			chckBox.setSelected(component.isVisible());
 		}
 	}
 
-
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() instanceof Component) {
-			Component source = (Component) evt.getSource();
-			if (windowBoxMap.containsKey(source)) {
-				JCheckBoxMenuItem item = windowBoxMap.get(source);
-				item.setText(source.getName());
-				item.validate();
+	private class ComponentPropertyChangeListener implements PropertyChangeListener {
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals("title")) {
+				String oldValue = evt.getOldValue().toString();
+				String newValue = evt.getNewValue().toString();
+				if (windowBoxMap.containsKey(oldValue)) {
+					JCheckBoxMenuItem item = windowBoxMap.get(oldValue);
+					if (item.getParent() instanceof JPopupMenu) {
+						JPopupMenu menu = (JPopupMenu) item.getParent();
+						menu.setLabel(newValue);
+						menu.setName(newValue);
+						//TODO waarom werk
+						menu.updateUI();
+						menu.revalidate();
+						menu.repaint();
+					}
+					windowBoxMap.remove(oldValue);
+					windowBoxMap.put(newValue, item);
+				}
 			}
 		}
-
-
 	}
 
 }

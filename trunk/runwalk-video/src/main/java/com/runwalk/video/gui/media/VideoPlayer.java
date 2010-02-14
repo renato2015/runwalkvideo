@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -66,6 +67,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 				initFiltergraph(path);
 			} else {
 				getFiltergraph().loadFile(path , 0);
+				updateComponentTitle();
 			}
 		} catch(DSJException e) {
 			/*JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
@@ -85,8 +87,8 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	}
 	
 	private void initFiltergraph(String path) {
-		getLogger().debug("Movie path opened : " + path);
-		int flags = DSFiltergraph.D3D9 | DSMovie.INIT_PAUSED;
+		getLogger().debug("Movie path opened: " + path);
+		int flags = DSFiltergraph.DD7 | DSMovie.INIT_PAUSED;
 		if (customFramerateEnabled) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
@@ -258,6 +260,6 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	public String getName() {
 		return getRecording().getVideoFileName();
 	}
-
+	
 
 }

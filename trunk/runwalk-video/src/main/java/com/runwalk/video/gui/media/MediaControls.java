@@ -372,7 +372,6 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			player = new VideoPlayer(this, recording);
 			player.toggleFullscreen(gs[1]);
-			//TODO listener should also be added for internal frames??
 			player.getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
 				@Override
@@ -381,7 +380,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 						Toolkit.getDefaultToolkit().beep();
 						stopRecording();
 						JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
-								"Opnemen kan enkel met videoscherm open!", "Opname beï¿½indigd", JOptionPane.WARNING_MESSAGE);
+								"Opnemen kan enkel met videoscherm open!", "Opname beëindigd", JOptionPane.WARNING_MESSAGE);
 					}
 					if (!player.isPlaying() && player.isActive()) {
 						setControlsEnabled(false);
@@ -396,8 +395,13 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 				}
 
 				@Override
+				public void windowDeactivated(WindowEvent e) {
+					getLogger().debug("Window deactivated");
+					super.windowDeactivated(e);
+				}
+
+				@Override
 				public void windowClosed(WindowEvent e) {
-					player.disposeFiltergraph();
 					setControlsEnabled(false);
 				}
 
@@ -482,8 +486,6 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 		//			}
 		//		}
 
-		//		System.out.println("bron: " + evt.getSource() + " eigenschap: " + evt.getPropertyName() + " oud: " + evt.getOldValue() + " new:  " + evt.getNewValue() + " frame calback: " + DSFiltergraph.FRAME_CALLBACK);
-		//		System.out.println("bron: "  );
 	}
 
 	public void captureFrameToFront() {
