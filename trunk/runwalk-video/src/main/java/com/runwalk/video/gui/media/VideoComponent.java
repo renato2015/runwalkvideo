@@ -93,11 +93,11 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 		return internalFrame.getComponent();
 	}
 	
-	protected void updateComponentTitle() {
+	protected void setComponentTitle(String title) {
 		if (isFullscreen()) {
-			getFullscreenFrame().setTitle(getName());
+			getFullscreenFrame().setTitle(title);
 		} else {
-			getInternalFrame().setTitle(getName());
+			getInternalFrame().setTitle(title);
 		}
 	}
 
@@ -126,7 +126,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 			}
 		}
 		setFullscreen(!isFullscreen());
-		updateComponentTitle();
+		setComponentTitle(getName());
 		getApplication().addComponent(this);
 	}
 

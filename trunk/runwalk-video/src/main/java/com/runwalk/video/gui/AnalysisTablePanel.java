@@ -1,7 +1,5 @@
 package com.runwalk.video.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -22,11 +20,9 @@ import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
-import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.observablecollections.ObservableList;
@@ -92,16 +88,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		shoes.setFont(AppSettings.MAIN_FONT);
 		JComboBoxBinding<Articles, List<Articles>, JComboBox> cb = SwingBindings.createJComboBoxBinding(AutoBinding.UpdateStrategy.READ, articleList, shoes);
 		cb.bind();
-
-		BindingListener changeListener = new AbstractBindingListener() {
-
-			@Override
-			public void targetChanged(Binding binding, PropertyStateEvent event) {
-				getApplication().getSelectedClient().setDirty(true);
-				getApplication().setSaveNeeded(true);
-			}
-			
-		};
+		
+		AbstractBindingListener changeListener = new ClientBindingListener();
 		
 		//article binding
 		BeanProperty<Analysis, Articles> article = BeanProperty.create("article");

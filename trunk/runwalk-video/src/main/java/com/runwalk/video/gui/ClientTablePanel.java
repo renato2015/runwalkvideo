@@ -98,11 +98,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public Date convertReverse(String arg0) {
-				try {
+				/*try {
 					return DateFormat.getInstance().parse(arg0);
-				} catch (ParseException e) {
+				} catch (ParseException e) {*/
 					return null;
-				}
+				//}
 			}
 		});
 		BindingGroup bindingGroup = new BindingGroup();
