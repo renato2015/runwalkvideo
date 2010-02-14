@@ -61,19 +61,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		ELProperty<Analysis, Boolean> compressed = ELProperty.create("${recording.compressed}");
 		JTableBinding<Analysis, ?, JTable>.ColumnBinding columnBinding = jTableSelectionBinding.addColumnBinding(compressed);
 		//		JTableBinding<Analysis, List<Analysis>, JTable>.ColumnBinding columnBinding = jTableSelectionBinding.addColumnBinding(compressed);
-		columnBinding.addBindingListener(new AbstractBindingListener() {
-
-			@Override
-			public void synced(Binding binding1) {
-				getLogger().debug("synced");
-			}
-
-			@Override
-			public void syncFailed(Binding binding1, SyncFailure syncfailure) {
-				getLogger().debug("sync failed");
-			}
-
-		});
+		
 		columnBinding.setColumnClass(ImageIcon.class);
 		columnBinding.setColumnName("");
 		columnBinding.setConverter(new Converter<Boolean, ImageIcon>() {

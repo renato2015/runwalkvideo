@@ -23,6 +23,10 @@ import de.humatic.dsj.DSMovie;
 
 public class VideoPlayer extends VideoComponent<DSMovie> {
 
+	private static int playerCount = 0;
+
+	private int playerId;
+
 	public static final String POSITION = "position";
 
 	public static final String PLAYING = "playing";
@@ -40,9 +44,11 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	private int position, timePlaying;
 
 	private float volume;
-	
+
 	public VideoPlayer(PropertyChangeListener listener, Recording recording) {
 		super(listener);
+		playerCount++;
+		this.playerId = playerCount;
 		setTimer(new Timer(50, null));
 		getTimer().addActionListener(new ActionListener() {
 
@@ -67,7 +73,6 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 				initFiltergraph(path);
 			} else {
 				getFiltergraph().loadFile(path , 0);
-				updateComponentTitle();
 			}
 		} catch(DSJException e) {
 			/*JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
@@ -85,7 +90,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
+
 	private void initFiltergraph(String path) {
 		getLogger().debug("Movie path opened: " + path);
 		int flags = DSFiltergraph.DD7 | DSMovie.INIT_PAUSED;
@@ -134,7 +139,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		}
 		return isPlaying();
 	}
-	
+
 	private void suspendPlayer() {
 		getTimer().stop();
 		setPlaying(false);
@@ -150,7 +155,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		getFiltergraph().stop();
 		getFiltergraph().setTimeValue(0);
 	}
-	
+
 	public void forward() {
 		if (isPlaying() && playRateIndex < PLAY_RATES.length - 1) {
 			setPlayRateIndex(++playRateIndex);
@@ -196,7 +201,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 		}
 		setPosition(0);
 	}
-	
+
 	public int makeSnapshot() {
 		if (isPlaying()) {
 			togglePlay();
@@ -220,7 +225,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 			return false;
 		}
 	}
-	
+
 	public void increaseVolume() {
 		getFiltergraph().setVolume(1.25f * getFiltergraph().getVolume());
 	}
@@ -246,11 +251,11 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 	public boolean isPlaying() {
 		return playing;
 	}
-	
+
 	public int getPosition(){
 		return getFiltergraph().getTime();
 	}
-	
+
 	public void setPosition(int position) {
 		getFiltergraph().setTimeValue(position);
 		firePropertyChange(POSITION, this.position, this.position = position);
@@ -258,8 +263,8 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 
 	@Override
 	public String getName() {
-		return getRecording().getVideoFileName();
+		return getResourceMap().getString("windowTitle.text", playerId);
 	}
-	
+
 
 }

@@ -32,7 +32,6 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
-import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.Binding.SyncFailure;
@@ -46,7 +45,6 @@ import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
-import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.util.AppSettings;
 
 /**
@@ -103,16 +101,6 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 
 		//Create some undo and redo actions
 		UndoableEditListener undoListener = RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener();
-		
-		BindingListener bindingListener = new AbstractBindingListener() {
-
-			@Override
-			public void targetChanged(Binding binding, PropertyStateEvent event) {
-				getApplication().getSelectedClient().setDirty(true);
-				getApplication().setSaveNeeded(true);
-			}
-			
-		};
 
 		JTable clientTable = RunwalkVideoApp.getApplication().getClientTable();
 		BindingGroup bindingGroup = new BindingGroup();
@@ -363,7 +351,7 @@ public class ClientInfoPanel extends ComponentDecorator<JPanel> {
 				return Integer.toString(((City) object).getCode());
 			}
 		});
-		bindingGroup.addBindingListener(bindingListener);
+		bindingGroup.addBindingListener(new ClientBindingListener());
 		bindingGroup.bind();
 		
 	}

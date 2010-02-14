@@ -121,7 +121,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		}
 	}
 
-	private DSCapture initFiltergraph() {
+	private void initFiltergraph() {
 		if (cameraSelectionDialog == null) {
 			cameraSelectionDialog = new CameraDialog(getApplication().getMainFrame());
 			cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
@@ -150,7 +150,6 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		getApplication().show(cameraSelectionDialog.getComponent());
 		setFiltergraph(new DSCapture(DSFiltergraph.DD7, selectedDevice, false, DSFilterInfo.doNotRender(), getPropertyChangeListeners()[0]));
 		getFiltergraph().lockAspectRatio(true);
-		return getFiltergraph();
 	}
 
 	public void startRecording(Recording recording) {
@@ -167,7 +166,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
 		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(),	DSFilterInfo.doNotRender(),	true);
-		getLogger().debug("Movie recording to file " + destFile.getAbsolutePath() + "");
+		getLogger().debug("Recording to file " + destFile.getAbsolutePath() + "");
 		getLogger().debug("Video encoder = " + getCaptureEncoder().getName() + ".");
 		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter()+ ".");
 
@@ -222,7 +221,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 	}
 
 	public String getName() {
-		return "Camera: " + selectedDevice.getName();
+		return getResourceMap().getString("windowTitle.text", selectedDevice.getName());
 	}
 
 	public boolean isRecording() {

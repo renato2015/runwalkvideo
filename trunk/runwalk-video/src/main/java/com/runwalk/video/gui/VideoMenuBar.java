@@ -1,5 +1,6 @@
 package com.runwalk.video.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -82,7 +83,7 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 		getComponent().add(editMenu);
 
 		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
-		getComponent().add(videoMenu);
+//		getComponent().add(videoMenu);
 
 		windowMenu = new JMenu(getResourceMap().getString("windowMenu.text"));
 		getComponent().add(windowMenu);
@@ -109,7 +110,7 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 		Component component = componentDecorator.getComponent();
 		if (component instanceof JInternalFrame) {
 			final JInternalFrame frame = (JInternalFrame) component;
-			frame.addPropertyChangeListener(new ComponentPropertyChangeListener());
+//			frame.addPropertyChangeListener(new ComponentPropertyChangeListener());
 			frame.addInternalFrameListener(new InternalFrameAdapter() {
 
 				@Override
@@ -140,7 +141,7 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 
 
 			});
-			window.addPropertyChangeListener(new ComponentPropertyChangeListener());	
+//			window.addPropertyChangeListener(new ComponentPropertyChangeListener());	
 		}
 		JCheckBoxMenuItem checkedItem = null;
 		if (!boxWindowMap.containsValue(componentDecorator)) {
@@ -193,29 +194,6 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 		JCheckBoxMenuItem chckBox = windowBoxMap.get(component.getName());
 		if (chckBox != null) {
 			chckBox.setSelected(component.isVisible());
-		}
-	}
-
-	private class ComponentPropertyChangeListener implements PropertyChangeListener {
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("title")) {
-				String oldValue = evt.getOldValue().toString();
-				String newValue = evt.getNewValue().toString();
-				if (windowBoxMap.containsKey(oldValue)) {
-					JCheckBoxMenuItem item = windowBoxMap.get(oldValue);
-					if (item.getParent() instanceof JPopupMenu) {
-						JPopupMenu menu = (JPopupMenu) item.getParent();
-						menu.setLabel(newValue);
-						menu.setName(newValue);
-						//TODO waarom werk
-						menu.updateUI();
-						menu.revalidate();
-						menu.repaint();
-					}
-					windowBoxMap.remove(oldValue);
-					windowBoxMap.put(newValue, item);
-				}
-			}
 		}
 	}
 

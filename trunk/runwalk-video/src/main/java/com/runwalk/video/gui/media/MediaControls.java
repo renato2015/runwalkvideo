@@ -68,7 +68,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 	private AbstractButton playButton;
 	
 	public MediaControls() {
-		super("Media controls", false);
+		super("Media bediening", false);
 
 		BindingGroup bindingGroup = new BindingGroup();
 		BeanProperty<MediaControls, Boolean> controlsEnabled = BeanProperty.create("controlsEnabled");
@@ -321,6 +321,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 					if (!recorder.isRecording()) {
 						setControlsEnabled(true);
 					}
+					getComponent().setTitle("Media Controls > " + recorder.getName());
 				}
 			});
 		}
@@ -392,12 +393,12 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 					if (!player.isPlaying()) {
 						setControlsEnabled(false);
 					}
+					getComponent().setTitle("Media Controls > " + player.getName() + " > " + recording.getVideoFileName());
 				}
-
+				
 				@Override
 				public void windowDeactivated(WindowEvent e) {
-					getLogger().debug("Window deactivated");
-					super.windowDeactivated(e);
+					setControlsEnabled(false);
 				}
 
 				@Override
@@ -467,7 +468,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
+//		getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
 		if (evt.getPropertyName().equals(VideoPlayer.POSITION)) {
 			//			updateTimeStamps((Integer) evt.getNewValue());
 			updateTimeStamps();
