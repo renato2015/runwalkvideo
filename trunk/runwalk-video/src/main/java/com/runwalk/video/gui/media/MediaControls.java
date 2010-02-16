@@ -393,7 +393,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 					if (!player.isPlaying()) {
 						setControlsEnabled(false);
 					}
-					getComponent().setTitle("Media Controls > " + player.getName() + " > " + recording.getVideoFileName());
+					getComponent().setTitle("Media Controls > " + player.getName() + " > " + player.getRecording().getVideoFileName());
 				}
 				
 				@Override
@@ -409,6 +409,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 			});
 		} else {
 			player.loadFile(recording);
+			getComponent().setTitle("Media Controls > " + player.getName() + " > " + player.getRecording().getVideoFileName());
 		}
 		player.toFront();
 		getSlider().setValue(0);
@@ -459,10 +460,10 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 	
 	public void disposeGraphs() {
 		if (recorder != null) {
-			recorder.disposeFiltergraph();
+			recorder.disposeFiltergraph(true);
 		}
 		if (player != null) {
-			player.disposeFiltergraph();
+			player.disposeFiltergraph(true);
 		}
 	}
 

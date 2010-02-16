@@ -382,7 +382,7 @@
 		<snapshotRepository>
 			<id>local-repo</id>
 			<name>local-repo</name>
-			<url>${localRepository}</url>
+			<url>${settings.localRepository}</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<profiles>
@@ -399,7 +399,7 @@
 				<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
 				<jdbc.user>remoteUser</jdbc.user>
 				<jdbc.password>remotePwd</jdbc.password>			
-				<codeBase>${project.url}/$(ftp.remotedir}</codeBase>
+				<codeBase>${project.url}/${ftp.remotedir}</codeBase>
 			</properties>
 		</profile>
 		<!-- Profile to test the webstart app with the remote db -->
@@ -425,8 +425,8 @@
    			<properties>
    				<!-- Default JDBC properties -->
    				<jdbc.url>jdbc:mysql://localhost:3306/testdb</jdbc.url>
-				<jdbc.user>localUser</jdbc.user>
-				<jdbc.password>localPwd</jdbc.password>
+				  <jdbc.user>localUser</jdbc.user>
+				  <jdbc.password>localPwd</jdbc.password>
    				<codeBase>file:///${project.build.directory}/</codeBase>
    			</properties> 
 		</profile>

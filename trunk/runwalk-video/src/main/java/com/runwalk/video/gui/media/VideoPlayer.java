@@ -81,7 +81,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 					"Fout bij openen filmpje",
 					JOptionPane.ERROR_MESSAGE);*/
 			getLogger().error("Movie initialization failed.", e);
-			disposeFiltergraph();
+			disposeFiltergraph(false);
 			initFiltergraph(path);
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
