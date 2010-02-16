@@ -71,7 +71,8 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	public boolean getRejectPauseFilter() {
 		return rejectPauseFilter;
 	}
-
+	
+	//TODO dit zou een actie kunnen worden!! de waarde van die checkbox kan je uit een UI element halen.
 	public void setRejectPauseFilter(boolean rejectPauseFilter) {
 		this.rejectPauseFilter = rejectPauseFilter;
 		getLogger().debug("Pause filter rejection for filtergraph " + getName() + " now set to " + rejectPauseFilter);
@@ -180,6 +181,7 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	}
 
 	//@Action
+	//TODO hier een actie van maken..
 	public void insertFilter(String name) {
 		DSFilterInfo filterinfo = DSFilterInfo.filterInfoForName(name);
 		if (getFiltergraph() != null) {
@@ -196,10 +198,12 @@ public abstract class VideoComponent<T extends DSFiltergraph> extends ComponentD
 	/**
 	 * TODO deze method ook in de compresstask gebruiken!
 	 */
-	public void disposeFiltergraph() {
+	public void disposeFiltergraph(boolean clearRecording) {
 		getApplication().getMenuBar().removeWindow(this);
 		AppUtil.disposeDSGraph(getFiltergraph());
-		setRecording(null);
+		if (clearRecording) {
+			setRecording(null);
+		}
 	}
 
 	public boolean hasRecording() {

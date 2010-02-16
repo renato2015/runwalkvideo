@@ -178,7 +178,11 @@ public class VideoMenuBar extends ComponentDecorator<JMenuBar> {
 	@Action
 	public void showWindow(ActionEvent e) {
 		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
-		boxWindowMap.get(selectedItem).setVisible(selectedItem.isSelected());
+		ComponentDecorator<? extends Container> component = boxWindowMap.get(selectedItem);
+		//FIXME this should not be null!!
+		if (component != null) {
+			component.setVisible(selectedItem.isSelected());
+		}
 	}
 
 	public void removeWindow(ComponentDecorator<? extends Container> componentDecorator) {
