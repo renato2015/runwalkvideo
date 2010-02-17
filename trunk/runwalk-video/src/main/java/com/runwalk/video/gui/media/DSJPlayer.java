@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -21,7 +20,7 @@ import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSMovie;
 
 
-public class VideoPlayer extends VideoComponent<DSMovie> {
+public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private static int playerCount = 0;
 
@@ -45,7 +44,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 
 	private float volume;
 
-	public VideoPlayer(PropertyChangeListener listener, Recording recording) {
+	public DSJPlayer(PropertyChangeListener listener, Recording recording) {
 		super(listener);
 		playerCount++;
 		this.playerId = playerCount;
@@ -81,7 +80,7 @@ public class VideoPlayer extends VideoComponent<DSMovie> {
 					"Fout bij openen filmpje",
 					JOptionPane.ERROR_MESSAGE);*/
 			getLogger().error("Movie initialization failed.", e);
-			disposeFiltergraph(false);
+			dispose(false);
 			initFiltergraph(path);
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
