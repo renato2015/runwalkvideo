@@ -65,12 +65,12 @@ public class CameraDialog extends ComponentDecorator<JDialog> {
 	public void dismissDialog() {
 		setVisible(false);
 		int selectedIndex = captureDeviceComboBox.getSelectedIndex();
-		firePropertyChange(VideoRecorder.CAPTURE_DEVICE, currentSelection, selectedIndex);
+		firePropertyChange(DSJCapturer.CAPTURE_DEVICE, currentSelection, selectedIndex);
 	}
 	
     @Action
     public void refreshCaptureDevices() {
-    	String[] captureDevices = VideoRecorder.queryCaptureDevices();
+    	String[] captureDevices = DSJCapturer.queryCaptureDevices();
     	captureDeviceComboBox.setModel(new DefaultComboBoxModel(captureDevices));
     }
 

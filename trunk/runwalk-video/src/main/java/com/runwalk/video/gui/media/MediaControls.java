@@ -57,8 +57,8 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 	private JLabel time;
 	private JSlider scroll;
 
-	private VideoPlayer player;
-	private VideoRecorder recorder;
+	private IVideoPlayer player;
+	private IVideoCapturer recorder;
 	
 	private Boolean recordingSelected = false;
 	private boolean recordingEnabled, controlsEnabled, stopEnabled;
@@ -296,7 +296,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 
 	public void startCapturer() {
 		if (recorder == null) {
-			recorder = new VideoRecorder(this);
+			recorder = new DSJCapturer(this);
 			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
@@ -371,7 +371,7 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 		if (player == null) {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
-			player = new VideoPlayer(this, recording);
+			player = new DSJPlayer(this, recording);
 			player.toggleFullscreen(gs[1]);
 			player.getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
@@ -460,22 +460,22 @@ public class MediaControls extends MyInternalFrame implements PropertyChangeList
 	
 	public void disposeGraphs() {
 		if (recorder != null) {
-			recorder.disposeFiltergraph(true);
+			recorder.dispose(true);
 		}
 		if (player != null) {
-			player.disposeFiltergraph(true);
+			player.dispose(true);
 		}
 	}
 
 
 	public void propertyChange(PropertyChangeEvent evt) {
 //		getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
-		if (evt.getPropertyName().equals(VideoPlayer.POSITION)) {
+		if (evt.getPropertyName().equals(IVideoPlayer.POSITION)) {
 			//			updateTimeStamps((Integer) evt.getNewValue());
 			updateTimeStamps();
 			//			getSlider().setValue(getSliderPosition((Integer) evt.getNewValue()));
 			getLogger().debug("Position changed :" + evt.getNewValue());
-		} else if (evt.getPropertyName().equals(VideoPlayer.PLAYING)) {
+		} else if (evt.getPropertyName().equals(IVideoPlayer.PLAYING)) {
 			playButton.setSelected((Boolean) evt.getNewValue());
 		}
 		//		if (engine.isPlaying()) {

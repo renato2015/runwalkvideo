@@ -24,9 +24,7 @@ import de.humatic.dsj.DSMediaType;
 import de.humatic.dsj.DSCapture.CaptureDevice;
 import de.humatic.dsj.DSFilter.DSPin;
 
-public class VideoRecorder extends VideoComponent<DSCapture> {
-
-	public static final String TIME_RECORDED = "timeRecorded";
+public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
 	public static final String CAPTURE_DEVICE = "captureDevice";
 
@@ -56,7 +54,7 @@ public class VideoRecorder extends VideoComponent<DSCapture> {
 		return devices;
 	}
 	
-	public VideoRecorder(PropertyChangeListener listener) {
+	public DSJCapturer(PropertyChangeListener listener) {
 		super(listener);
 		initFiltergraph();
 	}

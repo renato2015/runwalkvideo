@@ -382,7 +382,7 @@
 		<snapshotRepository>
 			<id>local-repo</id>
 			<name>local-repo</name>
-			<url>${settings.localRepository}</url>
+			<url>${user.home}/.m2/repository</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<profiles>
