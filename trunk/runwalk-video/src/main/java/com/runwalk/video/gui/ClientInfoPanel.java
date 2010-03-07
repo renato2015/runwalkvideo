@@ -55,13 +55,13 @@ import com.runwalk.video.util.AppSettings;
  *
  */
 @SuppressWarnings("serial")
-public class ClientInfoPanel extends ComponentDecorator<JPanel> {
+public class ClientInfoPanel extends AppPanel {
 
 	private JTextField nameField, firstnameField;
 
 	@SuppressWarnings("unchecked")
 	public ClientInfoPanel() {
-		super(new JPanel(new org.netbeans.lib.awtextra.AbsoluteLayout()));
+		setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(ClientInfoPanel.class);
 		
 		JLabel nameLabel = new JLabel();

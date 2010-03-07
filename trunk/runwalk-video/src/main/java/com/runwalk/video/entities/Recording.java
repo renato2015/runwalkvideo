@@ -21,8 +21,8 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.entities.VideoFileImpl.CompressedVideoFile;
-import com.runwalk.video.entities.VideoFileImpl.UncompressedVideoFile;
+import com.runwalk.video.entities.VideoFile.CompressedVideoFile;
+import com.runwalk.video.entities.VideoFile.UncompressedVideoFile;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")

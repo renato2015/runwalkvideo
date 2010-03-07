@@ -14,7 +14,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationActionMap;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -25,12 +29,14 @@ import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.swingbinding.JTableBinding;
 
+import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.AppSettings;
 
-public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends ComponentDecorator<JPanel> {
+@SuppressWarnings("serial")
+public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel implements AppComponent {
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	protected static final String ROW_SELECTED = "rowSelected";
@@ -43,7 +49,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	//	private JTableBinding<Analysis, List<Analysis>, JTable> jTableSelectionBinding;
 	
 	public  AbstractTablePanel(LayoutManager mgr) {
-		super(new JPanel(mgr));
+		setLayout(mgr);
 		table = new JTable();
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
 		getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -169,6 +175,35 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public List<T> getItemList() {
 		return itemList;
 	}
+	
+	public javax.swing.Action getAction(String name) {
+		return getApplicationActionMap().get(name);
+	}
+
+	public RunwalkVideoApp getApplication() {
+		return RunwalkVideoApp.getApplication();
+	}
+
+	public JPanel getComponent() {
+		return this;
+	}
+
+	public ApplicationContext getContext() {
+		return getApplication().getContext();
+	}
+
+	public Logger getLogger() {
+		return Logger.getLogger(getClass());
+	}
+
+	public ResourceMap getResourceMap() {
+		return getContext().getResourceMap(getClass(), AbstractTablePanel.class);
+	}
+	
+	public ApplicationActionMap getApplicationActionMap() {
+		return getContext().getActionMap(AbstractTablePanel.class, this);
+	}
+
 	
 	protected class CustomJTableRenderer implements TableCellRenderer {
 		private TableCellRenderer __defaultRenderer;

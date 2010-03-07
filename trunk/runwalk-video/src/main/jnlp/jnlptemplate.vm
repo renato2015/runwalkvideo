@@ -26,7 +26,6 @@
 #end
 #end
 	</resources>
-#*
 	<resources os="Windows">
 #foreach( $dependency in $fulldependencies )
 #if ( $dependency.classifier == 'natives-win' )
@@ -34,7 +33,6 @@
 #end
 #end
 	</resources>
-*#
 	<resources os="Windows" arch="x86">
 #foreach( $dependency in $fulldependencies )
 #if ( $dependency.classifier == 'natives-win-x86' )
@@ -45,6 +43,13 @@
 	<resources os="Windows" arch="amd64">
 #foreach( $dependency in $fulldependencies )
 #if ( $dependency.classifier == 'natives-win-amd64' )
+		<nativelib href="$libFolder/${dependency.artifactId}-${dependency.version}-${dependency.classifier}.jar" />
+#end
+#end
+	</resources>
+	<resources os="Mac OS X">
+#foreach( $dependency in $fulldependencies )
+#if ( $dependency.classifier == 'natives-mac' )
 		<nativelib href="$libFolder/${dependency.artifactId}-${dependency.version}-${dependency.classifier}.jar" />
 #end
 #end

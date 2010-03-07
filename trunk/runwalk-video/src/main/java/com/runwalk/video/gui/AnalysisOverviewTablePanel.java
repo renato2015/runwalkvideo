@@ -14,14 +14,11 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
-import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
@@ -36,6 +33,7 @@ import com.runwalk.video.gui.tasks.CompressTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
+@SuppressWarnings("serial")
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String CLEANUP_ENABLED = "cleanupEnabled";

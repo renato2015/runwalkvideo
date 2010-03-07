@@ -194,6 +194,16 @@
 									<outputDirectory>${libFolderPath}</outputDirectory>
 									<overWrite>true</overWrite>
 								</artifactItem>
+								<artifactItem>
+									<groupId>com.sun.javafx.jmc</groupId>
+									<artifactId>javafx-jmc-nativelib</artifactId>
+									<version>1.2</version>
+									<classifier>natives-win</classifier>
+									<type>jar</type>
+									<includes>**/*.dll</includes>
+									<outputDirectory>${libFolderPath}</outputDirectory>
+									<overWrite>true</overWrite>
+								</artifactItem>
 							</artifactItems>
 							<!-- 
 							<overWriteReleases>false</overWriteReleases>
@@ -286,7 +296,17 @@
 			<artifactId>dsj</artifactId>
 			<version>${dsj.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.sun.javafx.jmc</groupId>
+			<artifactId>javafx-jmc</artifactId>
+    		<version>1.2</version>
+		</dependency>
 		<!-- Swing libraries -->
+		<dependency>
+			<groupId>com.jidesoft</groupId>
+			<artifactId>jide-oss</artifactId>
+			<version>2.8.2</version>
+		</dependency>
 		<dependency>
 			<groupId>it.tidalwave.betterbeansbinding</groupId>
 			<artifactId>betterbeansbinding-core</artifactId>
@@ -350,6 +370,12 @@
 			<id>runwalk repo</id>
 			<url>${project.url}/maven2</url>
 		</repository>
+		<repository>
+      		<id>maven2-repository.dev.java.net</id>
+      		<name>Java.net Repository for Maven</name>
+      		<url>http://download.java.net/maven/2/</url>
+      		<layout>default</layout>
+    	</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>

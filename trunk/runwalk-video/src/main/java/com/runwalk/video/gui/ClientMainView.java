@@ -8,7 +8,7 @@ import javax.swing.JTabbedPane;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
-public class ClientMainView extends MyInternalFrame {
+public class ClientMainView extends AppInternalFrame {
 	
 	private JTabbedPane tabPanel;
 
@@ -29,7 +29,7 @@ public class ClientMainView extends MyInternalFrame {
 		
 		setLayout(new BorderLayout());
 		getComponent().add(contentPanel, BorderLayout.CENTER);
-		getComponent().add(getApplication().getStatusPanel().getComponent(), BorderLayout.SOUTH);
+		getComponent().add(getApplication().getStatusPanel(), BorderLayout.SOUTH);
 	}
 
 

@@ -7,18 +7,18 @@ package com.runwalk.video.gui;
 import java.awt.Frame;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 
 import org.jdesktop.application.Action;
 
-public class RunwalkVideoAboutBox extends ComponentDecorator<JDialog> {
+@SuppressWarnings("serial")
+public class RunwalkVideoAboutBox extends AppDialog implements AppComponent {
 
     private JButton closeButton;
 	
 	public RunwalkVideoAboutBox(Frame parent) {
-        super(new JDialog(parent));
+        super(parent);
         initComponents();
-        getComponent().getRootPane().setDefaultButton(closeButton);
+        getRootPane().setDefaultButton(closeButton);
     }
 
     @Action 
@@ -45,9 +45,9 @@ public class RunwalkVideoAboutBox extends ComponentDecorator<JDialog> {
         javax.swing.JLabel appDescLabel = new javax.swing.JLabel();
         javax.swing.JLabel imageLabel = new javax.swing.JLabel();
 
-        getComponent().setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        getComponent().setModal(true);
-        getComponent().setResizable(false);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setModal(true);
+        setResizable(false);
 
         closeButton.setAction(getAction("closeAboutBox")); // NOI18N
 
@@ -73,7 +73,7 @@ public class RunwalkVideoAboutBox extends ComponentDecorator<JDialog> {
         imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getComponent().getContentPane());
-        getComponent().getContentPane().setLayout(layout);
+        getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -120,7 +120,7 @@ public class RunwalkVideoAboutBox extends ComponentDecorator<JDialog> {
                 .addContainerGap())
         );
 
-        getComponent().pack();
+       pack();
     }
     
     

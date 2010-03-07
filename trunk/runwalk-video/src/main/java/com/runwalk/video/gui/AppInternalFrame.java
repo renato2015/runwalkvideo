@@ -1,49 +1,75 @@
 package com.runwalk.video.gui;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
+import javax.swing.Action;
 import javax.swing.JInternalFrame;
 
+import org.apache.log4j.Logger;
+import org.jdesktop.application.ApplicationActionMap;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
+import com.runwalk.video.RunwalkVideoApp;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
  * An abstract class that can be ineherited to create an in application frame.
  * @author Jeroen Peelaerts
  */
-public class MyInternalFrame extends ComponentDecorator<BaseInternalFrame> {
+@SuppressWarnings("serial")
+public class AppInternalFrame extends BaseInternalFrame implements AppComponent {
 
 	/**
 	 * Create a new JInternalFrame.
 	 * @param title set the frame's title.
 	 * @param resizable set whether the frame should be resizable.
 	 */
-	public MyInternalFrame(boolean resizable) {
+	public AppInternalFrame(boolean resizable) {
 		this("", resizable);
 	}
 	
-	public MyInternalFrame(String title, boolean resizable) {
-		super(new BaseInternalFrame(title, resizable, true));
+	public AppInternalFrame(String title, boolean resizable) {
+		super(title, resizable, true);
 		getComponent().setName(title);
 		getComponent().setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		getComponent().setResizable(resizable);
 	}
-	
-	public void pack() {
-		getComponent().pack();
+
+	public Action getAction(String name) {
+		return getApplicationActionMap().get(name);
+	}
+
+	public RunwalkVideoApp getApplication() {
+		return RunwalkVideoApp.getApplication();
+	}
+
+	public BaseInternalFrame getComponent() {
+		return this;
+	}
+
+	public ApplicationContext getContext() {
+		return getApplication().getContext();
+	}
+
+	public Logger getLogger() {
+		return Logger.getLogger(getClass());
+	}
+
+	public ResourceMap getResourceMap() {
+		return getContext().getResourceMap(getClass(), AppInternalFrame.class);
 	}
 	
-	public Container getContentPane() {
-		return getComponent().getContentPane();
+	public ApplicationActionMap getApplicationActionMap() {
+		return getContext().getActionMap(AppInternalFrame.class, this);
 	}
-	
+
 	public static class InternalFrameState extends WindowState {
 
 		public InternalFrameState() {
@@ -113,6 +139,7 @@ public class MyInternalFrame extends ComponentDecorator<BaseInternalFrame> {
 		}
 
 	}
+
 
 }
 
