@@ -3,8 +3,6 @@ package com.runwalk.video.gui;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +46,7 @@ import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
+@SuppressWarnings("serial")
 public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	private static final String SAVE_NEEDED = "saveNeeded";
@@ -61,7 +60,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@SuppressWarnings("unchecked")
 	public ClientTablePanel() {
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
-		getComponent().setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
+		setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
 
 		update();

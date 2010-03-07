@@ -40,6 +40,7 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
+@SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String CLIENT_SELECTED = "clientSelected";

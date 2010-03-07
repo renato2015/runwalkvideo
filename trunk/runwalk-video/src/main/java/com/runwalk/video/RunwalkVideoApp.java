@@ -26,8 +26,8 @@ import com.runwalk.video.gui.AnalysisTablePanel;
 import com.runwalk.video.gui.ClientInfoPanel;
 import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.ClientTablePanel;
-import com.runwalk.video.gui.ComponentDecorator;
-import com.runwalk.video.gui.MyInternalFrame;
+import com.runwalk.video.gui.AppComponent;
+import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.StatusPanel;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
@@ -91,7 +91,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	private void loadUIState() throws IOException {
-		getContext().getSessionStorage().putProperty(MyInternalFrame.class, new MyInternalFrame.InternalFrameProperty());
+		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
 		getContext().getSessionStorage().restore(getMainFrame(), "desktopPane.xml");
 		getContext().getSessionStorage().restore(getMediaControls().getComponent(), "controlFrame.xml");
 		getContext().getSessionStorage().restore(getClientMainView().getComponent(), "mainFrame.xml");
@@ -149,17 +149,17 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 	
 	//TODO make this createOrShowComponent!!
-	public void addComponent(ComponentDecorator<? extends Container> decorator) {
-		Container container = decorator.getComponent();
-		if (decorator.getComponent() instanceof JInternalFrame) {
+	public void addComponent(AppComponent appComponent) {
+		Container container = appComponent.getComponent();
+		if (appComponent.getComponent() instanceof JInternalFrame) {
 			JInternalFrame jInternalFrame = (JInternalFrame) container;
 			if (!jInternalFrame.isShowing()) {
 				jInternalFrame.pack();
 				pane.add(jInternalFrame);
 			}
 		}
-		decorator.setVisible(true);
-		getMenuBar().addWindow(decorator, true);
+		appComponent.getComponent().setVisible(true);
+		getMenuBar().addWindow(appComponent, true);
 	}
 
 	@Override 

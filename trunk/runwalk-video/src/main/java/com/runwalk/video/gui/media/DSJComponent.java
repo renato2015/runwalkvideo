@@ -1,16 +1,17 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Container;
+import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 
 import javax.swing.JOptionPane;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.MyInternalFrame;
 import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSFilter;
@@ -23,24 +24,21 @@ import de.humatic.dsj.DSFiltergraph;
  *
  * @param <T> The specific DSFiltergraph class used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> extends VideoComponent {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
 
 	private T filtergraph;
 	private boolean rejectPauseFilter = false;
 
 	/**
-	 * Constructor for 'normal' mode
-	 */
-	public DSJComponent(PropertyChangeListener listener) {
-		super(listener);
-	}
-
-	/**
 	 * Constructor for fullscreen mode..
 	 * @param device the {@link GraphicsDevice} where the Frame will be displayed
 	 */
-	public DSJComponent(PropertyChangeListener listener, GraphicsDevice device) {
-		this(listener);
+	public DSJComponent(GraphicsDevice device) {
+
+	}
+	
+	public DSJComponent() {
+		
 	}
 
 	protected T getFiltergraph() {
@@ -54,40 +52,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> extends VideoCompone
 	public boolean getRejectPauseFilter() {
 		return rejectPauseFilter;
 	}
-	
+
 	//TODO dit zou een actie kunnen worden!! de waarde van die checkbox kan je uit een UI element halen.
 	public void setRejectPauseFilter(boolean rejectPauseFilter) {
 		this.rejectPauseFilter = rejectPauseFilter;
 		getLogger().debug("Pause filter rejection for filtergraph " + getName() + " now set to " + rejectPauseFilter);
 	}
 
-	//TODO dit zou een actie moeten worden, het GraphicsDevice moet vooraf gekozen worden!
-	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
-	public void toggleFullscreen(GraphicsDevice device) {
-		if (isFullscreen()) {
-			getFiltergraph().leaveFullScreen();
-			if (internalFrame == null) {
-				internalFrame = new MyInternalFrame(getName(), false);
-				internalFrame.add(getFiltergraph().asComponent());
-			} else {
-				internalFrame.setVisible(true);
-			}
-		} else {
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			GraphicsDevice[] gs = ge.getScreenDevices();
-			if (gs.length > 1) {
-				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
-				if (internalFrame != null) {
-//					internalFrame.remove(getFiltergraph().asComponent());
-					internalFrame.setVisible(false);
-				}
-				fullScreenFrame = getFiltergraph().getFullScreenWindow();
-				
-			}
-		}
-		setFullscreen(!isFullscreen());
-		setComponentTitle(getName());
-		getApplication().addComponent(this);
+	protected Logger getLogger() {
+		return Logger.getLogger(DSJComponent.class);
 	}
 
 	@Action
@@ -126,17 +99,33 @@ public abstract class DSJComponent<T extends DSFiltergraph> extends VideoCompone
 			getFiltergraph().insertFilter(installedFilters[1], installedFilters[3], filterinfo);
 		}
 	}
-	
-	public void dispose(boolean clearRecording) {
-		getApplication().getMenuBar().removeWindow(this);
+
+	public void dispose() {
 		AppUtil.disposeDSGraph(getFiltergraph());
-		if (clearRecording) {
-			setRecording(null);
-		}
 	}
 
 	public boolean isActive() {
-		return getFiltergraph() != null && isVisible() && getFiltergraph().getActive();
+		return getFiltergraph() != null && getFiltergraph().getActive();
+	}
+
+	public Container getComponent() {
+		return (Container) getFiltergraph().asComponent();
+	}
+
+	public Frame getFullscreenFrame() {
+		return getFiltergraph().getFullScreenWindow();
+	}
+
+	public void toggleFullScreen(GraphicsDevice device, boolean fullscreen) {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] gs = ge.getScreenDevices();
+		if (gs.length > 1) {
+			if (fullscreen) {
+				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
+			} else {
+				getFiltergraph().leaveFullScreen();
+			}
+		}
 	}
 
 }

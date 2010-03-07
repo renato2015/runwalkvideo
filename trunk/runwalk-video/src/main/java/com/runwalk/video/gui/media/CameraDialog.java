@@ -15,26 +15,31 @@ import org.jdesktop.application.Action;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
-import com.runwalk.video.gui.ComponentDecorator;
+import com.runwalk.video.gui.AppDialog;
 
-public class CameraDialog extends ComponentDecorator<JDialog> {
+@SuppressWarnings("serial")
+public class CameraDialog extends AppDialog {
 
 	private JComboBox captureDeviceComboBox;
 	
 	private int currentSelection;
+	
+	private IVideoCapturer capturerImpl;
 
-	public CameraDialog(Frame parent) {
-		super(new JDialog(parent, true));
-		getComponent().addWindowListener(new WindowAdapter() {
+	public CameraDialog(Frame parent, IVideoCapturer capturerImpl) {
+		super(parent, true);
+		this.capturerImpl = capturerImpl;
+		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
 
 			@Override
-			public void windowClosed(WindowEvent arg0) {
+			public void windowClosing(WindowEvent e) {
 				System.exit(1);
 			}
 			
 		});
-		getComponent().setTitle(getResourceMap().getString("captureDeviceDlg.title")); // NOI18N
-		getComponent().setResizable(false);
+		setTitle(getResourceMap().getString("captureDeviceDlg.title")); // NOI18N
+		setResizable(false);
 		setLayout(new AbsoluteLayout());
 		
 		captureDeviceComboBox = new JComboBox();
@@ -49,12 +54,13 @@ public class CameraDialog extends ComponentDecorator<JDialog> {
 		add(refreshButton, new AbsoluteConstraints(105, 60, 90, 25));
 		JButton okButton = new JButton(getAction("dismissDialog"));
 		add(okButton, new AbsoluteConstraints(200, 60, 60, 25));
-		getComponent().getRootPane().setDefaultButton(okButton);
+		getRootPane().setDefaultButton(okButton);
 
 		refreshCaptureDevices();
 		captureDeviceComboBox.setSelectedIndex(currentSelection);
 		setPreferredSize(new Dimension(275, 125));
-		getComponent().pack();
+
+		pack();
 	}
 	
 	public void setCurrentSelection(int previousSelection) {
@@ -65,13 +71,17 @@ public class CameraDialog extends ComponentDecorator<JDialog> {
 	public void dismissDialog() {
 		setVisible(false);
 		int selectedIndex = captureDeviceComboBox.getSelectedIndex();
-		firePropertyChange(DSJCapturer.CAPTURE_DEVICE, currentSelection, selectedIndex);
+		firePropertyChange(VideoCapturer.CAPTURE_DEVICE, currentSelection, selectedIndex);
 	}
 	
     @Action
     public void refreshCaptureDevices() {
-    	String[] captureDevices = DSJCapturer.queryCaptureDevices();
+    	String[] captureDevices = capturerImpl.getCaptureDevices();
     	captureDeviceComboBox.setModel(new DefaultComboBoxModel(captureDevices));
     }
+
+	public void setCapturerImpl(IVideoCapturer capturerImpl) {
+		this.capturerImpl = capturerImpl;
+	}
 
 }

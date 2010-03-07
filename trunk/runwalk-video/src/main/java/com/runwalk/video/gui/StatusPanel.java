@@ -8,7 +8,6 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.Timer;
 
@@ -20,7 +19,8 @@ import org.netbeans.lib.awtextra.AbsoluteLayout;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.util.AppSettings;
 
-public class StatusPanel extends ComponentDecorator<JPanel> {
+@SuppressWarnings("serial")
+public class StatusPanel extends AppPanel {
 	
 	private int busyIconIndex = 0;
 	private final Icon[] busyIcons = new Icon[15];
@@ -35,7 +35,7 @@ public class StatusPanel extends ComponentDecorator<JPanel> {
 	private TaskMonitor taskMonitor;
 
 	public StatusPanel() {
-		super(new JPanel(new AbsoluteLayout()));
+		setLayout(new AbsoluteLayout());
 		statusMessageLabel = new JLabel();
 		statusMessageLabel.setFont(AppSettings.MAIN_FONT);
 		statusAnimationLabel = new JLabel();
