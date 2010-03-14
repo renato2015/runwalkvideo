@@ -6,7 +6,7 @@ public interface IVideoPlayer extends IVideoComponent {
 	
 	public boolean isMuted();
 
-	public void loadFile(String path);
+	public boolean loadFile(String path);
 
 	public int getPosition();
 

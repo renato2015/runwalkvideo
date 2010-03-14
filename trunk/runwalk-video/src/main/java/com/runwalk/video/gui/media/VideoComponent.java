@@ -31,15 +31,26 @@ import com.runwalk.video.gui.AppInternalFrame;
 public abstract class VideoComponent extends AbstractBean implements AppComponent {
 
 	public static final String FULLSCREEN = "fullscreen";
+
+	public static final String CONTROLS_ENABLED = "controlsEnabled";
 	
 	private Recording recording;
 	protected Frame fullScreenFrame;
 	protected AppInternalFrame internalFrame;
 	private Timer timer;
 	boolean fullscreen = false;
+	protected boolean controlsEnabled;
 
 	public VideoComponent(PropertyChangeListener listener) {
 		addPropertyChangeListener(listener);
+	}
+	
+	public boolean getControlsEnabled() {
+		return controlsEnabled;
+	}
+
+	public void setControlsEnabled(boolean controlsEnabled) {
+		firePropertyChange(CONTROLS_ENABLED, getControlsEnabled(), this.controlsEnabled = controlsEnabled);
 	}
 
 	public Recording getRecording() {
@@ -59,7 +70,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	}
 
 	public Frame getFullscreenFrame() {
-		return fullScreenFrame;
+		return getVideoImpl().getFullscreenFrame();
 	}
 
 	public JInternalFrame getInternalFrame() {
@@ -69,7 +80,9 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	protected void setComponentTitle(String title) {
 		if (isFullscreen()) {
 			getFullscreenFrame().setTitle(title);
+			getFullscreenFrame().setName(title);
 		} else {
+			getInternalFrame().setName(title);
 			getInternalFrame().setTitle(title);
 		}
 	}
@@ -132,7 +145,9 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		setRecording(null);
 	}
 	
-	protected abstract String getName();
+	public String getName() {
+		return getVideoImpl().getName();
+	}
 	
 	public abstract IVideoComponent getVideoImpl();
 
@@ -145,7 +160,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	}
 	
 	public boolean isActive() {
-		return getComponent().isVisible();
+		return getComponent().isVisible() && getVideoImpl().isActive();
 	}
 	
 	public Action getAction(String name) {

@@ -27,7 +27,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
 	
-	public void initCapturer() {
+	public void startCapturer() {
 		//FIXME no more propertychangelisteners here for now!! see what is needed to replace this functionality
 		setFiltergraph(new DSCapture(DSFiltergraph.DD7, selectedDevice, false, DSFilterInfo.doNotRender(), null));
 		getFiltergraph().lockAspectRatio(true);

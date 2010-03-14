@@ -79,6 +79,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			if (args.length > 0) {
 				dllPathBuilder.append(args[0]);
 			} else {
+			
 				dllPathBuilder.append("\\target\\lib\\");
 			}
 			dllPathBuilder.append("dsj.dll");

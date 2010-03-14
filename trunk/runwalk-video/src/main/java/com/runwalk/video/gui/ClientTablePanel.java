@@ -303,6 +303,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Override
 	public void update() {
 		Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
+		query.setHint("eclipselink.left-join-fetch", "c.unobservableAnalyses.recording");
+		query.setHint("eclipselink.left-join-fetch", "c.city");
 		setItemList(query.getResultList());	
 		refreshTableBindings();
 	}

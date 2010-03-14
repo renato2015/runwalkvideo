@@ -299,7 +299,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		if (recorder == null) {
 			recorder = VideoCapturer.createInstance(this);
 			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			/*GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice[] gs = ge.getScreenDevices();
 			recorder.toggleFullscreen(gs[1]);
 			recorder.getFullscreenFrame().addWindowListener(new WindowAdapter() {
@@ -324,7 +324,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					}
 					getComponent().setTitle("Media Controls > " + recorder.getName());
 				}
-			});
+			});*/
 		}
 		recorder.toFront();
 	}
@@ -371,11 +371,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void playFile(final Recording recording) {
 		try {
 			if (player == null) {
-				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-				GraphicsDevice[] gs = ge.getScreenDevices();
+				/*GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+				GraphicsDevice[] gs = ge.getScreenDevices();*/
 				player = VideoPlayer.createInstance(this, recording);
 				//TODO instantiation of the player.. maybe through a factory method??
-				player.toggleFullscreen(gs[1]);
+				/*player.toggleFullscreen(gs[1]);
 				player.getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
 					@Override
@@ -409,7 +409,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 						setControlsEnabled(false);
 					}
 
-				});
+				});*/
 			} else {
 				player.loadFile(recording);
 				getComponent().setTitle("Media Controls > " + player.getName() + " > " + player.getRecording().getVideoFileName());
@@ -477,27 +477,32 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-
 	public void propertyChange(PropertyChangeEvent evt) {
-		//		getLogger().debug("PropertyChangeEvent fired:" + evt.getSource() +  " name:" + evt.getPropertyName() + " value:" + evt.getNewValue());
-		/*if (evt.getPropertyName().equals(VideoPlayer.POSITION)) {
-			//			updateTimeStamps((Integer) evt.getNewValue());
-			updateTimeStamps();
-			//			getSlider().setValue(getSliderPosition((Integer) evt.getNewValue()));
-			getLogger().debug("Position changed :" + evt.getNewValue());*/
 		if (evt.getPropertyName().equals(VideoPlayer.PLAYING)) {
-			playButton.setSelected((Boolean) evt.getNewValue());
+			Boolean enabled = (Boolean) evt.getNewValue();
+			playButton.setSelected(enabled);
+		} else if (evt.getPropertyName().equals(VideoComponent.CONTROLS_ENABLED)) {
+			Boolean enabled = (Boolean) evt.getNewValue();
+			VideoComponent source = (VideoComponent) evt.getSource();
+			StringBuilder title = new StringBuilder(getTitle() + " > " + source.getName());
+			if (source instanceof VideoCapturer) {
+				if (player != null && player.isPlaying()) {
+					player.stop();
+				}
+				setControlsEnabled(enabled);
+				player.setControlsEnabled(!enabled);
+			} else {
+				if (!recorder.isRecording())  {
+					setControlsEnabled(!enabled);
+					recorder.setControlsEnabled(enabled);
+				}
+				title.append(player.getRecording().getVideoFileName());
+			}
+			getComponent().setTitle(title.append(" > ").toString());
 		}
-		//		if (engine.isPlaying()) {
-		//		 if (DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY) {
-		//				if (engine.getPosition() == 0) {
-		//					engine.stop();
-		//				}
-		//				updateTimeStamps(DSJUtils.getEventValue_int(evt));
-		////				updateTimeStamps((Integer) evt.getOldValue());
-		//			}
-		//		}
-
+		
+		//DSJ fires the following event for notifying that playing has stoppped..
+		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
 
 	public void captureFrameToFront() {
