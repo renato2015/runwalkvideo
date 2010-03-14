@@ -49,13 +49,16 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return (int) mp.getMediaTime();
 	}
 
-	public void loadFile(String path) {
+	public boolean loadFile(String path) {
+		boolean rebuilt = false;
 		try {
 			mp.setSource(new URI(path));
 		} catch (Exception e) {
 //			getLogger().error(e);
 			e.printStackTrace();
+			rebuilt = true;
 		}
+		return rebuilt;
 	}
 
 	public void setMuted(boolean mute) {

@@ -2,6 +2,8 @@ package com.runwalk.video.gui.media;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -31,15 +33,15 @@ public class VideoCapturer extends VideoComponent {
 	private long timeStarted, timeRecorded;
 
 	private boolean recording;
-	
+
 	private IVideoCapturer capturerImpl;
-	
+
 	public static VideoCapturer createInstance(PropertyChangeListener listener) {
 		final IVideoCapturer capturerImpl = new DSJCapturer();
 		if (cameraSelectionDialog == null) {
 			cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl);
 			cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
-				
+
 				public void propertyChange(PropertyChangeEvent evt) {
 					if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
 						if (!evt.getNewValue().equals(evt.getOldValue())) {
@@ -52,7 +54,8 @@ public class VideoCapturer extends VideoComponent {
 		} else {
 			cameraSelectionDialog.setCapturerImpl(capturerImpl);
 		}
-		capturerImpl.initCapturer();
+		//initialize the capturer for the chosen device & encoder
+		capturerImpl.startCapturer();
 		return new VideoCapturer(listener, capturerImpl);
 	}
 
@@ -69,8 +72,25 @@ public class VideoCapturer extends VideoComponent {
 			}
 		});
 		cameraSelectionDialog.setCurrentSelection(getVideoImpl().getSelectedCaptureDeviceIndex());
-		cameraSelectionDialog.getComponent().setLocationRelativeTo(getApplication().getMainFrame());
-		getApplication().show(cameraSelectionDialog.getComponent());
+		cameraSelectionDialog.setLocationRelativeTo(getApplication().getMainFrame());
+		getApplication().show(cameraSelectionDialog);
+		toggleFullscreen(null);
+		getVideoImpl().getFullscreenFrame().addWindowListener(new WindowAdapter() {
+
+/*			public void windowGainedFocus(WindowEvent e) {
+				if (!isRecording()) {
+					setControlsEnabled(true);
+				}
+			}*/
+
+			public void windowActivated(WindowEvent e) {
+				if (!isRecording()) {
+					setControlsEnabled(true);
+				}
+			}
+			
+		});
+		setComponentTitle("Camera > " + getVideoImpl().getName());
 	}
 
 	@Action
@@ -135,10 +155,6 @@ public class VideoCapturer extends VideoComponent {
 		getVideoImpl().stopRecording();
 		setRecording(false);
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-	}
-
-	public String getName() {
-		return getResourceMap().getString("windowTitle.text", getVideoImpl().getName());
 	}
 	
 	protected void setRecording(boolean recording) {

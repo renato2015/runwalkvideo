@@ -1,7 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.GraphicsDevice;
-
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -24,14 +22,16 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private float rate;
 
-	public void loadFile(String path) {
+	public boolean loadFile(String path) {
+		boolean rebuilt = false;
 		try {
-			if (getFiltergraph() == null) {
+			if (rebuilt = getFiltergraph() == null) {
 				initFiltergraph(path);
 			} else {
 				getFiltergraph().loadFile(path , 0);
 			}
 		} catch(DSJException e) {
+			rebuilt = true;
 			/*JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
 					"Er heeft zich een fout voorgedaan bij het openen van een filmpje.\n" +
 					"Probeer het gerust nog eens opnieuw.",
@@ -41,6 +41,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 			dispose();
 			initFiltergraph(path);
 		} 
+		return rebuilt;
 	}
 
 	private void initFiltergraph(String path) {
