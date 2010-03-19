@@ -1,6 +1,6 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Container;
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -108,8 +108,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return getFiltergraph() != null && getFiltergraph().getActive();
 	}
 
-	public Container getComponent() {
-		return (Container) getFiltergraph().asComponent();
+	public Component getComponent() {
+		return getFiltergraph().asComponent();
 	}
 
 	public Frame getFullscreenFrame() {

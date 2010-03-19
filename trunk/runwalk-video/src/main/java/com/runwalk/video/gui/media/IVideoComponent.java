@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
@@ -12,7 +13,7 @@ public interface IVideoComponent {
 
 	public Frame getFullscreenFrame();
 
-	public Container getComponent();
+	public Component getComponent();
 	
 	/**
 	 * TODO deze method ook in de compresstask gebruiken!

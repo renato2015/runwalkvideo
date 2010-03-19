@@ -67,11 +67,11 @@ public class VideoPlayer extends VideoComponent {
 			toggleFullscreen(null);
 			getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
-/*				public void windowGainedFocus(WindowEvent e) {
+				public void windowGainedFocus(WindowEvent e) {
 					if (!isPlaying()) {
 						setControlsEnabled(false);
 					}
-				}*/
+				}
 
 				public void windowActivated(WindowEvent e) {
 					if (!isPlaying()) {
@@ -84,28 +84,29 @@ public class VideoPlayer extends VideoComponent {
 				}
 
 				public void windowClosed(WindowEvent e) {
-					setControlsEnabled(true);
+					setControlsEnabled(false);
 				}
 
 			});
 		}
 		//togglefullscreen here if not initialized yet??
-		setComponentTitle("Video > " + getName());
+		setComponentTitle("Opname > " + getName());
 	}
 
 	public boolean togglePlay() {
 		if (isPlaying()) {
 			getVideoImpl().pause();
+			setPlaying(false);
 		} else {
 			getTimer().restart();
 			getVideoImpl().play();
-			getVideoImpl().setPlayRate(getPlayRate());
 			setPlaying(true);
 		}
 		return isPlaying();
 	}
 
 	public void stop() {
+		setPlaying(false);
 		getVideoImpl().stop();
 	}
 
@@ -147,7 +148,7 @@ public class VideoPlayer extends VideoComponent {
 			if (frame.getPosition() > getVideoImpl().getPosition()) {
 				setPosition(frame.getPosition());
 				getLogger().debug("NEXT: Keyframe position " + getVideoImpl().getPosition() + " " + frame.getPosition());
-				break;
+				return;
 			}
 		}
 	}

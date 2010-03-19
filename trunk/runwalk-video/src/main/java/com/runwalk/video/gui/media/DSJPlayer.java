@@ -18,8 +18,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private float framerate;
 
-	private float volume;
-
 	private float rate;
 
 	public boolean loadFile(String path) {
@@ -119,15 +117,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setVolume(float volume) {
 		getFiltergraph().setVolume(volume);
-	}
-
-	public void setMuted(boolean mute) {
-		volume = getVolume();
-		getFiltergraph().setVolume(mute ? 0 : volume);
-	}
-
-	public boolean isMuted() {
-		return getFiltergraph().getVolume() == 0;
 	}
 
 	public String getName() {

@@ -77,11 +77,11 @@ public class VideoCapturer extends VideoComponent {
 		toggleFullscreen(null);
 		getVideoImpl().getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
-/*			public void windowGainedFocus(WindowEvent e) {
+			public void windowGainedFocus(WindowEvent e) {
 				if (!isRecording()) {
 					setControlsEnabled(true);
 				}
-			}*/
+			}
 
 			public void windowActivated(WindowEvent e) {
 				if (!isRecording()) {

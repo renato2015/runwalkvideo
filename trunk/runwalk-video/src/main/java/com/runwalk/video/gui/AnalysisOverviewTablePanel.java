@@ -136,7 +136,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<Analysis, OpenRecordingButton> openButton = BeanProperty.create("recording");
 		columnBinding = jTableSelectionBinding.addColumnBinding(openButton);
 		columnBinding.setRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class)));
-		getTable().addMouseListener(new JTableButtonMouseListener());
 		columnBinding.setEditable(false);
 		columnBinding.setColumnName("");
 		columnBinding.setColumnClass(JButton.class);
@@ -160,7 +159,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		bindingGroup.addBinding(jTableSelectionBinding);
 		jTableSelectionBinding.bind();
 		bindingGroup.bind();
-		getTable().addMouseListener(new JTableButtonMouseListener());
 
 		JScrollPane overviewScrollPane = new  JScrollPane();
 		overviewScrollPane.setViewportView(getTable());
@@ -226,7 +224,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = COMPRESSION_ENABLED, block=Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
-
+		setCleanupEnabled(true);
 		final CompressTask compressTask = new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
 		compressTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 			
@@ -238,7 +236,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			@Override
 			public void succeeded(TaskEvent<Boolean> event) {
 				setCompressionEnabled(!event.getValue());
-				setCleanupEnabled(true);
 				refreshTableBindings();
 				getApplication().setSaveNeeded(true);
 			}

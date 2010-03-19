@@ -132,7 +132,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<Analysis, OpenRecordingButton> openButton = BeanProperty.create("recording");
 		columnBinding = jTableSelectionBinding.addColumnBinding(openButton);
 		columnBinding.setRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class)));
-		getTable().addMouseListener(new JTableButtonMouseListener());
 		columnBinding.setEditable(false);
 		columnBinding.setColumnName("");
 		columnBinding.setColumnClass(JButton.class);

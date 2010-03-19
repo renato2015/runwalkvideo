@@ -1,10 +1,6 @@
 package com.runwalk.video.gui.media;
 
 public interface IVideoPlayer extends IVideoComponent {
-	
-	public void setMuted(boolean mute);
-	
-	public boolean isMuted();
 
 	public boolean loadFile(String path);
 
