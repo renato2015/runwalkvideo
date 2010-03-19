@@ -37,9 +37,9 @@ public class AppInternalFrame extends BaseInternalFrame implements AppComponent 
 	
 	public AppInternalFrame(String title, boolean resizable) {
 		super(title, resizable, true);
-		getComponent().setName(title);
-		getComponent().setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
-		getComponent().setResizable(resizable);
+		setName(title);
+		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
+		setResizable(resizable);
 	}
 
 	public Action getAction(String name) {

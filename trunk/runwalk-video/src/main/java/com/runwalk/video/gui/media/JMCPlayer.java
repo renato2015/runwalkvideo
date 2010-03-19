@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
@@ -61,10 +62,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return rebuilt;
 	}
 
-	public void setMuted(boolean mute) {
-		ac.setMute(mute);
-	}
-
 	public void setPosition(int pos) {
 		mp.setMediaTime(pos);
 	}
@@ -91,10 +88,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return ac.getVolume();
 	}
 
-	public boolean isMuted() {
-		return ac.isMuted();
-	}
-
 	public void setPlayRate(float rate) {
 		mp.setRate(rate);
 	}
@@ -103,7 +96,8 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		ac.setVolume(volume); 
 	}
 
-	public Container getComponent() {
+	public Component getComponent() {
+		//TODO the component where the buffered pixels are drawn can be returned here..
 		return null;
 	}
 
