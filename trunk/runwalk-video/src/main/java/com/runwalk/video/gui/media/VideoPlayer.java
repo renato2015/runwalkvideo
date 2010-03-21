@@ -19,13 +19,12 @@ public class VideoPlayer extends VideoComponent {
 
 	public static final String PLAYING = "playing";
 
-	protected static int playerCount = 0;
-	protected int playerId;
-	protected static final float[] PLAY_RATES = AppSettings.PLAY_RATES;
-	protected int playRateIndex = AppSettings.getInstance().getRateIndex();
-	protected int position;
-	protected int timePlaying;
-	protected float volume;
+	private static int playerCount = 0;
+	private int playerId;
+	private static final float[] PLAY_RATES = AppSettings.PLAY_RATES;
+	private int playRateIndex = AppSettings.getInstance().getRateIndex();
+	private int position;
+	private float volume;
 	private boolean playing;
 	private IVideoPlayer playerImpl;
 
@@ -34,7 +33,7 @@ public class VideoPlayer extends VideoComponent {
 		if (System.getProperty("os.name").contains("Windows")) {
 			result = new DSJPlayer();
 		} else {
-			result = new JMCPlayer();
+			result = new JMCPlayer(recording.getVideoFile());
 		}
 		return new VideoPlayer(listener, recording, result);
 	}
@@ -44,15 +43,12 @@ public class VideoPlayer extends VideoComponent {
 		this.playerImpl = playerImpl;
 		playerCount++;
 		this.playerId = playerCount;
-		setTimer(new Timer(50, null));
+		setTimer(new Timer(25, null));
 		getTimer().addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
-					if (getVideoImpl().getPosition() == 0) {
-						stop();
-					}
-					firePropertyChange(POSITION, timePlaying, timePlaying = getVideoImpl().getPosition());
+					firePropertyChange(POSITION, position, position = getVideoImpl().getPosition());
 				}
 			}
 		});
@@ -62,7 +58,8 @@ public class VideoPlayer extends VideoComponent {
 
 	public void loadFile(Recording recording) throws FileNotFoundException {
 		setRecording(recording);
-		if (getVideoImpl().loadFile(recording.getVideoFilePath())) {
+		if (getVideoImpl().loadFile(recording.getVideoFile())) {
+			//TODO the window state should be respected here...
 			//Add the shit here...
 			toggleFullscreen(null);
 			getFullscreenFrame().addWindowListener(new WindowAdapter() {
@@ -80,7 +77,7 @@ public class VideoPlayer extends VideoComponent {
 				}
 
 				public void windowDeactivated(WindowEvent e) {
-					setControlsEnabled(true);
+					setControlsEnabled(false);
 				}
 
 				public void windowClosed(WindowEvent e) {
@@ -89,13 +86,15 @@ public class VideoPlayer extends VideoComponent {
 
 			});
 		}
+		getVideoImpl().setPlayRate(getPlayRate());
 		//togglefullscreen here if not initialized yet??
-		setComponentTitle("Opname > " + getName());
+		setComponentTitle(getTitle());
 	}
 
 	public boolean togglePlay() {
 		if (isPlaying()) {
 			getVideoImpl().pause();
+			getTimer().stop();
 			setPlaying(false);
 		} else {
 			getTimer().restart();
@@ -106,6 +105,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public void stop() {
+		getTimer().stop();
 		setPlaying(false);
 		getVideoImpl().stop();
 	}
@@ -203,7 +203,7 @@ public class VideoPlayer extends VideoComponent {
 	public boolean mute() {
 		if (getVideoImpl().getVolume() > 0) {
 			volume = getVideoImpl().getVolume();
-			getVideoImpl().setVolume(0);
+			getVideoImpl().setVolume(0f);
 			return true;
 		} else {
 			getVideoImpl().setVolume(volume);
@@ -222,5 +222,12 @@ public class VideoPlayer extends VideoComponent {
 	public IVideoPlayer getVideoImpl() {
 		return playerImpl;
 	}
+
+	@Override
+	public String getTitle() {
+		return getResourceMap().getString("windowTitle.text", playerId);
+	}
+	
+	
 
 }

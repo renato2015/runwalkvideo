@@ -209,7 +209,7 @@ public class Recording extends SerializableEntity<Recording> {
 		return getVideoFile().getAbsolutePath();
 	}
 	
-	private VideoFile getVideoFile() throws FileNotFoundException {
+	public VideoFile getVideoFile() throws FileNotFoundException {
 		VideoFile videoFile = cacheVideoFile();
 		if (videoFile == null) {
 			throw new FileNotFoundException();

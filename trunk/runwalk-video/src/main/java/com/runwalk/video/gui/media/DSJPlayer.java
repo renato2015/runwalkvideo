@@ -1,5 +1,7 @@
 package com.runwalk.video.gui.media;
 
+import java.io.File;
+
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -20,8 +22,9 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private float rate;
 
-	public boolean loadFile(String path) {
+	public boolean loadFile(File videoFile) {
 		boolean rebuilt = false;
+		String path = videoFile.getAbsolutePath();
 		try {
 			if (rebuilt = getFiltergraph() == null) {
 				initFiltergraph(path);
@@ -48,7 +51,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		if (customFramerateEnabled) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
-		//FIXME the propertychangelistener is not used anymore here!!
 		setFiltergraph(new DSMovie(path, flags, null));
 		if (customFramerateEnabled) {
 			getFiltergraph().setMasterFrameRate(framerate);
@@ -119,7 +121,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		getFiltergraph().setVolume(volume);
 	}
 
-	public String getName() {
+	public String getTitle() {
 		return "DSJ player";
 	}
 

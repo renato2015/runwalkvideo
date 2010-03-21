@@ -21,6 +21,8 @@ public interface AppComponent {
 	
 	public Container getComponent();
 	
+	public String getTitle();
+	
 	public Action getAction(String name);
 	
 	public ApplicationActionMap getApplicationActionMap();

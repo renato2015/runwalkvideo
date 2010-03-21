@@ -22,7 +22,7 @@ public class VideoCapturer extends VideoComponent {
 
 	public static final String CAPTURE_DEVICE = "captureDevice";
 
-	protected static final String TIME_RECORDED = "timeRecorded";
+	protected static final String TIME_RECORDING = "timeRecorded";
 
 	private static final String RECORDING = "recording";
 
@@ -66,7 +66,7 @@ public class VideoCapturer extends VideoComponent {
 		getTimer().addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				firePropertyChange(TIME_RECORDED, timeRecorded, timeRecorded = System.currentTimeMillis() - timeStarted);
+				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = System.currentTimeMillis() - timeStarted);
 				getRecording().setDuration(timeRecorded);
 				//text kan je setten met een binding!!
 			}
@@ -90,7 +90,7 @@ public class VideoCapturer extends VideoComponent {
 			}
 			
 		});
-		setComponentTitle("Camera > " + getVideoImpl().getName());
+		setComponentTitle("Camera > " + getVideoImpl().getTitle());
 	}
 
 	@Action
@@ -124,7 +124,7 @@ public class VideoCapturer extends VideoComponent {
 		if (selectedEncoder != null) {
 			int selectedIndex = Arrays.asList(captureEncoders).indexOf(selectedEncoder);
 			getVideoImpl().setSelectedCaptureEncoderIndex(selectedIndex);
-			getLogger().debug("Video encoder for " + getName() + " changed to " + getVideoImpl().getSelectedCaptureEncoderName());
+			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getVideoImpl().getSelectedCaptureEncoderName());
 		}
 	}
 
@@ -173,5 +173,10 @@ public class VideoCapturer extends VideoComponent {
 		getVideoImpl().showCameraSettings();
 	}
 
+	@Override
+	public String getTitle() {
+		return getResourceMap().getString("windowTitle.text", super.getTitle());
+	}
+	
 
 }

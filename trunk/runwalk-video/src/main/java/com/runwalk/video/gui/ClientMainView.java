@@ -22,14 +22,14 @@ public class ClientMainView extends AppInternalFrame {
 		
 		tabPanel = new  JTabbedPane();
 		tabPanel.setName("detailTabbedPane");
-		tabPanel.addTab(getResourceMap().getString("infoPanel.TabConstraints.tabTitle"),  getApplication().getClientInfoPanel().getComponent()); // NOI18N
-		tabPanel.addTab(getResourceMap().getString("analysisPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisTablePanel().getComponent()); // NOI18N
-		tabPanel.addTab(getResourceMap().getString("conversionPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisOverviewTable().getComponent()); // NOI18N
+		tabPanel.addTab(getResourceMap().getString("infoPanel.TabConstraints.tabTitle"),  getApplication().getClientInfoPanel()); // NOI18N
+		tabPanel.addTab(getResourceMap().getString("analysisPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisTablePanel()); // NOI18N
+		tabPanel.addTab(getResourceMap().getString("conversionPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisOverviewTable()); // NOI18N
 		contentPanel.add(tabPanel, new AbsoluteConstraints(0, 380, 590, 280));
 		
 		setLayout(new BorderLayout());
-		getComponent().add(contentPanel, BorderLayout.CENTER);
-		getComponent().add(getApplication().getStatusPanel(), BorderLayout.SOUTH);
+		add(contentPanel, BorderLayout.CENTER);
+		add(getApplication().getStatusPanel(), BorderLayout.SOUTH);
 	}
 
 

@@ -94,16 +94,16 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private void loadUIState() throws IOException {
 		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
 		getContext().getSessionStorage().restore(getMainFrame(), "desktopPane.xml");
-		getContext().getSessionStorage().restore(getMediaControls().getComponent(), "controlFrame.xml");
-		getContext().getSessionStorage().restore(getClientMainView().getComponent(), "mainFrame.xml");
+		getContext().getSessionStorage().restore(getMediaControls(), "controlFrame.xml");
+		getContext().getSessionStorage().restore(getClientMainView(), "mainFrame.xml");
 	}
 
 	private void saveUIState() throws IOException {
 		getContext().getSessionStorage().save(getMainFrame(), "desktopPane.xml");
-		getContext().getSessionStorage().save(getMainView().getComponent(), "mainFrame.xml");
 		if (getMediaControls() != null) {
-			getContext().getSessionStorage().save(getMediaControls().getComponent(), "controlFrame.xml");
+			getContext().getSessionStorage().save(getMediaControls(), "controlFrame.xml");
 		}
+		getContext().getSessionStorage().save(getClientMainView(), "mainFrame.xml");
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		clientMainView = new ClientMainView();
 		
 		//add all internal frames from here!!!
-		getMainFrame().setJMenuBar(getMenuBar().getComponent());
+		getMainFrame().setJMenuBar(getMenuBar());
 
 		pane = new JScrollableDesktopPane();
 		getMainFrame().add(pane);
@@ -152,7 +152,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	//TODO make this createOrShowComponent!!
 	public void addComponent(AppComponent appComponent) {
 		Container container = appComponent.getComponent();
-		if (appComponent.getComponent() instanceof JInternalFrame) {
+		if (appComponent instanceof JInternalFrame) {
 			JInternalFrame jInternalFrame = (JInternalFrame) container;
 			if (!jInternalFrame.isShowing()) {
 				jInternalFrame.pack();

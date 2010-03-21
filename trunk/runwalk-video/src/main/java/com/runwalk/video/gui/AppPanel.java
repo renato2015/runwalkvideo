@@ -20,6 +20,10 @@ public class AppPanel extends JPanel implements AppComponent {
 	public RunwalkVideoApp getApplication() {
 		return RunwalkVideoApp.getApplication();
 	}
+	
+	public String getTitle() {
+		return getComponent().getName();
+	}
 
 	public JPanel getComponent() {
 		return this;

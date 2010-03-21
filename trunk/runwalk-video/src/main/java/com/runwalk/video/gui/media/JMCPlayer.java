@@ -1,10 +1,20 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.URI;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import org.apache.log4j.Logger;
 
 import com.sun.media.jmc.MediaProvider;
 import com.sun.media.jmc.control.AudioControl;
@@ -18,13 +28,29 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	VideoRenderControl vrc;
 	MediaProvider mp = null;
 
-	public JMCPlayer() {
-		this.mp = new MediaProvider();
+	private BufferedImage bufferedImage = null;
+	private Graphics2D g2d = null;
+	private Dimension videoSize = null;
+	private int imageType = BufferedImage.TYPE_INT_RGB;
 
+	private int vw = 0;
+	private int vh = 0;
+	
+	private JPanel videoPanel;
+	private JFrame frame;
+
+	public JMCPlayer(File videoFile) {
+		this.mp = new MediaProvider();
+		loadFile(videoFile);
 		ac = mp.getControl(AudioControl.class);
 		vrc = mp.getControl(VideoRenderControl.class);
-
 		vrc.addVideoRendererListener(this);
+		videoPanel = new VideoPanel();
+		frame = new JFrame();
+		frame.setPreferredSize(new Dimension(786, 584));
+		frame.setTitle("JMC player");
+		frame.add(videoPanel);
+		frame.pack();
 	}
 
 	public void dispose() {
@@ -32,7 +58,7 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 			vrc.removeVideoRendererListener(this);
 		}
 		if (mp != null) {
-//			mp.removeBufferDownloadListener(this);
+			//			mp.removeBufferDownloadListener(this);
 			setPosition(0);
 			mp.setSource(null); //this will call mp.close()
 		}
@@ -50,13 +76,12 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return (int) mp.getMediaTime();
 	}
 
-	public boolean loadFile(String path) {
+	public boolean loadFile(File videoFile) {
 		boolean rebuilt = false;
 		try {
-			mp.setSource(new URI(path));
+			mp.setSource(videoFile.toURI());
 		} catch (Exception e) {
-//			getLogger().error(e);
-			e.printStackTrace();
+			Logger.getLogger(JMCPlayer.class).error(e);
 			rebuilt = true;
 		}
 		return rebuilt;
@@ -65,7 +90,7 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	public void setPosition(int pos) {
 		mp.setMediaTime(pos);
 	}
-	
+
 	public void play() {
 		this.mp.play();
 	}
@@ -80,8 +105,36 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	}
 
 	public void videoFrameUpdated(VideoRendererEvent arg0) {
-		// TODO Auto-generated method stub
+		paintBufferedImage();
+	}
 
+	/**
+	 * Paints the newest video frame onto a BufferedImage.
+	 */
+	public void paintBufferedImage()
+	{
+		if (bufferedImage == null || videoSize == null || vw <= 0 || vh <= 0)
+		{
+			setupBufferedImage();
+			return;
+		}
+		
+		g2d = bufferedImage.createGraphics();
+		vrc.paintVideoFrame(g2d, new Rectangle(0, 0, vw, vh));
+		videoPanel.paintComponents(g2d);
+		g2d.dispose();
+	}
+
+	/**
+	 * Creates a BufferedImage the same size as the video and initializes the PImage pixel buffer.
+	 */
+	public void setupBufferedImage()
+	{
+		videoSize = vrc.getFrameSize();
+		bufferedImage = new BufferedImage((int) videoSize.getWidth(), (int) videoSize.getHeight(), imageType);
+
+		vw = (int) videoSize.getWidth();
+		vh = (int) videoSize.getHeight();
 	}
 
 	public float getVolume() {
@@ -97,25 +150,34 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	}
 
 	public Component getComponent() {
-		//TODO the component where the buffered pixels are drawn can be returned here..
-		return null;
+		return videoPanel;
 	}
 
 	public Frame getFullscreenFrame() {
-		return null;
+		return frame;
 	}
 
-	public String getName() {
+	public String getTitle() {
 		return "JMC player";
 	}
 
 	public boolean isActive() {
-		return false;
+		return true;
 	}
 
 	public void toggleFullScreen(GraphicsDevice graphicsDevice, boolean b) {
 		//FIXME not supported yet??
+		
 	}
 
-	
+	private class VideoPanel extends JPanel {
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			//draw onto these graphics??
+		}
+		
+	}
+
 }

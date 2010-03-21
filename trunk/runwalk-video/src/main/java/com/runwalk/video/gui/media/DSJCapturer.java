@@ -147,7 +147,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		return result;
 	}
 
-	public String getName() {
+	public String getTitle() {
 		return selectedDevice != null ? selectedDevice.getName() : "";
 	}
 	

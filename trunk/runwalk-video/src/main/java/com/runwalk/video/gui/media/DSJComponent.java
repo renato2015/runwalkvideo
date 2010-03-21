@@ -27,6 +27,7 @@ import de.humatic.dsj.DSFiltergraph;
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
 
 	private T filtergraph;
+	
 	private boolean rejectPauseFilter = false;
 
 	/**
@@ -56,7 +57,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	//TODO dit zou een actie kunnen worden!! de waarde van die checkbox kan je uit een UI element halen.
 	public void setRejectPauseFilter(boolean rejectPauseFilter) {
 		this.rejectPauseFilter = rejectPauseFilter;
-		getLogger().debug("Pause filter rejection for filtergraph " + getName() + " now set to " + rejectPauseFilter);
+		getLogger().debug("Pause filter rejection for filtergraph " + getTitle() + " now set to " + rejectPauseFilter);
 	}
 
 	protected Logger getLogger() {
