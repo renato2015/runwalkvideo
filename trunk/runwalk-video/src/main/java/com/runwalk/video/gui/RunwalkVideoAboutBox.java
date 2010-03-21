@@ -72,7 +72,7 @@ public class RunwalkVideoAboutBox extends AppDialog implements AppComponent {
         
         imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getComponent().getContentPane());
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

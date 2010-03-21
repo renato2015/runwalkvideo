@@ -1,8 +1,10 @@
 package com.runwalk.video.gui.media;
 
+import java.io.File;
+
 public interface IVideoPlayer extends IVideoComponent {
 
-	public boolean loadFile(String path);
+	public boolean loadFile(File videoFile);
 
 	public int getPosition();
 

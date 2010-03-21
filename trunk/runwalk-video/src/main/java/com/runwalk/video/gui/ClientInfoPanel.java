@@ -15,7 +15,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
@@ -27,11 +26,9 @@ import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
-import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.Binding.SyncFailure;
@@ -365,7 +362,7 @@ public class ClientInfoPanel extends AppPanel {
 	}
 
 	public void requestFocus() {
-		getComponent().requestFocus();
+		requestFocus();
 		firstnameField.requestFocus();
 	}
 

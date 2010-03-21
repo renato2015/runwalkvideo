@@ -52,7 +52,6 @@ public class SyncTask extends AbstractTask<Boolean, Void>{
 				em.getTransaction().commit();
 				em.close();
 
-				//TODO change analysis fetching type to EAGER and fix this 'issue'
 				int itemIndex = RunwalkVideoApp.getApplication().getConversionTableModel().getItemIndex(analysis);
 				RunwalkVideoApp.getApplication().getConversionTableModel().setItem(itemIndex, mergedAnalysis);
 				int tableIndex = RunwalkVideoApp.getApplication().getConversionTablePanel().getTable().convertRowIndexToModel(itemIndex);

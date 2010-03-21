@@ -74,7 +74,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	}
 
 	public JInternalFrame getInternalFrame() {
-		return internalFrame.getComponent();
+		return internalFrame;
 	}
 
 	protected void setComponentTitle(String title) {
@@ -119,7 +119,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 			//getFiltergraph().leaveFullScreen();
 			getVideoImpl().toggleFullScreen(gs[0], !isFullscreen());
 			if (internalFrame == null) {
-				internalFrame = new AppInternalFrame(getName(), false);
+				internalFrame = new AppInternalFrame(getTitle(), false);
 				internalFrame.add(getVideoImpl().getComponent());
 			} else {
 				internalFrame.setVisible(true);
@@ -136,7 +136,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 			}
 		}
 		setFullscreen(!isFullscreen());
-		setComponentTitle(getName());
+		setComponentTitle(getTitle());
 		getApplication().addComponent(this);
 	}
 	
@@ -145,8 +145,8 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		setRecording(null);
 	}
 	
-	public String getName() {
-		return getVideoImpl().getName();
+	public String getTitle() {
+		return getVideoImpl().getTitle();
 	}
 	
 	public abstract IVideoComponent getVideoImpl();
@@ -155,7 +155,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		if (isFullscreen()) {
 			getFullscreenFrame().toFront();
 		} else {
-			internalFrame.getComponent().toFront();
+			getInternalFrame().toFront();
 		}
 	}
 	
@@ -182,9 +182,12 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	public ResourceMap getResourceMap() {
 		return getContext().getResourceMap(getClass(), VideoComponent.class);
 	}
-	
+
 	public ApplicationActionMap getApplicationActionMap() {
-		return getContext().getActionMap(VideoComponent.class, this);
+		ApplicationActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
+		//TODO add the actions in the map of the implementation to the ones of this class..
+//		ApplicationActionMap parentMap = getContext().getActionMap(DSJComponent.class, getVideoImpl());
+		return actionMap;
 	}
 
 }
