@@ -56,6 +56,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private VideoPlayer player;
 	private VideoCapturer capturer;
+	private VideoComponent frontmostComponent;
 
 	private Boolean recordingSelected = false;
 	private boolean recordingEnabled, playingEnabled, stopEnabled;
@@ -172,7 +173,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action
 	public void fullScreen() { 
-		capturer.toggleFullscreen(null);
+		frontmostComponent.toggleFullscreen();
 	}
 
 	@Action(enabledProperty=STOP_ENABLED)
@@ -183,6 +184,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			setRecordingEnabled(false);
 		} else {
 			player.stop();
+			getApplication().showMessage("Afspelen gestopt.");
 			setStatusInfo(0, player.getDuration());
 			setStopEnabled(false);
 		}
@@ -441,35 +443,49 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			VideoComponent component = (VideoComponent) evt.getSource();
 			//a player or capturer is requesting the focus
 			if (enabled && !capturer.isRecording()) {
-				StringBuilder title = new StringBuilder(getName() + " > " + component.getTitle());
-				if (component instanceof VideoCapturer) {
-					clearStatusInfo();
-					setRecordingEnabled(true);
+				enableFrontmostVideoComponentControls(component);
+				frontmostComponent = component;
+			} /*else {
+				//component.setControlsEnabled(false);
+				if (isFrontmostVideoComponent(component)) {
+					//disable all controls??
+					setRecordingEnabled(false);
 					setPlayingEnabled(false);
 					setStopEnabled(false);
-					if (player != null) {
-						if (player.isPlaying()) {
-							player.stop();
-						}
-						player.setControlsEnabled(false);
-					}
-				} else {
-					setRecordingEnabled(false);
-					setStopEnabled(false);
-					setPlayingEnabled(true);
-					setStatusInfo(player.getRecording(), 0, player.getDuration());
-					capturer.setControlsEnabled(false);
-					title.append(" > " ).append(player.getRecording().getVideoFileName());
 				}
-				setTitle(title.toString());
-			} else {
-				component.setControlsEnabled(false);
-			}
+			}*/
 		}
-
 		//DSJ fires the following event for notifying that playing has stoppped..
 		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
+	
+	private void enableFrontmostVideoComponentControls(VideoComponent component) {
+		StringBuilder title = new StringBuilder(getName() + " > " + component.getTitle());
+		if (component instanceof VideoCapturer) {
+			clearStatusInfo();
+			setRecordingEnabled(true);
+			setPlayingEnabled(false);
+			setStopEnabled(false);
+			if (player != null) {
+				if (player.isPlaying()) {
+					player.stop();
+				}
+				player.setControlsEnabled(false);
+			}
+		} else {
+			setRecordingEnabled(false);
+			setStopEnabled(false);
+			setPlayingEnabled(true);
+			setStatusInfo(player.getRecording(), 0, player.getDuration());
+			capturer.setControlsEnabled(false);
+			title.append(" > " ).append(player.getRecording().getVideoFileName());
+		}
+		setTitle(title.toString());
+	}
+	
+//	private boolean isFrontmostVideoComponent(VideoComponent component) {
+//		return frontmostComponent != null && frontmostComponent.equals(component);
+//	}
 
 	public void setPlayingEnabled(boolean playingEnabled) {
 		firePropertyChange(PLAYING_ENABLED, this.playingEnabled, this.playingEnabled = playingEnabled);

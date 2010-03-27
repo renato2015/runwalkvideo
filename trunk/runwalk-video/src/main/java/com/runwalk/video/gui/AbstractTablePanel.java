@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
 
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -16,7 +17,6 @@ import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
@@ -200,7 +200,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		return getContext().getResourceMap(getClass(), AbstractTablePanel.class);
 	}
 	
-	public ApplicationActionMap getApplicationActionMap() {
+	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(AbstractTablePanel.class, this);
 	}
 

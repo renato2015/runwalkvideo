@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 
+import javax.swing.ActionMap;
+
 public interface IVideoComponent {
 
 	public static final String FULLSCREEN = "fullscreen";
@@ -21,6 +23,8 @@ public interface IVideoComponent {
 
 	public boolean isActive();
 
-	public void toggleFullScreen(GraphicsDevice graphicsDevice, boolean b);
+	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b);
+	
+	public ActionMap getActionMap();
 
 }

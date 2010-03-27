@@ -1,10 +1,10 @@
 package com.runwalk.video.gui;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
@@ -41,7 +41,7 @@ public class AppPanel extends JPanel implements AppComponent {
 		return getContext().getResourceMap(getClass(), AppPanel.class);
 	}
 	
-	public ApplicationActionMap getApplicationActionMap() {
+	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(AppComponent.class, this);
 	}
 }

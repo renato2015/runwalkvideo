@@ -7,10 +7,10 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.session.PropertySupport;
@@ -66,7 +66,7 @@ public class AppInternalFrame extends BaseInternalFrame implements AppComponent 
 		return getContext().getResourceMap(getClass(), AppInternalFrame.class);
 	}
 	
-	public ApplicationActionMap getApplicationActionMap() {
+	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(AppInternalFrame.class, this);
 	}
 
