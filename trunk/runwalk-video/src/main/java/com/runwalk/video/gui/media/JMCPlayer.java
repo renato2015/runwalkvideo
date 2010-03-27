@@ -9,13 +9,14 @@ import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URI;
 
+import javax.swing.ActionMap;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
+import com.runwalk.video.RunwalkVideoApp;
 import com.sun.media.jmc.MediaProvider;
 import com.sun.media.jmc.control.AudioControl;
 import com.sun.media.jmc.control.VideoRenderControl;
@@ -165,9 +166,13 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return true;
 	}
 
-	public void toggleFullScreen(GraphicsDevice graphicsDevice, boolean b) {
+	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
 		//FIXME not supported yet??
 		
+	}
+	
+	public ActionMap getActionMap() {
+		return RunwalkVideoApp.getApplication().getContext().getActionMap(this);
 	}
 
 	private class VideoPanel extends JPanel {

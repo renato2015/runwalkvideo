@@ -22,6 +22,8 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private float rate;
 
+	private boolean playing;
+
 	public boolean loadFile(File videoFile) {
 		boolean rebuilt = false;
 		String path = videoFile.getAbsolutePath();
@@ -84,11 +86,13 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	public void pause() {
 		getFiltergraph().pause();
+		playing = false;
 	}
 
 	public void stop() {
 		getFiltergraph().stop();
 		getFiltergraph().setTimeValue(0);
+		setPlaying(false);
 	}
 
 	public int getPosition(){
@@ -100,13 +104,24 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	}
 
 	public void play() {
-		getFiltergraph().play();
 		getFiltergraph().setRate(this.rate);
+		setPlaying(true);
+	}
+	
+	private void setPlaying(boolean playing) {
+		this.playing = playing;
+	}
+	
+	private boolean isPlaying() {
+		return playing;
 	}
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
-		getFiltergraph().setRate(rate);
+		//TODO check whether this movie is playing or not.. dit geeft problemen als je de slower/faster acties gebruikt!!
+		if (isPlaying()) {
+			getFiltergraph().setRate(rate);
+		}
 	}
 
 	public float getPlayRate() {

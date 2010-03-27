@@ -7,12 +7,12 @@ import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 import javax.swing.Timer;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
@@ -40,6 +40,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	private Timer timer;
 	boolean fullscreen = false;
 	protected boolean controlsEnabled;
+	private ActionMap actionMap;
 
 	public VideoComponent(PropertyChangeListener listener) {
 		addPropertyChangeListener(listener);
@@ -87,7 +88,6 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		}
 	}
 
-	@Override
 	public Container getComponent() {
 		Container container = null;
 		if (isFullscreen()) {
@@ -106,38 +106,36 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		return this.fullscreen;
 	}
 
+	//TODO een strategie om te bepalen op welk scherm de fullscreen versie moet getoond worden??
+	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
 	protected void setFullscreen(boolean fullscreen) {
 		this.firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
-	}
-	
-	//TODO dit zou een actie moeten worden, het GraphicsDevice moet vooraf gekozen worden!
-	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
-	public void toggleFullscreen(GraphicsDevice device) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
-		if (isFullscreen()) {
-			//getFiltergraph().leaveFullScreen();
-			getVideoImpl().toggleFullScreen(gs[0], !isFullscreen());
+		if (fullscreen) {
+			if (gs.length > 1) {
+				getVideoImpl().setFullScreen(gs[1], fullscreen);
+				if (internalFrame != null) {
+					internalFrame.setVisible(false);
+				}
+				fullScreenFrame = getVideoImpl().getFullscreenFrame();
+			}
+		} else {
+			getVideoImpl().setFullScreen(gs[0], fullscreen);
 			if (internalFrame == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				internalFrame.add(getVideoImpl().getComponent());
 			} else {
 				internalFrame.setVisible(true);
 			}
-		} else {
-			if (gs.length > 1) {
-				getVideoImpl().toggleFullScreen(gs[1], !isFullscreen());
-				//getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
-				if (internalFrame != null) {
-//					internalFrame.remove(getFiltergraph().asComponent());
-					internalFrame.setVisible(false);
-				}
-				fullScreenFrame = getVideoImpl().getFullscreenFrame();
-			}
 		}
-		setFullscreen(!isFullscreen());
 		setComponentTitle(getTitle());
 		getApplication().addComponent(this);
+	}
+	
+	@org.jdesktop.application.Action
+	public void toggleFullscreen() {
+		setFullscreen(!isFullscreen());
 	}
 	
 	public void dispose() {
@@ -183,10 +181,16 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		return getContext().getResourceMap(getClass(), VideoComponent.class);
 	}
 
-	public ApplicationActionMap getApplicationActionMap() {
-		ApplicationActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
-		//TODO add the actions in the map of the implementation to the ones of this class..
-//		ApplicationActionMap parentMap = getContext().getActionMap(DSJComponent.class, getVideoImpl());
+	/**
+	 * Merge the actinmap of the implementation with the one of this instance..
+	 */
+	public ActionMap getApplicationActionMap() {
+		if (actionMap == null) {
+			ActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
+			ActionMap implActionMap = getVideoImpl().getActionMap();
+			implActionMap.setParent(actionMap);
+			this.actionMap = implActionMap;
+		}
 		return actionMap;
 	}
 

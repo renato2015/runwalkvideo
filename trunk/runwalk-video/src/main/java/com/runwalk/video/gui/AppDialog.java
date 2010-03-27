@@ -3,10 +3,10 @@ package com.runwalk.video.gui;
 import java.awt.Frame;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JDialog;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
@@ -51,7 +51,7 @@ public class AppDialog extends JDialog implements AppComponent {
 		return getContext().getResourceMap(getClass(), AppDialog.class);
 	}
 	
-	public ApplicationActionMap getApplicationActionMap() {
+	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(AppDialog.class, this);
 	}
 

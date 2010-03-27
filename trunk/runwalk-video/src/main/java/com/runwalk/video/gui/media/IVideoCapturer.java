@@ -31,5 +31,7 @@ public interface IVideoCapturer extends IVideoComponent {
 	public abstract String[] getCaptureDevices();
 
 	public abstract void startCapturer();
+	
+	public abstract void togglePreview();
 
 }

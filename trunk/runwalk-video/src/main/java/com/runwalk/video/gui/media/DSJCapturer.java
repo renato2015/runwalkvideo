@@ -97,7 +97,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().setPreview();
 	}
 
-	@Action
 	public void togglePreview() {
 		if (getFiltergraph().getState() == DSCapture.PREVIEW) {
 			getFiltergraph().stop();

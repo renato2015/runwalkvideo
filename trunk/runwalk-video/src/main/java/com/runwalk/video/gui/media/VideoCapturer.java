@@ -74,7 +74,7 @@ public class VideoCapturer extends VideoComponent {
 		cameraSelectionDialog.setCurrentSelection(getVideoImpl().getSelectedCaptureDeviceIndex());
 		cameraSelectionDialog.setLocationRelativeTo(getApplication().getMainFrame());
 		getApplication().show(cameraSelectionDialog);
-		toggleFullscreen(null);
+		setFullscreen(true);
 		getVideoImpl().getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
 			public void windowGainedFocus(WindowEvent e) {
@@ -89,8 +89,15 @@ public class VideoCapturer extends VideoComponent {
 				}
 			}
 			
+			public void windowDeactivated(WindowEvent e) {
+				setControlsEnabled(false);
+			}
+
+/*			public void windowClosed(WindowEvent e) {
+				setControlsEnabled(false);
+			}*/
+			
 		});
-		setComponentTitle("Camera > " + getVideoImpl().getTitle());
 	}
 
 	@Action
@@ -108,6 +115,11 @@ public class VideoCapturer extends VideoComponent {
 			this.selectedFormat = Arrays.asList(formats).indexOf(selectedFormat);
 			getVideoImpl().setSelectedVideoFormatIndex(this.selectedFormat);
 		}
+	}
+	
+	@Action
+	public void togglePreview() {
+		getVideoImpl().togglePreview();
 	}
 
 	@Action

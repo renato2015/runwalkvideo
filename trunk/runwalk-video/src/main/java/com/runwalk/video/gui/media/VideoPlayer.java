@@ -52,8 +52,8 @@ public class VideoPlayer extends VideoComponent {
 				}
 			}
 		});
-
 		loadFile(recording);
+		getVideoImpl().setPlayRate(getPlayRate());
 	}
 
 	public void loadFile(Recording recording) throws FileNotFoundException {
@@ -61,7 +61,7 @@ public class VideoPlayer extends VideoComponent {
 		if (getVideoImpl().loadFile(recording.getVideoFile())) {
 			//TODO the window state should be respected here...
 			//Add the shit here...
-			toggleFullscreen(null);
+			setFullscreen(true);
 			getFullscreenFrame().addWindowListener(new WindowAdapter() {
 
 				public void windowGainedFocus(WindowEvent e) {
@@ -80,14 +80,13 @@ public class VideoPlayer extends VideoComponent {
 					setControlsEnabled(false);
 				}
 
-				public void windowClosed(WindowEvent e) {
+/*				public void windowClosed(WindowEvent e) {
 					setControlsEnabled(false);
-				}
+				}*/
 
 			});
 		}
-		getVideoImpl().setPlayRate(getPlayRate());
-		//togglefullscreen here if not initialized yet??
+		//getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
 

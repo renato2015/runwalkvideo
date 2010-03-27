@@ -152,14 +152,14 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	//TODO make this createOrShowComponent!!
 	public void addComponent(AppComponent appComponent) {
 		Container container = appComponent.getComponent();
-		if (appComponent instanceof JInternalFrame) {
+		if (container instanceof JInternalFrame) {
 			JInternalFrame jInternalFrame = (JInternalFrame) container;
 			if (!jInternalFrame.isShowing()) {
 				jInternalFrame.pack();
 				pane.add(jInternalFrame);
 			}
 		}
-		appComponent.getComponent().setVisible(true);
+		container.setVisible(true);
 		getMenuBar().addWindow(appComponent, true);
 	}
 

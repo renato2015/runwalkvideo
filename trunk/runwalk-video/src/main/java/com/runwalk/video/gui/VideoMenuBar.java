@@ -22,7 +22,6 @@ import javax.swing.text.DefaultEditorKit;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
@@ -155,7 +154,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 			menu.add(checkedItem);
 
 			ActionMap actionMap = appComponent.getApplicationActionMap();
-			if (actionMap != null && actionMap.keys() != null && actionMap.keys().length > 0) {
+			if (actionMap != null && actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
 				menu.add(new JSeparator());
 				for (Object key : actionMap.allKeys()) {
 					javax.swing.Action action = actionMap.get(key);
@@ -223,7 +222,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		return getContext().getResourceMap(getClass(), VideoMenuBar.class);
 	}
 	
-	public ApplicationActionMap getApplicationActionMap() {
+	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(VideoMenuBar.class, this);
 	}
 	

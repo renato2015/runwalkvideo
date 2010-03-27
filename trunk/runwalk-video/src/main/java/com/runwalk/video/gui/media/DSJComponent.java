@@ -6,6 +6,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
 
+import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -20,7 +21,7 @@ import de.humatic.dsj.DSFiltergraph;
 
 /**
  * This class bundls all DSJ specific stuff for the {@link IVideoCapturer} and {@link IVideoPlayer} implementations.
- * @author Jeroen P.
+ * @author Jeroen Peelaerts
  *
  * @param <T> The specific DSFiltergraph class used by this component
  */
@@ -117,7 +118,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return getFiltergraph().getFullScreenWindow();
 	}
 
-	public void toggleFullScreen(GraphicsDevice device, boolean fullscreen) {
+	public void setFullScreen(GraphicsDevice device, boolean fullscreen) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
 		if (gs.length > 1) {
@@ -127,6 +128,10 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 				getFiltergraph().leaveFullScreen();
 			}
 		}
+	}
+	
+	public ActionMap getActionMap() {
+		return RunwalkVideoApp.getApplication().getContext().getActionMap(DSJComponent.class, this);
 	}
 
 }
