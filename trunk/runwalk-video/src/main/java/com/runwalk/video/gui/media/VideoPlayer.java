@@ -92,15 +92,23 @@ public class VideoPlayer extends VideoComponent {
 
 	public boolean togglePlay() {
 		if (isPlaying()) {
-			getVideoImpl().pause();
-			getTimer().stop();
-			setPlaying(false);
+			pause();
 		} else {
-			getTimer().restart();
-			getVideoImpl().play();
-			setPlaying(true);
+			play();
 		}
 		return isPlaying();
+	}
+	
+	public void pause() {
+		getVideoImpl().pause();
+		getTimer().stop();
+		setPlaying(false);
+	}
+	
+	public void play() {
+		getTimer().restart();
+		getVideoImpl().play();
+		setPlaying(true);
 	}
 
 	public void stop() {
@@ -126,7 +134,7 @@ public class VideoPlayer extends VideoComponent {
 		if (playRateIndex > 0) {
 			setPlayRateIndex(--playRateIndex);
 		} else {
-			getVideoImpl().pause();
+			pause();
 		}
 	}
 
@@ -134,13 +142,13 @@ public class VideoPlayer extends VideoComponent {
 		if (isPlaying() && playRateIndex < PLAY_RATES.length - 1) {
 			setPlayRateIndex(++playRateIndex);
 		} else if (!isPlaying()) {
-			togglePlay();
+			play();
 		}
 	}
 
 	public void nextSnapshot() {
 		if (isPlaying()) {
-			togglePlay();
+			pause();
 		}
 		getRecording().sortKeyframes();
 		for (Keyframe frame : getRecording().getKeyframes()) {
@@ -200,14 +208,14 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public boolean mute() {
-		if (getVideoImpl().getVolume() > 0) {
+		boolean muted =  getVideoImpl().getVolume() > 0;
+		if (muted) {
 			volume = getVideoImpl().getVolume();
 			getVideoImpl().setVolume(0f);
-			return true;
 		} else {
 			getVideoImpl().setVolume(volume);
-			return false;
 		}
+		return muted;
 	}
 
 	public int getDuration() {
