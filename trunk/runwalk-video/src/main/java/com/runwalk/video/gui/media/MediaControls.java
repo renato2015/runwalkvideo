@@ -45,11 +45,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public static final String STOP_ENABLED = "stopEnabled";
 
+	private static final String STOP_DISABLED = "stopDisabled";
+
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 
 	public static final String PLAYING_ENABLED = "playingEnabled";
 
 	private static final String PLAYING_DISABLED = "playingDisabled";
+
 
 	private JLabel time;
 	private JSlider scroll;
@@ -171,6 +174,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return button;
 	}
 
+	//TODO voeg de enabledProperty toe
 	@Action
 	public void fullScreen() { 
 		frontmostComponent.toggleFullscreen();
@@ -195,6 +199,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		if (player.togglePlay()) {
 			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 			setStopEnabled(true);
+		} else {
+			getApplication().showMessage("Afspelen gepauzeerd");
 		}
 	}
 
@@ -282,6 +288,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public boolean isStopEnabled() {
 		return this.stopEnabled;
+	}
+	
+	public boolean isStopDisabled() {
+		return !isStopEnabled();
 	}
 
 	public void startCapturer() {

@@ -129,6 +129,23 @@ public class AppUtil {
 	public static String getString(Object obj, String key) {
 		return getResourceMap(obj.getClass()).getString(key);
 	}
+	
+	/**
+	 * This method will merge all the keys in a new ActionMap
+	 * @param map1 The first map 
+ 	 * @param map2 The second map
+	 * @return The map with both the first second map's keys
+	 */
+	public static ActionMap mergeActionMaps(ActionMap map1, ActionMap map2) {
+		ActionMap result = new ActionMap();
+		for (Object key : map1.allKeys()) {
+			result.put(key, map1.get(key));
+		}
+		for (Object key : map2.allKeys()) {
+			result.put(key, map2.get(key));
+		}
+		return result;
+	}
 
 	public static void disposeDSGraph(DSFiltergraph graph) {
 		if (graph != null) {

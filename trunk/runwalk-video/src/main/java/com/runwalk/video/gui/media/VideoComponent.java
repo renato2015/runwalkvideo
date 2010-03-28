@@ -20,6 +20,7 @@ import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.AppInternalFrame;
+import com.runwalk.video.util.AppUtil;
 
 /**
  * This abstraction allows you to make easy reuse of the vendor independent logic 
@@ -187,9 +188,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	public ActionMap getApplicationActionMap() {
 		if (actionMap == null) {
 			ActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
-			ActionMap implActionMap = getVideoImpl().getActionMap();
-			implActionMap.setParent(actionMap);
-			this.actionMap = implActionMap;
+			this.actionMap = AppUtil.mergeActionMaps(actionMap, getVideoImpl().getActionMap());
 		}
 		return actionMap;
 	}
