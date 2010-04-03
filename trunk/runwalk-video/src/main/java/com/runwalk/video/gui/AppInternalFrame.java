@@ -24,7 +24,7 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class AppInternalFrame extends BaseInternalFrame implements AppComponent {
+public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrapper {
 
 	/**
 	 * Create a new JInternalFrame.
@@ -41,6 +41,14 @@ public class AppInternalFrame extends BaseInternalFrame implements AppComponent 
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
 	}
+	
+	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		addInternalFrameListener(listener);
+	}
+
+	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		removeInternalFrameListener(listener);
+	}
 
 	public Action getAction(String name) {
 		return getApplicationActionMap().get(name);
@@ -50,7 +58,7 @@ public class AppInternalFrame extends BaseInternalFrame implements AppComponent 
 		return RunwalkVideoApp.getApplication();
 	}
 
-	public BaseInternalFrame getComponent() {
+	public BaseInternalFrame getHolder() {
 		return this;
 	}
 

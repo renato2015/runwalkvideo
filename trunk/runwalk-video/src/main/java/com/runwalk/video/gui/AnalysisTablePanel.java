@@ -170,7 +170,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(4).setResizable(false);
 		//		getTable().getColumnModel().getColumn(4).setCellRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class)));
 		getTable().addMouseListener(new JTableButtonMouseListener());
-		getComponent().add(analysisTableScrollPanel, new AbsoluteConstraints(10, 20, 550, 100));
+		add(analysisTableScrollPanel, new AbsoluteConstraints(10, 20, 550, 100));
 
 		JPanel buttonPanel =  new JPanel();
 		buttonPanel.setLayout(new AbsoluteLayout());
@@ -183,7 +183,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(130, 0, -1, -1));
 
-		getComponent().add(buttonPanel, new AbsoluteConstraints(0, 130, -1, 30));
+		add(buttonPanel, new AbsoluteConstraints(0, 130, -1, 30));
 
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -193,7 +193,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
-		getComponent().add(tscrollPane, new AbsoluteConstraints(10, 165, 550, 60));
+		add(tscrollPane, new AbsoluteConstraints(10, 165, 550, 60));
 
 		//comments JTextArea binding
 		ELProperty<JTable, String> selectedElementComments = ELProperty.create("${selectedElement.comments}");

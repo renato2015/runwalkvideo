@@ -18,7 +18,7 @@ public class ClientMainView extends AppInternalFrame {
 		setName(getResourceMap().getString("mainView.title"));
 		JPanel contentPanel = new JPanel();
 		contentPanel.setLayout(new AbsoluteLayout());
-		contentPanel.add(getApplication().getClientTablePanel().getComponent(), new AbsoluteConstraints(10, 10, 580, 370));
+		contentPanel.add(getApplication().getClientTablePanel(), new AbsoluteConstraints(10, 10, 580, 370));
 		
 		tabPanel = new  JTabbedPane();
 		tabPanel.setName("detailTabbedPane");

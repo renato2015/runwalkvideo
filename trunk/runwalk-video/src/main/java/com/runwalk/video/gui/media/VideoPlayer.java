@@ -2,8 +2,6 @@ package com.runwalk.video.gui.media;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 
@@ -17,15 +15,12 @@ public class VideoPlayer extends VideoComponent {
 
 	public static final String POSITION = "position";
 
-	public static final String PLAYING = "playing";
-
 	private static int playerCount = 0;
 	private int playerId;
 	private static final float[] PLAY_RATES = AppSettings.PLAY_RATES;
 	private int playRateIndex = AppSettings.getInstance().getRateIndex();
 	private int position;
 	private float volume;
-	private boolean playing;
 	private IVideoPlayer playerImpl;
 
 	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording) throws FileNotFoundException {
@@ -62,29 +57,7 @@ public class VideoPlayer extends VideoComponent {
 			//TODO the window state should be respected here...
 			//Add the shit here...
 			setFullscreen(true);
-			getFullscreenFrame().addWindowListener(new WindowAdapter() {
-
-				public void windowGainedFocus(WindowEvent e) {
-					if (!isPlaying()) {
-						setControlsEnabled(false);
-					}
-				}
-
-				public void windowActivated(WindowEvent e) {
-					if (!isPlaying()) {
-						setControlsEnabled(true);
-					}
-				}
-
-				public void windowDeactivated(WindowEvent e) {
-					setControlsEnabled(false);
-				}
-
-/*				public void windowClosed(WindowEvent e) {
-					setControlsEnabled(false);
-				}*/
-
-			});
+			reAttachAppWindowWrapperListeners();
 		}
 		//getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
@@ -102,32 +75,24 @@ public class VideoPlayer extends VideoComponent {
 	public void pause() {
 		getVideoImpl().pause();
 		getTimer().stop();
-		setPlaying(false);
+		setState(VideoComponent.State.IDLE);
 	}
 	
 	public void play() {
 		getTimer().restart();
 		getVideoImpl().play();
-		setPlaying(true);
+		setState(VideoComponent.State.PLAYING);
 	}
 
 	public void stop() {
 		getTimer().stop();
-		setPlaying(false);
+		setState(VideoComponent.State.IDLE);
 		getVideoImpl().stop();
-	}
-
-	protected void setPlaying(boolean playing) {
-		firePropertyChange(PLAYING, this.playing, this.playing = playing);
 	}
 
 	public void setPosition(int pos) {
 		getVideoImpl().setPosition(pos);
 		firePropertyChange(POSITION, this.position, this.position = pos);
-	}
-
-	public boolean isPlaying() {
-		return playing;
 	}
 
 	public void backward() {
@@ -229,12 +194,14 @@ public class VideoPlayer extends VideoComponent {
 	public IVideoPlayer getVideoImpl() {
 		return playerImpl;
 	}
+	
+	public boolean isPlaying() {
+		return getState() == VideoComponent.State.PLAYING;
+	}
 
 	@Override
 	public String getTitle() {
 		return getResourceMap().getString("windowTitle.text", playerId);
 	}
-	
-	
 
 }

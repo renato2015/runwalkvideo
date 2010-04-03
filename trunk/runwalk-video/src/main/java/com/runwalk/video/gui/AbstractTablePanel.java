@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -182,10 +181,6 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 
 	public RunwalkVideoApp getApplication() {
 		return RunwalkVideoApp.getApplication();
-	}
-
-	public JPanel getComponent() {
-		return this;
 	}
 
 	public ApplicationContext getContext() {

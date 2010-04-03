@@ -210,7 +210,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		buttonPanel.add(searchPanel, new AbsoluteConstraints(370, 0, 180, -1));
 
 		//Layout the this panel..
-		GroupLayout groupLayout = new GroupLayout(getComponent());
+		GroupLayout groupLayout = new GroupLayout(this);
 		setLayout(groupLayout);
 		groupLayout.setHorizontalGroup(
 				groupLayout.createParallelGroup(GroupLayout.LEADING)

@@ -113,7 +113,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		//        super(RunwalkVideoApp.getApplication().getClientTableModel());
 		initComponents();
 		JFrame frame = new JFrame();
-		frame.add(getComponent());
+		frame.add(this);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -779,8 +779,8 @@ public class NewClientTablePanel extends AbstractTablePanel {
 	                    .addComponent(jLabel1, GroupLayout.PREFERRED_SIZE, 14, GroupLayout.PREFERRED_SIZE)))
 	        );
 
-        GroupLayout layout = new GroupLayout(this.getComponent());
-        getComponent().setLayout(layout);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()

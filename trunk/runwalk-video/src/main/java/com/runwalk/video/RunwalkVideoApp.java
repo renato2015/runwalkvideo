@@ -23,11 +23,11 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.AnalysisTablePanel;
+import com.runwalk.video.gui.AppInternalFrame;
+import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.ClientInfoPanel;
 import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.ClientTablePanel;
-import com.runwalk.video.gui.AppComponent;
-import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.StatusPanel;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
@@ -150,8 +150,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 	
 	//TODO make this createOrShowComponent!!
-	public void addComponent(AppComponent appComponent) {
-		Container container = appComponent.getComponent();
+	public void addComponent(AppWindowWrapper appComponent) {
+		Container container = appComponent.getHolder();
 		if (container instanceof JInternalFrame) {
 			JInternalFrame jInternalFrame = (JInternalFrame) container;
 			if (!jInternalFrame.isShowing()) {
@@ -160,7 +160,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 		container.setVisible(true);
-		getMenuBar().addWindow(appComponent, true);
+		getMenuBar().addWindow(appComponent);
 	}
 
 	@Override 
