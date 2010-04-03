@@ -4,12 +4,16 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 import javax.swing.Timer;
+import javax.swing.event.InternalFrameListener;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
@@ -18,8 +22,8 @@ import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.AppInternalFrame;
+import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.util.AppUtil;
 
 /**
@@ -29,30 +33,73 @@ import com.runwalk.video.util.AppUtil;
  * @author Jeroen P.
  *
  */
-public abstract class VideoComponent extends AbstractBean implements AppComponent {
+public abstract class VideoComponent extends AbstractBean implements AppWindowWrapper {
 
 	public static final String FULLSCREEN = "fullscreen";
 
 	public static final String CONTROLS_ENABLED = "controlsEnabled";
+
+	public static final String STATE = "state";
 	
 	private Recording recording;
 	protected Frame fullScreenFrame;
 	protected AppInternalFrame internalFrame;
 	private Timer timer;
 	boolean fullscreen = false;
-	protected boolean controlsEnabled;
 	private ActionMap actionMap;
+
+	private State state;
+	
+	private List<AppWindowWrapperListener> appWindowWrapperListeners = new ArrayList<AppWindowWrapperListener>();
 
 	public VideoComponent(PropertyChangeListener listener) {
 		addPropertyChangeListener(listener);
+		setState(State.IDLE);
 	}
 	
-	public boolean getControlsEnabled() {
-		return controlsEnabled;
+	//TODO simplify code!
+	protected void reAttachAppWindowWrapperListeners() {
+		if (getFullscreenFrame() != null) {
+			boolean found = false;
+			for (int i = 0; i < appWindowWrapperListeners.size() && !found; i++) {
+				AppWindowWrapperListener appWindowWrapperListener = appWindowWrapperListeners.get(i);
+				for (WindowListener windowListener : getFullscreenFrame().getWindowListeners()) {
+					found = windowListener == appWindowWrapperListener;
+				}
+				if (!found) {
+					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
+				}
+			}
+		}
+		if (getFullscreenFrame() != null) {
+			boolean found = false;
+			for (int i = 0; i < appWindowWrapperListeners.size() && !found; i++) {
+				AppWindowWrapperListener appWindowWrapperListener = appWindowWrapperListeners.get(i);
+				for (InternalFrameListener internalFrameListener : getInternalFrame().getInternalFrameListeners()) {
+					found = internalFrameListener == appWindowWrapperListener;
+				}
+				if (!found) {
+					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
+				}
+			}
+		}
+	}
+	
+	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		//TODO the listeners could be saved internally and readded once they are needed again..
+		appWindowWrapperListeners.add(listener);
+		if (getFullscreenFrame() != null) {
+			getFullscreenFrame().addWindowListener(listener);
+		}
+		if (getInternalFrame() != null) {
+			getInternalFrame().addInternalFrameListener(listener);
+		}
 	}
 
-	public void setControlsEnabled(boolean controlsEnabled) {
-		firePropertyChange(CONTROLS_ENABLED, getControlsEnabled(), this.controlsEnabled = controlsEnabled);
+	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		appWindowWrapperListeners.remove(listener);
+		getFullscreenFrame().removeWindowListener(listener);
+		getInternalFrame().removeInternalFrameListener(listener);
 	}
 
 	public Recording getRecording() {
@@ -89,7 +136,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		}
 	}
 
-	public Container getComponent() {
+	public Container getHolder() {
 		Container container = null;
 		if (isFullscreen()) {
 			container = getFullscreenFrame();
@@ -130,6 +177,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 				internalFrame.setVisible(true);
 			}
 		}
+		reAttachAppWindowWrapperListeners();
 		setComponentTitle(getTitle());
 		getApplication().addComponent(this);
 	}
@@ -139,6 +187,18 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 		setFullscreen(!isFullscreen());
 	}
 	
+	protected void setState(State state) {
+		firePropertyChange(STATE, this.state, this.state = state);
+	}
+	
+	public State getState() {
+		return state;
+	}
+	
+	public boolean isIdle() {
+		return getState() == State.IDLE;
+	}
+
 	public void dispose() {
 		getVideoImpl().dispose();
 		setRecording(null);
@@ -159,7 +219,7 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 	}
 	
 	public boolean isActive() {
-		return getComponent().isVisible() && getVideoImpl().isActive();
+		return getHolder().isVisible() && getVideoImpl().isActive();
 	}
 	
 	public Action getAction(String name) {
@@ -191,6 +251,10 @@ public abstract class VideoComponent extends AbstractBean implements AppComponen
 			this.actionMap = AppUtil.mergeActionMaps(actionMap, getVideoImpl().getActionMap());
 		}
 		return actionMap;
+	}
+	
+	public enum State {
+		PLAYING, RECORDING, IDLE
 	}
 
 }

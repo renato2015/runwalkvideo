@@ -1,7 +1,5 @@
 package com.runwalk.video.gui;
 
-import java.awt.Container;
-
 import javax.swing.Action;
 import javax.swing.ActionMap;
 
@@ -18,10 +16,6 @@ public interface AppComponent {
 	public ResourceMap getResourceMap();
 	
 	public ApplicationContext getContext();
-	
-	public Container getComponent();
-	
-	public String getTitle();
 	
 	public Action getAction(String name);
 	

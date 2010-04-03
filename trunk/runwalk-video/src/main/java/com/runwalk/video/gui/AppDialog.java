@@ -35,10 +35,6 @@ public class AppDialog extends JDialog implements AppComponent {
 		return RunwalkVideoApp.getApplication();
 	}
 
-	public JDialog getComponent() {
-		return this;
-	}
-
 	public ApplicationContext getContext() {
 		return getApplication().getContext();
 	}

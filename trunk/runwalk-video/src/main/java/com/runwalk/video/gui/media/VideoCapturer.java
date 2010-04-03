@@ -2,8 +2,6 @@ package com.runwalk.video.gui.media;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -24,15 +22,11 @@ public class VideoCapturer extends VideoComponent {
 
 	protected static final String TIME_RECORDING = "timeRecorded";
 
-	private static final String RECORDING = "recording";
-
 	private static CameraDialog cameraSelectionDialog;
 
 	private int selectedFormat = -1;
 
 	private long timeStarted, timeRecorded;
-
-	private boolean recording;
 
 	private IVideoCapturer capturerImpl;
 
@@ -75,29 +69,6 @@ public class VideoCapturer extends VideoComponent {
 		cameraSelectionDialog.setLocationRelativeTo(getApplication().getMainFrame());
 		getApplication().show(cameraSelectionDialog);
 		setFullscreen(true);
-		getVideoImpl().getFullscreenFrame().addWindowListener(new WindowAdapter() {
-
-			public void windowGainedFocus(WindowEvent e) {
-				if (!isRecording()) {
-					setControlsEnabled(true);
-				}
-			}
-
-			public void windowActivated(WindowEvent e) {
-				if (!isRecording()) {
-					setControlsEnabled(true);
-				}
-			}
-			
-			public void windowDeactivated(WindowEvent e) {
-				setControlsEnabled(false);
-			}
-
-/*			public void windowClosed(WindowEvent e) {
-				setControlsEnabled(false);
-			}*/
-			
-		});
 	}
 
 	@Action
@@ -159,30 +130,26 @@ public class VideoCapturer extends VideoComponent {
 		getLogger().debug("Recording to file " + destFile.getAbsolutePath() + "");
 
 		getTimer().restart();
-		setRecording(true);
+		setState(VideoComponent.State.RECORDING);
 	}
 
 	public void stopRecording() {
 		getTimer().stop();
 		getVideoImpl().stopRecording();
-		setRecording(false);
+		setState(VideoComponent.State.IDLE);
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 	}
 	
-	protected void setRecording(boolean recording) {
-		firePropertyChange(RECORDING, this.recording, this.recording = recording);
-	}
-
-	public boolean isRecording() {
-		return recording;
-	}
-
 	public void showCaptureSettings() {
 		getVideoImpl().showCaptureSettings();
 	}
 
 	public void showCameraSettings() {
 		getVideoImpl().showCameraSettings();
+	}
+	
+	public boolean isRecording() {
+		return getState() == State.RECORDING;
 	}
 
 	@Override
