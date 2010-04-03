@@ -149,7 +149,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 	}
 	
-	//TODO make this createOrShowComponent!!
+	//TODO make this createOrShowComponent!! .. this method can be more efficient!!
 	public void addComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent.getHolder();
 		if (container instanceof JInternalFrame) {
@@ -161,6 +161,12 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 		container.setVisible(true);
 		getMenuBar().addWindow(appComponent);
+	}
+	
+	public void removeComponent(AppWindowWrapper appComponent) {
+		if (appComponent.getHolder() instanceof JInternalFrame) {
+			pane.remove((JInternalFrame) appComponent.getHolder());
+		}
 	}
 
 	@Override 

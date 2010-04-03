@@ -47,8 +47,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public static final String STOP_ENABLED = "stopEnabled";
 
-	private static final String STOP_DISABLED = "stopDisabled";
-
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 
 	public static final String PLAYING_ENABLED = "playingEnabled";
@@ -175,7 +173,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return button;
 	}
 
-	//TODO voeg de enabledProperty toe
+	//TODO voeg enabledProperty toe (maak proxyAction??)
 	@Action
 	public void fullScreen() { 
 		frontmostComponent.toggleFullscreen();
@@ -456,7 +454,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
 	
-	private void enableFrontmostVideoComponentControls(VideoComponent component, boolean enable) {
+	private void enableVideoComponentControls(VideoComponent component, boolean enable) {
 		//a player or capturer is requesting the focus
 		if (frontmostComponent == null || enable && frontmostComponent.isIdle()) {
 			StringBuilder title = new StringBuilder(getName() + " > " + component.getTitle());
@@ -465,10 +463,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				setRecordingEnabled(true);
 				setPlayingEnabled(false);
 				setStopEnabled(false);
-				if (player != null) {
-					if (player.isPlaying()) {
-						player.stop();
-					}
+				if (player != null && player.isPlaying()) {
+					player.stop();
 				}
 			} else {
 				setRecordingEnabled(false);
@@ -480,7 +476,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			setTitle(title.toString());
 			frontmostComponent = component;
 		} /*else {
-			//component.setControlsEnabled(false);
 			if (isFrontmostVideoComponent(component)) {
 				//disable all controls??
 				setRecordingEnabled(false);
@@ -509,7 +504,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private class WindowStateChangeListener extends AppWindowWrapperListener {
 
 		private VideoComponent enclosingWrapper;
-		//TODO this can be done better I guess!!
+		//TODO this can be coded better I guess!!
 		public WindowStateChangeListener(VideoComponent enclosingWrapper) {
 			this.enclosingWrapper = enclosingWrapper;
 		}
@@ -519,19 +514,19 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 		
 		public void appWindowGainedFocus(AWTEvent e) {
-			enableFrontmostVideoComponentControls(getEnclosingWrapper(), true);
+			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 
 		public void appWindowActivated(AWTEvent e) {
-			enableFrontmostVideoComponentControls(getEnclosingWrapper(), true);
+			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 		
 		public void appWindowDeactivated(AWTEvent e) {
-			enableFrontmostVideoComponentControls(getEnclosingWrapper(), false);
+			enableVideoComponentControls(getEnclosingWrapper(), false);
 		}
 
 		public void appWindowClosed(AWTEvent e) {
-			enableFrontmostVideoComponentControls(getEnclosingWrapper(), false);
+			enableVideoComponentControls(getEnclosingWrapper(), false);
 		}
 	}
 
