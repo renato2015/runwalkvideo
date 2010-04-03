@@ -39,25 +39,15 @@ public interface AppWindowWrapper extends AppComponent {
 	 */
 	public static abstract class AppWindowWrapperListener implements WindowListener, WindowFocusListener, InternalFrameListener, EventListener {
 		
-		public void appWindowOpened(AWTEvent event) {
-			
-		}
+		public void appWindowOpened(AWTEvent event) {}
 
-		public void appWindowActivated(AWTEvent event) {
-			
-		}
+		public void appWindowActivated(AWTEvent event) {}
 		
-		public void appWindowClosed(AWTEvent event) {
-			
-		}
+		public void appWindowClosed(AWTEvent event) {}
 		
-		public void appWindowDeactivated(AWTEvent event) {
-			
-		}
+		public void appWindowDeactivated(AWTEvent event) {}
 		
-		public void appWindowGainedFocus(AWTEvent event) {
-			
-		}
+		public void appWindowGainedFocus(AWTEvent event) {}
 		
 		/*
 		 * WindowListener methods

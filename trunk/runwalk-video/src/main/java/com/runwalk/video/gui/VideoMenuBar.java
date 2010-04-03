@@ -39,7 +39,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	private JDialog aboutBox;
 
 	public VideoMenuBar() {
-		
+
 		JSeparator separator = new JSeparator();
 		JMenu fileMenu = new  JMenu(getResourceMap().getString("fileMenu.text"));
 		JMenuItem newClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("addClient"));
@@ -84,8 +84,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		editMenu.add(paste);
 		add(editMenu);
 
-//		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
-//		getComponent().add(videoMenu);
+		//		JMenu videoMenu = new JMenu(getResourceMap().getString("videoMenu.text"));
+		//		getComponent().add(videoMenu);
 
 		windowMenu = new JMenu(getResourceMap().getString("windowMenu.text"));
 		add(windowMenu);
@@ -108,33 +108,34 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		getApplication().show(aboutBox);
 	}
 
+	//TODO need some reattach method here, too...
 	public void addWindow(final AppWindowWrapper appComponent) {
 		Component component = appComponent.getHolder();
-		appComponent.addAppWindowWrapperListener(new AppWindowWrapperListener() {
-
-			@Override
-			public void windowClosed(WindowEvent e) {
-				setCheckboxSelection(appComponent);
-			}
-
-			@Override
-			public void windowOpened(WindowEvent e) {
-				setCheckboxSelection(appComponent);
-			}
-			
-			@Override
-			public void internalFrameDeactivated(InternalFrameEvent e) {
-				setCheckboxSelection(appComponent);
-			}
-
-			@Override
-			public void internalFrameActivated(InternalFrameEvent e) {
-				setCheckboxSelection(appComponent);
-			}
-			
-		});
 		JCheckBoxMenuItem checkedItem = null;
 		if (!boxWindowMap.containsValue(appComponent)) {
+			appComponent.addAppWindowWrapperListener(new AppWindowWrapperListener() {
+
+				@Override
+				public void windowClosed(WindowEvent e) {
+					setCheckboxSelection(appComponent);
+				}
+
+				@Override
+				public void windowOpened(WindowEvent e) {
+					setCheckboxSelection(appComponent);
+				}
+
+				@Override
+				public void internalFrameDeactivated(InternalFrameEvent e) {
+					setCheckboxSelection(appComponent);
+				}
+
+				@Override
+				public void internalFrameActivated(InternalFrameEvent e) {
+					setCheckboxSelection(appComponent);
+				}
+
+			});
 			JMenu menu = new JMenu(appComponent.getTitle());
 
 			checkedItem = new JCheckBoxMenuItem(getAction("showWindow"));
@@ -213,11 +214,11 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	public ResourceMap getResourceMap() {
 		return getContext().getResourceMap(getClass(), VideoMenuBar.class);
 	}
-	
+
 	public ActionMap getApplicationActionMap() {
 		return getContext().getActionMap(VideoMenuBar.class, this);
 	}
-	
+
 	public String getTitle() {
 		return "Menu Bar";
 	}
