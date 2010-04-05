@@ -130,7 +130,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
-		//TODO check whether this movie is playing or not.. dit geeft problemen als je de slower/faster acties gebruikt!!
 		if (isPlaying()) {
 			getFiltergraph().setRate(rate);
 		}
