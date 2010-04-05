@@ -1,9 +1,8 @@
 package com.runwalk.video.gui.media;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
-
-import org.jdesktop.application.Action;
 
 import com.runwalk.video.util.AppSettings;
 
@@ -16,6 +15,8 @@ import de.humatic.dsj.DSFilter.DSPin;
 
 public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
+	private static final int FLAGS = DSFiltergraph.DD7;
+
 	private static final DSFilterInfo[] VIDEO_ENCODERS = AppSettings.VIDEO_ENCODERS;
 
 	private static DSFilterInfo[][] dsi;
@@ -27,10 +28,13 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
 	
-	public void startCapturer() {
-		//FIXME no more propertychangelisteners here for now!! see what is needed to replace this functionality
-		setFiltergraph(new DSCapture(DSFiltergraph.DD7, selectedDevice, false, DSFilterInfo.doNotRender(), null));
+	public void startCapturer(int flags, PropertyChangeListener listener) {
+		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), listener));
 		getFiltergraph().lockAspectRatio(true);
+	}
+	
+	public void startCapturer() {
+		startCapturer(FLAGS, null);
 	}
 
 	public String[] getVideoFormats() {
@@ -150,7 +154,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		return selectedDevice != null ? selectedDevice.getName() : "";
 	}
 	
-	protected boolean isRecording() {
+	private boolean isRecording() {
 		return getFiltergraph().getState() == DSCapture.RECORDING;
 	}
 

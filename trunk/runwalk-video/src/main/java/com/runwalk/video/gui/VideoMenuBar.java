@@ -1,23 +1,17 @@
 package com.runwalk.video.gui;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
 
 import javax.swing.ActionMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
-import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultEditorKit;
 
@@ -26,6 +20,8 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.AppWindowWrapper.AppWindowWrapperListener;
 import com.runwalk.video.util.ResourceInjector;
@@ -33,8 +29,10 @@ import com.runwalk.video.util.ResourceInjector;
 @SuppressWarnings("serial")
 public class VideoMenuBar extends JMenuBar implements AppComponent {
 
-	private HashMap<JCheckBoxMenuItem, AppWindowWrapper> boxWindowMap = new HashMap<JCheckBoxMenuItem, AppWindowWrapper>();
-	private HashMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = new HashMap<AppWindowWrapper, JCheckBoxMenuItem>();
+//	private HashMap<JCheckBoxMenuItem, AppWindowWrapper> boxWindowMap = new HashMap<JCheckBoxMenuItem, AppWindowWrapper>();
+//	private HashMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = new HashMap<AppWindowWrapper, JCheckBoxMenuItem>();
+	
+	private BiMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = HashBiMap.create();
 	private JMenu windowMenu;
 	private JDialog aboutBox;
 
@@ -112,7 +110,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	public void addWindow(final AppWindowWrapper appComponent) {
 		Component component = appComponent.getHolder();
 		JCheckBoxMenuItem checkedItem = null;
-		if (!boxWindowMap.containsValue(appComponent)) {
+		if (!windowBoxMap.containsKey(appComponent)) {
 			appComponent.addAppWindowWrapperListener(new AppWindowWrapperListener() {
 
 				@Override
@@ -140,8 +138,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 
 			checkedItem = new JCheckBoxMenuItem(getAction("showWindow"));
 			checkedItem.setSelected(component.isVisible());
-			boxWindowMap.put(checkedItem, appComponent);
 			windowBoxMap.put(appComponent, checkedItem);
+			windowBoxMap.inverse().put(checkedItem, appComponent);
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.forDigit(windowBoxMap.size(), 9), ActionEvent.CTRL_MASK);
 			checkedItem.setAccelerator(keyStroke);
 			menu.add(checkedItem);
@@ -168,18 +166,17 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	@Action
 	public void showWindow(ActionEvent e) {
 		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
-		AppWindowWrapper component = boxWindowMap.get(selectedItem);
+		AppWindowWrapper component  = windowBoxMap.inverse().get(selectedItem);
 		//FIXME this should not be null!!
-		if (component != null) {
+//		if (component != null) {
 			component.getHolder().setVisible(selectedItem.isSelected());
-		}
+//		}
 	}
 
 	public void removeWindow(AppComponent appComponent) {
 		JCheckBoxMenuItem boxItem = windowBoxMap.get(appComponent);
 		if (boxItem != null) {
 			windowMenu.remove(boxItem);
-			boxWindowMap.remove(boxItem);
 			windowBoxMap.remove(appComponent);
 		}
 	}
@@ -197,10 +194,6 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 
 	public RunwalkVideoApp getApplication() {
 		return RunwalkVideoApp.getApplication();
-	}
-
-	public JMenuBar getComponent() {
-		return this;
 	}
 
 	public ApplicationContext getContext() {

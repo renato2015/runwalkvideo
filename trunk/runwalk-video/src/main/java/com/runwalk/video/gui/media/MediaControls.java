@@ -25,6 +25,7 @@ import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -45,6 +46,8 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
 
+	private static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
+
 	public static final String STOP_ENABLED = "stopEnabled";
 
 	public static final String RECORDING_ENABLED = "recordingEnabled";
@@ -61,13 +64,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private VideoComponent frontmostComponent;
 
 	private Boolean recordingSelected = false;
-	private boolean recordingEnabled, playingEnabled, stopEnabled;
+	private boolean recordingEnabled, playingEnabled, stopEnabled, playingDisabled, fullScreenEnabled;
 
 	private JPanel buttonPanel;
 
 	private AbstractButton playButton;
-
-	private Object playingDisabled;
 
 	public MediaControls() {
 		super("Media controls", false);
@@ -173,8 +174,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return button;
 	}
 
-	//TODO voeg enabledProperty toe (maak proxyAction??)
-	@Action
+	//TODO kan dit eventueel met een proxy action??
+	@Action(enabledProperty=FULL_SCREEN_ENABLED, block=BlockingScope.APPLICATION)
 	public void fullScreen() { 
 		frontmostComponent.toggleFullscreen();
 	}
@@ -286,17 +287,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public boolean isStopEnabled() {
-		return this.stopEnabled;
+		return stopEnabled;
 	}
 	
-	public boolean isStopDisabled() {
-		return !isStopEnabled();
+	public boolean isFullScreenEnabled() {
+		return fullScreenEnabled;
 	}
 
 	public void startCapturer() {
 		if (capturer == null) {
 			capturer = VideoCapturer.createInstance(this);
 			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
+			getApplication().createOrShowComponent(capturer);
 			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
 		}
 		capturer.toFront();
@@ -328,6 +330,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Action(enabledProperty=PLAYING_ENABLED)
 	public void makeSnapshot() {
 		int position = player.makeSnapshot();
@@ -336,7 +339,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getSlider().updateUI();
 		getSlider().revalidate();
 		getApplication().showMessage("Snapshot genomen op " + 
-				AppUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"))); 
+				AppUtil.formatDate(new Date(position), AppUtil.EXTENDED_DURATION_FORMATTER)); 
 		getApplication().setSaveNeeded(true);
 	}
 
@@ -345,6 +348,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			if (player == null) {
 				player = VideoPlayer.createInstance(this, recording);
 				player.addAppWindowWrapperListener(new WindowStateChangeListener(player));
+				getApplication().createOrShowComponent(player);
 			} else {
 				player.loadFile(recording);
 				setSliderLabels(recording);
@@ -389,8 +393,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	private void updateTimeStamps(long position, long duration) {
-		String elapsedTime = AppUtil.formatDate(new Date(position), new SimpleDateFormat("mm:ss.SSS"));
-		String totalTime = AppUtil.formatDate(new Date(duration), new SimpleDateFormat("mm:ss.SSS"));
+		String elapsedTime = AppUtil.formatDate(new Date(position),AppUtil.EXTENDED_DURATION_FORMATTER);
+		String totalTime = AppUtil.formatDate(new Date(duration), AppUtil.EXTENDED_DURATION_FORMATTER);
 		time.setText(elapsedTime + " / " + totalTime);
 	}
 
@@ -433,10 +437,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		Object newValue = evt.getNewValue();
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
 			State state = (State) evt.getNewValue();
+			boolean enabled = state == VideoComponent.State.IDLE && evt.getSource() == frontmostComponent;
+			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
 			playButton.setSelected(state == State.PLAYING);
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
-			Long timeRecorded = (Long) newValue;
 			VideoComponent capturer = (VideoComponent) evt.getSource();
+			Long timeRecorded = (Long) newValue;
 			if (this.capturer.equals(capturer)) {
 				updateTimeStamps(timeRecorded, 0);
 			}
@@ -449,7 +455,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				}
 				setStatusInfo(position, player.getDuration());
 			}
-		} 
+		}
 		//DSJ fires the following event for notifying that playing has stoppped..
 		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
@@ -474,6 +480,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				title.append(" > " ).append(player.getRecording().getVideoFileName());
 			}
 			setTitle(title.toString());
+			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isIdle());
 			frontmostComponent = component;
 		} /*else {
 			if (isFrontmostVideoComponent(component)) {

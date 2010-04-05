@@ -11,11 +11,11 @@ import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.entities.VideoFile;
+import com.runwalk.video.gui.media.DSJPlayer;
 import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
-import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
@@ -25,7 +25,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private int part;
 	private int progress = 0;
 	private boolean finished = false;
-	private DSMovie graph;
+	private DSJPlayer exporter;
 	private Recording recording;
 	private List<Recording> recordings;
 	private DSFilterInfo transcoder;
@@ -45,9 +45,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			break;
 		} case DSMovie.EXPORT_PROGRESS : {
 			progress = DSJUtils.getEventValue_int(evt);
-			int totalProgress = conversionCounter * part + (progress / conversionCount);
+			double totalProgress = conversionCounter * part + ((double) progress / (double) conversionCount);
 			getLogger().debug("progress:" + progress + " total progress: " + totalProgress); 
-			setProgress(totalProgress);
+			setProgress((int) totalProgress);
 			break;
 		} case DSMovie.EXPORT_STARTED: {
 			getLogger().debug("Export started");
@@ -56,7 +56,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		}
 		}
 	}
-	
+
 	@Override
 	protected Boolean doInBackground() {
 		message(getResourceString("startMessage"));
@@ -69,22 +69,15 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			VideoFile newFile = recording.getCompressedVideoFile();
 			try {
 				recording.setRecordingStatus(RecordingStatus.READY);
-				int loadResult = 0;
-				if (graph == null) {
-					graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.JAVA_POLL /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/, this);
+				if (exporter == null) {
+					exporter = new DSJPlayer(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.DD7 | DSFiltergraph.NO_SYNC, this);
 				} else {
-					try {
-						loadResult = graph.loadFile(sourceFile.getAbsolutePath(), 0);
-					} catch(DSJException exc) {
-						getLogger().debug("Rebuilding graph for file " + sourceFile.getName());
-						AppUtil.disposeDSGraph(graph);
-						graph = new DSMovie(sourceFile.getAbsolutePath(), DSFiltergraph.JAVA_POLL /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/, this);
-					}
+					exporter.loadFile(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.DD7 | DSFiltergraph.NO_SYNC, this);
 				}
 				setProgress(conversionCounter * part);
 				message("progressMessage",  conversionCounter + 1, conversionCount);
-				int result = graph.export(newFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
-				if (result < 0 || loadResult < 0) {
+				int result = exporter.getFiltergraph().export(newFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
+				if (result < 0) {
 					//reconnect failed.. exception will be thrown here in future versions..
 					getLogger().error("graph reconnect failed!");
 					errorCount++;
@@ -101,12 +94,14 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				getLogger().error(statusCode.getDescription() + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
-				graph.stop();
+				if (exporter != null) {
+					exporter.getFiltergraph().stop();
+				}
 				recording.setRecordingStatus(statusCode);
 			}
 		}
-		if (graph != null) {
-			AppUtil.disposeDSGraph(graph);
+		if (exporter != null) {
+			exporter.dispose();
 		}
 		message(getResourceString("endMessage"));
 		return (errorCount == 0);
@@ -115,9 +110,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	@Override
 	protected void cancelled() {
 		super.cancelled();
-		if (graph != null) {
-			graph.cancelExport();
-			AppUtil.disposeDSGraph(graph);
+		if (exporter != null) {
+			exporter.getFiltergraph().cancelExport();
+			exporter.dispose();
 		}
 		if (recording != null) {
 			if (recording.getCompressedVideoFile().exists()) {
@@ -146,6 +141,6 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
 		}
 	}
-	
-	
+
+
 }

@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JOptionPane;
@@ -16,6 +17,8 @@ import de.humatic.dsj.DSMovie;
 
 public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
+	private static final int FLAGS = DSFiltergraph.DD7 | DSMovie.INIT_PAUSED;
+
 	private boolean customFramerateEnabled = false;
 
 	private float framerate;
@@ -23,15 +26,25 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	private float rate;
 
 	private boolean playing;
+	
+	public DSJPlayer() {}
 
+	public DSJPlayer(File videoFile, int flags, PropertyChangeListener listener) {
+		loadFile(videoFile, flags, listener);
+	}
+	
 	public boolean loadFile(File videoFile) {
+		return loadFile(videoFile, FLAGS, null);
+	}
+	
+	public boolean loadFile(File videoFile, int flags, PropertyChangeListener listener) {
 		boolean rebuilt = false;
 		String path = videoFile.getAbsolutePath();
 		try {
 			if (rebuilt = getFiltergraph() == null) {
-				initFiltergraph(path);
+				initFiltergraph(path, flags, listener);
 			} else {
-				getFiltergraph().loadFile(path , 0);
+				rebuilt = getFiltergraph().loadFile(path , 0) < 0;
 			}
 		} catch(DSJException e) {
 			rebuilt = true;
@@ -42,18 +55,17 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 					JOptionPane.ERROR_MESSAGE);*/
 			Logger.getLogger(DSJPlayer.class).error("Movie initialization failed.", e);
 			dispose();
-			initFiltergraph(path);
+			initFiltergraph(path, flags, listener);
 		} 
 		return rebuilt;
 	}
-
-	private void initFiltergraph(String path) {
+	
+	private void initFiltergraph(String path, int flags, PropertyChangeListener listener) {
 		Logger.getLogger(DSJPlayer.class).debug("Movie path opened: " + path);
-		int flags = DSFiltergraph.DD7 | DSMovie.INIT_PAUSED;
 		if (customFramerateEnabled) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
-		setFiltergraph(new DSMovie(path, flags, null));
+		setFiltergraph(new DSMovie(path, flags, listener));
 		if (customFramerateEnabled) {
 			getFiltergraph().setMasterFrameRate(framerate);
 		}
