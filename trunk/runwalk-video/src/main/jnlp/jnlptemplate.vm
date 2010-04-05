@@ -19,7 +19,7 @@
   </security>
 #end
 	<resources>
-		<j2se version="$j2seVersion"/>
+	  <j2se version="1.6+" java-vm-args="-Dsun.java2d.d3d=false"/>
 #foreach( $dependency in $fulldependencies )
 #if ( !$dependency.classifier )
 		<jar href="$libFolder/${dependency.artifactId}-${dependency.version}.jar" />

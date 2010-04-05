@@ -181,7 +181,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		setComponentTitle(getTitle());
 	}
 	
-	@org.jdesktop.application.Action(enabledProperty=IDLE, block=BlockingScope.ACTION)
+	@org.jdesktop.application.Action(enabledProperty=IDLE, block=BlockingScope.APPLICATION)
 	public void toggleFullscreen() {
 		setFullscreen(!isFullscreen());
 	}

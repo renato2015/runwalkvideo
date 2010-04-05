@@ -291,6 +291,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- DirectShow bindings -->
 		<dependency>
 			<groupId>de.humatic</groupId>
@@ -321,7 +326,7 @@
 		<dependency>
 			<groupId>org.jdesktop.bsaf</groupId>
 			<artifactId>bsaf</artifactId>
-			<version>1.9-RC3</version>
+			<version>1.9-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.netbeans</groupId>
@@ -336,7 +341,7 @@
 		<dependency>
 			<groupId>com.tomtessier</groupId>
 			<artifactId>scrollabledesktop</artifactId>
-			<version>1.0</version>
+			<version>1.01</version>
 		</dependency>
 		<!-- Persistence libraries -->
 		<dependency>
