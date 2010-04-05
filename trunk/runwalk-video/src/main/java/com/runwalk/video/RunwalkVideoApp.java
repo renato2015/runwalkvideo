@@ -1,6 +1,7 @@
 package com.runwalk.video;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
@@ -9,7 +10,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.swing.ActionMap;
-import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
@@ -33,6 +33,7 @@ import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
 import com.runwalk.video.gui.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
+import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 import de.humatic.dsj.DSEnvironment;
@@ -124,6 +125,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		setSaveNeeded(false);
 		overviewPanel = new AnalysisOverviewTablePanel();    	
 
+		pane = new JScrollableDesktopPane();
+		getMainFrame().add(pane);
+
 		menuBar = new VideoMenuBar();
 
 		mediaControls = new MediaControls();
@@ -133,12 +137,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		//add all internal frames from here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
 
-		pane = new JScrollableDesktopPane();
-		getMainFrame().add(pane);
 		
 		//add the window to the WINDOW menu
-		addComponent(getMediaControls());
-		addComponent(getClientMainView());
+		createOrShowComponent(getMediaControls());
+		createOrShowComponent(getClientMainView());
 
 		show(getMainFrame());
 
@@ -150,22 +152,32 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 	
 	//TODO make this createOrShowComponent!! .. this method can be more efficient!!
-	public void addComponent(AppWindowWrapper appComponent) {
-		Container container = appComponent.getHolder();
-		if (container instanceof JInternalFrame) {
-			JInternalFrame jInternalFrame = (JInternalFrame) container;
-			if (!jInternalFrame.isShowing()) {
-				jInternalFrame.pack();
-				pane.add(jInternalFrame);
+	public void createOrShowComponent(AppWindowWrapper appComponent) {
+		Container container = appComponent == null ? null : appComponent.getHolder();
+		if (container != null) {
+			container.setVisible(true);
+			if (container instanceof BaseInternalFrame) {
+				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
+				if (new Dimension(0,0).equals(baseInternalFrame.getSize())) {
+					baseInternalFrame.pack();
+					pane.add(baseInternalFrame);
+					getMenuBar().addWindow(appComponent);	
+				}
+				pane.enableAssociatedComponents(baseInternalFrame, true);
+			}  else {
+				getMenuBar().addWindow(appComponent);	
 			}
 		}
-		container.setVisible(true);
-		getMenuBar().addWindow(appComponent);
 	}
 	
-	public void removeComponent(AppWindowWrapper appComponent) {
-		if (appComponent.getHolder() instanceof JInternalFrame) {
-			pane.remove((JInternalFrame) appComponent.getHolder());
+	public void hideComponent(AppWindowWrapper appComponent) {
+		Container container = appComponent == null ? null : appComponent.getHolder();
+		if (container != null) {
+			if (container instanceof BaseInternalFrame) {
+				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
+				pane.enableAssociatedComponents(baseInternalFrame, false);
+			}
+			container.setVisible(false);
 		}
 	}
 

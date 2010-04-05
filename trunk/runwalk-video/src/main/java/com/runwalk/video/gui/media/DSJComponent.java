@@ -43,11 +43,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		
 	}
 
-	protected T getFiltergraph() {
+	public T getFiltergraph() {
 		return this.filtergraph;
 	}
 
-	protected void setFiltergraph(T graph) {
+	public void setFiltergraph(T graph) {
 		this.filtergraph = graph;
 	}
 
@@ -103,7 +103,9 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void dispose() {
-		AppUtil.disposeDSGraph(getFiltergraph());
+		if (getFiltergraph() != null) {
+			AppUtil.disposeDSGraph(getFiltergraph());
+		}
 	}
 
 	public boolean isActive() {

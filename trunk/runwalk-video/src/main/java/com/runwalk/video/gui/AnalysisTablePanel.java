@@ -175,11 +175,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		JPanel buttonPanel =  new JPanel();
 		buttonPanel.setLayout(new AbsoluteLayout());
 
-		setSecondButton(new JButton(RunwalkVideoApp.getApplication().getContext().getActionMap(this).get("addAnalysis")));
+		setSecondButton(new JButton(getAction("addAnalysis")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(10, 0, -1, -1));
 
-		setFirstButton(new JButton(RunwalkVideoApp.getApplication().getContext().getActionMap(this).get("deleteAnalysis")));
+		setFirstButton(new JButton(getAction("deleteAnalysis")));
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(130, 0, -1, -1));
 

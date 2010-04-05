@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.Task.BlockingScope;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
@@ -56,7 +57,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		setState(State.IDLE);
 	}
 	
-	//TODO simplify code!
+	//TODO review code!
 	protected void reAttachAppWindowWrapperListeners() {
 		if (isFullscreen() && getFullscreenFrame() != null) {
 			boolean found = false;
@@ -159,42 +160,36 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	//TODO een strategie om te bepalen op welk scherm de fullscreen versie moet getoond worden??
 	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
 	protected void setFullscreen(boolean fullscreen) {
-		this.firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
+		firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
 		if (fullscreen) {
 			if (gs.length > 1) {
+				getApplication().hideComponent(internalFrame);
 				getVideoImpl().setFullScreen(gs[1], fullscreen);
-				if (internalFrame != null) {
-					internalFrame.setVisible(false);
-				}
 				fullScreenFrame = getVideoImpl().getFullscreenFrame();
 			}
-			getApplication().removeComponent(this);
 		} else {
 			getVideoImpl().setFullScreen(gs[0], fullscreen);
 			if (internalFrame == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				internalFrame.add(getVideoImpl().getComponent());
-				internalFrame.pack();
-				
-			} else {
-				internalFrame.setVisible(true);
 			}
-			getApplication().addComponent(this);
+			getApplication().createOrShowComponent(this);
 		}
 		reAttachAppWindowWrapperListeners();
 		setComponentTitle(getTitle());
 	}
 	
-	@org.jdesktop.application.Action(enabledProperty=IDLE)
+	@org.jdesktop.application.Action(enabledProperty=IDLE, block=BlockingScope.ACTION)
 	public void toggleFullscreen() {
 		setFullscreen(!isFullscreen());
 	}
 	
-	protected void setState(State state) {
-		firePropertyChange(IDLE, this.state == State.IDLE, state == State.IDLE);
-		firePropertyChange(STATE, this.state, this.state = state);
+	protected void setState(State newState) {
+		State oldState = this.state;
+		firePropertyChange(STATE, oldState, this.state = newState);
+		firePropertyChange(IDLE, oldState == State.IDLE, newState == State.IDLE);
 	}
 	
 	public State getState() {

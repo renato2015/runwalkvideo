@@ -75,18 +75,18 @@ public class VideoPlayer extends VideoComponent {
 	public void pause() {
 		getVideoImpl().pause();
 		getTimer().stop();
-		setState(VideoComponent.State.IDLE);
+		setState(State.IDLE);
 	}
 	
 	public void play() {
 		getTimer().restart();
 		getVideoImpl().play();
-		setState(VideoComponent.State.PLAYING);
+		setState(State.PLAYING);
 	}
 
 	public void stop() {
 		getTimer().stop();
-		setState(VideoComponent.State.IDLE);
+		setState(State.IDLE);
 		getVideoImpl().stop();
 	}
 

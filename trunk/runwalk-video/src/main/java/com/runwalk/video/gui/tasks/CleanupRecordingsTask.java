@@ -46,7 +46,8 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 							accept = uncompressedVideoDuration == compressedVideoDuration;
 						}
 					} catch(DSJException e) {
-						accept = true;
+						getLogger().error("Exception occured while scanning for duplicate files", e);
+						accept = false;
 					}
 					return accept;
 				}

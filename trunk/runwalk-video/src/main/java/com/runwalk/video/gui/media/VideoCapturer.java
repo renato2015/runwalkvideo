@@ -130,13 +130,13 @@ public class VideoCapturer extends VideoComponent {
 		getLogger().debug("Recording to file " + destFile.getAbsolutePath() + "");
 
 		getTimer().restart();
-		setState(VideoComponent.State.RECORDING);
+		setState(State.RECORDING);
 	}
 
 	public void stopRecording() {
 		getTimer().stop();
 		getVideoImpl().stopRecording();
-		setState(VideoComponent.State.IDLE);
+		setState(State.IDLE);
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 	}
 	
