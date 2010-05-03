@@ -15,14 +15,14 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 
 	public SaveTask(List<T> itemList) {
 		super("save");
-		this.itemList = itemList;
+		this.itemList = new ArrayList<T>(itemList);
 	}
 
 	@Override 
 	protected List<T> doInBackground() {
 		message("startMessage");
 		int listSize = itemList.size();
-		List<T> newList = new ArrayList<T>(listSize);
+		List<T> mergedList = new ArrayList<T>(listSize);
 		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
 		EntityTransaction tx = null;
 		try {
@@ -33,11 +33,11 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 				if (item.isDirty()) {
 					T mergedItem = em.merge(item);
 					if (mergedItem == null) {
-						newList = null;
+						mergedList = null;
 						setProgress(listSize, 0, listSize);
 						break;
 					}
-					newList.add(mergedItem);
+					mergedList.add(mergedItem);
 //					itemList.set(i, mergedItem);
 				}
 				setProgress(i, 0, listSize);
@@ -52,6 +52,6 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 		} finally {
 			em.close();
 		}
-		return newList;
+		return mergedList;
 	}
 }

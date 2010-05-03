@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
@@ -22,9 +23,8 @@ import de.humatic.dsj.DSMovie;
 public class CompressTask extends AbstractTask<Boolean, Void> implements PropertyChangeListener { 
 	private int errorCount = 0;
 	private int conversionCounter, conversionCount;
-	private int part;
+	private double part;
 	private int progress = 0;
-	private boolean finished = false;
 	private DSJPlayer exporter;
 	private Recording recording;
 	private List<Recording> recordings;
@@ -41,7 +41,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		switch(DSJUtils.getEventType(evt)) {
 		case DSMovie.EXPORT_DONE : {
 			getLogger().debug("Export completed.."); 
-			finished = true;
+			synchronized(recording) {
+				recording.notify();
+			}
 			break;
 		} case DSMovie.EXPORT_PROGRESS : {
 			progress = DSJUtils.getEventValue_int(evt);
@@ -51,7 +53,6 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			break;
 		} case DSMovie.EXPORT_STARTED: {
 			getLogger().debug("Export started");
-			finished = false;
 			break;
 		}
 		}
@@ -70,26 +71,25 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			try {
 				recording.setRecordingStatus(RecordingStatus.READY);
 				if (exporter == null) {
-					exporter = new DSJPlayer(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.DD7 | DSFiltergraph.NO_SYNC, this);
+					exporter = new DSJPlayer(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				} else {
-					exporter.loadFile(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.DD7 | DSFiltergraph.NO_SYNC, this);
+					exporter.loadFile(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				}
-				setProgress(conversionCounter * part);
+				setProgress((int) (conversionCounter * part));
 				message("progressMessage",  conversionCounter + 1, conversionCount);
 				int result = exporter.getFiltergraph().export(newFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
 				if (result < 0) {
 					//reconnect failed.. exception will be thrown here in future versions..
 					getLogger().error("graph reconnect failed!");
 					errorCount++;
-					finished = true;
-				}
-				recording.setRecordingStatus(RecordingStatus.COMPRESSING);
-				while(!finished) {
-					Thread.yield();
+				} else {
+					recording.setRecordingStatus(RecordingStatus.COMPRESSING);
+					synchronized(recording) {
+						recording.wait();
+					}
 				}
 				statusCode = RecordingStatus.COMPRESSED;
 			} catch(Throwable thr) {
-				finished = true;
 				statusCode = RecordingStatus.DSJ_ERROR;
 				getLogger().error(statusCode.getDescription() + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
@@ -110,16 +110,23 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	@Override
 	protected void cancelled() {
 		super.cancelled();
-		if (exporter != null) {
-			exporter.getFiltergraph().cancelExport();
-			exporter.dispose();
-		}
-		if (recording != null) {
-			if (recording.getCompressedVideoFile().exists()) {
-				recording.getCompressedVideoFile().delete();
+		Thread thread = new Thread(new Runnable() {
+
+			public void run() {
+				if (exporter != null) {
+					exporter.getFiltergraph().cancelExport();
+					exporter.dispose();
+				}
+				if (recording != null) {
+					if (recording.getCompressedVideoFile().exists()) {
+						recording.getCompressedVideoFile().delete();
+					}
+					recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+				}
 			}
-			recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-		}
+		});
+		thread.setDaemon(true);
+		thread.run();
 	}
 
 	@Override

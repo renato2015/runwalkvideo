@@ -182,12 +182,13 @@ public class Recording extends SerializableEntity<Recording> {
 				} else {
 					//bestand is helemaal niet leesbaar, best verwijderen..
 					//TODO kuis code op..
-					if (getCompressedVideoFile().delete()) {
+					//FIXME wat als er geen niet gecomprimeerde versie meer is??
+/*					if (getCompressedVideoFile().delete()) {
 						videoFile = cacheVideoFile();
-					} else {
-						firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
-						videoFile = getUncompressedVideoFile();
-					}
+					} else {*/
+					firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
+					videoFile = getUncompressedVideoFile();
+					//}
 				}
 			} else if (getUncompressedVideoFile().canReadAndExists()) {
 				firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);

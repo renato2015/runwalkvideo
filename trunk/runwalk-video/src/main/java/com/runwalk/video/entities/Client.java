@@ -61,7 +61,7 @@ public class Client extends SerializableEntity<Client> {
 	@Column(name = FIRSTNAME)
 	private String firstname;
 	@Column(name = "mail")
-	private int mail;
+	private int mail = 1;
 	@Column(name = ORGANIZATION)
 	private String organization;
 	@Column(name = "phone")

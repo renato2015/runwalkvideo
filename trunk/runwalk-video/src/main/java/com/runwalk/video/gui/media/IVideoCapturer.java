@@ -14,24 +14,24 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public void showCameraSettings();
 
-	public abstract int getSelectedCaptureDeviceIndex();
+	public int getSelectedCaptureDeviceIndex();
 
-	public abstract void setSelectedCaptureDeviceIndex(int selectedIndex);
+	public void setSelectedCaptureDeviceIndex(int selectedIndex);
 
-	public abstract void setSelectedVideoFormatIndex(int selectedFormat);
+	public void setSelectedVideoFormatIndex(int selectedFormat);
 
-	public abstract String[] getVideoFormats();
+	public String[] getVideoFormats();
 
-	public abstract String getSelectedCaptureEncoderName();
+	public String getSelectedCaptureEncoderName();
 
-	public abstract void setSelectedCaptureEncoderIndex(int index);
+	public void setSelectedCaptureEncoderIndex(int index);
 
 	public String[] getCaptureEncoders();
 
-	public abstract String[] getCaptureDevices();
+	public String[] getCaptureDevices();
 
-	public abstract void startCapturer();
+	public void startCapturer();
 	
-	public abstract void togglePreview();
+	public void togglePreview();
 
 }
