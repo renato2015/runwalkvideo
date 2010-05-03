@@ -34,7 +34,7 @@ public class CameraDialog extends AppDialog {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				System.exit(1);
+				Runtime.getRuntime().exit(0);
 			}
 			
 		});
@@ -71,7 +71,7 @@ public class CameraDialog extends AppDialog {
 	public void dismissDialog() {
 		setVisible(false);
 		int selectedIndex = captureDeviceComboBox.getSelectedIndex();
-		firePropertyChange(VideoCapturer.CAPTURE_DEVICE, currentSelection, selectedIndex);
+		firePropertyChange(VideoCapturer.CAPTURE_DEVICE, currentSelection, currentSelection = selectedIndex);
 	}
 	
     @Action

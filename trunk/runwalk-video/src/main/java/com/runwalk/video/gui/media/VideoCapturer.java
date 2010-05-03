@@ -38,10 +38,8 @@ public class VideoCapturer extends VideoComponent {
 
 				public void propertyChange(PropertyChangeEvent evt) {
 					if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
-						if (!evt.getNewValue().equals(evt.getOldValue())) {
-							Integer selectedIndex = (Integer) evt.getNewValue();
-							capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
-						}
+						Integer selectedIndex = (Integer) evt.getNewValue();
+						capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
 					}
 				}
 			});
@@ -87,7 +85,7 @@ public class VideoCapturer extends VideoComponent {
 			getVideoImpl().setSelectedVideoFormatIndex(this.selectedFormat);
 		}
 	}
-	
+
 	@Action
 	public void togglePreview() {
 		getVideoImpl().togglePreview();
@@ -139,7 +137,7 @@ public class VideoCapturer extends VideoComponent {
 		setState(State.IDLE);
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 	}
-	
+
 	public void showCaptureSettings() {
 		getVideoImpl().showCaptureSettings();
 	}
@@ -147,7 +145,7 @@ public class VideoCapturer extends VideoComponent {
 	public void showCameraSettings() {
 		getVideoImpl().showCameraSettings();
 	}
-	
+
 	public boolean isRecording() {
 		return getState() == State.RECORDING;
 	}
@@ -156,6 +154,6 @@ public class VideoCapturer extends VideoComponent {
 	public String getTitle() {
 		return getResourceMap().getString("windowTitle.text", super.getTitle());
 	}
-	
+
 
 }

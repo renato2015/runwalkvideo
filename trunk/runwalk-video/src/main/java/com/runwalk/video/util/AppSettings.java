@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -173,11 +174,12 @@ public class AppSettings implements Serializable {
 	}
 	
 	public static void configureLog4j() {
-		PropertyConfigurator.configure(Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties"));
-		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
-		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
+		URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties");
+		PropertyConfigurator.configure(resource);
 		logger = Logger.getLogger(AppSettings.class);
-		logger.debug("Logging to file with location " +appndr.getFile());
+		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
+		logger.debug("Logging to file with location " + appndr.getFile());
+		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 	
 	public float getSavedVolume() {

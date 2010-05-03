@@ -62,15 +62,6 @@ public class VideoPlayer extends VideoComponent {
 		//getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
-
-	public boolean togglePlay() {
-		if (isPlaying()) {
-			pause();
-		} else {
-			play();
-		}
-		return isPlaying();
-	}
 	
 	public void pause() {
 		getVideoImpl().pause();
@@ -95,20 +86,20 @@ public class VideoPlayer extends VideoComponent {
 		firePropertyChange(POSITION, this.position, this.position = pos);
 	}
 
-	public void backward() {
-		if (playRateIndex > 0) {
+	public boolean backward() {
+		boolean result = false;
+		if (result = playRateIndex > 0) {
 			setPlayRateIndex(--playRateIndex);
-		} else {
-			pause();
 		}
+		return result;
 	}
 
-	public void forward() {
-		if (isPlaying() && playRateIndex < PLAY_RATES.length - 1) {
+	public boolean forward() {
+		boolean result = false;
+		if (result = playRateIndex < PLAY_RATES.length - 1) {
 			setPlayRateIndex(++playRateIndex);
-		} else if (!isPlaying()) {
-			play();
 		}
+		return result;
 	}
 
 	public void nextSnapshot() {
@@ -127,7 +118,7 @@ public class VideoPlayer extends VideoComponent {
 
 	public void previousSnapshot() {
 		if (isPlaying()) {
-			togglePlay();
+			pause();
 		}
 		getRecording().sortKeyframes();
 		for (int i = getRecording().getKeyframeCount()-1; i >= 0; i--) {
@@ -143,7 +134,7 @@ public class VideoPlayer extends VideoComponent {
 
 	public int makeSnapshot() {
 		if (isPlaying()) {
-			togglePlay();
+			pause();
 		}
 		int position = getVideoImpl().getPosition();
 		getLogger().debug("Position found :" + position);

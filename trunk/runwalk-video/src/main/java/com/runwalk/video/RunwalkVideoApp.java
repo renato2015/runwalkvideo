@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.EventObject;
 import java.util.List;
 
 import javax.persistence.EntityManagerFactory;
@@ -18,6 +19,9 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
+import org.jdesktop.application.TaskListener.Adapter;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -107,14 +111,17 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		getContext().getSessionStorage().save(getClientMainView(), "mainFrame.xml");
 	}
 
+	@Override
+	protected void initialize(String[] args) {
+		AppSettings.getInstance().loadSettings();
+		String puName = getContext().getResourceMap().getString("Application.name");
+		emFactory = Persistence.createEntityManagerFactory(puName);
+	}
+
 	/**
 	 * At startup create and show the main frame of the application.
 	 */
-	@Override 
 	protected void startup() {
-		AppSettings.getInstance().loadSettings();
-		String puName = getContext().getResourceMap().getString("Application.persistenceUnitName");
-		emFactory = Persistence.createEntityManagerFactory(puName);
 		//the actions that the user can undertake?
 		applicationActions = new ApplicationActions();
 
@@ -136,21 +143,20 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		
 		//add all internal frames from here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
-
 		
 		//add the window to the WINDOW menu
 		createOrShowComponent(getMediaControls());
 		createOrShowComponent(getClientMainView());
 
 		show(getMainFrame());
-
+		
 		try {
 			loadUIState();
 		} catch (IOException e) {
 			LOGGER.error("Failed to load UI state", e);
 		}
 	}
-	
+
 	//TODO make this createOrShowComponent!! .. this method can be more efficient!!
 	public void createOrShowComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent == null ? null : appComponent.getHolder();
@@ -183,35 +189,29 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	@Override 
 	protected void shutdown() {
-		Task<List<Client>, Void> saveTask = null;
+		Task<Void, Void> uploadTask = getApplicationActions().uploadLogFiles();
+		getContext().getTaskService().execute(uploadTask);
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
 					"Wijzingen bewaren..", JOptionPane.OK_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
-				saveTask = getClientTablePanel().save();
-				saveTask.execute();
+				Task<?, Void> saveTask = getClientTablePanel().save();
+				getContext().getTaskService().execute(saveTask);
 			}
 		}
-		Task<Void, Void> uploadTask = getApplicationActions().uploadLogFiles();
-		uploadTask.execute();
+		getContext().getTaskService().shutdown();
 		AppSettings.getInstance().saveSettings();
-		while (!uploadTask.isDone() || saveTask != null && !saveTask.isDone()) {
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				LOGGER.error(e);
-			}
-		}
 		try {
-			if (getMediaControls() != null) {
-				
-			}
 			saveUIState();
 			emFactory.close();
+			while(!getContext().getTaskService().isTerminated()) {
+				Thread.yield();
+			}
 		} catch (IOException e) {
 			LOGGER.error("Failed to save UI state", e);
-			System.exit(1);
+		} finally {
+			super.shutdown();
 		}
 	}
 

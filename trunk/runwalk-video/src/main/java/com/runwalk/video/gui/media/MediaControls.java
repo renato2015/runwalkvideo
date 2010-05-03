@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -102,7 +101,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		createJButton("record");
 
 		createJButton("stop"); 
-		playButton = createJToggleButton("play", "play.Action.pressedIcon"); 
+		playButton = createJToggleButton("togglePlay", "togglePlay.Action.pressedIcon"); 
 		createJButton("faster"); 
 		createJButton("nextSnapshot"); 
 		createJButton("makeSnapshot"); 
@@ -194,13 +193,15 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
-	public void play() {
-		if (player.togglePlay()) {
-			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
-			setStopEnabled(true);
-		} else {
+	@Action(enabledProperty=PLAYING_ENABLED )
+	public void togglePlay() {
+		if (player.isPlaying()) {
+			player.pause();
 			getApplication().showMessage("Afspelen gepauzeerd");
+		} else {
+			player.play();
+			setStopEnabled(true);
+			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 		}
 	}
 
@@ -221,14 +222,21 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(enabledProperty=PLAYING_ENABLED)
 	public void slower() {
-		player.backward();
-		getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+		if (player.backward()) {
+			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+		} else if (player.isPlaying()) {
+			togglePlay();
+		}
 	}
 
 	@Action(enabledProperty=PLAYING_ENABLED)
 	public void faster() {
-		player.forward();
-		getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+		if (!player.isPlaying()) {
+			togglePlay();
+		} else {
+			player.forward();
+			getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+		}
 	}
 
 	@Action(enabledProperty=PLAYING_DISABLED)
@@ -476,7 +484,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				setRecordingEnabled(false);
 				setStopEnabled(false);
 				setPlayingEnabled(true);
-				setStatusInfo(player.getRecording(), 0, player.getDuration());
+				setStatusInfo(player.getRecording(), player.getPosition(), player.getDuration());
 				title.append(" > " ).append(player.getRecording().getVideoFileName());
 			}
 			setTitle(title.toString());
