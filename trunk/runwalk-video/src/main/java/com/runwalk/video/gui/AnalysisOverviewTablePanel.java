@@ -2,6 +2,7 @@ package com.runwalk.video.gui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
+import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.TableFormat;
 
 import com.runwalk.video.RunwalkVideoApp;
@@ -262,7 +264,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		return new AnalysisOverviewTableFormat();
 	}
 	
-	public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
+	public class AnalysisOverviewTableFormat implements AdvancedTableFormat<Analysis> {
 
 	    public int getColumnCount() {
 	        return 7;
@@ -286,7 +288,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	        if(column == 1) {
 	        	return analysis.getCreationDate();
 	        }
-	        else if(column == 2) return analysis.getClient().getFirstname() + " " + analysis.getClient().getFirstname();
+	        else if(column == 2) return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
 	        else if(column == 3) {
 	        	return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
 	        }
@@ -295,6 +297,18 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	        else if(column == 6) return new OpenRecordingButton(analysis.getRecording());
 	        throw new IllegalStateException();
 	    }
+
+		public Class<?> getColumnClass(int column) {
+			switch(column) {
+			case 6: return JButton.class;
+			default: return String.class;
+			}
+		}
+
+		public Comparator<?> getColumnComparator(int column) {
+			return null;
+		}
+		
 	}
 
 }

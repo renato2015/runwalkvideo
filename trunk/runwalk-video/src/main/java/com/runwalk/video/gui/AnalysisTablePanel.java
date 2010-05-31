@@ -239,10 +239,15 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		getItemList().getReadWriteLock().writeLock().lock();
 		Analysis analysis = new Analysis(selectedClient);
 		AppUtil.persistEntity(analysis);
-		selectedClient.addAnalysis(analysis);
-		getEventSelectionModel().getTogglingSelected().add(analysis);
+		try {
+			selectedClient.addAnalysis(analysis);
+			makeRowVisible(analysis);
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
 		getApplication().getMediaControls().captureFrameToFront();
 	}
 
@@ -255,12 +260,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.CANCEL_OPTION ||n == JOptionPane.CLOSED_OPTION) return;
-		int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-		Analysis selectedAnalysis = getSelectedItem();
-		getItemList().remove(selectedAnalysis);
-		AppUtil.deleteEntity(selectedAnalysis);
-		if (lastSelectedRowIndex > 0) {
-			makeRowVisible(lastSelectedRowIndex-1);
+		getItemList().getReadWriteLock().writeLock().lock();
+		final Client selectedClient = RunwalkVideoApp.getApplication().getSelectedClient();
+		try {
+			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+			Analysis selectedAnalysis = getSelectedItem();
+			selectedClient.removeAnalysis(selectedAnalysis);
+			AppUtil.deleteEntity(selectedAnalysis);
+			makeRowVisible(lastSelectedRowIndex - 1);
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
 		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
