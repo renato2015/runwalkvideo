@@ -4,8 +4,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
-import java.util.EventObject;
-import java.util.List;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -19,9 +17,6 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskEvent;
-import org.jdesktop.application.TaskListener;
-import org.jdesktop.application.TaskListener.Adapter;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -36,6 +31,7 @@ import com.runwalk.video.gui.StatusPanel;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
 import com.runwalk.video.gui.media.MediaControls;
+import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
@@ -150,6 +146,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 		show(getMainFrame());
 		
+		getContext().getTaskService().execute(new RefreshTask());
+		
 		try {
 			loadUIState();
 		} catch (IOException e) {
@@ -204,13 +202,13 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		AppSettings.getInstance().saveSettings();
 		try {
 			saveUIState();
-			emFactory.close();
 			while(!getContext().getTaskService().isTerminated()) {
 				Thread.yield();
 			}
 		} catch (IOException e) {
 			LOGGER.error("Failed to save UI state", e);
 		} finally {
+			emFactory.close();
 			super.shutdown();
 		}
 	}
@@ -270,7 +268,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public Query createQuery(String query) {
 		return getEntityManagerFactory().createEntityManager().createQuery(query).setHint("toplink.refresh", "true").setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts ");
 	}
-
 
 	public Query createNativeQuery(String query) {
 		return getEntityManagerFactory().createEntityManager().createNativeQuery(query);

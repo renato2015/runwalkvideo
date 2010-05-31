@@ -7,6 +7,9 @@ import java.io.FileNotFoundException;
 
 import javax.swing.Timer;
 
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
+
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.util.AppSettings;
@@ -25,7 +28,7 @@ public class VideoPlayer extends VideoComponent {
 
 	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording) throws FileNotFoundException {
 		IVideoPlayer result = null;
-		if (System.getProperty("os.name").contains("Windows")) {
+		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 			result = new DSJPlayer();
 		} else {
 			result = new JMCPlayer(recording.getVideoFile());

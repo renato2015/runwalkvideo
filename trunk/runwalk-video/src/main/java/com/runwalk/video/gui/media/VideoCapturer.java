@@ -32,19 +32,21 @@ public class VideoCapturer extends VideoComponent {
 
 	public static VideoCapturer createInstance(PropertyChangeListener listener) {
 		final IVideoCapturer capturerImpl = new DSJCapturer();
-		if (cameraSelectionDialog == null) {
-			cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl);
-			cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
-
-				public void propertyChange(PropertyChangeEvent evt) {
-					if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
-						Integer selectedIndex = (Integer) evt.getNewValue();
-						capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
+		synchronized(VideoCapturer.class) {
+			if (cameraSelectionDialog == null) {
+				cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl);
+				cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
+					
+					public void propertyChange(PropertyChangeEvent evt) {
+						if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
+							Integer selectedIndex = (Integer) evt.getNewValue();
+							capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
+						}
 					}
-				}
-			});
-		} else {
-			cameraSelectionDialog.setCapturerImpl(capturerImpl);
+				});
+			} else {
+				cameraSelectionDialog.setCapturerImpl(capturerImpl);
+			}
 		}
 		//initialize the capturer for the chosen device & encoder
 		capturerImpl.startCapturer();

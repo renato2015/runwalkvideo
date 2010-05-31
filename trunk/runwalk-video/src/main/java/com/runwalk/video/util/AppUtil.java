@@ -10,7 +10,6 @@ import java.util.Date;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 
 import org.apache.log4j.Logger;
@@ -110,20 +109,8 @@ public class AppUtil {
 		return formatDate(new Date(duration), DURATION_FORMATTER);
 	}
 	
-	public static ActionMap getActionMap(Object obj ) {
-		return RunwalkVideoApp.getApplication().getActionMap(obj);
-	}
-	
-	public static Action getAction(Object obj, String key) {
-		return getActionMap(obj).get(key);
-	}
-	
 	public static ResourceMap getResourceMap(Class<?> theClass) {
 		return RunwalkVideoApp.getApplication().getContext().getResourceMap(theClass);
-	}
-
-	public static String getString(Class<?> theClass, String key) {
-		return getResourceMap(theClass).getString(key);
 	}
 	
 	public static String getString(Object obj, String key) {

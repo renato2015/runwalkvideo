@@ -19,7 +19,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private static final DSFilterInfo[] VIDEO_ENCODERS = AppSettings.VIDEO_ENCODERS;
 
-	private static DSFilterInfo[][] dsi;
+	private DSFilterInfo[][] dsi;
 
 	/**
 	 * The selected capture device for this recorder

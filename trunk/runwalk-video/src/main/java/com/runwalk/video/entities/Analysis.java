@@ -125,7 +125,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public int compareTo(Analysis analysis) {
-		return this.equals(analysis) ? 0 : getId().compareTo(analysis.getId());
+		return this.equals(analysis) ? 0 : getCreationDate().compareTo(analysis.getCreationDate());
 	}
 
 	@Override

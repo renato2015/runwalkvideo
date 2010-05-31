@@ -24,6 +24,8 @@ import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
+import ca.odell.glazedlists.gui.TableFormat;
+
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -41,19 +43,18 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 
 	private boolean cleanupEnabled, compressionEnabled;
+	
+	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
+	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
-	@SuppressWarnings("unchecked")
 	public AnalysisOverviewTablePanel() {
 		super(new AbsoluteLayout());
 
-		final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
-		final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
-
-		update();
-
+//		update();
+/*
 		//analyses view binding
-		BeanProperty<AnalysisOverviewTablePanel, List<Analysis>> analyses = BeanProperty.create("itemList");
-		jTableSelectionBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, this, analyses, getTable());
+//		BeanProperty<AnalysisOverviewTablePanel, List<Analysis>> analyses = BeanProperty.create("itemList");
+//		jTableSelectionBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, this, analyses, getTable());
 
 		//icon binding
 		ELProperty<Analysis, Boolean> compressed = ELProperty.create("${recording.compressed}");
@@ -71,7 +72,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public Boolean convertReverse(ImageIcon arg0) {
-				return null;
+				return false;
 			}
 		});
 
@@ -157,46 +158,31 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		jTableSelectionBinding.setSourceUnreadableValue(Collections.emptyList());
 		BindingGroup bindingGroup = new BindingGroup();
 		bindingGroup.addBinding(jTableSelectionBinding);
-		jTableSelectionBinding.bind();
-		bindingGroup.bind();
+		jTableSelectionBinding.bind();*/
+//		bindingGroup.bind();
 
 		JScrollPane overviewScrollPane = new  JScrollPane();
 		overviewScrollPane.setViewportView(getTable());
-		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
+		/*getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(80);
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(6).setPreferredWidth(80);
-		getTable().addMouseListener(new JTableButtonMouseListener());
+		getTable().addMouseListener(new JTableButtonMouseListener());*/
 
 		add(overviewScrollPane, new AbsoluteConstraints(10, 20, 550, 140));
 
 		JButton deleteDuplicateButton = new JButton(getAction("cleanup"));
 		deleteDuplicateButton.setFont(AppSettings.MAIN_FONT);
-		add(deleteDuplicateButton, new AbsoluteConstraints(235, 170, -1, -1));
+		add(deleteDuplicateButton, new AbsoluteConstraints(370, 170, -1, -1));
 		setSecondButton(new JButton(getAction("compress")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
-		add(getSecondButton(), new AbsoluteConstraints(370, 170, -1, -1));
-		setFirstButton(new JButton(getAction("refresh")));
-		getFirstButton().setFont(AppSettings.MAIN_FONT);
-		add(getFirstButton(), new AbsoluteConstraints(470, 170, -1, -1));
+		add(getSecondButton(), new AbsoluteConstraints(470, 170, -1, -1));
+//		setFirstButton(new JButton(getAction("refresh")));
+//		getFirstButton().setFont(AppSettings.MAIN_FONT);
+//		add(getFirstButton(), new AbsoluteConstraints(470, 170, -1, -1));
 
-	}
-
-	@Action
-	public void update() {
-		List<Analysis> result = new ArrayList<Analysis>();
-		for(Client client : RunwalkVideoApp.getApplication().getClientTablePanel().getItemList()) {
-			for(Analysis analysis : client.getAnalyses()) {
-				if (!analysis.getRecording().isCompressed()) {
-					result.add(analysis);
-				}
-			}
-		}
-		Collections.sort(result);
-		setItemList(result);
-		setCompressionEnabled(true);
 	}
 
 	public boolean isCleanupEnabled() {
@@ -236,7 +222,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			@Override
 			public void succeeded(TaskEvent<Boolean> event) {
 				setCompressionEnabled(!event.getValue());
-				refreshTableBindings();
 				getApplication().setSaveNeeded(true);
 			}
 
@@ -271,6 +256,45 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			}
 		}
 		return list;
+	}
+	
+	public TableFormat<Analysis> getTableFormat() {
+		return new AnalysisOverviewTableFormat();
+	}
+	
+	public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
+
+	    public int getColumnCount() {
+	        return 7;
+	    }
+
+	    public String getColumnName(int column) {
+	        if(column == 0)      return "";
+	        else if(column == 1) return "Tijdstip analyse";
+	        else if(column == 2) return "Naam klant";
+	        else if(column == 3) return "Aantal keyframes";
+	        else if(column == 4) return "Duur video";
+	        else if(column == 5) return "Status";
+	        else if(column == 6) return "";
+	        throw new IllegalStateException();
+	    }
+
+	    public Object getColumnValue(Analysis analysis, int column) {
+	    	if (column == 0) {
+	    		return analysis.getRecording() != null ? completedIcon : incompleteIcon;
+	    	}
+	        if(column == 1) {
+	        	return analysis.getCreationDate();
+	        }
+	        else if(column == 2) return analysis.getClient().getFirstname() + " " + analysis.getClient().getFirstname();
+	        else if(column == 3) {
+	        	return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
+	        }
+	        else if(column == 4) return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
+	        else if(column == 5) return analysis.getRecording() != null ? analysis.getRecording().getRecordingStatus().getDescription() : "<geen>";
+	        else if(column == 6) return new OpenRecordingButton(analysis.getRecording());
+	        throw new IllegalStateException();
+	    }
 	}
 
 }

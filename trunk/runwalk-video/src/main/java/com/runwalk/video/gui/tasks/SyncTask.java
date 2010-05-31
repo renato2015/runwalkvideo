@@ -68,7 +68,7 @@ public class SyncTask extends AbstractTask<Boolean, Void>{
 				message("endMessage");
 			}
 		} catch (Exception e) {
-			errorMessage(getResourceMap().getString(resourceName("endErrorMessage"), new Integer(errorCount)));
+			errorMessage(getResourceMap().getString(resourceName("endErrorMessage"), Integer.valueOf(errorCount)));
 		} finally {
 			String syncMsg = getResourceMap().getString(resourceName("lastSyncMessage")) + AppUtil.formatDate(new Date(System.currentTimeMillis()), new SimpleDateFormat("dd/MM/yyyy HH:mm"));
 			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);

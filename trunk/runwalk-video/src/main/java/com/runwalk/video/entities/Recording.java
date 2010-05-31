@@ -60,7 +60,7 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	private Integer statuscode = RecordingStatus.NON_EXISTANT_FILE.getCode();
 
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="movie")
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
 
 	@Transient

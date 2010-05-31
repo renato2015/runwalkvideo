@@ -27,6 +27,7 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
         	output.append(line);
         }
         getLogger().debug(output);
+        reader.close();
         message("endMessage");
         return null;
 	}

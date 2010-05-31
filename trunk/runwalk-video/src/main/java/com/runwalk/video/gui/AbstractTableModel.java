@@ -160,7 +160,7 @@ public abstract class AbstractTableModel<T extends SerializableEntity<T>> extend
 	public int getItemIndex(T item) {
 		for (int i = 0; i < getItemCount(); i++) {
 			T loopItem = getItem(i);
-			if (item.getId() == loopItem.getId()) {
+			if (item.getId().equals(loopItem.getId())) {
 				return i;
 			}
 		}

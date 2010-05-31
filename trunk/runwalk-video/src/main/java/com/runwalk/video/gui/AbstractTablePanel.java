@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.JButton;
@@ -18,31 +17,43 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.Task;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.swingbinding.JTableBinding;
+
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ListSelection;
+import ca.odell.glazedlists.ObservableElementList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.event.ListEventListener;
+import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.swing.EventSelectionModel;
+import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
+import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.SerializableEntity;
-import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel implements AppComponent {
 
+	private static final String EVENT_LIST = "itemList";
 	private static final String SELECTED_ITEM = "selectedItem";
 	protected static final String ROW_SELECTED = "rowSelected";
 	private JTable table;
 	private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
-	private List<T> itemList;
+	private EventList<T> itemList;
+	private EventSelectionModel<T> eventSelectionModel;
 	private T selectedItem;
 	protected JTableBinding<Analysis, ?, JTable> jTableSelectionBinding;
 	//	private JTableBinding<Analysis, List<Analysis>, JTable> jTableSelectionBinding;
@@ -51,29 +62,17 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		setLayout(mgr);
 		table = new JTable();
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
-		getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		getTable().setShowGrid(false);
-		getTable().setAutoCreateRowSorter(true);
-		getTable().setUpdateSelectionOnSort(false);
 		getTable().setFont(AppSettings.MAIN_FONT);
 		
-		//selectedItem binding
-		BindingGroup bindingGroup = new BindingGroup();
-		BeanProperty<JTable, T> selectedElement = BeanProperty.create("selectedElement");
-		BeanProperty<AbstractTablePanel<T>, T> localSelectedElement = BeanProperty.create(SELECTED_ITEM);
-		Binding<JTable, T, ? extends AbstractTablePanel<T>, T> selectedElementBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getTable(), 
-				selectedElement , this, localSelectedElement);
-		selectedElementBinding.setSourceNullValue(null);
-		selectedElementBinding.setSourceUnreadableValue(null);
-		bindingGroup.addBinding(selectedElementBinding);
-		
 		//rowSelected binding
-		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${selectedElement != null}");
+		ELProperty<AbstractTablePanel<T>, Boolean> isSelected = ELProperty.create("${selectedItem != null}");
 		BeanProperty<AbstractTablePanel<T>, Boolean> localIsSelected = BeanProperty.create(ROW_SELECTED);
-		Binding<JTable, Boolean, ? extends AbstractTablePanel<T>, Boolean> rowSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getTable(), 
-				isSelected , this, localIsSelected);
+		Binding<? extends AbstractTablePanel<T>, Boolean, ? extends AbstractTablePanel<T>, Boolean> rowSelectedBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ, this, isSelected , this, localIsSelected);
 		rowSelectedBinding.setSourceNullValue(false);
 		rowSelectedBinding.setSourceUnreadableValue(false);
+		BindingGroup bindingGroup = new BindingGroup();
 		bindingGroup.addBinding(rowSelectedBinding);
 		bindingGroup.bind();
 	}
@@ -82,20 +81,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		this(null);
 	}
 	
-	@Action
-	public abstract void update();
-	
-	/**
-	 * This calls the implementation of the {@link #update()} method in a created {@link Task}.
-	 * @return the created task
-	 */
-	@Action(block=Task.BlockingScope.ACTION)
-	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(this);
-	}
-
 	public boolean isRowSelected() {
-//		return getTable().getSelectedRow() != -1;
 		return this.rowSelected;
 	}
 	
@@ -107,7 +93,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 * Verwijder het huidig geselecteerde item.
 	 */
 	public void clearItemSelection() {
-		getTable().clearSelection();
+		getEventSelectionModel().clearSelection();
 	}
 	
 	public void setSelectedItem(T selectedItem) {
@@ -121,18 +107,15 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public JTable getTable() {
 		return table;
 	}
-	
-	protected void refreshTableBindings() {
-		if (jTableSelectionBinding != null) {
-			jTableSelectionBinding.refreshAndNotify();
-		}
-	}
 
 	public void makeRowVisible(int row) {
-		if (row != -1) {
+		T item = getItemList().get(row);
+		getEventSelectionModel().getTogglingSelected().add(item);
+		/*if (row != -1) {
 			getTable().setRowSelectionInterval(row, row);
 			getTable().scrollRectToVisible(getTable().getCellRect(row, 0, true));
-		}
+		}*/
+//		getEventSelectionModel().setLeadSelectionIndex(row);
 	}
 
 	public JButton getFirstButton() {
@@ -158,21 +141,38 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 * de JTable lijkt daar niet goed op te reageren
 	 * @param newList
 	 */
-	public void setItemList(List<T> itemList) {
-		if (this.itemList != null) {
-			this.itemList.retainAll(itemList);
-			if (!this.itemList.containsAll(itemList)) {
-				itemList.removeAll(this.itemList);
-				this.itemList.addAll(this.itemList);
+	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
+		this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = itemList);
+		ObservableElementList.Connector<T> itemConnector = GlazedLists.beanConnector(itemClass);
+        EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
+		SortedList<T> sortedItems = SortedList.create(observedItems);
+        eventSelectionModel = new EventSelectionModel<T>(sortedItems);
+        eventSelectionModel.getSelected().addListEventListener(new ListEventListener<T>() {
+
+			@SuppressWarnings("unchecked")
+			public void listChanged(ListEvent<T> listChanges) {
+				EventList<T> source = (EventList) listChanges.getSource();
+				if (!source.isEmpty()) {
+					setSelectedItem(source.get(0));
+				}
+				
 			}
-		} else {
-			this.itemList = ObservableCollections.observableList(itemList);
-		}
-		this.firePropertyChange("itemList", this.itemList, this.itemList);
+		});
+        eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
+        getTable().setModel(new EventTableModel<T>(sortedItems, getTableFormat()));
+        TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+        getTable().setSelectionModel(eventSelectionModel);
+        getTable().setColumnSelectionAllowed(false);
 	}
 	
-	public List<T> getItemList() {
+	public abstract TableFormat<T> getTableFormat();
+	
+	public EventList<T> getItemList() {
 		return itemList;
+	}
+	
+	public EventSelectionModel<T> getEventSelectionModel() {
+		return eventSelectionModel;
 	}
 	
 	public javax.swing.Action getAction(String name) {
