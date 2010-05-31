@@ -207,7 +207,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			}
 
 		});
-//		bindingGroup.addBinding(rowSorterBinding);
+		bindingGroup.addBinding(rowSorterBinding);
 		bindingGroup.bind();
 		clearSearch();
 
@@ -267,7 +267,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		Client client = new Client();
 		AppUtil.persistEntity(client);
 		getEventSelectionModel().getSelected().add(client);
-		getEventSelectionModel().getTogglingSelected().add(client);
+		makeRowVisible(client);
 		getApplication().getClientInfoPanel().requestFocus();
 		setSaveNeeded(true);
 	}
@@ -286,9 +286,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getItemList().remove(selectedClient);
 		AppUtil.deleteEntity(selectedClient);
 		//select previous record..
-		if (lastSelectedRowIndex > 0) {
-			makeRowVisible(lastSelectedRowIndex-1);
-		}
+		makeRowVisible(lastSelectedRowIndex - 1);
 		setSaveNeeded(true);
 	}
 

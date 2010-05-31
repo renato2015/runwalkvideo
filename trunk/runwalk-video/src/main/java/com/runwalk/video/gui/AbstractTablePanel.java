@@ -107,15 +107,15 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public JTable getTable() {
 		return table;
 	}
+	
+	public void makeRowVisible(T item) {
+		getEventSelectionModel().getTogglingSelected().add(item);
+	}
 
 	public void makeRowVisible(int row) {
-		T item = getItemList().get(row);
-		getEventSelectionModel().getTogglingSelected().add(item);
-		/*if (row != -1) {
-			getTable().setRowSelectionInterval(row, row);
-			getTable().scrollRectToVisible(getTable().getCellRect(row, 0, true));
-		}*/
-//		getEventSelectionModel().setLeadSelectionIndex(row);
+		if (row > -1) {
+			makeRowVisible(getItemList().get(row));
+		}
 	}
 
 	public JButton getFirstButton() {
@@ -142,9 +142,9 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 * @param newList
 	 */
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
-		this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = itemList);
 		ObservableElementList.Connector<T> itemConnector = GlazedLists.beanConnector(itemClass);
         EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
+        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = observedItems);
 		SortedList<T> sortedItems = SortedList.create(observedItems);
         eventSelectionModel = new EventSelectionModel<T>(sortedItems);
         eventSelectionModel.getSelected().addListEventListener(new ListEventListener<T>() {
