@@ -12,6 +12,8 @@
 package com.runwalk.video.gui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.Beans;
@@ -21,6 +23,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -55,6 +58,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -78,9 +83,23 @@ import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
 import org.jdesktop.swingbinding.JTableBinding.ColumnBinding;
 
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.CollectionList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ObservableElementList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.event.ListEventListener;
+import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.swing.EventSelectionModel;
+import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
+
 import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Articles;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
@@ -92,7 +111,7 @@ import com.runwalk.video.util.AppUtil;
  *
  * @author Administrator
  */
-public class NewClientTablePanel extends AbstractTablePanel {
+public class NewClientTablePanel extends AbstractTablePanel<Client> {
 
 	public static void main(String[] args) {
 		new NewClientTablePanel();
@@ -105,7 +124,6 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 	private JButton removeAnalysisButton = new JButton();
 	private JButton addAnalysisButton = new JButton();
-	
 
 	/** Creates new form NewClientTablePanel */
 	public NewClientTablePanel() {
@@ -127,7 +145,12 @@ public class NewClientTablePanel extends AbstractTablePanel {
 	private void initComponents() {//GEN-BEGIN:initComponents
 		bindingGroup = new BindingGroup();
 		entityManager = Beans.isDesignTime() ? null : Persistence.createEntityManagerFactory("runwalk-video").createEntityManager();
-		clientQuery = Beans.isDesignTime() ? null  : entityManager.createQuery("Select DISTINCT c from Client c LEFT JOIN FETCH c.analyses");
+		
+		clientQuery = entityManager.createNamedQuery("findAllClients"); // NOI18N
+		clientQuery.setHint("eclipselink.left-join-fetch", "c.unobservableAnalyses.recording");
+		clientQuery.setHint("eclipselink.left-join-fetch", "c.city");
+		
+//		clientQuery = Beans.isDesignTime() ? null  : entityManager.createQuery("Select DISTINCT c from Client c LEFT JOIN FETCH c.analyses");
 		clientList = Beans.isDesignTime() ? Collections.emptyList() : clientQuery.getResultList();
 		mainPanel = new JPanel();
 		cityQuery = Beans.isDesignTime() ? null : entityManager.createNamedQuery("findAllCities");
@@ -168,6 +191,47 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		final JTextArea comments = new JTextArea();
 		JScrollPane commentsScrollPane = new JScrollPane();
 
+		EventList<Client> glazedClients = GlazedLists.threadSafeList(GlazedLists.eventList(clientList));
+        ObservableElementList.Connector<Client> idolConnector = GlazedLists.beanConnector(Client.class);
+        EventList<Client> observedClients = new ObservableElementList<Client>(glazedClients, idolConnector);
+		SortedList<Client> sortedClients = SortedList.create(observedClients);
+        EventSelectionModel<Client> clientSelectionModel = new EventSelectionModel(sortedClients);
+        clientSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        final EventList<Client> selectedClients = clientSelectionModel.getSelected();
+        selectedClients.addListEventListener(new ListEventListener<Client>() {
+
+			@Override
+			public void listChanged(ListEvent<Client> listChanges) {
+				EventList<Client> source = (EventList) listChanges.getSource();
+				if (!source.isEmpty()) {
+					setSelectedItem(source.get(0));
+				}
+				
+			}
+		});
+		CollectionList<Client, Analysis> analyses = new CollectionList(selectedClients, new CollectionList.Model<Client, Analysis>() {
+
+			@Override
+			public List<Analysis> getChildren(Client parent) {
+				return parent.getAnalyses();
+			}
+        	
+		});
+        
+
+        SortedList<Analysis> sortedAnalyses = new SortedList<Analysis>(analyses);
+        
+        // build a JTable
+        clientTable = new JTable(new EventTableModel<Client>(sortedClients, new ClientTableFormat()));
+        TableComparatorChooser.install(clientTable, sortedClients, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+        clientTable.setSelectionModel(clientSelectionModel);
+        clientTable.setColumnSelectionAllowed(false);
+        analysisTable = new JTable(new EventTableModel<Analysis>(sortedAnalyses, new AnalysisTableFormat()));
+        TableComparatorChooser.install(analysisTable, sortedAnalyses, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+        EventSelectionModel<Analysis> analysisSelectionModel = new EventSelectionModel(sortedAnalyses);
+        analysisSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        analysisTable.setSelectionModel(analysisSelectionModel);
+        
 		mainPanel.setName("mainPanel"); // NOI18N
 
 		GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
@@ -187,12 +251,12 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		analysisTableScrollPane.setName("analysisTableScrollPane"); // NOI18N
 
-		analysisTable.setColumnSelectionAllowed(true);
+//		analysisTable.setColumnSelectionAllowed(true);
 
 		analysisTable.setName("analysisTable"); // NOI18N
 
         ELProperty<Object, Object> tableRowSelectedProperty = ELProperty.create("${selectedElement != null}");
-		ELProperty eLProperty = ELProperty.create("${selectedElement.analyses}");
+		/*ELProperty eLProperty = ELProperty.create("${selectedElement.analyses}");
 		JTableBinding jTableBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, clientTable, eLProperty, analysisTable);
 		ColumnBinding columnBinding = jTableBinding.addColumnBinding(ELProperty.create("${timeStamp}"));
 		columnBinding.setColumnName("Time Stamp");
@@ -263,7 +327,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		jTableBinding.setSourceNullValue(Collections.emptyList());
 		jTableBinding.setSourceUnreadableValue(Collections.emptyList());
 		bindingGroup.addBinding(jTableBinding);
-		jTableBinding.bind();
+		jTableBinding.bind();*/
 		analysisTableScrollPane.setViewportView(analysisTable);
 		ResourceBundle bundle = ResourceBundle.getBundle("com/runwalk/video/gui/resources/AbstractTableModel");
 		analysisTable.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -271,21 +335,22 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		analysisTable.getColumnModel().getColumn(1).setHeaderValue(bundle.getString("analysisTableModel.columnModel.col2")); // NOI18N
 		analysisTable.getColumnModel().getColumn(2).setHeaderValue(bundle.getString("analysisTableModel.columnModel.col3")); // NOI18N
 		analysisTable.getColumnModel().getColumn(3).setHeaderValue(bundle.getString("analysisTableModel.columnModel.col4")); // NOI18N
-		analysisTable.getColumnModel().getColumn(4).setHeaderValue(bundle.getString("analysisTableModel.columnModel.col5")); // NOI18N
+//		analysisTable.getColumnModel().getColumn(4).setHeaderValue(bundle.getString("analysisTableModel.columnModel.col5")); // NOI18N
 
 		commentsScrollPane.setName("commentsScrollPane"); // NOI18N
 
 		comments.setColumns(20);
 		comments.setRows(5);
 		comments.setName("comments"); // NOI18N
-
-		Binding binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, analysisTable, ELProperty.create("${selectedElement.comments}"), comments, BeanProperty.create("text"));
+		
+		Binding binding;
+/*		Binding binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, analysisTable, ELProperty.create("${selectedElement.comments}"), comments, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
 
 		binding = Bindings.createAutoBinding(UpdateStrategy.READ, analysisTable, tableRowSelectedProperty, comments, BeanProperty.create("enabled"));
         binding.setSourceNullValue(false);
         binding.setSourceUnreadableValue(false);
-        bindingGroup.addBinding(binding);
+        bindingGroup.addBinding(binding);*/
 
 		commentsScrollPane.setViewportView(comments);
 
@@ -293,7 +358,20 @@ public class NewClientTablePanel extends AbstractTablePanel {
         removeAnalysisButton.setName("removeAnalysisButton"); // NOI18N
 
         addAnalysisButton.setText("Voeg analyse toe");
-        addAnalysisButton.setName("addAnalysisButton"); // NOI18N
+        addAnalysisButton.setName("addAnalysisButton");
+        addAnalysisButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!selectedClients.isEmpty()) {
+					Client selectedClient = selectedClients.get(0);
+					Analysis analysis = new Analysis(selectedClient);
+					selectedClient.addAnalysis(analysis);
+				}
+			}
+        	
+        });
+        // NOI18N
 
         GroupLayout analysisInfoPanelLayout = new GroupLayout(analysisInfoPanel);
         analysisInfoPanel.setLayout(analysisInfoPanelLayout);
@@ -336,16 +414,16 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		firstnameField.setName("firstnameField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.name}"), firstnameField, BeanProperty.create("text"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.name}"), firstnameField, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, firstnameField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, firstnameField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		nameField.setName("nameField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.firstname}"), nameField, BeanProperty.create("text"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.firstname}"), nameField, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, nameField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, nameField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		organisationLabel.setText(bundle2.getString("organisationLabel.text")); // NOI18N
@@ -353,16 +431,16 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		organisationField.setName("organisationField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.organization}"), organisationField, BeanProperty.create("text"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.organization}"), organisationField, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, organisationField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, organisationField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		addressField.setName("addressField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.address}"), addressField, BeanProperty.create("text"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.address}"), addressField, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, addressField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, addressField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		addressLabel.setText(bundle2.getString("addressLabel.text")); // NOI18N
@@ -373,9 +451,9 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		taxField.setName("taxField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.btwnr}"), taxField, BeanProperty.create("text"), "emailBinding");
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.btwnr}"), taxField, BeanProperty.create("text"), "emailBinding");
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, taxField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, taxField, BeanProperty.create("enabled"));
 		binding.setValidator(new Validator () {
 
 			public Validator.Result validate(Object arg) {
@@ -395,7 +473,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		emailField.setName("emailField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.emailAddress}"), emailField, BeanProperty.create("text_ON_FOCUS_LOST"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.emailAddress}"), emailField, BeanProperty.create("text_ON_FOCUS_LOST"));
 		binding.setValidator(new Validator() {
 					
 					public Validator.Result validate(Object arg) {        
@@ -418,7 +496,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 			
 		});
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, emailField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, emailField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);  
 
 		zipcodeLabel.setText(bundle2.getString("zipcodeLabel.text")); // NOI18N
@@ -427,11 +505,11 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		JComboBoxBinding jComboBoxBinding = SwingBindings.createJComboBoxBinding(UpdateStrategy.READ_WRITE, cityList, zipcodeField);
 		bindingGroup.addBinding(jComboBoxBinding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.city}"), zipcodeField, BeanProperty.create("selectedItem"), "zipcodeBinding");
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.city}"), zipcodeField, BeanProperty.create("selectedItem"), "zipcodeBinding");
 		binding.setSourceNullValue(null);
 		binding.setSourceUnreadableValue(null);
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, zipcodeField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, zipcodeField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		locationLabel.setText(bundle2.getString("locationLabel.text")); // NOI18N
@@ -440,11 +518,11 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		jComboBoxBinding = SwingBindings.createJComboBoxBinding(UpdateStrategy.READ_WRITE, cityList, locationField);
 		bindingGroup.addBinding(jComboBoxBinding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.city}"), locationField, BeanProperty.create("selectedItem"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.city}"), locationField, BeanProperty.create("selectedItem"));
 		binding.setSourceNullValue(null);
 		binding.setSourceUnreadableValue(null);
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, locationField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, locationField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		class CityInfoRenderer extends DefaultListCellRenderer {
@@ -456,7 +534,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 				result.setText(city.getCode() + " " + city.getName());
 				return result;
 			}
-		}
+		};
 
 		class CityInfoEditor extends BasicComboBoxEditor {
 
@@ -535,9 +613,9 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		phoneField.setName("phoneField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.phone}"), phoneField, BeanProperty.create("text"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.phone}"), phoneField, BeanProperty.create("text"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, phoneField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, phoneField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		firstnameLabel.setText(bundle2.getString("firstnameLabel.text")); // NOI18N
@@ -546,13 +624,13 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		maleRadioButton.setText(bundle2.getString("maleRadioButton.text")); // NOI18N
 		maleRadioButton.setName("maleRadioButton"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.male}"), maleRadioButton, BeanProperty.create("selected"));
-//		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${!selectedElement.male}"), femaleRadioButton, BeanProperty.create("selected"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.male}"), maleRadioButton, BeanProperty.create("selected"));
+		//bindingGroup.addBinding(binding);
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${!selectedElement.male}"), femaleRadioButton, BeanProperty.create("selected"));
+	//	bindingGroup.addBinding(binding);
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, maleRadioButton, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, maleRadioButton, BeanProperty.create("enabled"));
-		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, femaleRadioButton, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, femaleRadioButton, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		femaleRadioButton.setText(bundle2.getString("femaleRadioButton.text")); // NOI18N
@@ -586,9 +664,9 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		});
 		birthdateField.setName("birthdateField"); // NOI18N
 
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, ELProperty.create("${selectedElement.birthdate}"), birthdateField, BeanProperty.create("value"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, ELProperty.create("${selectedElement.birthdate}"), birthdateField, BeanProperty.create("value"));
 		bindingGroup.addBinding(binding);
-		binding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, tableRowSelectedProperty, birthdateField, BeanProperty.create("enabled"));
+		binding = Bindings.createAutoBinding(UpdateStrategy.READ, this, tableRowSelectedProperty, birthdateField, BeanProperty.create("enabled"));
 		bindingGroup.addBinding(binding);
 
 		genderLabel.setText(bundle2.getString("genderLabel.text")); // NOI18N
@@ -695,9 +773,8 @@ public class NewClientTablePanel extends AbstractTablePanel {
 
 		clientTableScrollPane.setName("clientTableScrollPane"); // NOI18N
 
-		clientTable.setColumnSelectionAllowed(true);
 		clientTable.setName("clientTable"); // NOI18N
-
+/*
 		jTableBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, clientList, clientTable);
 		columnBinding = jTableBinding.addColumnBinding(ELProperty.create("${id}"));
 		columnBinding.setColumnName("Id");
@@ -730,7 +807,7 @@ public class NewClientTablePanel extends AbstractTablePanel {
 		columnBinding.setColumnClass(String.class);
 		columnBinding.setEditable(false);
 		bindingGroup.addBinding(jTableBinding);
-		jTableBinding.bind();
+		jTableBinding.bind();*/
 		clientTableScrollPane.setViewportView(clientTable);
 		clientTable.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		clientTable.getColumnModel().getColumn(0).setMinWidth(20);
@@ -848,12 +925,64 @@ public class NewClientTablePanel extends AbstractTablePanel {
 	
 	private JPanel clientTablePanel;
 	// End of variables declaration//GEN-END:variables
+	
+	public static class ClientTableFormat implements TableFormat<Client> {
+		
+		public int getColumnCount() {
+			return 4;
+		}
+		
+		public String getColumnName(int column) {
+			if(column == 0)      return "ID";
+			else if(column == 1) return "Naam";
+			else if(column == 2) return "Voornaam";
+			else if(column == 3) return "Datum laatste analyze";
+			throw new IllegalStateException();
+		}
+		
+		public Object getColumnValue(Client client, int column) {
+			
+			if(column == 0)      return client.getId();
+			else if(column == 1) return client.getName();
+			else if(column == 2) return client.getFirstname();
+			else if(column == 3) return client.getLastAnalysisDate();
+			
+			throw new IllegalStateException();
+		}
+	}
+	
+	public static class AnalysisTableFormat implements TableFormat<Analysis> {
 
+	    public int getColumnCount() {
+	        return 4;
+	    }
+
+	    public String getColumnName(int column) {
+	        if(column == 0)      return "Datum";
+	        else if(column == 1) return "Gekozen schoen";
+	        else if(column == 2) return "Aantal keyframes";
+	        else if(column == 3) return "Duur video";
+	        throw new IllegalStateException();
+	    }
+
+	    public Object getColumnValue(Analysis analysis, int column) {
+
+	        if(column == 0) {
+	        	return analysis.getCreationDate();
+	        }
+	        else if(column == 1) return analysis.getArticle();
+	        else if(column == 2) {
+	        	return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
+	        }
+	        else if(column == 3) return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
+	        throw new IllegalStateException();
+	    }
+	}
 
 	@Override
-	public void update() {
+	public TableFormat<Client> getTableFormat() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

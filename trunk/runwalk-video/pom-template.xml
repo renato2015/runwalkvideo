@@ -373,11 +373,11 @@
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>m2 repo</id>
+			<id>m2-repo</id>
 			<url>http://repo1.maven.org/maven2/</url>
 		</repository>
 		<repository>
-			<id>EclipseLink Repo</id>
+			<id>eclipseLink-repo</id>
 			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo
 			</url>
 		</repository>

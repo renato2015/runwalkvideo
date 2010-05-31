@@ -131,9 +131,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getSlider().addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				if (player != null && player.isActive()) {
-					double pos = getSlider().getValue() * player.getDuration() / 1000;
-					getLogger().debug("Slide stateChanged : " + (int) pos);
-					player.setPosition((int) pos);
+					int position = getSlider().getValue() * player.getDuration() / 1000;
+					getLogger().debug("Slide stateChanged : " + position);
+					player.setPosition(position);
 				}
 			}
 		});
@@ -183,14 +183,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void stop() {
 		if (capturer.isRecording()) {
 			stopRecording();
-			setStopEnabled(false);
 			setRecordingEnabled(false);
 		} else {
 			player.stop();
 			getApplication().showMessage("Afspelen gestopt.");
 			setStatusInfo(0, player.getDuration());
-			setStopEnabled(false);
 		}
+		setStopEnabled(false);
 	}
 
 	@Action(enabledProperty=PLAYING_ENABLED )
@@ -260,7 +259,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	/**
-	 * This properties are changed in two different situations:
+	 * This property is under two different conditions:
 	 * 
 	 * <ul>
 	 * <li>When an {@link Analysis} is selected in the table then we have to perform a check on the activity of the capture graph here, too</li>
@@ -271,10 +270,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 */
 	public void setRecordingEnabled(boolean recordSelected) {
 		boolean isRecordingEnabled = recordSelected && capturer.isActive() && recordingSelected && !capturer.isRecording();
+		if (player != null) {
+			isRecordingEnabled &= player.isIdle();
+		}
 		this.firePropertyChange(RECORDING_ENABLED, this.recordingEnabled, this.recordingEnabled = isRecordingEnabled);
 		if (isRecordingEnabled()) {
-			setPlayingEnabled(false);
-			capturer.toFront();
+//			setPlayingEnabled(false);
+			captureFrameToFront();
 		}
 	}
 
@@ -309,12 +311,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			getApplication().createOrShowComponent(capturer);
 			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
 		}
-		capturer.toFront();
+		captureFrameToFront();
 	}
 
 	@Action(enabledProperty=RECORDING_ENABLED)
 	public void record() {
-		capturer.toFront();
+//		capturer.toFront();
 		Analysis analysis = RunwalkVideoApp.getApplication().getSelectedAnalysis();
 		if (analysis != null) {
 			//TODO kijk of die null nog nodig is!
@@ -453,6 +455,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			Long timeRecorded = (Long) newValue;
 			if (this.capturer.equals(capturer)) {
 				updateTimeStamps(timeRecorded, 0);
+				if (!isStopEnabled()) {
+					getLogger().warn("Stop button was set to false. re-enabling..");
+					setStopEnabled(true);
+				}
 			}
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
@@ -468,8 +474,15 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
 	
+	/**
+	 * Enabling a {@link VideoComponent}'s controls is only possible when the frontmost component is idle,  otherwise the
+	 * request will be ignored.
+	 * 
+	 * @param component The videoComponent to enable
+	 * @param enable The enabled state
+	 */
 	private void enableVideoComponentControls(VideoComponent component, boolean enable) {
-		//a player or capturer is requesting the focus
+		//a player or capturer is requesting the focus.. this will only be given if the frontmost component is idle
 		if (frontmostComponent == null || enable && frontmostComponent.isIdle()) {
 			StringBuilder title = new StringBuilder(getName() + " > " + component.getTitle());
 			if (component instanceof VideoCapturer) {
@@ -477,18 +490,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				setRecordingEnabled(true);
 				setPlayingEnabled(false);
 				setStopEnabled(false);
-				if (player != null && player.isPlaying()) {
-					player.stop();
-				}
 			} else {
 				setRecordingEnabled(false);
-				setStopEnabled(false);
 				setPlayingEnabled(true);
+				setStopEnabled(player.getPosition() > 0);
 				setStatusInfo(player.getRecording(), player.getPosition(), player.getDuration());
 				title.append(" > " ).append(player.getRecording().getVideoFileName());
 			}
 			setTitle(title.toString());
-			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isIdle());
 			frontmostComponent = component;
 		} /*else {
 			if (isFrontmostVideoComponent(component)) {
@@ -536,13 +545,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 		
-		public void appWindowDeactivated(AWTEvent e) {
+		/*public void appWindowDeactivated(AWTEvent e) {
 			enableVideoComponentControls(getEnclosingWrapper(), false);
 		}
 
 		public void appWindowClosed(AWTEvent e) {
 			enableVideoComponentControls(getEnclosingWrapper(), false);
-		}
+		}*/
 	}
 
 }

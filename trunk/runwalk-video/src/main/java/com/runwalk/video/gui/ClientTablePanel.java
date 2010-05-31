@@ -40,8 +40,12 @@ import org.jdesktop.swingbinding.SwingBindings;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.gui.TableFormat;
+
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
@@ -63,9 +67,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
 
-		update();
+//		update();
 
-		BeanProperty<ClientTablePanel, List<Client>> clients = BeanProperty.create("itemList");
+		/*BeanProperty<ClientTablePanel, List<Client>> clients = BeanProperty.create("itemList");
 		jTableSelectionBinding = SwingBindings.createJTableBinding(UpdateStrategy.READ_WRITE, this, clients, getTable());
 		BeanProperty<Client, Long> id = BeanProperty.create("id");
 		JTableBinding<Client, ClientTablePanel, JTable>.ColumnBinding columnBinding = jTableSelectionBinding.addColumnBinding(id);
@@ -97,15 +101,15 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public Date convertReverse(String arg0) {
-				/*try {
+				try {
 					return DateFormat.getInstance().parse(arg0);
-				} catch (ParseException e) {*/
+				} catch (ParseException e) {
 					return null;
 				//}
 			}
-		});
+		});*/
 		BindingGroup bindingGroup = new BindingGroup();
-		jTableSelectionBinding.setSourceUnreadableValue(Collections.emptyList());
+/*		jTableSelectionBinding.setSourceUnreadableValue(Collections.emptyList());
 		jTableSelectionBinding.setSourceNullValue(Collections.emptyList());
 		bindingGroup.addBinding(jTableSelectionBinding);
 		jTableSelectionBinding.bind();
@@ -119,7 +123,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getTable().getColumnModel().getColumn(1).setMaxWidth(160);
 		getTable().getColumnModel().getColumn(3).setMinWidth(80);
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(100);
-		getTable().getColumnModel().getColumn(3).setMaxWidth(100);
+		getTable().getColumnModel().getColumn(3).setMaxWidth(100);*/
 		JScrollPane masterScrollPane = new JScrollPane();
 		masterScrollPane.setViewportView(getTable());
 
@@ -203,7 +207,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			}
 
 		});
-		bindingGroup.addBinding(rowSorterBinding);
+//		bindingGroup.addBinding(rowSorterBinding);
 		bindingGroup.bind();
 		clearSearch();
 
@@ -262,12 +266,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public void addClient() {
 		Client client = new Client();
 		AppUtil.persistEntity(client);
-		getItemList().add(client);
-		refreshTableBindings();
-		clearSearch();
-		int clientCount = getItemList().size() - 1;
-		int selectedRow = clientCount > 0 ? getTable().convertRowIndexToView(clientCount) : 0;
-		makeRowVisible(selectedRow);
+		getEventSelectionModel().getSelected().add(client);
+		getEventSelectionModel().getTogglingSelected().add(client);
 		getApplication().getClientInfoPanel().requestFocus();
 		setSaveNeeded(true);
 	}
@@ -281,32 +281,32 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION)	return;
-
-		int selectedRow = getTable().getSelectedRow();
-		Client clientToDelete = getSelectedItem();
-		getItemList().remove(clientToDelete);
-		AppUtil.deleteEntity(clientToDelete);
-		//select previous records..
-		if (selectedRow > 0) {
-			makeRowVisible(selectedRow-1);
-		} else {
-			clearItemSelection();
+		int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+		Client selectedClient = getSelectedItem();
+		getItemList().remove(selectedClient);
+		AppUtil.deleteEntity(selectedClient);
+		//select previous record..
+		if (lastSelectedRowIndex > 0) {
+			makeRowVisible(lastSelectedRowIndex-1);
 		}
-		getLogger().debug("Client " + clientToDelete.getId() +  " (" + clientToDelete.getName() + ") deleted.");
 		setSaveNeeded(true);
 	}
 
 	private void clearSearch() {
 		searchField.setText("");
 	}
+	
+	/**
+	 * This calls the implementation of the {@link #update()} method in a created {@link Task}.
+	 * @return the created task
+	 */
+	@Action(block=Task.BlockingScope.APPLICATION)
+	public Task<Boolean, Void> refresh() {
+		return new RefreshTask();
+	}
 
-	@Override
-	public void update() {
-		Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
-		query.setHint("eclipselink.left-join-fetch", "c.unobservableAnalyses.recording");
-		query.setHint("eclipselink.left-join-fetch", "c.city");
-		setItemList(query.getResultList());	
-		refreshTableBindings();
+	public TableFormat<Client> getTableFormat() {
+		return new NewClientTablePanel.ClientTableFormat();
 	}
 
 }

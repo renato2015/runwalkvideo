@@ -57,7 +57,7 @@ public class AppSettings implements Serializable {
 
 	private File logFile;
 
-	private JAXBContext jaxbContext;
+	private transient JAXBContext jaxbContext;
 	
 	private Settings settings;
 	
@@ -203,7 +203,7 @@ public class AppSettings implements Serializable {
 	}
 	
 	@XmlRootElement
-	public static class Settings {
+	public static class Settings implements Serializable {
 		@XmlElement
 		private String videoDir, cameraDir;
 		

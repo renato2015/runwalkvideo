@@ -16,7 +16,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -24,13 +23,11 @@ import javax.persistence.Transient;
 
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.JoinFetchType;
-import org.jdesktop.observablecollections.ObservableCollections;
-import org.jdesktop.observablecollections.ObservableList;
 
 @Entity
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
-@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.unobservableAnalyses")
+@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
 public class Client extends SerializableEntity<Client> {
 	private static final String CITY = "city";
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
@@ -46,7 +43,7 @@ public class Client extends SerializableEntity<Client> {
 	private String name;
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
 	@JoinFetch(JoinFetchType.OUTER)
-	private List<Analysis> unobservableAnalyses;
+	private List<Analysis> analyses = new ArrayList<Analysis>();
 	@Column(name = "address1")
 	private String address;
 	@ManyToOne
@@ -73,8 +70,6 @@ public class Client extends SerializableEntity<Client> {
 	private Integer male;
 	@Transient
 	private Date lastAnalysisDate;
-	@Transient
-	private ObservableList<Analysis> analyses;
 
 	public Client() {
 		super();
@@ -152,39 +147,28 @@ public class Client extends SerializableEntity<Client> {
 		this.mail = mail;
 	}
 
-	@PostLoad
-	private void initObservableList() {
-		if (unobservableAnalyses == null) {
-			unobservableAnalyses = new ArrayList<Analysis>();
-		}
-		if (analyses == null || !unobservableAnalyses.isEmpty()) {
-			analyses = ObservableCollections.observableList(unobservableAnalyses);
-		}
-	}
-	
 	public int getAnalysisCount() {
-		return getAnalyses().size();
+		return analyses.size();
 	}
 	
-	public ObservableList<Analysis> getAnalyses() {
-		if (analyses == null || !unobservableAnalyses.isEmpty() && analyses.isEmpty()) {
-			initObservableList();
-		}
+	public List<Analysis> getAnalyses() {
 		return analyses;
 	}
 
-	public void removeAnalysis(Analysis analysis) {
-		if (analysis != null && getAnalyses().contains(analysis)) {
-			getAnalyses().remove(analysis);
+	public boolean removeAnalysis(Analysis analysis) {
+		boolean result = false;
+		if (analysis != null) {
+			result = getAnalyses().remove(analysis);
 			setLastAnalysisDate(getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysisCount() - 1).getCreationDate());
 		}
+		return result;
 	}
 
-	public int addAnalysis(Analysis analysis) {
-		getAnalyses().add(analysis);
-		int index = getAnalyses().indexOf(analysis);
+	public boolean addAnalysis(Analysis analysis) {
+		//fire property changed??
+		boolean result = getAnalyses().add(analysis);
 		setLastAnalysisDate(analysis.getCreationDate());
-		return index;
+		return result;
 	}
 
 	public String getOrganization() {

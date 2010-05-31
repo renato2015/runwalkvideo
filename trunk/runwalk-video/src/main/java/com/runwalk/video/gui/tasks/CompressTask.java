@@ -24,11 +24,11 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private int errorCount = 0;
 	private int conversionCounter, conversionCount;
 	private double part;
-	private int progress = 0;
 	private DSJPlayer exporter;
 	private Recording recording;
 	private List<Recording> recordings;
 	private DSFilterInfo transcoder;
+	private volatile boolean finished = false;
 
 	public CompressTask(List<Recording> recordings, DSFilterInfo transcoder) {
 		super("compress");
@@ -42,11 +42,12 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		case DSMovie.EXPORT_DONE : {
 			getLogger().debug("Export completed.."); 
 			synchronized(recording) {
-				recording.notify();
+				finished = true;
+				recording.notifyAll();
 			}
 			break;
 		} case DSMovie.EXPORT_PROGRESS : {
-			progress = DSJUtils.getEventValue_int(evt);
+			int progress = DSJUtils.getEventValue_int(evt);
 			double totalProgress = conversionCounter * part + ((double) progress / (double) conversionCount);
 			getLogger().debug("progress:" + progress + " total progress: " + totalProgress); 
 			setProgress((int) totalProgress);
@@ -62,7 +63,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	protected Boolean doInBackground() {
 		message(getResourceString("startMessage"));
 		conversionCount = recordings.size();
-		part = 100 / conversionCount;
+		part = 1 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
 			RecordingStatus statusCode = recording.getRecordingStatus();
@@ -85,7 +86,10 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				} else {
 					recording.setRecordingStatus(RecordingStatus.COMPRESSING);
 					synchronized(recording) {
-						recording.wait();
+						while (!finished) {
+							recording.wait();
+						}
+						finished = false;
 					}
 				}
 				statusCode = RecordingStatus.COMPRESSED;
@@ -126,7 +130,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			}
 		});
 		thread.setDaemon(true);
-		thread.run();
+		thread.start();
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package com.runwalk.video.gui;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.PropertyStateEvent;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import com.runwalk.video.RunwalkVideoApp;
 
@@ -20,5 +21,13 @@ public class ClientBindingListener extends AbstractBindingListener {
 		RunwalkVideoApp.getApplication().getSelectedClient().setDirty(true);
 		RunwalkVideoApp.getApplication().setSaveNeeded(true);
 	}
+
+	@Override
+	public void syncFailed(Binding binding1, SyncFailure syncfailure) {
+		// TODO Auto-generated method stub
+		super.syncFailed(binding1, syncfailure);
+	}
+	
+	
 	
 }
