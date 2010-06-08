@@ -11,7 +11,7 @@ import javax.persistence.Table;
 @Entity
 @SuppressWarnings("serial")
 @Table(schema="testdb", name = "articles")
-public class Articles implements Serializable {
+public class Article implements Serializable {
 	@Id
 	@Column(name="id")
 	private int id;
@@ -34,7 +34,7 @@ public class Articles implements Serializable {
 	@Column(name="subcategory")
 	private int subcategory;
 
-	public Articles() {
+	public Article() {
 		super();
 	}
 

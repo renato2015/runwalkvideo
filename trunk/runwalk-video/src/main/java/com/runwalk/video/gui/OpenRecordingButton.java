@@ -10,7 +10,7 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public class OpenRecordingButton extends JButton {
+public class OpenRecordingButton extends JButton implements Comparable<JButton> {
 	final Recording recording;
 	
 	public OpenRecordingButton(Recording recording) {
@@ -30,4 +30,9 @@ public class OpenRecordingButton extends JButton {
 	public boolean isEnabled() {
 		return recording != null && recording.isRecorded();
 	}
+
+	public int compareTo(JButton o) {
+		return 0;
+	}
+	
 }

@@ -72,9 +72,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 						@Override
 						public List<Analysis> getChildren(Client parent) {
-							EventList<Analysis> eventList = new BasicEventList(publisher, readWriteLock);
-							eventList.addAll(parent.getAnalyses());
-							return eventList;
+							return parent.getAnalyses();
 						}
 
 					});

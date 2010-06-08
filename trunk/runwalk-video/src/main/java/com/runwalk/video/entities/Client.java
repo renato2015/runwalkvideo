@@ -147,8 +147,8 @@ public class Client extends SerializableEntity<Client> {
 		this.mail = mail;
 	}
 
-	public int getAnalysisCount() {
-		return analyses.size();
+	public int getAnalysesCount() {
+		return getAnalyses().size();
 	}
 	
 	public List<Analysis> getAnalyses() {
@@ -159,7 +159,8 @@ public class Client extends SerializableEntity<Client> {
 		boolean result = false;
 		if (analysis != null) {
 			result = getAnalyses().remove(analysis);
-			setLastAnalysisDate(getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysisCount() - 1).getCreationDate());
+			Date lastAnalysisDate2 = getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysesCount() - 1).getCreationDate();
+			setLastAnalysisDate(lastAnalysisDate2);
 		}
 		return result;
 	}
@@ -198,7 +199,7 @@ public class Client extends SerializableEntity<Client> {
 	public Date getLastAnalysisDate() {
 		if (lastAnalysisDate == null && !getAnalyses().isEmpty()) {
 			Collections.sort(getAnalyses());
-			lastAnalysisDate = getAnalyses().get(getAnalysisCount()-1).getCreationDate();
+			lastAnalysisDate = getAnalyses().get(getAnalysesCount()-1).getCreationDate();
 		}
 		return lastAnalysisDate;
 	}
