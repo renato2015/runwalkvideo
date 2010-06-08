@@ -8,7 +8,7 @@
 		<class>com.runwalk.video.entities.ProdCategory</class>
 		<class>com.runwalk.video.entities.Client</class>
 		<class>com.runwalk.video.entities.City</class>
-		<class>com.runwalk.video.entities.Articles</class>
+		<class>com.runwalk.video.entities.Article</class>
 		<class>com.runwalk.video.entities.Analysis</class>
 		<class>com.runwalk.video.entities.Recording</class>
 		<class>com.runwalk.video.entities.Keyframe</class>

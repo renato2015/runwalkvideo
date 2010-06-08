@@ -14,17 +14,11 @@ package com.runwalk.video.gui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.Beans;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -36,7 +30,6 @@ import javax.persistence.Query;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.InputVerifier;
@@ -58,32 +51,23 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 import org.jdesktop.beansbinding.AbstractBindingListener;
-import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.el.impl.util.ReflectionUtil;
-import org.jdesktop.observablecollections.ObservableCollections;
-import org.jdesktop.observablecollections.ObservableList;
 import org.jdesktop.swingbinding.JComboBoxBinding;
-import org.jdesktop.swingbinding.JTableBinding;
 import org.jdesktop.swingbinding.SwingBindings;
-import org.jdesktop.swingbinding.JTableBinding.ColumnBinding;
 
-import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -92,20 +76,17 @@ import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.ComboBoxSearchable;
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Articles;
+import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.AppSettings;
-import com.runwalk.video.util.AppUtil;
 
 /**
  *
@@ -951,10 +932,10 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 		}
 	}
 	
-	public static class AnalysisTableFormat implements TableFormat<Analysis> {
+	public static class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 
 	    public int getColumnCount() {
-	        return 4;
+	        return 5;
 	    }
 
 	    public String getColumnName(int column) {
@@ -962,6 +943,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 	        else if(column == 1) return "Gekozen schoen";
 	        else if(column == 2) return "Aantal keyframes";
 	        else if(column == 3) return "Duur video";
+	        else if(column == 4) return "Open video";
 	        throw new IllegalStateException();
 	    }
 
@@ -975,8 +957,19 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 	        	return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
 	        }
 	        else if(column == 3) return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
+	        else if(column == 4) return new OpenRecordingButton(analysis.getRecording());
 	        throw new IllegalStateException();
 	    }
+
+		public boolean isEditable(Analysis baseObject, int column) {
+			return column == 1;
+		}
+
+		public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
+			analysis.setArticle((Article) editedValue);
+			return analysis;
+		}
+
 	}
 
 	@Override

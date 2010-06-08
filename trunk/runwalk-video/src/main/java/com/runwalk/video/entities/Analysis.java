@@ -1,6 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.CascadeType;
@@ -35,7 +34,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	
 	@OneToOne
 	@JoinColumn(name="articleid")
-	private Articles article;
+	private Article article;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="movieid", unique = true)
@@ -66,20 +65,12 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return client;
 	}
 	
-	public Articles getArticle() {
+	public Article getArticle() {
 		return this.article;
 	}
 	
-	/**
-	 * @deprecated
-	 * @return timestamp in a string
-	 */
-	public String getTimeStamp() {
-		return AppUtil.formatDate(getCreationDate(), AppUtil.EXTENDED_DATE_FORMATTER);
-	}
-	
 	public Date getCreationDate() {
-		return AppUtil.granularity(creationDate, Calendar.MILLISECOND);
+		return creationDate;
 	}
 
 	public String getComments() {
@@ -90,10 +81,13 @@ public class Analysis extends SerializableEntity<Analysis> {
 		this.comments = comments;
 	}
 
-	public void setArticle(Articles art) {
+	public void setArticle(Article art) {
 		this.article = art;
 	}
 
+	public void setRecording(Recording recording) {
+		this.recording = recording;
+	}
 
 	public Recording getRecording() {
 		return recording;

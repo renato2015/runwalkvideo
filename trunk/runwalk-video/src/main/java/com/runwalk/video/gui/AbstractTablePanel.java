@@ -2,27 +2,29 @@ package com.runwalk.video.gui;
 
 import java.awt.Component;
 import java.awt.LayoutManager;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.swingbinding.JTableBinding;
 
 import ca.odell.glazedlists.EventList;
@@ -39,7 +41,6 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.util.AppSettings;
 
@@ -70,6 +71,23 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		BeanProperty<AbstractTablePanel<T>, Boolean> localIsSelected = BeanProperty.create(ROW_SELECTED);
 		Binding<? extends AbstractTablePanel<T>, Boolean, ? extends AbstractTablePanel<T>, Boolean> rowSelectedBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, this, isSelected , this, localIsSelected);
+		rowSelectedBinding.addBindingListener(new AbstractBindingListener() {
+
+			@Override
+			public void synced(Binding binding) {
+				// TODO Auto-generated method stub
+				super.synced(binding);
+			}
+
+			@Override
+			public void syncFailed(Binding binding, SyncFailure failure) {
+				// TODO Auto-generated method stub
+				super.syncFailed(binding, failure);
+			}
+			
+			
+			
+		});
 		rowSelectedBinding.setSourceNullValue(false);
 		rowSelectedBinding.setSourceUnreadableValue(false);
 		BindingGroup bindingGroup = new BindingGroup();
@@ -141,28 +159,43 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 * de JTable lijkt daar niet goed op te reageren
 	 * @param newList
 	 */
-	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
-		ObservableElementList.Connector<T> itemConnector = GlazedLists.beanConnector(itemClass);
+	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
         EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
-        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = observedItems);
-		SortedList<T> sortedItems = SortedList.create(observedItems);
+        EventList<T> specializedList = specializeItemList(observedItems);
+        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList);
+        SortedList<T> sortedItems = SortedList.create(specializedList);
+		
         eventSelectionModel = new EventSelectionModel<T>(sortedItems);
         eventSelectionModel.getSelected().addListEventListener(new ListEventListener<T>() {
-
-			@SuppressWarnings("unchecked")
-			public void listChanged(ListEvent<T> listChanges) {
-				EventList<T> source = (EventList) listChanges.getSource();
-				if (!source.isEmpty()) {
-					setSelectedItem(source.get(0));
-				}
-				
-			}
-		});
+        	
+        	@SuppressWarnings("unchecked")
+        	public void listChanged(ListEvent<T> listChanges) {
+        		EventList<T> source = (EventList) listChanges.getSource();
+        		if (!source.isEmpty()) {
+        			setSelectedItem(source.get(0));
+        		}
+        		
+        	}
+        });
         eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
-        getTable().setModel(new EventTableModel<T>(sortedItems, getTableFormat()));
+        EventTableModel<T> dataModel = new EventTableModel<T>(sortedItems, getTableFormat());
+		getTable().setModel(dataModel);
         TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
         getTable().setSelectionModel(eventSelectionModel);
         getTable().setColumnSelectionAllowed(false);
+	}
+	
+	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
+		setItemList(itemList, GlazedLists.beanConnector(itemClass));
+	}
+	
+	/**
+	 * Specialization hook for the set {@link ObservableElementList}. You can override the exact type of the set {@link EventList} by implementing this method.
+	 * @param eventList The observable eventlist
+	 * @return A specialized version of the observable eventlist
+	 */
+	protected EventList<T> specializeItemList(EventList<T> eventList) {
+		return eventList;
 	}
 	
 	public abstract TableFormat<T> getTableFormat();
@@ -218,7 +251,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		}
 	}
 	
-	class JTableButtonMouseListener implements MouseListener {
+	class JTableButtonMouseListener extends MouseAdapter {
 
 		  private void __forwardEventToButton(MouseEvent e) {
 		    TableColumnModel columnModel = getTable().getColumnModel();
@@ -251,22 +284,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		  public void mouseClicked(MouseEvent e) {
 		    __forwardEventToButton(e);
 		  }
-
-		  public void mouseEntered(MouseEvent e) {
-		    __forwardEventToButton(e);
-		  }
-
-		  public void mouseExited(MouseEvent e) {
-		    __forwardEventToButton(e);
-		  }
-
-		  public void mousePressed(MouseEvent e) {
-		    __forwardEventToButton(e);
-		  }
-
-		  public void mouseReleased(MouseEvent e) {
-		    __forwardEventToButton(e);
-		  }
+		  
 		}
 
 
