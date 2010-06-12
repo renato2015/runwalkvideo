@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
 import java.awt.LayoutManager;
@@ -9,23 +9,12 @@ import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.beansbinding.AbstractBindingListener;
-import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.Binding;
-import org.jdesktop.beansbinding.BindingGroup;
-import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
-import org.jdesktop.swingbinding.JTableBinding;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -39,60 +28,29 @@ import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel implements AppComponent {
 
 	private static final String EVENT_LIST = "itemList";
-	private static final String SELECTED_ITEM = "selectedItem";
 	protected static final String ROW_SELECTED = "rowSelected";
 	private JTable table;
 	private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
-	private T selectedItem;
-	protected JTableBinding<Analysis, ?, JTable> jTableSelectionBinding;
-	//	private JTableBinding<Analysis, List<Analysis>, JTable> jTableSelectionBinding;
 	
-	public  AbstractTablePanel(LayoutManager mgr) {
+	public AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
 		getTable().setShowGrid(false);
 		getTable().setFont(AppSettings.MAIN_FONT);
-		
-		//rowSelected binding
-		ELProperty<AbstractTablePanel<T>, Boolean> isSelected = ELProperty.create("${selectedItem != null}");
-		BeanProperty<AbstractTablePanel<T>, Boolean> localIsSelected = BeanProperty.create(ROW_SELECTED);
-		Binding<? extends AbstractTablePanel<T>, Boolean, ? extends AbstractTablePanel<T>, Boolean> rowSelectedBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ, this, isSelected , this, localIsSelected);
-		rowSelectedBinding.addBindingListener(new AbstractBindingListener() {
-
-			@Override
-			public void synced(Binding binding) {
-				// TODO Auto-generated method stub
-				super.synced(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				// TODO Auto-generated method stub
-				super.syncFailed(binding, failure);
-			}
-			
-			
-			
-		});
-		rowSelectedBinding.setSourceNullValue(false);
-		rowSelectedBinding.setSourceUnreadableValue(false);
-		BindingGroup bindingGroup = new BindingGroup();
-		bindingGroup.addBinding(rowSelectedBinding);
-		bindingGroup.bind();
 	}
 	
 	public AbstractTablePanel() {
@@ -110,15 +68,18 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	/**
 	 * Verwijder het huidig geselecteerde item.
 	 */
-	public void clearItemSelection() {
+	public void clearSelectedItem() {
 		getEventSelectionModel().clearSelection();
 	}
 	
-	public void setSelectedItem(T selectedItem) {
-		this.firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
-	}
-	
 	public T getSelectedItem() {
+		T selectedItem = null;
+		if (getEventSelectionModel() != null) {
+			EventList<T> selected = getEventSelectionModel().getTogglingSelected();
+			if (!selected.isEmpty()) {
+				selectedItem = Iterables.getOnlyElement(selected);
+			}
+		}
 		return selectedItem;
 	}
 	
@@ -126,13 +87,13 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		return table;
 	}
 	
-	public void makeRowVisible(T item) {
+	public void setSelectedItem(T item) {
 		getEventSelectionModel().getTogglingSelected().add(item);
 	}
 
-	public void makeRowVisible(int row) {
+	public void setSelectedItem(int row) {
 		if (row > -1) {
-			makeRowVisible(getItemList().get(row));
+			setSelectedItem(getItemList().get(row));
 		}
 	}
 
@@ -162,22 +123,18 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
         EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
         EventList<T> specializedList = specializeItemList(observedItems);
-        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList);
         SortedList<T> sortedItems = SortedList.create(specializedList);
+        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = sortedItems); 
 		
         eventSelectionModel = new EventSelectionModel<T>(sortedItems);
-        eventSelectionModel.getSelected().addListEventListener(new ListEventListener<T>() {
+        eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
+        eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
         	
-        	@SuppressWarnings("unchecked")
         	public void listChanged(ListEvent<T> listChanges) {
-        		EventList<T> source = (EventList) listChanges.getSource();
-        		if (!source.isEmpty()) {
-        			setSelectedItem(source.get(0));
-        		}
-        		
+        		 firePropertyChange("selectedItem", getSelectedItem(), listChanges.getSource());
+        		 setRowSelected(!eventSelectionModel.getSelected().isEmpty());
         	}
         });
-        eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
         EventTableModel<T> dataModel = new EventTableModel<T>(sortedItems, getTableFormat());
 		getTable().setModel(dataModel);
         TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);

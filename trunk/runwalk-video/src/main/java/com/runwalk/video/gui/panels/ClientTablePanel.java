@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -32,6 +32,7 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.util.AppSettings;
@@ -87,7 +88,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			public void mouseClicked(MouseEvent arg0) {
 				theLabel.setIcon(search);
 				clearSearch();
-				makeRowVisible(getTable().getSelectedRow());
+				setSelectedItem(getTable().getSelectedRow());
 			}
 			public void mouseEntered(MouseEvent arg0) {
 				theLabel.setIcon(searchOverlay);
@@ -184,7 +185,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		Client client = new Client();
 		AppUtil.persistEntity(client);
 		getItemList().add(client);
-		makeRowVisible(client);
+		setSelectedItem(client);
 		getApplication().getClientInfoPanel().requestFocus();
 		setSaveNeeded(true);
 	}
@@ -203,7 +204,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getItemList().remove(selectedClient);
 		AppUtil.deleteEntity(selectedClient);
 		//select previous record..
-		makeRowVisible(lastSelectedRowIndex - 1);
+		setSelectedItem(lastSelectedRowIndex - 1);
 		setSaveNeeded(true);
 	}
 
@@ -221,7 +222,30 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 
 	public TableFormat<Client> getTableFormat() {
-		return new NewClientTablePanel.ClientTableFormat();
+		return new ClientTableFormat();
 	}
-
+	
+	public class ClientTableFormat implements TableFormat<Client> {
+		
+		public int getColumnCount() {
+			return 4;
+		}
+		
+		public String getColumnName(int column) {
+			if(column == 0)      return "ID";
+			else if(column == 1) return "Naam";
+			else if(column == 2) return "Voornaam";
+			else if(column == 3) return "Datum laatste analyze";
+			throw new IllegalStateException();
+		}
+		
+		public Object getColumnValue(Client client, int column) {
+			if(column == 0)      return client.getId();
+			else if(column == 1) return client.getName();
+			else if(column == 2) return client.getFirstname();
+			else if(column == 3) return client.getLastAnalysisDate();
+			throw new IllegalStateException();
+		}
+	}
+	
 }

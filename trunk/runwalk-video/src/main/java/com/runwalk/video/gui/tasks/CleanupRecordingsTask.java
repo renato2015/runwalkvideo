@@ -6,6 +6,7 @@ import java.io.FileFilter;
 import javax.swing.JOptionPane;
 
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSJException;
@@ -40,8 +41,8 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 					boolean accept = false;
 					try  {
 						int uncompressedVideoDuration = AppUtil.getMovieDuration(file.getAbsolutePath());
-						File compressedVideoFile = AppUtil.getCompressedVideoFile(file.getName());
-						if (compressedVideoFile != null) {
+						File compressedVideoFile = new File(AppSettings.getInstance().getVideoDir(), file.getName());
+						if (compressedVideoFile.exists()) {
 							int compressedVideoDuration = AppUtil.getMovieDuration(compressedVideoFile.getAbsolutePath());
 							accept = uncompressedVideoDuration == compressedVideoDuration;
 						}

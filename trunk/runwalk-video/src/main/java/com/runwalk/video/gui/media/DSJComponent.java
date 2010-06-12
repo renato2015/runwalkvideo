@@ -28,20 +28,16 @@ import de.humatic.dsj.DSFiltergraph;
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
 
 	private T filtergraph;
-	
+
 	private boolean rejectPauseFilter = false;
 
 	/**
 	 * Constructor for fullscreen mode..
 	 * @param device the {@link GraphicsDevice} where the Frame will be displayed
 	 */
-	public DSJComponent(GraphicsDevice device) {
+	public DSJComponent(GraphicsDevice device) { }
 
-	}
-	
-	public DSJComponent() {
-		
-	}
+	public DSJComponent() { }
 
 	public T getFiltergraph() {
 		return this.filtergraph;
@@ -104,7 +100,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public void dispose() {
 		if (getFiltergraph() != null) {
-			AppUtil.disposeDSGraph(getFiltergraph());
+			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
+			if (fullscreenFrame != null) {
+				fullscreenFrame.dispose();
+			}
+			getFiltergraph().dispose();
 		}
 	}
 
@@ -131,7 +131,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 			}
 		}
 	}
-	
+
 	public ActionMap getActionMap() {
 		return RunwalkVideoApp.getApplication().getContext().getActionMap(DSJComponent.class, this);
 	}

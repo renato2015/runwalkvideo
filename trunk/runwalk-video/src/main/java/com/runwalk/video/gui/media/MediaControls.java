@@ -19,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
@@ -40,6 +39,7 @@ import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.media.VideoComponent.State;
+import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -76,9 +76,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYING_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<JTable, Boolean> isSelected = ELProperty.create("${!selectedElement.recording.recorded}");
+		ELProperty<AnalysisTablePanel, Boolean> isSelected = ELProperty.create("${!selectedItem.recording.recorded}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getAnalysisTablePanel().getTable(), isSelected, this, recordingEnabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getAnalysisTablePanel(), isSelected, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 
 			@Override
@@ -149,20 +149,19 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		playerPanel.add(buttonPanel, BorderLayout.CENTER);
 
 		add(playerPanel);
-		//		bindingGroup.bind();
 	}
 
 	private AbstractButton createJToggleButton(String actionName, String iconResourceName) {
-		AbstractButton button = createButton(actionName, true);
+		AbstractButton button = createJButton(actionName, true);
 		button.setSelectedIcon(getResourceMap().getIcon(iconResourceName));
 		return button;
 	}
 
 	private AbstractButton createJButton(String actionName) {
-		return createButton(actionName, false);
+		return createJButton(actionName, false);
 	}
 
-	private AbstractButton createButton(String actionName, boolean toggleButton) {
+	private AbstractButton createJButton(String actionName, boolean toggleButton) {
 		javax.swing.Action action = getAction(actionName);
 		AbstractButton button = toggleButton ? new JToggleButton(action) : new JButton(action);
 		button.setMargin(new Insets(0, 0, 0, 0));
@@ -498,6 +497,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				title.append(" > " ).append(player.getRecording().getVideoFileName());
 			}
 			setTitle(title.toString());
+			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isIdle());	
 			frontmostComponent = component;
 		} /*else {
 			if (isFrontmostVideoComponent(component)) {

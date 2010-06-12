@@ -1,6 +1,5 @@
 package com.runwalk.video.util;
 
-import java.awt.Frame;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -18,7 +17,6 @@ import org.jdesktop.application.ResourceMap;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
 
-import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJUtils;
 
 public class AppUtil {
@@ -30,14 +28,7 @@ public class AppUtil {
 	public static final SimpleDateFormat EXTENDED_DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH'h'mm'm'ss");
 
-	private AppUtil() {
-
-	}
-
-	public static File getCompressedVideoFile(String fileName) {
-		File file = new File(AppSettings.getInstance().getVideoDir(), fileName);
-		return file.exists() ? file : null;
-	}
+	private AppUtil() { }
 
 	//methods for parsing the video directory
 	static File parseDir(String path) {
@@ -54,17 +45,6 @@ public class AppUtil {
 			parsed = dir.canRead() && dir.exists() && dir.isDirectory() && dir.canWrite();
 		}
 		return parsed;
-	}
-	
-	public static String[] splitString(String str, String delimiter) {
-		String[] result = null;
-		int indexOf = str.lastIndexOf(delimiter);
-		if (indexOf != -1) {
-			result = new String[] {str.substring(0, indexOf), str.substring(indexOf+1)};
-		} else {
-			result = new String[] {str, null};
-		}
-		return result;
 	}
 	
 	public static Date granularity(Date date, int precision) {
@@ -105,18 +85,6 @@ public class AppUtil {
 		return duration;
 	}
 	
-	public static String getFormattedMovieDuration(long duration) {
-		return formatDate(new Date(duration), DURATION_FORMATTER);
-	}
-	
-	public static ResourceMap getResourceMap(Class<?> theClass) {
-		return RunwalkVideoApp.getApplication().getContext().getResourceMap(theClass);
-	}
-	
-	public static String getString(Object obj, String key) {
-		return getResourceMap(obj.getClass()).getString(key);
-	}
-	
 	/**
 	 * This method will merge all the keys in a new ActionMap
 	 * @param map1 The first map 
@@ -132,17 +100,6 @@ public class AppUtil {
 			result.put(key, map2.get(key));
 		}
 		return result;
-	}
-
-	public static void disposeDSGraph(DSFiltergraph graph) {
-		if (graph != null) {
-			//TODO check whether this code is needed!
-			Frame fullscreenFrame = graph.getFullScreenWindow();
-			if (fullscreenFrame != null) {
-				fullscreenFrame.dispose();
-			}
-			graph.dispose();
-		}
 	}
 
 	public static <T> void persistEntity(SerializableEntity<T> item) {

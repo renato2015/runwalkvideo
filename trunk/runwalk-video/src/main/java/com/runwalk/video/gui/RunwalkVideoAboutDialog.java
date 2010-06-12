@@ -11,11 +11,11 @@ import javax.swing.JButton;
 import org.jdesktop.application.Action;
 
 @SuppressWarnings("serial")
-public class RunwalkVideoAboutBox extends AppDialog implements AppComponent {
+public class RunwalkVideoAboutDialog extends AppDialog implements AppComponent {
 
     private JButton closeButton;
 	
-	public RunwalkVideoAboutBox(Frame parent) {
+	public RunwalkVideoAboutDialog(Frame parent) {
         super(parent);
         initComponents();
         getRootPane().setDefaultButton(closeButton);

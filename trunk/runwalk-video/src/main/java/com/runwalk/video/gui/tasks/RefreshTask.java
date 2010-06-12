@@ -11,8 +11,6 @@ import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
@@ -20,7 +18,7 @@ import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.gui.ClientTablePanel;
+import com.runwalk.video.gui.panels.ClientTablePanel;
 
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 

@@ -159,8 +159,8 @@ public class Client extends SerializableEntity<Client> {
 		boolean result = false;
 		if (analysis != null) {
 			result = getAnalyses().remove(analysis);
-			Date lastAnalysisDate2 = getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysesCount() - 1).getCreationDate();
-			setLastAnalysisDate(lastAnalysisDate2);
+			Date lastAnalysisDate = getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysesCount() - 1).getCreationDate();
+			setLastAnalysisDate(lastAnalysisDate);
 		}
 		return result;
 	}
