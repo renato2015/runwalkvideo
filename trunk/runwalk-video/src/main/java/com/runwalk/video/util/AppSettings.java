@@ -43,10 +43,6 @@ public class AppSettings implements Serializable {
 	
 	private final static String FILE_APPENDER_NAME = "A1";
 	
-	private final static String CAMERADIR_RESOURCENAME = "Application.cameraDir";
-
-	private final static String VIDEODIR_RESOURCENAME = "Application.videoDir";
-
 	private final static String SETTINGS_XML = "settings.xml";
 
 	private final static String TEMP_VIDEO_DIRNAME = "uncompressed";
@@ -124,37 +120,35 @@ public class AppSettings implements Serializable {
 		}
 	}
 
+	public Settings getSettings() {
+		return settings;
+	}
+
 	public void setVideoDir(File dir) {
 		settings.videoDir = dir.getAbsolutePath();
 	}
 
-	public File getDirectory(String path, String resourceName) {
+	public File getDirectory(String path) {
 		File dir = AppUtil.parseDir(path);
 		if (path == null || dir == null) {
-			String defaultDir = AppUtil.getString(this, resourceName);
-			dir = AppUtil.parseDir(defaultDir);
-			if (dir == null) {
-				dir = new File(System.getProperty("user.dir"));
-			}
-			settings.videoDir = dir.getAbsolutePath();
+			dir = new File(System.getProperty("user.dir"));
 		}
 		return dir;
 	}
 
 	public File getCameraDir() {
-		return getDirectory(settings.cameraDir, CAMERADIR_RESOURCENAME);
+		return getDirectory(settings.cameraDir);
 	}
 
 	public File getVideoDir() {
-		return getDirectory(settings.videoDir, VIDEODIR_RESOURCENAME);
+		return getDirectory(settings.videoDir);
 	}
 
 	public File getUncompressedVideoDir() {
 		File tempDir = new File(getVideoDir(), TEMP_VIDEO_DIRNAME);
 		if (!AppUtil.parseDir(tempDir)) {
 			try {
-				boolean success = tempDir.mkdir();
-				if (success) {
+				if (tempDir.mkdir()) {
 					logger.debug("Directory " + tempDir.getAbsolutePath() + " created.");
 				}
 			} catch(SecurityException excp) {
@@ -183,7 +177,7 @@ public class AppSettings implements Serializable {
 	}
 	
 	public float getSavedVolume() {
-		return settings.savedVolume;
+		return getSettings().savedVolume;
 	}
 
 	public void setSavedVolume(float savedVolume) {
@@ -205,7 +199,10 @@ public class AppSettings implements Serializable {
 	@XmlRootElement
 	public static class Settings implements Serializable {
 		@XmlElement
-		private String videoDir, cameraDir;
+		private String videoDir = "D:\\Video's";
+
+		@XmlElement
+		private String cameraDir = "C:\\Documents and Settings\\Administrator\\Mijn documenten\\Mijn video's";
 		
 		@XmlElement
 		private int rateIndex = 3;

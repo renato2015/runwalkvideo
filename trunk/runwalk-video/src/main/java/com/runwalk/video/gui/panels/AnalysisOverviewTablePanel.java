@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,8 @@ import ca.odell.glazedlists.gui.TableFormat;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.gui.DateTableCellRenderer;
+import com.runwalk.video.gui.OpenRecordingButton;
 import com.runwalk.video.gui.tasks.CleanupRecordingsTask;
 import com.runwalk.video.gui.tasks.CompressTask;
 import com.runwalk.video.util.AppSettings;
@@ -28,11 +30,9 @@ import com.runwalk.video.util.AppUtil;
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String CLEANUP_ENABLED = "cleanupEnabled";
-
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 
 	private boolean cleanupEnabled, compressionEnabled;
-	
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
@@ -147,9 +147,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 //		}
 
 	}
-
-
-
+	
 	public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 
 	    public int getColumnCount() {

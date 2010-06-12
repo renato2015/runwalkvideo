@@ -9,7 +9,7 @@
  * Created on 20-nov-2009, 17:54:56
  */
 
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -87,6 +87,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.OpenRecordingButton;
 
 /**
  *
@@ -172,24 +173,14 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 		final JTextArea comments = new JTextArea();
 		JScrollPane commentsScrollPane = new JScrollPane();
 
-		EventList<Client> glazedClients = GlazedLists.threadSafeList(GlazedLists.eventList(clientList));
+/*		EventList<Client> glazedClients = GlazedLists.threadSafeList(GlazedLists.eventList(clientList));
         ObservableElementList.Connector<Client> idolConnector = GlazedLists.beanConnector(Client.class);
         EventList<Client> observedClients = new ObservableElementList<Client>(glazedClients, idolConnector);
 		SortedList<Client> sortedClients = SortedList.create(observedClients);
         EventSelectionModel<Client> clientSelectionModel = new EventSelectionModel(sortedClients);
         clientSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         final EventList<Client> selectedClients = clientSelectionModel.getSelected();
-        selectedClients.addListEventListener(new ListEventListener<Client>() {
-
-			@Override
-			public void listChanged(ListEvent<Client> listChanges) {
-				EventList<Client> source = (EventList) listChanges.getSource();
-				if (!source.isEmpty()) {
-					setSelectedItem(source.get(0));
-				}
-				
-			}
-		});
+        
 		CollectionList<Client, Analysis> analyses = new CollectionList(selectedClients, new CollectionList.Model<Client, Analysis>() {
 
 			@Override
@@ -203,7 +194,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
         SortedList<Analysis> sortedAnalyses = new SortedList<Analysis>(analyses);
         
         // build a JTable
-        clientTable = new JTable(new EventTableModel<Client>(sortedClients, new ClientTableFormat()));
+        clientTable = new JTable(new EventTableModel<Client>(sortedClients, new ClientTablePanel.ClientTableFormat()));
         TableComparatorChooser.install(clientTable, sortedClients, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
         clientTable.setSelectionModel(clientSelectionModel);
         clientTable.setColumnSelectionAllowed(false);
@@ -211,7 +202,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
         TableComparatorChooser.install(analysisTable, sortedAnalyses, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
         EventSelectionModel<Analysis> analysisSelectionModel = new EventSelectionModel(sortedAnalyses);
         analysisSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        analysisTable.setSelectionModel(analysisSelectionModel);
+        analysisTable.setSelectionModel(analysisSelectionModel);*/
         
 		mainPanel.setName("mainPanel"); // NOI18N
 
@@ -340,7 +331,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 
         addAnalysisButton.setText("Voeg analyse toe");
         addAnalysisButton.setName("addAnalysisButton");
-        addAnalysisButton.addActionListener(new ActionListener() {
+       /* addAnalysisButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -351,7 +342,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 				}
 			}
         	
-        });
+        });*/
         // NOI18N
 
         GroupLayout analysisInfoPanelLayout = new GroupLayout(analysisInfoPanel);
@@ -907,71 +898,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 	private JPanel clientTablePanel;
 	// End of variables declaration//GEN-END:variables
 	
-	public static class ClientTableFormat implements TableFormat<Client> {
-		
-		public int getColumnCount() {
-			return 4;
-		}
-		
-		public String getColumnName(int column) {
-			if(column == 0)      return "ID";
-			else if(column == 1) return "Naam";
-			else if(column == 2) return "Voornaam";
-			else if(column == 3) return "Datum laatste analyze";
-			throw new IllegalStateException();
-		}
-		
-		public Object getColumnValue(Client client, int column) {
-			
-			if(column == 0)      return client.getId();
-			else if(column == 1) return client.getName();
-			else if(column == 2) return client.getFirstname();
-			else if(column == 3) return client.getLastAnalysisDate();
-			
-			throw new IllegalStateException();
-		}
-	}
 	
-	public static class AnalysisTableFormat implements WritableTableFormat<Analysis> {
-
-	    public int getColumnCount() {
-	        return 5;
-	    }
-
-	    public String getColumnName(int column) {
-	        if(column == 0)      return "Datum";
-	        else if(column == 1) return "Gekozen schoen";
-	        else if(column == 2) return "Aantal keyframes";
-	        else if(column == 3) return "Duur video";
-	        else if(column == 4) return "Open video";
-	        throw new IllegalStateException();
-	    }
-
-	    public Object getColumnValue(Analysis analysis, int column) {
-
-	        if(column == 0) {
-	        	return analysis.getCreationDate();
-	        }
-	        else if(column == 1) return analysis.getArticle();
-	        else if(column == 2) {
-	        	return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
-	        }
-	        else if(column == 3) return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
-	        else if(column == 4) return new OpenRecordingButton(analysis.getRecording());
-	        throw new IllegalStateException();
-	    }
-
-		public boolean isEditable(Analysis baseObject, int column) {
-			return column == 1;
-		}
-
-		public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
-			analysis.setArticle((Article) editedValue);
-			return analysis;
-		}
-
-	}
-
 	@Override
 	public TableFormat<Client> getTableFormat() {
 		// TODO Auto-generated method stub

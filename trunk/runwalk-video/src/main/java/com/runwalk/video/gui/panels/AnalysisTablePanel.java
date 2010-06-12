@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import javax.persistence.Query;
 import javax.swing.JButton;
@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.table.TableColumn;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.beansbinding.AbstractBindingListener;
@@ -15,15 +14,14 @@ import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
@@ -31,6 +29,9 @@ import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.ClientBindingListener;
+import com.runwalk.video.gui.DateTableCellRenderer;
+import com.runwalk.video.gui.OpenRecordingButton;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -84,35 +85,17 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		commentsBinding.addBindingListener(changeListener);
 		bindingGroup.addBinding(commentsBinding);
 
-		ELProperty<AnalysisTablePanel, Boolean> isSelected = ELProperty.create("${selectedItem != null}");
+		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
 		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, 
 				isSelected, comments, jTextAreaEnabled);
-		enableCommentsBinding.setSourceNullValue(false);
 		enableCommentsBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(enableCommentsBinding);
 
-		ELProperty<ClientTablePanel, Boolean> isClientSelected = ELProperty.create("${selectedItem != null}");
+		BeanProperty<ClientTablePanel, Boolean> isClientSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<AnalysisTablePanel, Boolean> clientSelected = BeanProperty.create(CLIENT_SELECTED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> clientSelectedBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getClientTablePanel(), isClientSelected, this, clientSelected);
-		clientSelectedBinding.addBindingListener(new AbstractBindingListener() {
-
-			@Override
-			public void synced(Binding binding) {
-				// TODO Auto-generated method stub
-				super.synced(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				// TODO Auto-generated method stub
-				super.syncFailed(binding, failure);
-			}
-			
-			
-			
-		});
 		clientSelectedBinding.setSourceNullValue(false);
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
@@ -136,10 +119,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		getItemList().getReadWriteLock().writeLock().lock();
 		Analysis analysis = new Analysis(selectedClient);
+		
 		AppUtil.persistEntity(analysis);
 		try {
 			selectedClient.addAnalysis(analysis);
-			makeRowVisible(analysis);
+			setSelectedItem(analysis);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
@@ -159,10 +143,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		try {
 			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 			Analysis selectedAnalysis = getSelectedItem();
-//			getApplication().getSelectedClient().removeAnalysis(selectedAnalysis);
 			getItemList().remove(selectedAnalysis);
-			selectedAnalysis.getClient().setDirty(true);
-			makeRowVisible(lastSelectedRowIndex - 1);
+			getApplication().getSelectedClient().removeAnalysis(selectedAnalysis);
+			setSelectedItem(lastSelectedRowIndex - 1);
 			AppUtil.deleteEntity(selectedAnalysis);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
@@ -170,7 +153,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
 		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
-	
+
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -178,7 +161,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		super.setItemList(itemList, itemClass);
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		
+
 		Query query = RunwalkVideoApp.getApplication().createQuery("SELECT OBJECT(ar) from Article ar"); // NOI18N
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(GlazedLists.eventList(query.getResultList()));
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
@@ -193,9 +176,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(4).setResizable(false);
 		CustomJTableRenderer buttonRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class));
 		getTable().getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-//		if (getTable().getMouseListeners().length == 0) {
-			getTable().addMouseListener(new JTableButtonMouseListener());
-//		}
+		//		if (getTable().getMouseListeners().length == 0) {
+		getTable().addMouseListener(new JTableButtonMouseListener());
+		//		}
 	}
 
 	public boolean isClientSelected() {
@@ -203,12 +186,51 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void setClientSelected(boolean clientSelected) {
-		//TODO make sure this is a single selection??
 		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
 	}
 
 	public TableFormat<Analysis> getTableFormat() {
-		return new NewClientTablePanel.AnalysisTableFormat();
+		return new AnalysisTableFormat();
+	}
+
+	public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
+
+		public int getColumnCount() {
+			return 5;
+		}
+
+		public String getColumnName(int column) {
+			if(column == 0)      return "Datum";
+			else if(column == 1) return "Gekozen schoen";
+			else if(column == 2) return "Aantal keyframes";
+			else if(column == 3) return "Duur video";
+			else if(column == 4) return "Open video";
+			throw new IllegalStateException();
+		}
+
+		public Object getColumnValue(Analysis analysis, int column) {
+
+			if(column == 0) {
+				return analysis.getCreationDate();
+			}
+			else if(column == 1) return analysis.getArticle();
+			else if(column == 2) {
+				return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
+			}
+			else if(column == 3) return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
+			else if(column == 4) return new OpenRecordingButton(analysis.getRecording());
+			throw new IllegalStateException();
+		}
+
+		public boolean isEditable(Analysis baseObject, int column) {
+			return column == 1;
+		}
+
+		public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
+			analysis.setArticle((Article) editedValue);
+			return analysis;
+		}
+
 	}
 
 }

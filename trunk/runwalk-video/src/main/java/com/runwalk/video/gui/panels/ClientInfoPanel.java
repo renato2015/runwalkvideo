@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
 import java.beans.Beans;
@@ -19,8 +19,6 @@ import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -42,6 +40,7 @@ import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.ClientBindingListener;
 import com.runwalk.video.util.AppSettings;
 
 /**
@@ -59,41 +58,40 @@ public class ClientInfoPanel extends AppPanel {
 	@SuppressWarnings("unchecked")
 	public ClientInfoPanel() {
 		setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-		ResourceMap resourceMap = Application.getInstance().getContext().getResourceMap(ClientInfoPanel.class);
 		
 		JLabel nameLabel = new JLabel();
 		nameLabel.setFont(AppSettings.MAIN_FONT);
-		nameLabel.setText(resourceMap.getString("nameLabel.text")); // NOI18N
+		nameLabel.setText(getResourceMap().getString("nameLabel.text")); // NOI18N
 		add(nameLabel, new  AbsoluteConstraints(20, 20, -1, 20));
 
 		JLabel organizationLabel = new JLabel();
 		organizationLabel.setFont(AppSettings.MAIN_FONT);
-		organizationLabel.setText(resourceMap.getString("organisationLabel.text")); // NOI18N
+		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
 		add(organizationLabel, new AbsoluteConstraints(20, 50, -1, 20));
 
 		JLabel taxLabel = new JLabel();
 		taxLabel.setFont(AppSettings.MAIN_FONT);
-		taxLabel.setText(resourceMap.getString("btwLabel.text"));
+		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
 		add(taxLabel, new AbsoluteConstraints(275, 50, -1, 20));
 
 		JLabel emailLabel = new JLabel();
 		emailLabel.setFont(AppSettings.MAIN_FONT);
-		emailLabel.setText(resourceMap.getString("emailLabel.text")); // NOI18N
+		emailLabel.setText(getResourceMap().getString("emailLabel.text")); // NOI18N
 		add(emailLabel, new AbsoluteConstraints(20, 80, -1, 20));
 
 		JLabel addressLabel = new JLabel();
 		addressLabel.setFont(AppSettings.MAIN_FONT);
-		addressLabel.setText(resourceMap.getString("addressLabel.text")); // NOI18N
+		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
 		add(addressLabel, new AbsoluteConstraints(20, 110, -1, 20));
 
 		JLabel telephoneLabel = new JLabel();
 		telephoneLabel.setFont(AppSettings.MAIN_FONT);
-		telephoneLabel.setText(resourceMap.getString("telephoneLabel.text")); // NOI18N
+		telephoneLabel.setText(getResourceMap().getString("telephoneLabel.text")); // NOI18N
 		add(telephoneLabel, new AbsoluteConstraints(20, 140, -1, 20));
 
 		JLabel locationLabel = new JLabel();
 		locationLabel.setFont(AppSettings.MAIN_FONT);
-		locationLabel.setText(resourceMap.getString("locationLabel.text")); // NOI18N
+		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
 		add(locationLabel, new  AbsoluteConstraints(20, 170, -1, 20));		
 
 		//Create some undo and redo actions
@@ -190,8 +188,8 @@ public class ClientInfoPanel extends AppPanel {
 		emailField.getDocument().addUndoableEditListener(undoListener);
 		emailField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, email, emailField, textFieldValueOnFocusLost);
-		valueBinding.setValidator(new Validator() {
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, email, emailField, textFieldValue);
+		/*valueBinding.setValidator(new Validator() {
 					
 					public Validator.Result validate(Object arg) {        
 						String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
@@ -203,16 +201,7 @@ public class ClientInfoPanel extends AppPanel {
 						return null;
 					}
 				}
-		);
-		valueBinding.addBindingListener(new AbstractBindingListener() {
-			
-			@Override
-			public void syncFailed(Binding binding1, SyncFailure syncfailure) {
-				//TODO display validation failures here..
-				getLogger().error(syncfailure.toString());
-			}
-			
-		});
+		);*/
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, emailField, enabled);
 		bindingGroup.addBinding(enabledBinding);

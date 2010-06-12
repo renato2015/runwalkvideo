@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -9,6 +9,7 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.gui.AppComponent;
 
 @SuppressWarnings("serial")
 public class AppPanel extends JPanel implements AppComponent { 

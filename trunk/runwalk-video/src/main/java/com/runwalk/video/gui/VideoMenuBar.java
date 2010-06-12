@@ -29,9 +29,6 @@ import com.runwalk.video.util.ResourceInjector;
 @SuppressWarnings("serial")
 public class VideoMenuBar extends JMenuBar implements AppComponent {
 
-//	private HashMap<JCheckBoxMenuItem, AppWindowWrapper> boxWindowMap = new HashMap<JCheckBoxMenuItem, AppWindowWrapper>();
-//	private HashMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = new HashMap<AppWindowWrapper, JCheckBoxMenuItem>();
-	
 	private BiMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = HashBiMap.create();
 	private JMenu windowMenu;
 	private JDialog aboutBox;
@@ -57,11 +54,10 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		JMenuItem saveMenuItem = new  JMenuItem( getApplication().getClientTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
 
-		//		JMenuItem perparesyncMenuItem = new JMenuItem( getApplication().getTableActionMap().get("preparesync"));
-		//		fileMenu.add(perparesyncMenuItem);
-		//		JMenuItem syncMenuItem = new  JMenuItem( getApplication().getTableActionMap().get("synchronize"));
-		//		fileMenu.add(syncMenuItem);
-
+		fileMenu.add(new JSeparator());
+		JMenuItem selectVideoDir = new  JMenuItem( getApplication().getApplicationActionMap().get("selectVideoDir"));
+		fileMenu.add(selectVideoDir);
+		
 		fileMenu.add(new JSeparator());
 		JMenuItem exitMenuItem = new  JMenuItem( getApplication().getApplicationActionMap().get("exit"));
 		fileMenu.add(exitMenuItem);
@@ -100,7 +96,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	@Action
 	public void about() {
 		if (aboutBox == null) {
-			aboutBox = new RunwalkVideoAboutBox(getApplication().getMainFrame());
+			aboutBox = new RunwalkVideoAboutDialog(getApplication().getMainFrame());
 		}
 		aboutBox.setLocationRelativeTo(getApplication().getMainFrame());
 		getApplication().show(aboutBox);

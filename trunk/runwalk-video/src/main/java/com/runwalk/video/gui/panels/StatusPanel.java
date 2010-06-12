@@ -1,4 +1,4 @@
-package com.runwalk.video.gui;
+package com.runwalk.video.gui.panels;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

@@ -27,7 +27,6 @@ public class Keyframe extends SerializableEntity<Keyframe> {
 	protected Keyframe() { }
 
 	public Keyframe(Recording movie, int position) {
-		super();
 		this.recording = movie;
 		this.position = position;
 	}
@@ -39,13 +38,17 @@ public class Keyframe extends SerializableEntity<Keyframe> {
 	public Integer getPosition() {
 		return position;
 	}
+	
+	public Recording getRecording() {
+		return recording;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((recording == null) ? 0 : recording.hashCode());
-		result = prime * result + position;
+		result = prime * result + ((getRecording() == null) ? 0 : getRecording().hashCode());
+		result = prime * result + getPosition();
 		return result;
 	}
 
@@ -55,7 +58,7 @@ public class Keyframe extends SerializableEntity<Keyframe> {
 		if (obj != null && getClass() == obj.getClass()) {
 			Keyframe other = (Keyframe) obj;
 			result = getPosition().equals(other.getPosition());
-			result &= recording != null ? recording.equals(other.recording) : other.recording == null;
+			result &= getRecording() != null ? getRecording().equals(other.getRecording()) : other.getRecording() == null;
 		}
 		return result;
 	}
