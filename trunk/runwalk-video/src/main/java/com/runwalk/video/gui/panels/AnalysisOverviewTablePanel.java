@@ -166,6 +166,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	    }
 
 	    public Object getColumnValue(Analysis analysis, int column) {
+	    	analysis.setDirty(false);
 	    	switch(column) {
 	    	case 0: return analysis.getRecording() != null && analysis.getRecording().isCompressed() ? completedIcon : incompleteIcon;
 	    	case 1: return analysis.getCreationDate();
