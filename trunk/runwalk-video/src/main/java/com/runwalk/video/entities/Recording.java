@@ -1,9 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PostLoad;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -46,6 +45,9 @@ public class Recording extends SerializableEntity<Recording> {
 	@Column(name="id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@OneToOne(mappedBy="recording")
+	private Analysis analysis;
 
 	@Column(name="oldfilename")
 	private String oldFileName;
@@ -62,7 +64,7 @@ public class Recording extends SerializableEntity<Recording> {
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
-
+	//TODO deze dingen moeten hier ontkoppeld worden!
 	@Transient
 	private VideoFile uncompressedVideoFile, compressedVideoFile, videoFile;
 
@@ -77,25 +79,31 @@ public class Recording extends SerializableEntity<Recording> {
 	private boolean compressed, recorded;
 
 	protected Recording() { }
-	
 
-	public Recording(String fileName) {
-		this.videoFileName = fileName;
+	/**
+	 *  1. Vanaf het moment dat je de filename hebt, zou je ook een link moeten hebben naar een Movie object.
+	 *  2. statuscode is eigenlijk ook een veld van Movie object..
+	 *  3. alle calls gerelateerd naar toestand van het bestand zou je naar de Recording entity moeten sturen (delegeren)
+	 *  
+	 *  TODO _Alle_ spaties in de bestandsnaam zouden naar een _ moeten geconverteerd worden.
+	 *  
+	 */
+	public Recording(Analysis analysis) {
+		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.DATE_FORMATTER);
+		Client client = analysis.getClient();
+		int analysisCount = client.getAnalysesCount();
+		String prefix = analysisCount == 0 ? "" : analysisCount + "_";
+		this.videoFileName = prefix + client.getName() + "_" + client.getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;
+		this.analysis = analysis;
 		refreshVideoFiles();
-	}
-
-	public Recording(long lastModified, String oldFileName, String newFileName) {
-		this(newFileName);
-		this.oldFileName = oldFileName;
-		this.lastModified = lastModified;
 	}
 
 	public Long getId() {
 		return id;
 	}
-
-	public String getFormattedDuration(SimpleDateFormat format) {
-		return AppUtil.formatDate(new Date(getDuration()), format);
+	
+	public Analysis getAnalysis() {
+		return analysis;
 	}
 
 	public long getDuration() {
@@ -113,10 +121,8 @@ public class Recording extends SerializableEntity<Recording> {
 		this.firePropertyChange(DURATION, this.duration, this.duration = duration);
 	}
 	
-	public void addKeyframe(int stamp) {
-		Keyframe snapshot = new Keyframe(this, stamp);
-		AppUtil.persistEntity(snapshot);
-		keyframes.add(snapshot);
+	public void addKeyframe(Keyframe keyframe) {
+		keyframes.add(keyframe);
 		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount()-1, getKeyframeCount());
 	}
 

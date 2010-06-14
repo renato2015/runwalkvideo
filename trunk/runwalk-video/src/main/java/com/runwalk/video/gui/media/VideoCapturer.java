@@ -62,6 +62,7 @@ public class VideoCapturer extends VideoComponent {
 			public void actionPerformed(ActionEvent e) {
 				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = System.currentTimeMillis() - timeStarted);
 				getRecording().setDuration(timeRecorded);
+				getRecording().getAnalysis().setDirty(true);
 				//text kan je setten met een binding!!
 			}
 		});

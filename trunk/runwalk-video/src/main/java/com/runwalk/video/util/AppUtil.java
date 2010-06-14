@@ -12,7 +12,6 @@ import javax.persistence.EntityTransaction;
 import javax.swing.ActionMap;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;

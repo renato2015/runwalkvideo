@@ -71,9 +71,7 @@ public class Client extends SerializableEntity<Client> {
 	@Transient
 	private Date lastAnalysisDate;
 
-	public Client() {
-		super();
-	}
+	public Client() {	}
 
 	public Long getId() {
 		return this.id;

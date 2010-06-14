@@ -114,11 +114,11 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	}
 	
 	/**
-	 * TODO dit kan efficienter!!
+	 * Lijst met items wordt van buitenaf op de panel gezet. Deze zal dan klaar gemaakt worden voor 
+	 * gebruik met een {@link JTable} 
 	 * 
-	 * er zijn blijkbaar issues als je de referentie naar de gebruikte list veranderd.. 
-	 * de JTable lijkt daar niet goed op te reageren
-	 * @param newList
+	 * @param itemList the list
+	 * @param itemConnector the connector that will forward changeEvents to the list.
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
         EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
@@ -131,6 +131,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
         eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
         	
         	public void listChanged(ListEvent<T> listChanges) {
+        		//TODO this is not the cleanest way to do this.. but it works
         		 firePropertyChange("selectedItem", getSelectedItem(), listChanges.getSource());
         		 setRowSelected(!eventSelectionModel.getSelected().isEmpty());
         	}

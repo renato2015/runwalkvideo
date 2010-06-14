@@ -16,8 +16,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.runwalk.video.util.AppUtil;
-
 @SuppressWarnings("serial")
 @Entity
 @Table(schema="testdb", name="analysis")
@@ -47,18 +45,11 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@Lob
 	private String comments;
 	
-	protected Analysis() {
-		super();
-	}
+	protected Analysis() { }
 	
 	public Analysis(Client client) {
 		creationDate = new Date();
 		this.client = client;
-		createRecording();
-	}
-	
-	public Recording createRecording() {
-		return recording = new Recording(getRecordingFileName());
 	}
 	
 	public Client getClient() {
@@ -127,22 +118,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
 	}
 
-	/**
-	 *  1. Vanaf het moment dat je de filename hebt, zou je ook een link moeten hebben naar een Movie object.
-	 *  2. statuscode is eigenlijk ook een veld van Movie object..
-	 *  3. alle calls gerelateerd naar toestand van het bestand zou je naar de Recording entity moeten sturen (delegeren)
-	 *  
-	 *  TODO _Alle_ spaties in de bestandsnaam zouden naar een _ moeten geconverteerd worden.
-	 *  
-	 * @return De fileName van het terug te vinden filmpje
-	 */
-	private String getRecordingFileName() {
-		String date = AppUtil.formatDate(getCreationDate(), AppUtil.DATE_FORMATTER);
-		int analysisCount = getClient().getAnalyses().size();
-		String prefix = analysisCount == 0 ? "" : analysisCount + "_";
-		return prefix + getClient().getName() + "_" + getClient().getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;
-	}
-	
 	public boolean hasRecording() {
 		return getRecording() != null && getRecording().isRecorded();
 	}

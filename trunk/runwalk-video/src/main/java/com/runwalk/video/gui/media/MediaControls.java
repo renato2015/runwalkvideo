@@ -32,6 +32,7 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
@@ -85,7 +86,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			@SuppressWarnings("unchecked")
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				recordingSelected = (Boolean) binding.getSourceValueForTarget().getValue();
-			}
+			}			
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
@@ -319,7 +320,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		Analysis analysis = RunwalkVideoApp.getApplication().getSelectedAnalysis();
 		if (analysis != null) {
 			//TODO kijk of die null nog nodig is!
-			Recording recording = analysis.getRecording() != null ? analysis.getRecording() : analysis.createRecording();
+			Recording recording = analysis.getRecording() != null ? analysis.getRecording() : new Recording(analysis);
 			capturer.startRecording(recording);
 			getApplication().getStatusPanel().setIndeterminate(true);
 			//TODO zoek uit wat er met die selectedProperty mogelijk is

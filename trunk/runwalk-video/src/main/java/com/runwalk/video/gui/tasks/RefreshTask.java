@@ -68,7 +68,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					final EventList<Client> selectedClients = clientTablePanel.getEventSelectionModel().getSelected();
 					CollectionList<Client, Analysis> analyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
 
-						@Override
 						public List<Analysis> getChildren(Client parent) {
 							return parent.getAnalyses();
 						}

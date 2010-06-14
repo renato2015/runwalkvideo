@@ -13,6 +13,7 @@ import org.jdesktop.application.utils.PlatformType;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppUtil;
 
 public class VideoPlayer extends VideoComponent {
 
@@ -144,7 +145,9 @@ public class VideoPlayer extends VideoComponent {
 		setPosition(position);
 		position = getVideoImpl().getPosition();
 		getLogger().debug("Final position :" + position);
-		getRecording().addKeyframe(position);
+		Keyframe snapshot = new Keyframe(getRecording(), position);
+		AppUtil.persistEntity(snapshot);
+		getRecording().addKeyframe(snapshot);
 		return position;
 	}
 
