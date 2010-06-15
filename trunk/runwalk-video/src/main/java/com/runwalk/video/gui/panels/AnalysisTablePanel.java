@@ -211,7 +211,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 
 		public Object getColumnValue(Analysis analysis, int column) {
-//			analysis.setDirty(false);
 			if(column == 0) {
 				return analysis.getCreationDate();
 			}

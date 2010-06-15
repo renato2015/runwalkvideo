@@ -32,7 +32,6 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
@@ -48,28 +47,22 @@ import com.runwalk.video.util.AppUtil;
 public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
 
 	private static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
-
 	public static final String STOP_ENABLED = "stopEnabled";
-
 	public static final String RECORDING_ENABLED = "recordingEnabled";
-
 	public static final String PLAYING_ENABLED = "playingEnabled";
-
 	private static final String PLAYING_DISABLED = "playingDisabled";
-
-	private JLabel time;
-	private JSlider scroll;
-
-	private VideoPlayer player;
-	private VideoCapturer capturer;
-	private VideoComponent frontmostComponent;
 
 	private Boolean recordingSelected = false;
 	private boolean recordingEnabled, playingEnabled, stopEnabled, playingDisabled, fullScreenEnabled;
 
+	private JLabel time;
+	private JSlider scroll;
 	private JPanel buttonPanel;
-
 	private AbstractButton playButton;
+
+	private VideoPlayer player;
+	private VideoCapturer capturer;
+	private VideoComponent frontmostComponent;
 
 	public MediaControls() {
 		super("Media controls", false);
@@ -533,7 +526,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private class WindowStateChangeListener extends AppWindowWrapperListener {
 
 		private VideoComponent enclosingWrapper;
-		//TODO this can be coded better I guess!!
+		//TODO this can be coded better I guess!!.. can lead to memory leaks..
 		public WindowStateChangeListener(VideoComponent enclosingWrapper) {
 			this.enclosingWrapper = enclosingWrapper;
 		}
