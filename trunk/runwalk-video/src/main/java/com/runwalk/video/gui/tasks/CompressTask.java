@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
@@ -87,7 +86,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 					recording.setRecordingStatus(RecordingStatus.COMPRESSING);
 					synchronized(recording) {
 						while (!finished) {
-							recording.wait();
+							recording.wait(2000);
 						}
 						finished = false;
 					}
@@ -114,23 +113,16 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	@Override
 	protected void cancelled() {
 		super.cancelled();
-		Thread thread = new Thread(new Runnable() {
-
-			public void run() {
-				if (exporter != null) {
-					exporter.getFiltergraph().cancelExport();
-					exporter.dispose();
-				}
-				if (recording != null) {
-					if (recording.getCompressedVideoFile().exists()) {
-						recording.getCompressedVideoFile().delete();
-					}
-					recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-				}
+		if (exporter != null) {
+			exporter.getFiltergraph().cancelExport();
+			exporter.dispose();
+		}
+		if (recording != null) {
+			if (recording.getCompressedVideoFile().exists()) {
+				recording.getCompressedVideoFile().delete();
 			}
-		});
-		thread.setDaemon(true);
-		thread.start();
+			recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+		}
 	}
 
 	@Override

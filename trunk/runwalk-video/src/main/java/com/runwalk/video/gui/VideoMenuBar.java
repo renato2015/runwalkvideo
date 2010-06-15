@@ -169,11 +169,13 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 //		}
 	}
 
-	public void removeWindow(AppComponent appComponent) {
+	public void removeWindow(AppWindowWrapper appComponent) {
 		JCheckBoxMenuItem boxItem = windowBoxMap.get(appComponent);
 		if (boxItem != null) {
 			windowMenu.remove(boxItem);
 			windowBoxMap.remove(appComponent);
+			//TODO listeners should be removed!!
+			appComponent.removeAllWindowWrapperListeners();
 		}
 	}
 

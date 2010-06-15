@@ -50,7 +50,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	private ActionMap actionMap;
 	private State state;
 	
-	private List<AppWindowWrapperListener> appWindowWrapperListeners = new ArrayList<AppWindowWrapperListener>();
+	public List<AppWindowWrapperListener> appWindowWrapperListeners = new ArrayList<AppWindowWrapperListener>();
 
 	public VideoComponent(PropertyChangeListener listener) {
 		addPropertyChangeListener(listener);
@@ -83,6 +83,10 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 				}
 			}
 		}
+	}
+	
+	public void removeAllWindowWrapperListeners() {
+		appWindowWrapperListeners.clear();
 	}
 	
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {

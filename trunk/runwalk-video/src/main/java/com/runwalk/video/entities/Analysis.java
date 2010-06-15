@@ -1,5 +1,7 @@
 package com.runwalk.video.entities;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Date;
 
 import javax.persistence.CascadeType;
@@ -19,7 +21,7 @@ import javax.persistence.TemporalType;
 @SuppressWarnings("serial")
 @Entity
 @Table(schema="testdb", name="analysis")
-public class Analysis extends SerializableEntity<Analysis> {
+public class Analysis extends SerializableEntity<Analysis> implements PropertyChangeListener {
 
 	@Id
 	@Column(name="id")
@@ -77,7 +79,11 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public void setRecording(Recording recording) {
+		if (this.recording != null) {
+			this.recording.removePropertyChangeListener(this);
+		}
 		this.recording = recording;
+		this.recording.addPropertyChangeListener(this);
 	}
 
 	public Recording getRecording() {
@@ -128,6 +134,13 @@ public class Analysis extends SerializableEntity<Analysis> {
 
 	public boolean hasCompressedRecording() {
 		return getRecording() != null && getRecording().isCompressed();
+	}
+	
+	/**
+	 * This entity implements a {@link PropertyChangeListener} to cascade {@link PropertyChangeEvent} firing from its recording.
+	 */
+	public void propertyChange(PropertyChangeEvent evt) {
+		firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 	}
 
 }
