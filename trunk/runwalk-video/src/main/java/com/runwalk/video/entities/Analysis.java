@@ -90,7 +90,6 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 		return recording;
 	}
 	
-	@Override
 	public Long getId() {
 		return id;
 	}

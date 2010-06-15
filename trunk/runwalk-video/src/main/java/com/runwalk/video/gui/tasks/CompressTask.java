@@ -62,7 +62,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	protected Boolean doInBackground() {
 		message(getResourceString("startMessage"));
 		conversionCount = recordings.size();
-		part = 1 / (double) conversionCount;
+		part = 100 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
 			RecordingStatus statusCode = recording.getRecordingStatus();

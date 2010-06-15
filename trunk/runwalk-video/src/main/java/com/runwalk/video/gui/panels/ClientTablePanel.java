@@ -43,10 +43,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	private static final String SAVE_NEEDED = "saveNeeded";
 
-	private JTextField searchField;
-
 	private boolean saveNeeded = false;
 
+	private JTextField searchField;
 	private TextComponentMatcherEditor<Client> matcherEditor;
 
 	public ClientTablePanel() {
