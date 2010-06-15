@@ -78,6 +78,9 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 		return getContext().getActionMap(AppInternalFrame.class, this);
 	}
 
+	public void removeAllWindowWrapperListeners() {
+	}
+
 	public static class InternalFrameState extends WindowState {
 
 		public InternalFrameState() {

@@ -39,6 +39,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
+import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.util.AppUtil;
@@ -319,8 +320,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 //		capturer.toFront();
 		Analysis analysis = RunwalkVideoApp.getApplication().getSelectedAnalysis();
 		if (analysis != null) {
-			//TODO kijk of die null nog nodig is!
-			Recording recording = analysis.getRecording() != null ? analysis.getRecording() : new Recording(analysis);
+			Recording recording = analysis.getRecording();
+			if (recording == null) {
+				recording = new Recording(analysis);
+				analysis.setRecording(recording);
+			}
 			capturer.startRecording(recording);
 			getApplication().getStatusPanel().setIndeterminate(true);
 			//TODO zoek uit wat er met die selectedProperty mogelijk is
@@ -451,7 +455,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
 			playButton.setSelected(state == State.PLAYING);
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
-			VideoComponent capturer = (VideoComponent) evt.getSource();
+			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
 			Long timeRecorded = (Long) newValue;
 			if (this.capturer.equals(capturer)) {
 				updateTimeStamps(timeRecorded, 0);

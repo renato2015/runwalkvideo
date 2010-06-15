@@ -30,6 +30,8 @@ public interface AppWindowWrapper extends AppComponent {
 	
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener);
 	
+	public void removeAllWindowWrapperListeners();
+
 	/**
 	 * This class is a universal event listener for {@link JInternalFrame} and {@link Window} components. 
 	 * It delegates calls to their listener interfaces to a corresponding handling method, which can be overridden.
