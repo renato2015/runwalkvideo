@@ -9,7 +9,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
@@ -19,7 +18,10 @@ import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
@@ -30,7 +32,6 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.ClientBindingListener;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.OpenRecordingButton;
 import com.runwalk.video.util.AppSettings;
@@ -82,8 +83,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
 		Binding<? extends AbstractTablePanel<?> , String, JTextArea, String> commentsBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedElementComments, comments, jTextAreaValue);
-		AbstractBindingListener changeListener = new ClientBindingListener();
-		commentsBinding.addBindingListener(changeListener);
 		bindingGroup.addBinding(commentsBinding);
 
 		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
@@ -156,6 +155,23 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
+	@Override
+	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
+		eventList.addListEventListener(new ListEventListener<Analysis>() {
+
+			public void listChanged(ListEvent<Analysis> listChanges) {
+				while (listChanges.next()) {
+		            final int changeIndex = listChanges.getIndex();
+		            final int changeType = listChanges.getType();
+		            if (changeType == ListEvent.UPDATE) {
+		            	getApplication().setSaveNeeded(true);
+		            	listChanges.getSourceList().get(changeIndex).getClient().setDirty(true);
+		            }
+				}
+			}
+		});
+		return eventList;
+	}
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -228,7 +244,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 
 		public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
-			analysis.setArticle((Article) editedValue);
+			if (editedValue instanceof Article) {
+				analysis.setArticle((Article) editedValue);
+			}
 			return analysis;
 		}
 

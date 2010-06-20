@@ -19,12 +19,14 @@ import ca.odell.glazedlists.gui.TableFormat;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.OpenRecordingButton;
 import com.runwalk.video.gui.tasks.CleanupRecordingsTask;
 import com.runwalk.video.gui.tasks.CompressTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
+import com.runwalk.video.util.ResourceInjector;
 
 @SuppressWarnings("serial")
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
@@ -77,23 +79,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
 		setCleanupEnabled(true);
-		final CompressTask compressTask = new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
-		compressTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-			
-			@Override
-			public void cancelled(TaskEvent<Void> event) {
-				getApplication().setSaveNeeded(true);
-			}
-
-			@Override
-			public void succeeded(TaskEvent<Boolean> event) {
-				setCompressionEnabled(!event.getValue());
-				getApplication().setSaveNeeded(true);
-			}
-
-		});
-
-		return compressTask;
+		return new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
 	}
 
 	public boolean isCompressionEnabled() {
@@ -172,7 +158,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	    	case 2: return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
 	    	case 3: return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
 	    	case 4: return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
-	    	case 5: return analysis.getRecording() != null ? analysis.getRecording().getRecordingStatus().getDescription() : "<geen>";
+	    	case 5: return analysis.getRecording() != null ? 
+	    			ResourceInjector.injectResources(analysis.getRecording().getRecordingStatus().getResourceKey(), RecordingStatus.class) : "<geen>";
 	    	case 6: return new OpenRecordingButton(analysis.getRecording());
 	    	default: return null;
 	    	}

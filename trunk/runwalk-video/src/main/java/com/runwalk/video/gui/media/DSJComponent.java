@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.util.AppUtil;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;

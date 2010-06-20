@@ -2,6 +2,7 @@ package com.runwalk.video.gui.tasks;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.persistence.Query;
 import javax.swing.SwingUtilities;
@@ -34,8 +35,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			message("startMessage");
 			setProgress(0, 0, 2);
 			final Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
-			query.setHint("eclipselink.join-fetch", "c.analyses.recording");
-			query.setHint("eclipselink.left-join-fetch", "c.city");
+			query.setHint("eclipselink.left-join-fetch", "c.analyses.recording");
+//			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			message("fetchMessage");
 			setProgress(1, 0, 2);
 			SwingUtilities.invokeAndWait(new Runnable() {
@@ -82,7 +83,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			setProgress(2, 0, 2);
 			message("endMessage");
 		} catch(Exception ignore) {
-			errorMessage(ignore.getLocalizedMessage());
+			getLogger().error(Level.SEVERE, ignore);
 			success = false;
 		}
 		return success;

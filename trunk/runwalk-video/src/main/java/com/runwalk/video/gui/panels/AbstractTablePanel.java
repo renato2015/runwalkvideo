@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.ActionMap;
 import javax.swing.JButton;
@@ -17,13 +19,14 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ListSelection;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
@@ -144,7 +147,8 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	}
 	
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
-		setItemList(itemList, GlazedLists.beanConnector(itemClass));
+		Connector<T> beanConnector = new BeanConnector<T>(itemClass);
+		setItemList(itemList, beanConnector);
 	}
 	
 	/**

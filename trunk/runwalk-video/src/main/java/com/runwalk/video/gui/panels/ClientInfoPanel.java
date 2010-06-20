@@ -26,9 +26,9 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.el.impl.util.ReflectionUtil;
 import org.jdesktop.observablecollections.ObservableCollections;
 import org.jdesktop.swingbinding.JComboBoxBinding;
@@ -40,7 +40,6 @@ import com.jidesoft.swing.ComboBoxSearchable;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.gui.ClientBindingListener;
 import com.runwalk.video.util.AppSettings;
 
 /**
@@ -210,7 +209,7 @@ public class ClientInfoPanel extends AppPanel {
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
 		addressField.setFont(AppSettings.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.address");
+		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.address.address");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, address, addressField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, addressField, enabled);
@@ -230,7 +229,7 @@ public class ClientInfoPanel extends AppPanel {
 		Query cityQuery = Beans.isDesignTime() ? null : RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
 		List<City> cityList = ObservableCollections.observableList(cityQuery.getResultList());
 		
-		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.city");
+		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
 		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
 
 		final JComboBox locationField = new JComboBox();
@@ -339,7 +338,6 @@ public class ClientInfoPanel extends AppPanel {
 				return Integer.toString(((City) object).getCode());
 			}
 		});
-		bindingGroup.addBindingListener(new ClientBindingListener());
 		bindingGroup.bind();
 		
 	}

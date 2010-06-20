@@ -94,7 +94,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				statusCode = RecordingStatus.COMPRESSED;
 			} catch(Throwable thr) {
 				statusCode = RecordingStatus.DSJ_ERROR;
-				getLogger().error(statusCode.getDescription() + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
+				getLogger().error(statusCode + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
 				if (exporter != null) {

@@ -26,7 +26,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name="movies")
+@Table(schema="testdb", name="recordings")
 public class Recording extends SerializableEntity<Recording> {
 	
 	private static final String RECORDED = "recorded";
@@ -74,9 +74,6 @@ public class Recording extends SerializableEntity<Recording> {
 	 */
 	@Transient
 	private RecordingStatus recordingStatus;
-
-	@Transient
-	private boolean compressed, recorded;
 
 	protected Recording() { }
 
@@ -249,15 +246,11 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	public boolean isCompressed() {
-		boolean compressed = getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().canReadAndExists();
-		firePropertyChange(COMPRESSED, this.compressed, this.compressed = compressed);
-		return this.compressed;
+		return getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().canReadAndExists();
 	}
 
 	public boolean isRecorded() {
-		boolean recorded = isUncompressed() || isCompressed();
-		firePropertyChange(RECORDED, this.recorded, this.recorded = recorded);
-		return this.recorded;
+		return isUncompressed() || isCompressed();
 	}
 
 	@Override
