@@ -325,7 +325,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			setStopEnabled(true);
 			getApplication().showMessage("Opname voor " + analysis.getClient().getName() + " " + 
 					analysis.getClient().getFirstname() + " gestart..");
-			getApplication().setSaveNeeded(true);
 		}
 	}
 
@@ -333,7 +332,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		capturer.stopRecording();
 		getApplication().showMessage("Opname voor " + capturer.getRecording().getVideoFileName() + " voltooid.");
 		getApplication().getStatusPanel().setIndeterminate(false);
-		getApplication().setSaveNeeded(true);
 		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
@@ -347,7 +345,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getSlider().revalidate();
 		getApplication().showMessage("Snapshot genomen op " + 
 				AppUtil.formatDate(new Date(position), AppUtil.EXTENDED_DURATION_FORMATTER)); 
-		getApplication().setSaveNeeded(true);
 	}
 
 	public void playFile(final Recording recording) {

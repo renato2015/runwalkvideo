@@ -1,5 +1,7 @@
 package com.runwalk.video.entities;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -7,13 +9,12 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -29,12 +30,12 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Table(schema = "testdb", name = "clients")
 @NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
 public class Client extends SerializableEntity<Client> {
-	private static final String CITY = "city";
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ORGANIZATION = "organization";
 	public static final String FIRSTNAME = "firstname";
 	public static final String ADDRESS = "address";
 	public static final String NAME = "name";
+	
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,13 +45,8 @@ public class Client extends SerializableEntity<Client> {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
-	@Column(name = "address1")
-	private String address;
-	@ManyToOne
-	@JoinColumn(name = "cityid")
-	private City city;
-	@Column(name = "postalCode")
-	private String postalcode;
+	@Embedded
+	private Address address;
 	@Column(name = "website")
 	private String emailAdress;
 	@Column(name = "btwnr")
@@ -85,32 +81,12 @@ public class Client extends SerializableEntity<Client> {
 		firePropertyChange(NAME, this.name, this.name = name);
 	}
 
-	public String getAddress() {
-		return this.address;
-	}
-
-	public void setAddress(String address) {
-		firePropertyChange(ADDRESS, this.address, this.address = address);
-	}
-
 	public boolean isMale() {
 		return male != null && male == 1 ? true : false;
 	}
 
 	public void setMale(boolean male) {
 		this.male = male ? 1 : 0;
-	}
-
-	public City getCity() {
-		return this.city;
-	}
-
-	public void setCity(City city) {
-		firePropertyChange(CITY, this.city, this.city = city);
-	}
-
-	public String getPostalcode() {
-		return (postalcode == null && city != null) ? "" + city.getCode() : postalcode;
 	}
 
 	public String getEmailAddress() {
@@ -137,6 +113,10 @@ public class Client extends SerializableEntity<Client> {
 		firePropertyChange(FIRSTNAME, this.firstname, this.firstname = firstname);
 	}
 
+	public Address getAddress() {
+		return address;
+	}
+
 	public int getMail() {
 		return this.mail;
 	}
@@ -156,7 +136,7 @@ public class Client extends SerializableEntity<Client> {
 	public boolean removeAnalysis(Analysis analysis) {
 		boolean result = false;
 		if (analysis != null) {
-			result = getAnalyses().remove(analysis);
+//			result = getAnalyses().remove(analysis);
 			Date lastAnalysisDate = getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysesCount() - 1).getCreationDate();
 			setLastAnalysisDate(lastAnalysisDate);
 		}
@@ -164,7 +144,6 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public boolean addAnalysis(Analysis analysis) {
-		//fire property changed??
 		boolean result = getAnalyses().add(analysis);
 		setLastAnalysisDate(analysis.getCreationDate());
 		return result;

@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
+import javax.swing.event.InternalFrameListener;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ApplicationContext;
@@ -79,6 +80,9 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	}
 
 	public void removeAllWindowWrapperListeners() {
+		for (InternalFrameListener listener : getInternalFrameListeners()) {
+			removeInternalFrameListener(listener);
+		}
 	}
 
 	public static class InternalFrameState extends WindowState {

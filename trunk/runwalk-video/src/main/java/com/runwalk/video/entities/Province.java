@@ -16,9 +16,7 @@ public class Province implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected Province() {
-		super();
-	}
+	protected Province() {	}
 
 	public int getId() {
 		return this.id;

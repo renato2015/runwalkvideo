@@ -4,6 +4,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,28 +25,16 @@ import javax.persistence.TemporalType;
 @Table(schema="testdb", name="analysis")
 public class Analysis extends SerializableEntity<Analysis> implements PropertyChangeListener {
 
-	@Id
-	@Column(name="id")
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
-	@JoinColumn(name="clientid", nullable=false)
 	private Client client;
 	
-	@OneToOne
-	@JoinColumn(name="articleid")
 	private Article article;
 	
-	@OneToOne(cascade=CascadeType.ALL)
-	@JoinColumn(name="movieid", unique = true)
 	private Recording recording;
 	
-	@Column(name="date")
-	@Temporal(value=TemporalType.TIMESTAMP)
 	private Date creationDate;
 
-	@Lob
 	private String comments;
 	
 	protected Analysis() { }
@@ -53,45 +43,79 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 		creationDate = new Date();
 		this.client = client;
 	}
-	
+
+	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
+	@JoinColumn(name="clientid", nullable=false)
 	public Client getClient() {
 		return client;
 	}
 	
+	protected void setClient(Client client) {
+		this.client = client;
+	}
+
+	@OneToOne
+	@JoinColumn(name="articleid")
 	public Article getArticle() {
 		return this.article;
 	}
 	
+	@Column(name="date")
+	@Temporal(value=TemporalType.TIMESTAMP)
 	public Date getCreationDate() {
 		return creationDate;
 	}
+	
+	protected void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
 
+	@Lob
 	public String getComments() {
 		return this.comments;
 	}
 
 	public void setComments(String comments) {
-		this.comments = comments;
+		this.firePropertyChange("comments", this.comments, this.comments = comments);
 	}
 
 	public void setArticle(Article art) {
-		this.article = art;
+		this.firePropertyChange("article", this.article, this.article = art);
 	}
 
-	public void setRecording(Recording recording) {
-		if (this.recording != null) {
-			this.recording.removePropertyChangeListener(this);
-		}
-		this.recording = recording;
-		this.recording.addPropertyChangeListener(this);
-	}
-
+	@Access(AccessType.PROPERTY)
+	@OneToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name="recording_id", unique = true)
 	public Recording getRecording() {
 		return recording;
 	}
+
+	/**
+	 * Set a {@link Recording} and removes all of the installed {@link PropertyChangeListener}s from the previous recording if 
+	 * the specified one is not the same as the one in the instance field.
+	 * @param recording The recording
+	 */
+	public void setRecording(Recording recording) {
+		if (this.recording != recording) {
+			if (this.recording != null) {
+				this.recording.removePropertyChangeListener(this);
+			}
+			if (recording != null) {
+				recording.addPropertyChangeListener(this);
+			}
+			this.firePropertyChange("recording", this.recording, this.recording = recording);
+		}
+	}
 	
+	@Id
+	@Column(name="id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	public Long getId() {
 		return id;
+	}
+
+	protected void setId(Long id) {
+		this.id = id;
 	}
 
 	@Override
@@ -99,7 +123,6 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 		final int prime = 31;
 		int result = 1;
 		result = prime * result	+ ((getCreationDate() == null) ? 0 : getCreationDate().hashCode());
-		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
 
@@ -109,7 +132,7 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 		if (obj != null && getClass() == obj.getClass()) {
 			Analysis other = (Analysis) obj;
 			result = getCreationDate() != null ? getCreationDate().equals(other.getCreationDate()) : other.getCreationDate() == null;
-			result &= getId() != null ? getId().equals(other.getId()) : result;
+			result &= getClient() != null ? getClient().equals(other.getClient()) : result;
 		}
 		return result;
 	}
@@ -134,12 +157,11 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 	public boolean hasCompressedRecording() {
 		return getRecording() != null && getRecording().isCompressed();
 	}
-	
-	/**
-	 * This entity implements a {@link PropertyChangeListener} to cascade {@link PropertyChangeEvent} firing from its recording.
-	 */
+
 	public void propertyChange(PropertyChangeEvent evt) {
-		firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+		if (evt.getSource().equals(getRecording())) {
+			firePropertyChange("recording." + evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+		}
 	}
 
 }

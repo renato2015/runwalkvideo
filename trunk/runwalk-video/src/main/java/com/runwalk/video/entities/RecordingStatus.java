@@ -1,8 +1,5 @@
 package com.runwalk.video.entities;
 
-import com.runwalk.video.util.ResourceInjector;
-
-
 public enum RecordingStatus {
 
 	/**
@@ -32,6 +29,10 @@ public enum RecordingStatus {
 	
 	private String resourceKey; 
 
+	public String getResourceKey() {
+		return resourceKey;
+	}
+
 	private RecordingStatus(int code, String resourceKey) {
 		this.code = code;
 		this.resourceKey = resourceKey;
@@ -53,10 +54,6 @@ public enum RecordingStatus {
 			}
 		}
 		return null;
-	}
-	
-	public String getDescription() {
-		return ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
 	}
 	
 	public boolean isErroneous() {
