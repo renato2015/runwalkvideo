@@ -318,11 +318,6 @@
 		</dependency>
 		<!-- Swing libraries -->
 		<dependency>
-			<groupId>com.jidesoft</groupId>
-			<artifactId>jide-oss</artifactId>
-			<version>2.8.2</version>
-		</dependency>
-		<dependency>
 			<groupId>it.tidalwave.betterbeansbinding</groupId>
 			<artifactId>betterbeansbinding-core</artifactId>
 			<version>1.3.0</version>

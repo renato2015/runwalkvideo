@@ -163,10 +163,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	public void showWindow(ActionEvent e) {
 		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
 		AppWindowWrapper component  = windowBoxMap.inverse().get(selectedItem);
-		//FIXME this should not be null!!
-//		if (component != null) {
-			component.getHolder().setVisible(selectedItem.isSelected());
-//		}
+		component.getHolder().setVisible(selectedItem.isSelected());
 	}
 
 	public void removeWindow(AppWindowWrapper appComponent) {
@@ -174,8 +171,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		if (boxItem != null) {
 			windowMenu.remove(boxItem);
 			windowBoxMap.remove(appComponent);
-			//TODO listeners should be removed!!
-			appComponent.removeAllWindowWrapperListeners();
+			for (AppWindowWrapperListener appWindowWrapperListener : appComponent.getAppWindowWrapperListeners()) {
+				appComponent.removeAppWindowWrapperListener(appWindowWrapperListener);
+			}
 		}
 	}
 

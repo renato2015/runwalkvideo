@@ -12,8 +12,6 @@
 package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.Beans;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -68,26 +66,10 @@ import org.jdesktop.el.impl.util.ReflectionUtil;
 import org.jdesktop.swingbinding.JComboBoxBinding;
 import org.jdesktop.swingbinding.SwingBindings;
 
-import ca.odell.glazedlists.CollectionList;
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.SortedList;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
-import ca.odell.glazedlists.gui.WritableTableFormat;
-import ca.odell.glazedlists.swing.EventSelectionModel;
-import ca.odell.glazedlists.swing.EventTableModel;
-import ca.odell.glazedlists.swing.TableComparatorChooser;
 
-import com.jidesoft.swing.AutoCompletion;
-import com.jidesoft.swing.ComboBoxSearchable;
-import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.gui.OpenRecordingButton;
 
 /**
  *
@@ -562,23 +544,23 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 		locationField.setRenderer(new CityInfoRenderer());
 		locationField.setEditable(true);
 
-		AutoCompletion ac = new AutoCompletion(this.locationField, new ComboBoxSearchable(locationField) {
+/*		AutoCompletion ac = new AutoCompletion(this.locationField, new ComboBoxSearchable(locationField) {
 			@Override
 			protected String convertElementToString(Object object) {
 				return ((City) object).getName();
 			}
-		});
+		});*/
 
 		zipcodeField.setEditor(new CityInfoEditor(zipcodeField.getEditor(), City.class, "getCode"));
 		zipcodeField.setRenderer(new CityInfoRenderer());
 		zipcodeField.setEditable(true);
 
-		AutoCompletion ac2 = new AutoCompletion(this.zipcodeField, new ComboBoxSearchable(zipcodeField) {
+/*		AutoCompletion ac2 = new AutoCompletion(this.zipcodeField, new ComboBoxSearchable(zipcodeField) {
 			@Override
 			protected String convertElementToString(Object object) {
 				return Integer.toString(((City) object).getCode());
 			}
-		});
+		});*/
 
 		phoneLabel.setText(bundle2.getString("telephoneLabel.text")); // NOI18N
 		phoneLabel.setName("phoneLabel"); // NOI18N

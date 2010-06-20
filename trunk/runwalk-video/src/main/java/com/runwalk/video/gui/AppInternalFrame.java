@@ -5,11 +5,12 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
-import javax.swing.event.InternalFrameListener;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ApplicationContext;
@@ -17,7 +18,9 @@ import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
+import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.gui.AppWindowWrapper.AppWindowWrapperListener;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
@@ -26,6 +29,8 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  */
 @SuppressWarnings("serial")
 public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrapper {
+
+	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 
 	/**
 	 * Create a new JInternalFrame.
@@ -44,11 +49,17 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	}
 	
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		appWindowWrapperListeners.add(listener);
 		addInternalFrameListener(listener);
 	}
 
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
+		appWindowWrapperListeners.remove(listener);
 		removeInternalFrameListener(listener);
+	}
+	
+	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
+		return Collections.unmodifiableList(appWindowWrapperListeners);
 	}
 
 	public Action getAction(String name) {
@@ -79,12 +90,6 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 		return getContext().getActionMap(AppInternalFrame.class, this);
 	}
 
-	public void removeAllWindowWrapperListeners() {
-		for (InternalFrameListener listener : getInternalFrameListeners()) {
-			removeInternalFrameListener(listener);
-		}
-	}
-
 	public static class InternalFrameState extends WindowState {
 
 		public InternalFrameState() {
@@ -96,7 +101,6 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 		}
 
 	}
-
 
 	public static class InternalFrameProperty implements PropertySupport {
 
@@ -143,18 +147,10 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 						w.setBounds(windowState.getBounds());
 					}
 				}
-//				boolean maximized = windowState.getFrameState() == 0 ? false : true;
-//				try {
-//					w.setMaximum(windowState.getMaximized());
-//					w.setClosed(windowState.getClosed());
-//				} catch (PropertyVetoException e) {
-//					e.printStackTrace();
-//				}
 			}
 		}
 
 	}
-
 
 }
 

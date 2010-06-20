@@ -3,11 +3,13 @@ package com.runwalk.video;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -31,7 +33,6 @@ import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.panels.ClientInfoPanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 import com.runwalk.video.gui.panels.StatusPanel;
-import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
@@ -146,13 +147,18 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 		show(getMainFrame());
 		
-		getContext().getTaskService().execute(new RefreshTask());
-		
 		try {
 			loadUIState();
 		} catch (IOException e) {
 			LOGGER.error("Failed to load UI state", e);
 		}
+	}
+
+	@Override
+	protected void ready() {
+		Action refreshAction = clientTablePanel.getApplicationActionMap().get("refresh");
+		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "refresh");
+		refreshAction.actionPerformed (actionEvent);
 	}
 
 	//TODO make this createOrShowComponent!! .. this method can be more efficient!!
@@ -187,8 +193,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	@Override 
 	protected void shutdown() {
-		Task<Void, Void> uploadTask = getApplicationActions().uploadLogFiles();
-		getContext().getTaskService().execute(uploadTask);
+		Action uploadLogFilesAction = getApplicationActionMap().get("uploadLogFiles");
+		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "uploadLogFiles");
+		uploadLogFilesAction.actionPerformed (actionEvent);
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 

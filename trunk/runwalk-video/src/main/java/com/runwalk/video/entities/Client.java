@@ -29,7 +29,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
 @NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
-public class Client extends SerializableEntity<Client> {
+public class Client extends SerializableEntity<Client> implements PropertyChangeListener {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ORGANIZATION = "organization";
 	public static final String FIRSTNAME = "firstname";
@@ -121,7 +121,7 @@ public class Client extends SerializableEntity<Client> {
 		return this.mail;
 	}
 
-	public void setMail(byte mail) {
+	public void setMail(int mail) {
 		this.mail = mail;
 	}
 
@@ -214,6 +214,12 @@ public class Client extends SerializableEntity<Client> {
 
 	public int compareTo(Client o) {
 		return this.equals(o) ? 0 : getId().compareTo(o.getId());
+	}
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (getAnalyses().contains(evt.getSource())) {
+			setDirty(true);
+		}
 	}
 
 }

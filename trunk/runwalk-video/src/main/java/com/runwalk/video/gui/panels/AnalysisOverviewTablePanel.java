@@ -127,11 +127,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(6).setCellRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class)));
 		getTable().getColumnModel().getColumn(6).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		//TODO mouselistener should only be added once!!
-//		if (getTable().getMouseListeners().length == 0) {
-			getTable().addMouseListener(new JTableButtonMouseListener());
-//		}
-
+		addMouseListenerToTable();
 	}
 	
 	public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
