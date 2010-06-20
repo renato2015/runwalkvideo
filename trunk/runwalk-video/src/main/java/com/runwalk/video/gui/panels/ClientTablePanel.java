@@ -27,8 +27,6 @@ import org.netbeans.lib.awtextra.AbsoluteLayout;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
@@ -148,20 +146,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	protected EventList<Client> specializeItemList(EventList<Client> eventList) {
 		FilterList<Client> filterList = new FilterList<Client>(eventList);
 		filterList.setMatcherEditor(getSearchEngineTextFieldMatcherEditor());
-		eventList.addListEventListener(new ListEventListener<Client>() {
-
-			@Override
-			public void listChanged(ListEvent<Client> listChanges) {
-				while (listChanges.next()) {
-		            final int changeIndex = listChanges.getIndex();
-		            final int changeType = listChanges.getType();
-		            if (changeType == ListEvent.UPDATE) {
-		            	getApplication().setSaveNeeded(true);
-		            	listChanges.getSourceList().get(changeIndex).setDirty(true);
-		            }
-				}
-			}
-		});
 		return filterList;
 	}
 	

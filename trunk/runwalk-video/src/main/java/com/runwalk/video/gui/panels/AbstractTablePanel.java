@@ -4,8 +4,9 @@ import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.MouseListener;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.JButton;
@@ -39,14 +40,17 @@ import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel implements AppComponent {
-
+	
+	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
 	protected static final String ROW_SELECTED = "rowSelected";
+
 	private JTable table;
 	private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
+	private MouseListener jTableMouseListener;
 	
 	public AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
@@ -54,6 +58,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
 		getTable().setShowGrid(false);
 		getTable().setFont(AppSettings.MAIN_FONT);
+		jTableMouseListener = new JTableButtonMouseListener();
 	}
 	
 	public AbstractTablePanel() {
@@ -86,17 +91,27 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		return selectedItem;
 	}
 	
+	public void setSelectedItem(T item) {
+		getEventSelectionModel().getTogglingSelected().add(item);
+	}
+	
+	public void setSelectedItem(int row) {
+		if (row > -1) {
+			setSelectedItem(getItemList().get(row));
+		}
+	}
+
 	public JTable getTable() {
 		return table;
 	}
 	
-	public void setSelectedItem(T item) {
-		getEventSelectionModel().getTogglingSelected().add(item);
-	}
-
-	public void setSelectedItem(int row) {
-		if (row > -1) {
-			setSelectedItem(getItemList().get(row));
+	/**
+	 * This method will add a {@link MouseListener} to the contained {@link JTable} in case it wasn't already added.
+	 */
+	public void addMouseListenerToTable() {
+		List<MouseListener> mouseListeners = Arrays.asList(getTable().getMouseListeners());
+		if (!mouseListeners.contains(jTableMouseListener)) {
+			getTable().addMouseListener(jTableMouseListener);
 		}
 	}
 
@@ -133,10 +148,22 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
         eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
         eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
         	
-        	public void listChanged(ListEvent<T> listChanges) {
-        		//TODO this is not the cleanest way to do this.. but it works
-        		 firePropertyChange("selectedItem", getSelectedItem(), listChanges.getSource());
-        		 setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+        	@SuppressWarnings("deprecation")
+			public void listChanged(ListEvent<T> listChanges) {
+        		while(listChanges.next()) {
+        			int changeType = listChanges.getType();
+        			if (changeType == ListEvent.DELETE) {
+        				T oldValue = listChanges.getOldValue();
+        				T newValue = getSelectedItem();
+						firePropertyChange(SELECTED_ITEM, oldValue, newValue);
+        				setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+        			} else if (changeType == ListEvent.INSERT) {
+        				if (listChanges.getOldValue() == ListEvent.UNKNOWN_VALUE) {
+        					firePropertyChange(SELECTED_ITEM, null, getSelectedItem());
+            				setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+        				}
+        			}
+        		}
         	}
         });
         EventTableModel<T> dataModel = new EventTableModel<T>(sortedItems, getTableFormat());

@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.util.EventListener;
+import java.util.List;
 
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;
@@ -30,7 +31,7 @@ public interface AppWindowWrapper extends AppComponent {
 	
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener);
 	
-	public void removeAllWindowWrapperListeners();
+	public List<AppWindowWrapperListener> getAppWindowWrapperListeners();
 
 	/**
 	 * This class is a universal event listener for {@link JInternalFrame} and {@link Window} components. 

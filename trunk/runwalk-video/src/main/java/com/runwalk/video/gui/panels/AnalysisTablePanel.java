@@ -18,7 +18,6 @@ import org.netbeans.lib.awtextra.AbsoluteConstraints;
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
@@ -27,6 +26,10 @@ import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
+import com.jgoodies.binding.PresentationModel;
+import com.jgoodies.binding.beans.PropertyAdapter;
+import com.jgoodies.binding.beans.PropertyConnector;
+import com.jgoodies.binding.value.ValueModel;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
@@ -79,11 +82,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 		BindingGroup bindingGroup = new BindingGroup();
 		//comments JTextArea binding
-		BeanProperty<AnalysisTablePanel, String> selectedElementComments = BeanProperty.create("selectedItem.comments");
+		BeanProperty<AnalysisTablePanel, String> selectedItemComments = BeanProperty.create("selectedItem.comments");
 		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
 		Binding<? extends AbstractTablePanel<?> , String, JTextArea, String> commentsBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedElementComments, comments, jTextAreaValue);
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
+		
+//		PropertyAdapter commentsBean = new PropertyAdapter(this, "selectedItem.comments", true);
+//		PropertyAdapter propertyAdapter = new PropertyAdapter(this, "selectedItem");
+//		PresentationModel model = new PresentationModel(this);
+//		ValueModel selectedItemModel =  model.getModel("selectedItem");
+//		PropertyConnector.connect(selectedItemModel, "value", comments, "text");
+		
 
 		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
@@ -165,7 +175,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		            final int changeType = listChanges.getType();
 		            if (changeType == ListEvent.UPDATE) {
 		            	getApplication().setSaveNeeded(true);
-		            	listChanges.getSourceList().get(changeIndex).getClient().setDirty(true);
+		            	Analysis changedItem = listChanges.getSourceList().get(changeIndex);
+						changedItem.getClient().setDirty(true);
 		            }
 				}
 			}
@@ -194,9 +205,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(4).setResizable(false);
 		CustomJTableRenderer buttonRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class));
 		getTable().getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-		//		if (getTable().getMouseListeners().length == 0) {
-		getTable().addMouseListener(new JTableButtonMouseListener());
-		//		}
+		addMouseListenerToTable();
 	}
 
 	public boolean isClientSelected() {

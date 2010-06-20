@@ -6,7 +6,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.Action;
@@ -21,6 +21,7 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task.BlockingScope;
 
+import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
@@ -31,17 +32,16 @@ import com.runwalk.video.util.AppUtil;
  * This abstraction allows you to make easy reuse of the vendor independent logic 
  * used by the components that implement {@link IVideoPlayer} and {@link IVideoCapturer}.
  * 
- * @author Jeroen P.
+ * @author Jeroen Peelaerts
  *
  */
 public abstract class VideoComponent extends AbstractBean implements AppWindowWrapper {
 
 	public static final String IDLE = "idle";
-
 	public static final String FULLSCREEN = "fullscreen";
-
 	public static final String STATE = "state";
 	
+	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 	private Recording recording;
 	protected Frame fullScreenFrame;
 	protected AppInternalFrame internalFrame;
@@ -49,8 +49,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	boolean fullscreen = false;
 	private ActionMap actionMap;
 	private State state;
-	
-	public List<AppWindowWrapperListener> appWindowWrapperListeners = new ArrayList<AppWindowWrapperListener>();
 
 	public VideoComponent(PropertyChangeListener listener) {
 		addPropertyChangeListener(listener);
@@ -60,33 +58,21 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	//TODO review code!
 	protected void reAttachAppWindowWrapperListeners() {
 		if (isFullscreen() && getFullscreenFrame() != null) {
-			boolean found = false;
-			for (int i = 0; i < appWindowWrapperListeners.size() && !found; i++) {
-				AppWindowWrapperListener appWindowWrapperListener = appWindowWrapperListeners.get(i);
-				for (WindowListener windowListener : getFullscreenFrame().getWindowListeners()) {
-					found = windowListener == appWindowWrapperListener;
-				}
-				if (!found) {
+			for(AppWindowWrapperListener appWindowWrapperListener : appWindowWrapperListeners) {
+				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
+				if (!listeners.contains(appWindowWrapperListener)) {
 					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
 				}
 			}
 		}
 		if (!isFullscreen() && getInternalFrame() != null) {
-			boolean found = false;
-			for (int i = 0; i < appWindowWrapperListeners.size() && !found; i++) {
-				AppWindowWrapperListener appWindowWrapperListener = appWindowWrapperListeners.get(i);
-				for (InternalFrameListener internalFrameListener : getInternalFrame().getInternalFrameListeners()) {
-					found = internalFrameListener == appWindowWrapperListener;
-				}
-				if (!found) {
+			for(AppWindowWrapperListener appWindowWrapperListener : appWindowWrapperListeners) {
+				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
+				if (!listeners.contains(appWindowWrapperListener)) {
 					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
 				}
 			}
 		}
-	}
-	
-	public void removeAllWindowWrapperListeners() {
-		appWindowWrapperListeners.clear();
 	}
 	
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
@@ -107,6 +93,10 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		if (getInternalFrame() != null) {
 			getInternalFrame().removeInternalFrameListener(listener);
 		}
+	}
+	
+	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
+		return appWindowWrapperListeners;
 	}
 
 	public Recording getRecording() {
