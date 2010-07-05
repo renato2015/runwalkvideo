@@ -4,9 +4,10 @@ import javax.persistence.Query;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -14,11 +15,10 @@ import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
@@ -26,10 +26,6 @@ import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
-import com.jgoodies.binding.PresentationModel;
-import com.jgoodies.binding.beans.PropertyAdapter;
-import com.jgoodies.binding.beans.PropertyConnector;
-import com.jgoodies.binding.value.ValueModel;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
@@ -50,25 +46,20 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	private Boolean clientSelected = false;
 
 	public AnalysisTablePanel() {
-		super(new AbsoluteLayout());
+		super(new MigLayout("fill, nogrid"));
 
-		JScrollPane analysisTableScrollPanel = new  JScrollPane();
-		analysisTableScrollPanel.setViewportView(getTable());
-
-		add(analysisTableScrollPanel, new AbsoluteConstraints(10, 20, 550, 100));
-
-		JPanel buttonPanel =  new JPanel();
-		buttonPanel.setLayout(new AbsoluteLayout());
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setViewportView(getTable());
+		add(scrollPane, "wrap, grow, width :570:, height :100:");
 
 		setSecondButton(new JButton(getAction("addAnalysis")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
-		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(10, 0, -1, -1));
+		add(getSecondButton());
 
 		setFirstButton(new JButton(getAction("deleteAnalysis")));
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
-		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(130, 0, -1, -1));
-
-		add(buttonPanel, new AbsoluteConstraints(0, 130, -1, 30));
+		add(getFirstButton(), "wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -78,7 +69,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
-		add(tscrollPane, new AbsoluteConstraints(10, 165, 550, 60));
+		add(tscrollPane, "grow, width :570:, height :60:");
 
 		BindingGroup bindingGroup = new BindingGroup();
 		//comments JTextArea binding
@@ -87,14 +78,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		Binding<? extends AbstractTablePanel<?> , String, JTextArea, String> commentsBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
-		
-//		PropertyAdapter commentsBean = new PropertyAdapter(this, "selectedItem.comments", true);
-//		PropertyAdapter propertyAdapter = new PropertyAdapter(this, "selectedItem");
-//		PresentationModel model = new PresentationModel(this);
-//		ValueModel selectedItemModel =  model.getModel("selectedItem");
-//		PropertyConnector.connect(selectedItemModel, "value", comments, "text");
-		
-
+			
 		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
 		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, 
@@ -186,11 +170,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void setItemList(EventList<Analysis> itemList, Class<Analysis> itemClass) {
-		super.setItemList(itemList, itemClass);
+	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
+		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-
 		Query query = RunwalkVideoApp.getApplication().createQuery("SELECT OBJECT(ar) from Article ar"); // NOI18N
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(GlazedLists.eventList(query.getResultList()));
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));

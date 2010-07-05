@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.tasks;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -19,6 +18,7 @@ import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.AnalysisConnector;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 
 public class RefreshTask extends AbstractTask<Boolean, Void> {
@@ -64,7 +64,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 						}
 						
 					});
-					RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setItemList(unfinishedBusiness, Analysis.class);
+					RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setItemList(unfinishedBusiness, new AnalysisConnector());
 					//Create the overview with unfinished analyses
 					final EventList<Client> selectedClients = clientTablePanel.getEventSelectionModel().getSelected();
 					CollectionList<Client, Analysis> analyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
@@ -74,7 +74,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 						}
 
 					});
-					RunwalkVideoApp.getApplication().getAnalysisTablePanel().setItemList(analyses, Analysis.class);
+					RunwalkVideoApp.getApplication().getAnalysisTablePanel().setItemList(analyses, new AnalysisConnector());
 				}
 				
 			});
@@ -88,10 +88,5 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		}
 		return success;
 	}
-	
-	public class ListCollectionListModel<E, S> implements CollectionList.Model<List<E>,S> {
-	    public List<S> getChildren(List<E> parent) {
-	        return Collections.emptyList();
-	    }
-	}
+
 }

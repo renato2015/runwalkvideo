@@ -8,6 +8,8 @@ import java.awt.Frame;
 
 import javax.swing.JButton;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.jdesktop.application.Action;
 
 @SuppressWarnings("serial")
@@ -33,7 +35,7 @@ public class RunwalkVideoAboutDialog extends AppDialog implements AppComponent {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
+    	setLayout(new MigLayout());
         closeButton = new javax.swing.JButton();
         javax.swing.JLabel appTitleLabel = new javax.swing.JLabel();
         javax.swing.JLabel versionLabel = new javax.swing.JLabel();
@@ -53,75 +55,33 @@ public class RunwalkVideoAboutDialog extends AppDialog implements AppComponent {
 
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
         appTitleLabel.setText(getResourceMap().getString("Application.title")); // NOI18N
-
+        add(appTitleLabel, "wrap");
+        
         versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getStyle() | java.awt.Font.BOLD));
         versionLabel.setText(getResourceMap().getString("versionLabel.text")); // NOI18N
+        add(versionLabel);
 
         appVersionLabel.setText(getResourceMap().getString("Application.version")); // NOI18N
+        add(appVersionLabel, "wrap");
 
         vendorLabel.setFont(vendorLabel.getFont().deriveFont(vendorLabel.getFont().getStyle() | java.awt.Font.BOLD));
         vendorLabel.setText(getResourceMap().getString("vendorLabel.text")); // NOI18N
-        
         appVendorLabel.setText(getResourceMap().getString("Application.vendor")); // NOI18N
+        add(vendorLabel, "wrap");
 
         homepageLabel.setFont(homepageLabel.getFont().deriveFont(homepageLabel.getFont().getStyle() | java.awt.Font.BOLD));
         homepageLabel.setText(getResourceMap().getString("homepageLabel.text")); // NOI18N
-
+        add(homepageLabel);
+        
         appHomepageLabel.setText(getResourceMap().getString("Application.homepage")); // NOI18N
         appDescLabel.setText(getResourceMap().getString("appDescLabel.text")); // NOI18N
+        add(homepageLabel, "wrap");
         
         imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
+        add(imageLabel, "wrap");
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(imageLabel)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(versionLabel)
-                            .add(vendorLabel)
-                            .add(homepageLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(appVersionLabel)
-                            .add(appVendorLabel)
-                            .add(appHomepageLabel)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, appTitleLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, appDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                    .add(closeButton))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(imageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(appTitleLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(appDescLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(versionLabel)
-                    .add(appVersionLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(vendorLabel)
-                    .add(appVendorLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(homepageLabel)
-                    .add(appHomepageLabel))
-                .add(19, 19, Short.MAX_VALUE)
-                .add(closeButton)
-                .addContainerGap())
-        );
-
-       pack();
+        add(closeButton);
+        pack();
     }
-    
     
 }

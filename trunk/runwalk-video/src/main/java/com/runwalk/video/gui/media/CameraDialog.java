@@ -11,9 +11,9 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.jdesktop.application.Action;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import com.runwalk.video.gui.AppDialog;
 
@@ -38,28 +38,26 @@ public class CameraDialog extends AppDialog {
 			}
 			
 		});
+		setLayout(new MigLayout("fill, nogrid"));
 		setTitle(getResourceMap().getString("captureDeviceDlg.title")); // NOI18N
 		setResizable(false);
-		setLayout(new AbsoluteLayout());
 		
-		captureDeviceComboBox = new JComboBox();
-		add(captureDeviceComboBox, new AbsoluteConstraints(10, 30, 250, -1));
-
 		JLabel captureDeviceLabel = new JLabel(getResourceMap().getString("captureDeviceLabel.text")); // NOI18N
-		add(captureDeviceLabel, new AbsoluteConstraints(10, 10, 210, -1));
+		add(captureDeviceLabel, "wrap");
+
+		captureDeviceComboBox = new JComboBox();
+		add(captureDeviceComboBox, "wrap, grow");
 
 		JButton cancelButton = new JButton(getApplication().getApplicationActionMap().get("exit")); // NOI18N
-		add(cancelButton, new AbsoluteConstraints(10, 60, 90, 25));
+		add(cancelButton);
 		JButton refreshButton = new JButton(getAction("refreshCaptureDevices")); // NOI18N
-		add(refreshButton, new AbsoluteConstraints(105, 60, 90, 25));
+		add(refreshButton);
 		JButton okButton = new JButton(getAction("dismissDialog"));
-		add(okButton, new AbsoluteConstraints(200, 60, 60, 25));
+		add(okButton);
 		getRootPane().setDefaultButton(okButton);
 
 		refreshCaptureDevices();
 		captureDeviceComboBox.setSelectedIndex(currentSelection);
-		setPreferredSize(new Dimension(275, 125));
-
 		pack();
 	}
 	

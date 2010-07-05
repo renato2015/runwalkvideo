@@ -7,14 +7,15 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.gui.TableFormat;
 
 import com.runwalk.video.entities.Analysis;
@@ -39,18 +40,18 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
 	public AnalysisOverviewTablePanel() {
-		super(new AbsoluteLayout());
-		
-		JScrollPane overviewScrollPane = new  JScrollPane();
-		overviewScrollPane.setViewportView(getTable());
-		add(overviewScrollPane, new AbsoluteConstraints(10, 20, 550, 140));
+		super(new MigLayout("fill, nogrid"));
+		JScrollPane scrollPane = new  JScrollPane();
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setViewportView(getTable());
+		add(scrollPane, "wrap, grow, width :570:");
 		
 		JButton cleanupButton = new JButton(getAction("cleanup"));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
-		add(cleanupButton, new AbsoluteConstraints(320, 170, -1, -1));
+		add(cleanupButton, "gapleft push");
 		setSecondButton(new JButton(getAction("compress")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
-		add(getSecondButton(), new AbsoluteConstraints(470, 170, -1, -1));
+		add(getSecondButton());
 	}
 
 	public boolean isCleanupEnabled() {
@@ -115,8 +116,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 	
 	@Override
-	public void setItemList(EventList<Analysis> itemList, Class<Analysis> itemClass) {
-		super.setItemList(itemList, itemClass);
+	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
+		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(getTable().getDefaultRenderer(ImageIcon.class));
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));

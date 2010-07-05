@@ -1,6 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 
@@ -23,7 +22,7 @@ import javax.persistence.TemporalType;
 @SuppressWarnings("serial")
 @Entity
 @Table(schema="testdb", name="analysis")
-public class Analysis extends SerializableEntity<Analysis> implements PropertyChangeListener {
+public class Analysis extends SerializableEntity<Analysis> {
 
 	private Long id;
 	
@@ -42,22 +41,6 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 	public Analysis(Client client) {
 		creationDate = new Date();
 		this.client = client;
-	}
-	
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		super.addPropertyChangeListener(listener);
-		if (getRecording() != null) {
-			getRecording().addPropertyChangeListener(listener);
-		}
-	}
-
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		super.removePropertyChangeListener(listener);
-		if (getRecording() != null) {
-			getRecording().removePropertyChangeListener(listener);
-		}
 	}
 
 	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
@@ -164,12 +147,6 @@ public class Analysis extends SerializableEntity<Analysis> implements PropertyCh
 
 	public boolean hasCompressedRecording() {
 		return getRecording() != null && getRecording().isCompressed();
-	}
-
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource().equals(getRecording())) {
-			firePropertyChange("selectedItem.recording." + evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-		}
 	}
 
 }

@@ -18,6 +18,8 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -28,7 +30,6 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -53,48 +54,13 @@ public class ClientInfoPanel extends AppPanel {
 
 	@SuppressWarnings("unchecked")
 	public ClientInfoPanel() {
-		setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+		setLayout(new MigLayout("fill", "[right]rel[grow,fill]", "[]15[]"));
 		
-		JLabel nameLabel = new JLabel();
-		nameLabel.setFont(AppSettings.MAIN_FONT);
-		nameLabel.setText(getResourceMap().getString("nameLabel.text")); // NOI18N
-		add(nameLabel, new  AbsoluteConstraints(20, 20, -1, 20));
-
-		JLabel organizationLabel = new JLabel();
-		organizationLabel.setFont(AppSettings.MAIN_FONT);
-		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
-		add(organizationLabel, new AbsoluteConstraints(20, 50, -1, 20));
-
-		JLabel taxLabel = new JLabel();
-		taxLabel.setFont(AppSettings.MAIN_FONT);
-		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
-		add(taxLabel, new AbsoluteConstraints(275, 50, -1, 20));
-
-		JLabel emailLabel = new JLabel();
-		emailLabel.setFont(AppSettings.MAIN_FONT);
-		emailLabel.setText(getResourceMap().getString("emailLabel.text")); // NOI18N
-		add(emailLabel, new AbsoluteConstraints(20, 80, -1, 20));
-
-		JLabel addressLabel = new JLabel();
-		addressLabel.setFont(AppSettings.MAIN_FONT);
-		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
-		add(addressLabel, new AbsoluteConstraints(20, 110, -1, 20));
-
-		JLabel telephoneLabel = new JLabel();
-		telephoneLabel.setFont(AppSettings.MAIN_FONT);
-		telephoneLabel.setText(getResourceMap().getString("telephoneLabel.text")); // NOI18N
-		add(telephoneLabel, new AbsoluteConstraints(20, 140, -1, 20));
-
-		JLabel locationLabel = new JLabel();
-		locationLabel.setFont(AppSettings.MAIN_FONT);
-		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
-		add(locationLabel, new  AbsoluteConstraints(20, 170, -1, 20));		
-
 		//Create some undo and redo actions
 		UndoableEditListener undoListener = RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener();
 
 //		JTable clientTable = RunwalkVideoApp.getApplication().getClientTable();
-		ClientTablePanel clientTable = RunwalkVideoApp.getApplication().getClientTablePanel();
+		ClientTablePanel clientTablePanel = RunwalkVideoApp.getApplication().getClientTablePanel();
 		BindingGroup bindingGroup = new BindingGroup();
 		
 		//component value binding
@@ -124,45 +90,61 @@ public class ClientInfoPanel extends AppPanel {
 			
 		};
 		
+		JLabel nameLabel = new JLabel();
+		nameLabel.setFont(AppSettings.MAIN_FONT);
+		nameLabel.setText(getResourceMap().getString("nameLabel.text")); // NOI18N
+		add(nameLabel);
+
 		firstnameField = new JTextField();
 		firstnameField.setFont(AppSettings.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
+		
 		BeanProperty<ClientTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, firstname, firstnameField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, firstname, firstnameField, textFieldValue);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, firstnameField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, firstnameField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(firstnameField, new  AbsoluteConstraints(120, 20, 110, 20));
+		add(firstnameField, "width :110:");
 		
 		nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
 		nameField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> name = BeanProperty.create("selectedItem.name");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, name, nameField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, name, nameField, textFieldValue);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, nameField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, nameField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(nameField, new  AbsoluteConstraints(235, 20, 225, 20));
+		add(nameField, "wrap");
+		
+		JLabel organizationLabel = new JLabel();
+		organizationLabel.setFont(AppSettings.MAIN_FONT);
+		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
+		add(organizationLabel);
 
 		JTextField organisationField = new JTextField();
 		organisationField.getDocument().addUndoableEditListener(undoListener);
 		BeanProperty<ClientTablePanel, String> organization = BeanProperty.create("selectedItem.organization");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, organization, organisationField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, organization, organisationField, textFieldValue);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, organisationField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, organisationField, enabled);
 		bindingGroup.addBinding(enabledBinding);
 		organisationField.setFont(AppSettings.MAIN_FONT);
-		add(organisationField, new  AbsoluteConstraints(120, 50, 150, 20));
+		add(organisationField, "width :110:");
+		
+		JLabel taxLabel = new JLabel();
+		taxLabel.setFont(AppSettings.MAIN_FONT);
+		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
+		add(taxLabel, "split 2, width :20:");
 
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
 		taxField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> taxNo = BeanProperty.create("selectedItem.btwnr");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, taxNo, taxField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNo, taxField, textFieldValue);
 		valueBinding.setValidator(new Validator () {
 			
 			public Validator.Result validate(Object arg) {
@@ -176,15 +158,20 @@ public class ClientInfoPanel extends AppPanel {
 			}
 		});
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, taxField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, taxField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(taxField, new  AbsoluteConstraints(320, 50, 140, 20));
+		add(taxField, "wrap");
+		
+		JLabel emailLabel = new JLabel();
+		emailLabel.setFont(AppSettings.MAIN_FONT);
+		emailLabel.setText(getResourceMap().getString("emailLabel.text")); // NOI18N
+		add(emailLabel);
 
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
 		emailField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, email, emailField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, textFieldValue);
 		/*valueBinding.setValidator(new Validator() {
 					
 					public Validator.Result validate(Object arg) {        
@@ -199,50 +186,65 @@ public class ClientInfoPanel extends AppPanel {
 				}
 		);*/
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, emailField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, emailField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(emailField, new  AbsoluteConstraints(120, 80, 340, 20));
+		add(emailField, "span, growx, wrap");
+		
+		JLabel addressLabel = new JLabel();
+		addressLabel.setFont(AppSettings.MAIN_FONT);
+		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
+		add(addressLabel);
 
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
 		addressField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.address.address");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, address, addressField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, address, addressField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, addressField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, addressField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(addressField, new AbsoluteConstraints(120, 110, 340, 20));
+		add(addressField, "span, growx, wrap");
+		
+		JLabel telephoneLabel = new JLabel();
+		telephoneLabel.setFont(AppSettings.MAIN_FONT);
+		telephoneLabel.setText(getResourceMap().getString("telephoneLabel.text")); // NOI18N
+		add(telephoneLabel);
 
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
 		phoneField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.phone");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, phone, phoneField, textFieldValue);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, phone, phoneField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, phoneField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, phoneField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(phoneField, new AbsoluteConstraints(120, 140, 120, 20));
+		add(phoneField, "wrap, span, growx");
 
 		Query cityQuery = Beans.isDesignTime() ? null : RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
 		EventList<City> cityList = GlazedLists.eventList(cityQuery.getResultList());
 		
 		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
 		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
+		
+		JLabel locationLabel = new JLabel();
+		locationLabel.setFont(AppSettings.MAIN_FONT);
+		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
+		add(locationLabel);		
 
 		final JComboBox locationField = new JComboBox();
-		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, city, locationField, selectedItem);
+		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, locationField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
 		bindingGroup.addBinding(comboBoxBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, locationField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, locationField, enabled);
 		bindingGroup.addBinding(enabledBinding);
 
 		final JComboBox zipCodeField = new JComboBox();
-		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTable, city, zipCodeField, selectedItem);
+		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, zipCodeField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
 		bindingGroup.addBinding(comboBoxBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTable, isSelected, zipCodeField, enabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, zipCodeField, enabled);
 		bindingGroup.addBinding(enabledBinding);
 		
 		class CityInfoRenderer extends DefaultListCellRenderer {
@@ -279,7 +281,7 @@ public class ClientInfoPanel extends AppPanel {
 		locationCompletion.setBeepOnStrictViolation(false);
 		locationField.setRenderer(new CityInfoRenderer());
 		locationField.setFont(AppSettings.MAIN_FONT);
-		add(locationField, new AbsoluteConstraints(250, 170, 170, 20));
+		add(locationField, "growx");
 
 		AutoCompleteSupport<City> zipCodeCompletion = AutoCompleteSupport.install(zipCodeField, cityList, GlazedLists.textFilterator("code"), new Format() {
 
@@ -294,7 +296,7 @@ public class ClientInfoPanel extends AppPanel {
 			public Object parseObject(String value, ParsePosition pos) {
 				City selectedCity = (City) zipCodeField.getSelectedItem();
 				List<?> resultList = null;
-				if (!value.equals(selectedCity.getCode())) {
+				if (selectedCity != null && !value.equals(selectedCity.getCode())) {
 					Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByZipCode");
 					query.setParameter("zipCode", value);
 					resultList = query.getResultList();
@@ -308,7 +310,7 @@ public class ClientInfoPanel extends AppPanel {
 		
 		zipCodeField.setRenderer(new CityInfoRenderer());
 		zipCodeField.setFont(AppSettings.MAIN_FONT);
-		add(zipCodeField, new  AbsoluteConstraints(120, 170, 120, 20));
+		add(zipCodeField, "growx");
 
 		bindingGroup.addBindingListener(new AbstractBindingListener() {
 
