@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.panels;
 
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -10,19 +9,16 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -49,35 +45,31 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private TextComponentMatcherEditor<Client> matcherEditor;
 
 	public ClientTablePanel() {
+		super(new MigLayout("nogrid, fill"));
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
-		setBorder( BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
 		
-		JScrollPane masterScrollPane = new JScrollPane();
-		masterScrollPane.setViewportView(getTable());
-
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new AbsoluteLayout());
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportView(getTable());
+		add(scrollPane, "wrap, grow");
 
 		setSecondButton(new JButton(getAction("addClient")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
-		buttonPanel.add(getSecondButton(), new AbsoluteConstraints(0, 0, -1, -1));
+		add(getSecondButton());
 
 		setFirstButton(new JButton(getAction("deleteClient")));
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
-		buttonPanel.add(getFirstButton(), new AbsoluteConstraints(110, 0, -1, -1));
+		add(getFirstButton());
 
 		JButton saveButton = new  JButton(getAction("save"));
 		saveButton.setFont(AppSettings.MAIN_FONT);
-		buttonPanel.add(saveButton, new AbsoluteConstraints(230, 0, -1, -1));
-
-		JPanel searchPanel = new JPanel();
+		add(saveButton);
 
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
 		searchField = new JTextField();
-		searchField.setPreferredSize(new Dimension(100,20));
 		searchField.setFont(AppSettings.MAIN_FONT);
 
 		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
@@ -97,34 +89,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			}
 		});
 
-		searchPanel.add(theLabel);
-		searchPanel.add(searchField);
-		buttonPanel.add(searchPanel, new AbsoluteConstraints(370, 0, 180, -1));
-
-		//Layout the this panel..
-		GroupLayout groupLayout = new GroupLayout(this);
-		setLayout(groupLayout);
-		groupLayout.setHorizontalGroup(
-				groupLayout.createParallelGroup(GroupLayout.LEADING)
-				.add(groupLayout.createSequentialGroup()
-						.addContainerGap()
-						.add(groupLayout.createParallelGroup(GroupLayout.LEADING)
-								.add(groupLayout.createSequentialGroup()
-										.add(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.add(85, 85, 85))
-										.add(groupLayout.createSequentialGroup()
-												.add(masterScrollPane, GroupLayout.PREFERRED_SIZE, 527, GroupLayout.PREFERRED_SIZE)
-												.addContainerGap(21, Short.MAX_VALUE))))
-		);
-		groupLayout.setVerticalGroup(
-				groupLayout.createParallelGroup(GroupLayout.LEADING)
-				.add(groupLayout.createSequentialGroup()
-						.add(masterScrollPane, GroupLayout.PREFERRED_SIZE, 301, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.RELATED)
-						.add(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-		);
-
+		add(theLabel, "gapleft push");
+		add(searchField, "width :100:, growy");
 	}
 
 	@Override

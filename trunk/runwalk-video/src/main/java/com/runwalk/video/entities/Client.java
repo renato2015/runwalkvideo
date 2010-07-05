@@ -1,7 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -29,7 +27,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
 @NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
-public class Client extends SerializableEntity<Client> implements PropertyChangeListener {
+public class Client extends SerializableEntity<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ORGANIZATION = "organization";
 	public static final String FIRSTNAME = "firstname";
@@ -46,7 +44,7 @@ public class Client extends SerializableEntity<Client> implements PropertyChange
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	@Embedded
-	private Address address;
+	private Address address = new Address();
 	@Column(name = "website")
 	private String emailAdress;
 	@Column(name = "btwnr")
@@ -213,13 +211,7 @@ public class Client extends SerializableEntity<Client> implements PropertyChange
 	}
 
 	public int compareTo(Client o) {
-		return this.equals(o) ? 0 : getId().compareTo(o.getId());
-	}
-
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (getAnalyses().contains(evt.getSource())) {
-			setDirty(true);
-		}
+		return this.equals(o) ? 0 : getId() != null ? getId().compareTo(o.getId()) : 1;
 	}
 
 }

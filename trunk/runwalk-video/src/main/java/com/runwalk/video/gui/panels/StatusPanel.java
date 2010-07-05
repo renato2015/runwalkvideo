@@ -8,13 +8,15 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.apache.log4j.Level;
 import org.jdesktop.application.TaskMonitor;
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.util.AppSettings;
@@ -35,20 +37,17 @@ public class StatusPanel extends AppPanel {
 	private TaskMonitor taskMonitor;
 
 	public StatusPanel() {
-		setLayout(new AbsoluteLayout());
+		setLayout(new MigLayout("align right"));
 		statusMessageLabel = new JLabel();
 		statusMessageLabel.setFont(AppSettings.MAIN_FONT);
+		statusMessageLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		statusAnimationLabel = new JLabel();
 		progressBar = new JProgressBar();
 		// status bar initialization - message timeout, idle icon and busy
 		// animation, etc
-
-		add(statusMessageLabel, new AbsoluteConstraints(10, 0, -1, 30));
-		//		statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-		
-		add(statusAnimationLabel, new AbsoluteConstraints(420, 0, 30, 30));
-		add(progressBar, new AbsoluteConstraints(440, 5, 140, 20));
-	
+		add(statusMessageLabel, "width :200:");
+		add(statusAnimationLabel);
+		add(progressBar, "height :30:, width :140:");
 		
 		final int messageTimeout = getResourceMap().getInteger("StatusBar.messageTimeout");
 		messageTimer = new Timer(messageTimeout, new ActionListener() {
