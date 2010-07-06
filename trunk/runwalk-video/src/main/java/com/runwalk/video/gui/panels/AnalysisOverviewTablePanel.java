@@ -48,7 +48,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		
 		JButton cleanupButton = new JButton(getAction("cleanup"));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
-		add(cleanupButton, "gapleft push");
+		add(cleanupButton);
 		setSecondButton(new JButton(getAction("compress")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton());

@@ -37,17 +37,17 @@ public class StatusPanel extends AppPanel {
 	private TaskMonitor taskMonitor;
 
 	public StatusPanel() {
-		setLayout(new MigLayout("align right"));
+		setLayout(new MigLayout("nogrid, fill", "", "rel[fill]"));
 		statusMessageLabel = new JLabel();
 		statusMessageLabel.setFont(AppSettings.MAIN_FONT);
-		statusMessageLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		statusMessageLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusAnimationLabel = new JLabel();
 		progressBar = new JProgressBar();
 		// status bar initialization - message timeout, idle icon and busy
 		// animation, etc
-		add(statusMessageLabel, "width :200:");
-		add(statusAnimationLabel);
-		add(progressBar, "height :30:, width :140:");
+		add(statusMessageLabel, "grow");
+		add(statusAnimationLabel, "gapleft, push");
+		add(progressBar, "width :140:");
 		
 		final int messageTimeout = getResourceMap().getInteger("StatusBar.messageTimeout");
 		messageTimer = new Timer(messageTimeout, new ActionListener() {

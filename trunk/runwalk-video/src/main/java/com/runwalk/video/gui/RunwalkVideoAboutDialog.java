@@ -7,6 +7,7 @@ package com.runwalk.video.gui;
 import java.awt.Frame;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -37,50 +38,54 @@ public class RunwalkVideoAboutDialog extends AppDialog implements AppComponent {
     private void initComponents() {
     	setLayout(new MigLayout());
         closeButton = new javax.swing.JButton();
-        javax.swing.JLabel appTitleLabel = new javax.swing.JLabel();
-        javax.swing.JLabel versionLabel = new javax.swing.JLabel();
-        javax.swing.JLabel appVersionLabel = new javax.swing.JLabel();
-        javax.swing.JLabel vendorLabel = new javax.swing.JLabel();
-        javax.swing.JLabel appVendorLabel = new javax.swing.JLabel();
-        javax.swing.JLabel homepageLabel = new javax.swing.JLabel();
-        javax.swing.JLabel appHomepageLabel = new javax.swing.JLabel();
-        javax.swing.JLabel appDescLabel = new javax.swing.JLabel();
-        javax.swing.JLabel imageLabel = new javax.swing.JLabel();
-
+        
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
         setResizable(false);
 
         closeButton.setAction(getAction("closeAboutBox")); // NOI18N
 
+        JLabel appTitleLabel = new JLabel();
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
         appTitleLabel.setText(getResourceMap().getString("Application.title")); // NOI18N
         add(appTitleLabel, "wrap");
         
+        JLabel versionLabel = new JLabel();
         versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getStyle() | java.awt.Font.BOLD));
         versionLabel.setText(getResourceMap().getString("versionLabel.text")); // NOI18N
         add(versionLabel);
 
+        JLabel appVersionLabel = new JLabel();
         appVersionLabel.setText(getResourceMap().getString("Application.version")); // NOI18N
         add(appVersionLabel, "wrap");
 
+        JLabel vendorLabel = new JLabel();
         vendorLabel.setFont(vendorLabel.getFont().deriveFont(vendorLabel.getFont().getStyle() | java.awt.Font.BOLD));
         vendorLabel.setText(getResourceMap().getString("vendorLabel.text")); // NOI18N
+        add(vendorLabel);
+        
+        JLabel appVendorLabel = new JLabel();
         appVendorLabel.setText(getResourceMap().getString("Application.vendor")); // NOI18N
-        add(vendorLabel, "wrap");
+        add(appVendorLabel, "wrap");
 
+        JLabel homepageLabel = new JLabel();
         homepageLabel.setFont(homepageLabel.getFont().deriveFont(homepageLabel.getFont().getStyle() | java.awt.Font.BOLD));
         homepageLabel.setText(getResourceMap().getString("homepageLabel.text")); // NOI18N
         add(homepageLabel);
-        
-        appHomepageLabel.setText(getResourceMap().getString("Application.homepage")); // NOI18N
-        appDescLabel.setText(getResourceMap().getString("appDescLabel.text")); // NOI18N
-        add(homepageLabel, "wrap");
-        
-        imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
-        add(imageLabel, "wrap");
 
-        add(closeButton);
+        JLabel appHomepageLabel = new JLabel();
+        appHomepageLabel.setText(getResourceMap().getString("Application.homepage")); // NOI18N
+        add(appHomepageLabel, "wrap");
+        
+        JLabel appDescLabel = new JLabel();
+        appDescLabel.setText(getResourceMap().getString("appDescLabel.text")); // NOI18N
+        add(appDescLabel, "wrap, span, align center");
+        
+        JLabel imageLabel = new JLabel();
+        imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
+        add(imageLabel, "wrap, span, align center");
+
+        add(closeButton, "span, align center");
         pack();
     }
     
