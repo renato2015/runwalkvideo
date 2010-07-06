@@ -33,6 +33,8 @@ public class Client extends SerializableEntity<Client> {
 	public static final String FIRSTNAME = "firstname";
 	public static final String ADDRESS = "address";
 	public static final String NAME = "name";
+	public static final String BIRTH_DATE = "birthDate";
+	public static final String MALE = "male";
 	
 	@Id
 	@Column(name = "id")
@@ -59,7 +61,7 @@ public class Client extends SerializableEntity<Client> {
 	private String phoneNumber;
 	@Column(name = "birthdate")
 	@Temporal(value = TemporalType.DATE)
-	private Date birthdate;
+	private Date birthDate;
 	@Column(name = "male")
 	private Integer male;
 	@Transient
@@ -84,7 +86,7 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public void setMale(boolean male) {
-		this.male = male ? 1 : 0;
+		firePropertyChange(MALE, this.male, this.male = male ? 1 : 0);
 	}
 
 	public String getEmailAddress() {
@@ -164,11 +166,11 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public Date getBirthdate() {
-		return birthdate;
+		return birthDate;
 	}
 
 	public void setBirthdate(Date birthdate) {
-		this.birthdate = birthdate;
+		firePropertyChange(BIRTH_DATE, this.birthDate, this.birthDate = birthdate);
 	}
 
 	public Date getLastAnalysisDate() {

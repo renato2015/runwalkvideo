@@ -5,18 +5,27 @@ import java.beans.Beans;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.Query;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.InputVerifier;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -30,6 +39,7 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -54,8 +64,7 @@ public class ClientInfoPanel extends AppPanel {
 
 	@SuppressWarnings("unchecked")
 	public ClientInfoPanel() {
-		setLayout(new MigLayout("fill", "[right]rel[grow,fill]", "[]15[]"));
-		
+		setLayout(new MigLayout("fill", "[right]10[grow,fill]", "10[grow,fill]"));
 		//Create some undo and redo actions
 		UndoableEditListener undoListener = RunwalkVideoApp.getApplication().getApplicationActions().getUndoableEditListener();
 
@@ -78,12 +87,10 @@ public class ClientInfoPanel extends AppPanel {
 		 */
 		class FirstCharacterToUpperCaseConverter extends Converter<String, String> {
 			
-			@Override
 			public String convertForward(String arg0) {
 				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
 			
-			@Override
 			public String convertReverse(String arg0) {
 				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
@@ -105,7 +112,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, firstnameField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(firstnameField, "width :110:");
+		add(firstnameField);
 		
 		nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
@@ -133,12 +140,12 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, organisationField, enabled);
 		bindingGroup.addBinding(enabledBinding);
 		organisationField.setFont(AppSettings.MAIN_FONT);
-		add(organisationField, "width :110:");
+		add(organisationField);
 		
 		JLabel taxLabel = new JLabel();
 		taxLabel.setFont(AppSettings.MAIN_FONT);
 		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
-		add(taxLabel, "split 2, width :20:");
+		add(taxLabel, "split 2");
 
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
@@ -160,7 +167,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, taxField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(taxField, "wrap");
+		add(taxField, "wrap, width :120:, gapright push");
 		
 		JLabel emailLabel = new JLabel();
 		emailLabel.setFont(AppSettings.MAIN_FONT);
@@ -188,8 +195,103 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, emailField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(emailField, "span, growx, wrap");
+		add(emailField, "wrap, span");
 		
+		JLabel birthdateLabel = new JLabel();
+		birthdateLabel.setFont(AppSettings.MAIN_FONT);
+		birthdateLabel.setText(getResourceMap().getString("birthdateLabel.text")); // NOI18N
+		add(birthdateLabel);
+		
+		JFormattedTextField birthdateField = new JFormattedTextField();
+		DateFormatter dateFormatter = new DateFormatter(new SimpleDateFormat("dd/MM/yyyy"));
+		birthdateField.setFormatterFactory(new DefaultFormatterFactory(dateFormatter));
+		birthdateField.setInputVerifier(new InputVerifier() {
+			
+			@Override
+			public boolean shouldYieldFocus(JComponent input) {
+				boolean inputOK = verify(input);
+				if (inputOK) {
+					return true;
+				}
+				String failedVerificationMessage = "Date must be in the dd/MM/yyyy format. For example: 17/11/2008";
+				JOptionPane.showMessageDialog(null, failedVerificationMessage, "Invalid Date Format", JOptionPane.WARNING_MESSAGE);
+				//Reinstall the input verifier.
+				input.setInputVerifier(this);
+				return false;
+			}
+			
+			public boolean verify(JComponent input) {
+				boolean result = ((JFormattedTextField) input).isEditValid();
+				if (!(input instanceof JFormattedTextField)) {
+					result = true; 
+				}
+				return result;
+			}
+
+		});
+		BeanProperty<ClientTablePanel, Date> birthDate = BeanProperty.create("selectedItem.birthdate");
+		BeanProperty<JFormattedTextField, ?> formattedValue = BeanProperty.create("value"); 
+		Binding<? extends AbstractTablePanel<Client>, Date, JFormattedTextField, ?> birthDateBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, birthDate, birthdateField, formattedValue);
+		bindingGroup.addBinding(birthDateBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, birthdateField, enabled);
+		bindingGroup.addBinding(enabledBinding);
+		add(birthdateField);
+		
+		JLabel genderLabel = new JLabel();
+		genderLabel.setFont(AppSettings.MAIN_FONT);
+		genderLabel.setText(getResourceMap().getString("genderLabel.text")); // NOI18N
+		add(genderLabel, "split 3");
+		
+		JRadioButton maleRadioButton = new JRadioButton();
+		maleRadioButton.setEnabled(false);
+		maleRadioButton.setText(getResourceMap().getString("maleRadioButton.text")); // NOI18N
+		BeanProperty<ClientTablePanel, Boolean> male = BeanProperty.create("selectedItem.male");
+		BeanProperty<JRadioButton, Boolean> radioButtonSelected = BeanProperty.create("selected");
+		Binding<? extends AbstractTablePanel<Client>, Boolean, JRadioButton, Boolean> radioButtonSelectedBinding = null;
+/*		radioButtonSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, male, maleRadioButton, radioButtonSelected);
+		bindingGroup.addBinding(radioButtonSelectedBinding);
+		radioButtonSelectedBinding.addBindingListener(new AbstractBindingListener() {
+			
+			@Override
+			public void sourceChanged(Binding binding, PropertyStateEvent event) {
+				// TODO Auto-generated method stub
+				super.sourceChanged(binding, event);
+			}
+
+			@Override
+			public void synced(Binding binding) {
+				// TODO Auto-generated method stub
+				super.synced(binding);
+			}
+
+			@Override
+			public void syncFailed(Binding binding, SyncFailure failure) {
+				// TODO Auto-generated method stub
+				super.syncFailed(binding, failure);
+			}
+			
+			
+			
+		});
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, maleRadioButton, enabled);
+		bindingGroup.addBinding(enabledBinding);*/
+		add(maleRadioButton);
+
+		JRadioButton femaleRadioButton = new JRadioButton();
+		femaleRadioButton.setEnabled(false);
+		femaleRadioButton.setText(getResourceMap().getString("femaleRadioButton.text")); // NOI18N
+//		ELProperty<ClientTablePanel, Boolean> female = ELProperty.create("${!selectedItem.male}");
+//		radioButtonSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, female, femaleRadioButton, radioButtonSelected);
+//		bindingGroup.addBinding(radioButtonSelectedBinding);
+//		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, femaleRadioButton, enabled);
+//		bindingGroup.addBinding(enabledBinding);
+		add(femaleRadioButton, "wrap, gapright push");
+		
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(maleRadioButton);
+		buttonGroup.add(femaleRadioButton);
+
 		JLabel addressLabel = new JLabel();
 		addressLabel.setFont(AppSettings.MAIN_FONT);
 		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
@@ -203,7 +305,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, addressField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(addressField, "span, growx, wrap");
+		add(addressField, "span, wrap");
 		
 		JLabel telephoneLabel = new JLabel();
 		telephoneLabel.setFont(AppSettings.MAIN_FONT);
@@ -218,7 +320,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, phoneField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(phoneField, "wrap, span, growx");
+		add(phoneField, "wrap, span");
 
 		Query cityQuery = Beans.isDesignTime() ? null : RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
 		EventList<City> cityList = GlazedLists.eventList(cityQuery.getResultList());
@@ -258,31 +360,6 @@ public class ClientInfoPanel extends AppPanel {
 			}
 		}
 		
-		AutoCompleteSupport<City> locationCompletion = AutoCompleteSupport.install(locationField, cityList, GlazedLists.textFilterator("name"), new Format() {
-
-			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-				StringBuffer result = new StringBuffer();
-				if (obj instanceof City) {
-					result.append(((City) obj).getName());
-				}
-				return result;
-			}
-
-			public Object parseObject(String value, ParsePosition pos) {
-				City selectedCity = (City) locationField.getSelectedItem();
-				Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByName");
-				query.setParameter("name", value);
-				List<?> resultList = query.getResultList();
-				return resultList != null && !resultList.isEmpty() ? resultList.get(0) : selectedCity;
-			}
-			
-		});
-		locationCompletion.setStrict(true);
-		locationCompletion.setBeepOnStrictViolation(false);
-		locationField.setRenderer(new CityInfoRenderer());
-		locationField.setFont(AppSettings.MAIN_FONT);
-		add(locationField, "growx");
-
 		AutoCompleteSupport<City> zipCodeCompletion = AutoCompleteSupport.install(zipCodeField, cityList, GlazedLists.textFilterator("code"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
@@ -310,7 +387,32 @@ public class ClientInfoPanel extends AppPanel {
 		
 		zipCodeField.setRenderer(new CityInfoRenderer());
 		zipCodeField.setFont(AppSettings.MAIN_FONT);
-		add(zipCodeField, "growx");
+		add(zipCodeField);
+		
+		AutoCompleteSupport<City> locationCompletion = AutoCompleteSupport.install(locationField, cityList, GlazedLists.textFilterator("name"), new Format() {
+
+			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+				StringBuffer result = new StringBuffer();
+				if (obj instanceof City) {
+					result.append(((City) obj).getName());
+				}
+				return result;
+			}
+
+			public Object parseObject(String value, ParsePosition pos) {
+				City selectedCity = (City) locationField.getSelectedItem();
+				Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByName");
+				query.setParameter("name", value);
+				List<?> resultList = query.getResultList();
+				return resultList != null && !resultList.isEmpty() ? resultList.get(0) : selectedCity;
+			}
+			
+		});
+		locationCompletion.setStrict(true);
+		locationCompletion.setBeepOnStrictViolation(false);
+		locationField.setRenderer(new CityInfoRenderer());
+		locationField.setFont(AppSettings.MAIN_FONT);
+		add(locationField);
 
 		bindingGroup.addBindingListener(new AbstractBindingListener() {
 

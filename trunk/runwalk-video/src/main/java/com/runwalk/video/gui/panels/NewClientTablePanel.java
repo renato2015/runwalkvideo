@@ -575,6 +575,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 		firstnameLabel.setText(bundle2.getString("firstnameLabel.text")); // NOI18N
 		firstnameLabel.setName("firstnameLabel"); // NOI18N
 
+		JRadioButton maleRadioButton  = new JRadioButton();
 		maleRadioButton.setText(bundle2.getString("maleRadioButton.text")); // NOI18N
 		maleRadioButton.setName("maleRadioButton"); // NOI18N
 
