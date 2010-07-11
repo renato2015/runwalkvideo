@@ -1,49 +1,20 @@
-package com.runwalk.video.entities;
+package com.runwalk.video.test.entities;
 
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import org.jdesktop.application.AbstractBean;
 
-@SuppressWarnings("serial")
-@Entity
-@Table(schema="testdb", name="analysis")
-public class Analysis extends SerializableEntity<Analysis> {
+public class Analysis extends AbstractBean implements Comparable<Analysis> {
 
-	@Id
-	@Column(name="id")
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
-	@JoinColumn(name="clientid", nullable=false)
 	private Client client;
 	
-	@OneToOne
-	@JoinColumn(name="articleid")
-	private Article article;
-	
-	@OneToOne(cascade=CascadeType.ALL)
-	@JoinColumn(name="movieid", unique = true)
 	private Recording recording;
 	
-	@Column(name="date")
-	@Temporal(value=TemporalType.TIMESTAMP)
 	private Date creationDate;
 
-	@Lob
 	private String comments;
 	
 	protected Analysis() { }
@@ -60,10 +31,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 	protected void setClient(Client client) {
 		this.client = client;
 	}
-
-	public Article getArticle() {
-		return this.article;
-	}
 	
 	public Date getCreationDate() {
 		return creationDate;
@@ -79,10 +46,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 
 	public void setComments(String comments) {
 		this.firePropertyChange("comments", this.comments, this.comments = comments);
-	}
-
-	public void setArticle(Article art) {
-		this.firePropertyChange("article", this.article, this.article = art);
 	}
 
 	public Recording getRecording() {

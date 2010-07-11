@@ -15,8 +15,10 @@ import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
@@ -44,7 +46,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
-		add(scrollPane, "wrap, grow, width :570:");
+		add(scrollPane, "wrap, grow");
 		
 		JButton cleanupButton = new JButton(getAction("cleanup"));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
@@ -116,6 +118,17 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 	
 	@Override
+	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
+		return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
+
+			public boolean matches(Analysis item) {
+				return item.getRecording() != null && !item.getRecording().isCompressed();
+			}
+			
+		});
+	}
+
+	@Override
 	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
 		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(getTable().getDefaultRenderer(ImageIcon.class));
@@ -155,8 +168,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	    	case 2: return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
 	    	case 3: return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
 	    	case 4: return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
-	    	case 5: return analysis.getRecording() != null ? 
-	    			ResourceInjector.injectResources(analysis.getRecording().getRecordingStatus().getResourceKey(), RecordingStatus.class) : "<geen>";
+	    	case 5: {
+	    		String result = "<geen>";
+	    		if (analysis.getRecording() != null) {
+	    			String resourceKey = analysis.getRecording().getRecordingStatus().getResourceKey();
+	    			result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
+	    		} 
+	    		return result;
+	    	}
 	    	case 6: return new OpenRecordingButton(analysis.getRecording());
 	    	default: return null;
 	    	}

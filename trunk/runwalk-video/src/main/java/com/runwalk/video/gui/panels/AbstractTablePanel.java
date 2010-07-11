@@ -93,6 +93,8 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	
 	public void setSelectedItem(T item) {
 		getEventSelectionModel().getTogglingSelected().add(item);
+		int rowIndex = getItemList().indexOf(item);
+		getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
 	}
 	
 	public void setSelectedItem(int row) {
@@ -140,11 +142,10 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
         EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
-        EventList<T> specializedList = specializeItemList(observedItems);
-        SortedList<T> sortedItems = SortedList.create(specializedList);
-        this.firePropertyChange(EVENT_LIST, this.itemList, this.itemList = sortedItems); 
-		
-        eventSelectionModel = new EventSelectionModel<T>(sortedItems);
+        SortedList<T> sortedItems = SortedList.create(observedItems);
+        EventList<T> specializedList = specializeItemList(sortedItems);
+        firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
+        eventSelectionModel = new EventSelectionModel<T>(specializedList);
         eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
         eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
         	
@@ -153,10 +154,12 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
         		while(listChanges.next()) {
         			int changeType = listChanges.getType();
         			if (changeType == ListEvent.DELETE) {
-        				T oldValue = listChanges.getOldValue();
-        				T newValue = getSelectedItem();
-						firePropertyChange(SELECTED_ITEM, oldValue, newValue);
-        				setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+        				if (listChanges.getOldValue() != ListEvent.UNKNOWN_VALUE) {
+        					T oldValue = listChanges.getOldValue();
+        					T newValue = getSelectedItem();
+        					firePropertyChange(SELECTED_ITEM, oldValue, newValue);
+        					setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+        				}
         			} else if (changeType == ListEvent.INSERT) {
         				if (listChanges.getOldValue() == ListEvent.UNKNOWN_VALUE) {
         					firePropertyChange(SELECTED_ITEM, null, getSelectedItem());
@@ -166,7 +169,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
         		}
         	}
         });
-        EventTableModel<T> dataModel = new EventTableModel<T>(sortedItems, getTableFormat());
+        EventTableModel<T> dataModel = new EventTableModel<T>(specializedList, getTableFormat());
 		getTable().setModel(dataModel);
         TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
         getTable().setSelectionModel(eventSelectionModel);

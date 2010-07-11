@@ -263,7 +263,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 * @return Whether recording is enabled or not
 	 */
 	public void setRecordingEnabled(boolean recordSelected) {
-		boolean isRecordingEnabled = recordSelected && capturer.isActive() && recordingSelected && !capturer.isRecording();
+		boolean capturerReady = capturer != null && capturer.isActive() && !capturer.isRecording();
+		boolean isRecordingEnabled = capturerReady && recordSelected && recordingSelected;
 		if (player != null) {
 			isRecordingEnabled &= player.isIdle();
 		}
@@ -517,7 +518,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void captureFrameToFront() {
-		capturer.toFront();
+		if (capturer != null) {
+			capturer.toFront();
+		}
 	}
 	
 	private class WindowStateChangeListener extends AppWindowWrapperListener {
