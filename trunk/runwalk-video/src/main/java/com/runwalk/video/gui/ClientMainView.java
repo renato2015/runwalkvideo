@@ -18,10 +18,10 @@ public class ClientMainView extends AppInternalFrame {
 		tabPanel.addTab(getResourceMap().getString("analysisPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisTablePanel()); // NOI18N
 		tabPanel.addTab(getResourceMap().getString("conversionPanel.TabConstraints.tabTitle"),  getApplication().getAnalysisOverviewTable()); // NOI18N
 		
-		setLayout(new MigLayout("flowy", "", "[grow,fill]"));
-		add(getApplication().getClientTablePanel(), "width 400:590:800");
-		add(tabPanel, "height :280:, width :590:");
-		add(getApplication().getStatusPanel(), "width 400:590:800, height 30!");
+		setLayout(new MigLayout("flowy", "[grow,fill]", "[grow,fill]"));
+		add(getApplication().getClientTablePanel());
+		add(tabPanel, "height :280:");
+		add(getApplication().getStatusPanel(), "height 30!");
 	}
 
 

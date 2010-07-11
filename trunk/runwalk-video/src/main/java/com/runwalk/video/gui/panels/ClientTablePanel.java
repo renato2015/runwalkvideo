@@ -78,7 +78,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		theLabel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent arg0) {
 				theLabel.setIcon(search);
-				clearSearch();
+				clearSearchField();
 				setSelectedItem(getTable().getSelectedRow());
 			}
 			public void mouseEntered(MouseEvent arg0) {
@@ -147,6 +147,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	@Action
 	public void addClient() {
+		clearSearchField();
 		Client client = new Client();
 		AppUtil.persistEntity(client);
 		getItemList().add(client);
@@ -173,7 +174,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		setSaveNeeded(true);
 	}
 
-	private void clearSearch() {
+	private void clearSearchField() {
 		searchField.setText("");
 	}
 	

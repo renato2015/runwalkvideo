@@ -8,17 +8,21 @@ import javax.swing.SwingUtilities;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.CollectionList;
+import ca.odell.glazedlists.CompositeList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.matchers.Matcher;
+import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisConnector;
+import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
+import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 
 public class RefreshTask extends AbstractTask<Boolean, Void> {
@@ -33,54 +37,61 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		boolean success = true;
 		try {
 			message("startMessage");
-			setProgress(0, 0, 2);
+//			setProgress(0, 0, 3);
 			final Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
 			query.setHint("eclipselink.left-join-fetch", "c.analyses.recording");
-//			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			message("fetchMessage");
-			setProgress(1, 0, 2);
+//			setProgress(1, 0, 3);
+//			query.setHint("eclipselink.left-join-fetch", "c.address.city");
+			final List<Client> resultList = query.getResultList();
+//			setProgress(2, 0, 3);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
-					EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(query.getResultList()));
+					EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(resultList));
 					ClientTablePanel clientTablePanel = RunwalkVideoApp.getApplication().getClientTablePanel();
 					clientTablePanel.setItemList(clientList, Client.class);
 					//Create the list for the analyses
-					final ListEventPublisher publisher = clientList.getPublisher();
-					final ReadWriteLock readWriteLock = clientList.getReadWriteLock();
-					EventList<Client> observedClients = clientTablePanel.getItemList();
-					final CollectionList<Client, Analysis> unfinishedBusiness = new CollectionList<Client, Analysis>(observedClients, new CollectionList.Model<Client, Analysis>() {
-
-						public List<Analysis> getChildren(Client parent) {
-							EventList<Analysis> eventList = new BasicEventList(publisher, readWriteLock);
-							eventList.addAll(parent.getAnalyses());
-							return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
-
-								public boolean matches(Analysis item) {
-									return item.getRecording() != null && !item.getRecording().isCompressed();
-								}
-								
-							});
-						}
-						
-					});
-					RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setItemList(unfinishedBusiness, new AnalysisConnector());
-					//Create the overview with unfinished analyses
 					final EventList<Client> selectedClients = clientTablePanel.getEventSelectionModel().getSelected();
-					CollectionList<Client, Analysis> analyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
+					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
 
 						public List<Analysis> getChildren(Client parent) {
 							return parent.getAnalyses();
 						}
 
+						@Override
+						public String toString() {
+							return "selectedAnalyses";
+						}
+
 					});
-					RunwalkVideoApp.getApplication().getAnalysisTablePanel().setItemList(analyses, new AnalysisConnector());
+					AnalysisTablePanel analysisTablePanel = RunwalkVideoApp.getApplication().getAnalysisTablePanel();
+					analysisTablePanel.setItemList(selectedClientAnalyses, new AnalysisConnector());
+					final EventList<Client> deselectedClients = clientTablePanel.getEventSelectionModel().getDeselected();
+					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, new CollectionList.Model<Client, Analysis>() {
+
+						public List<Analysis> getChildren(Client parent) {
+							return parent.getAnalyses();
+						}
+
+						@Override
+						public String toString() {
+							return "deselectedAnalyses";
+						}
+						
+					});
+					
+					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
+					analysesOverview.addMemberList(selectedClientAnalyses);
+					analysesOverview.addMemberList(deselectedClientAnalyses);
+					
+					//Create the overview with unfinished analyses
+					AnalysisOverviewTablePanel analysisOverviewTablePanel = RunwalkVideoApp.getApplication().getAnalysisOverviewTable();
+					analysisOverviewTablePanel.setItemList(analysesOverview, new AnalysisConnector());
 				}
 				
 			});
-			
-			
-			setProgress(2, 0, 2);
+//			setProgress(3, 0, 3);
 			message("endMessage");
 		} catch(Exception ignore) {
 			getLogger().error(Level.SEVERE, ignore);

@@ -26,7 +26,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name="recordings")
+@Table(schema="testdb", name="movies")
 public class Recording extends SerializableEntity<Recording> {
 	
 	private static final String RECORDED = "recorded";
@@ -256,10 +256,7 @@ public class Recording extends SerializableEntity<Recording> {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getVideoFileName() == null) ? 0 : getVideoFileName().hashCode());
-		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-		return result;
+		return prime + ((getVideoFileName() == null) ? 0 : getVideoFileName().hashCode());
 	}
 
 	@Override
@@ -268,7 +265,6 @@ public class Recording extends SerializableEntity<Recording> {
 		if (obj != null && getClass() == obj.getClass()) {
 			Recording other = (Recording) obj;
 			result = getVideoFileName() != null ? getVideoFileName().equals(other.getVideoFileName()) : other.getVideoFileName() == null;
-			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}

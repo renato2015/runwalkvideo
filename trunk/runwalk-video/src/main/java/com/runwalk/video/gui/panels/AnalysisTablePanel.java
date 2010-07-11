@@ -17,12 +17,14 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
+import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
@@ -51,7 +53,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
-		add(scrollPane, "wrap, grow, width :570:, height :100:");
+		add(scrollPane, "wrap, grow, height :100:");
 
 		setSecondButton(new JButton(getAction("addAnalysis")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
@@ -69,7 +71,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
-		add(tscrollPane, "grow, width :570:, height :60:");
+		add(tscrollPane, "grow, height :60:");
 
 		BindingGroup bindingGroup = new BindingGroup();
 		//comments JTextArea binding
@@ -117,6 +119,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		analysis.setRecording(recording);
 		AppUtil.persistEntity(analysis);
 		try {
+//			getItemList().add(analysis);
 			selectedClient.addAnalysis(analysis);
 			setSelectedItem(analysis);
 		} finally {
@@ -138,6 +141,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		try {
 			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 			Analysis selectedAnalysis = getSelectedItem();
+//			getEventSelectionModel().getSelected().remove(selectedAnalysis);
 			getItemList().remove(selectedAnalysis);
 			getApplication().getSelectedClient().removeAnalysis(selectedAnalysis);
 			setSelectedItem(lastSelectedRowIndex - 1);
@@ -146,7 +150,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
-		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
+//		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
 	@Override

@@ -136,8 +136,12 @@ public class Client extends SerializableEntity<Client> {
 	public boolean removeAnalysis(Analysis analysis) {
 		boolean result = false;
 		if (analysis != null) {
-//			result = getAnalyses().remove(analysis);
-			Date lastAnalysisDate = getAnalyses().isEmpty() ? null : getAnalyses().get(getAnalysesCount() - 1).getCreationDate();
+			result = getAnalyses().remove(analysis);
+			Date lastAnalysisDate = null;
+			if (!getAnalyses().isEmpty()) {
+				Analysis lastAnalysis = getAnalyses().get(getAnalysesCount() - 1);
+				lastAnalysisDate = lastAnalysis.getCreationDate();
+			}
 			setLastAnalysisDate(lastAnalysisDate);
 		}
 		return result;
@@ -191,7 +195,7 @@ public class Client extends SerializableEntity<Client> {
 		int result = 1;
 		result = prime * result + ((getFirstname() == null) ? 0 : getFirstname().hashCode());
 		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
-		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+//		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
 
@@ -202,7 +206,7 @@ public class Client extends SerializableEntity<Client> {
 			Client other = (Client) obj;
 			result = getFirstname() != null ? getFirstname().equals(other.getFirstname()) : other.getFirstname() == null;
 			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
-			result &= getId() != null ? getId().equals(other.getId()) : result;
+//			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}
