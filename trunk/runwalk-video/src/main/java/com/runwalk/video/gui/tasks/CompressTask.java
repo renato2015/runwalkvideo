@@ -29,9 +29,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private DSFilterInfo transcoder;
 	private volatile boolean finished = false;
 
-	public CompressTask(List<Recording> recordings, DSFilterInfo transcoder) {
+	public CompressTask(List<Recording> recordings, String transcoder) {
 		super("compress");
-		this.transcoder = transcoder;
+		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
 		this.recordings = recordings;
 		setUserCanCancel(true);
 	}

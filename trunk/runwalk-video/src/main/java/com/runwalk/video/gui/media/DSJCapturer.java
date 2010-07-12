@@ -4,8 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 
-import com.runwalk.video.util.AppSettings;
-
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
@@ -17,7 +15,11 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private static final int FLAGS = DSFiltergraph.DD7;
 
-	private static final DSFilterInfo[] VIDEO_ENCODERS = AppSettings.VIDEO_ENCODERS;
+	public final static DSFilterInfo[] VIDEO_ENCODERS = {
+		DSFilterInfo.doNotRender(), 
+		DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
+		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
+	};
 
 	private DSFilterInfo[][] dsi;
 

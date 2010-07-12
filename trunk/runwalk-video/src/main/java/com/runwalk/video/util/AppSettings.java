@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -23,18 +25,10 @@ import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.RunwalkVideoApp;
 
-import de.humatic.dsj.DSFilterInfo;
-
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {
 
 	public final static float[] PLAY_RATES = new float[] {0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f};
-	
-	public final static DSFilterInfo[] VIDEO_ENCODERS = {
-					DSFilterInfo.doNotRender(), 
-					DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
-					DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
-	};
 	
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
@@ -192,8 +186,8 @@ public class AppSettings implements Serializable {
 		settings.rateIndex = rateIndex;
 	}
 
-	public DSFilterInfo getTranscoder() {
-		return DSFilterInfo.filterInfoForName(settings.transcoderName);
+	public String getTranscoder() {
+		return getSettings().selectedTranscoderName;
 	}
 	
 	@XmlRootElement
@@ -209,9 +203,9 @@ public class AppSettings implements Serializable {
 		
 		@XmlElement
 		private float savedVolume;
-
+		
 		@XmlElement
-		private String transcoderName = AppSettings.VIDEO_ENCODERS[2].getName();
+		private String selectedTranscoderName = "XviD MPEG-4 Codec";
 		
 	}
 }
