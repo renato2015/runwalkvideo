@@ -5,19 +5,17 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import junit.framework.TestCase;
+
 import org.junit.Ignore;
 
-import junit.framework.TestCase;
 import ca.odell.glazedlists.CollectionList;
-import ca.odell.glazedlists.CompositeList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;

@@ -34,10 +34,9 @@ import com.runwalk.video.util.ResourceInjector;
 @SuppressWarnings("serial")
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
-	private static final String CLEANUP_ENABLED = "cleanupEnabled";
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 
-	private boolean cleanupEnabled, compressionEnabled;
+	private boolean compressionEnabled;
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
@@ -56,32 +55,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		add(getSecondButton());
 	}
 
-	public boolean isCleanupEnabled() {
-		return cleanupEnabled;
-	}
-
-	public void setCleanupEnabled(boolean cleanUpEnabled) {
-		this.firePropertyChange(CLEANUP_ENABLED, this.cleanupEnabled, this.cleanupEnabled = cleanUpEnabled);
-	}
-
-	@Action(enabledProperty=CLEANUP_ENABLED)
+	@Action
 	public Task<Boolean, Void> cleanup() {
-		final Task<Boolean, Void> cleanupTask = new CleanupRecordingsTask(AppSettings.getInstance().getUncompressedVideoDir());
-		cleanupTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-			
-			@Override
-			public void succeeded(TaskEvent<Boolean> event) {
-				setCleanupEnabled(!event.getValue());
-			}
-			
-		});
-		return cleanupTask;
+		return new CleanupRecordingsTask(AppSettings.getInstance().getUncompressedVideoDir());
 	}
 
 	@Action(enabledProperty = COMPRESSION_ENABLED, block=Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
-		setCleanupEnabled(true);
 		return new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
 	}
 
