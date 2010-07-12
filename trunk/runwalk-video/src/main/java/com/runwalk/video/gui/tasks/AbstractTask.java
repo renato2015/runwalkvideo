@@ -38,7 +38,7 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
     	return result;
 	}
 
-	protected Logger getLogger() {
+	public Logger getLogger() {
 		return logger;
 	}
 	

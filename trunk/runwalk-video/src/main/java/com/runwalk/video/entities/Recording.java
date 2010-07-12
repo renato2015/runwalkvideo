@@ -238,15 +238,15 @@ public class Recording extends SerializableEntity<Recording> {
 		getRecordingStatus() != RecordingStatus.FILE_NOT_ACCESSIBLE &&
 		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
 		getRecordingStatus() != RecordingStatus.DSJ_ERROR && 
-		getUncompressedVideoFile().canReadAndExists();
+		getUncompressedVideoFile().exists();
 	}
 	
 	public boolean isUncompressed() {
-		return getRecordingStatus() == RecordingStatus.UNCOMPRESSED && getUncompressedVideoFile().canReadAndExists();
+		return getRecordingStatus() == RecordingStatus.UNCOMPRESSED && getUncompressedVideoFile().exists();
 	}
 
 	public boolean isCompressed() {
-		return getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().canReadAndExists();
+		return getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().exists();
 	}
 
 	public boolean isRecorded() {

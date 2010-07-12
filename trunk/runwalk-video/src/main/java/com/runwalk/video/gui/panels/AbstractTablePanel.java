@@ -8,16 +8,11 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-
-import org.apache.log4j.Logger;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ListSelection;
@@ -33,13 +28,11 @@ import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
-import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel implements AppComponent {
+public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel {
 	
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
@@ -199,31 +192,6 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
-	
-	public javax.swing.Action getAction(String name) {
-		return getApplicationActionMap().get(name);
-	}
-
-	public RunwalkVideoApp getApplication() {
-		return RunwalkVideoApp.getApplication();
-	}
-
-	public ApplicationContext getContext() {
-		return getApplication().getContext();
-	}
-
-	public Logger getLogger() {
-		return Logger.getLogger(getClass());
-	}
-
-	public ResourceMap getResourceMap() {
-		return getContext().getResourceMap(getClass(), AbstractTablePanel.class);
-	}
-	
-	public ActionMap getApplicationActionMap() {
-		return getContext().getActionMap(AbstractTablePanel.class, this);
-	}
-
 	
 	protected class CustomJTableRenderer implements TableCellRenderer {
 		private TableCellRenderer __defaultRenderer;

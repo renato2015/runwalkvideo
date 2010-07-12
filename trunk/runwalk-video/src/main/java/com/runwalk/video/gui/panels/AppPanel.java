@@ -35,6 +35,6 @@ public class AppPanel extends JPanel implements AppComponent {
 	}
 	
 	public ActionMap getApplicationActionMap() {
-		return getContext().getActionMap(AppComponent.class, this);
+		return getContext().getActionMap(AppPanel.class, this);
 	}
 }
