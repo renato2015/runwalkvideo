@@ -195,7 +195,7 @@ public class Client extends SerializableEntity<Client> {
 		int result = 1;
 		result = prime * result + ((getFirstname() == null) ? 0 : getFirstname().hashCode());
 		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
-//		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
 
@@ -206,7 +206,7 @@ public class Client extends SerializableEntity<Client> {
 			Client other = (Client) obj;
 			result = getFirstname() != null ? getFirstname().equals(other.getFirstname()) : other.getFirstname() == null;
 			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
-//			result &= getId() != null ? getId().equals(other.getId()) : result;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}

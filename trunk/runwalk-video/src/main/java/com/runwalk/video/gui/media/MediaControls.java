@@ -1,8 +1,6 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -13,14 +11,13 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
-import javax.swing.border.EmptyBorder;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task.BlockingScope;
@@ -57,7 +54,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private JLabel time;
 	private JSlider scroll;
-	private JPanel buttonPanel;
 	private AbstractButton playButton;
 
 	private VideoPlayer player;
@@ -66,6 +62,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public MediaControls() {
 		super("Media controls", false);
+		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 
 		BindingGroup bindingGroup = new BindingGroup();
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYING_ENABLED);
@@ -86,11 +83,34 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		enabledBinding.setSourceUnreadableValue(false);
 		enabledBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(enabledBinding);
-
-		buttonPanel = new JPanel();
-		buttonPanel.setPreferredSize(new Dimension(620,40));
-		buttonPanel.setLayout(new java.awt.FlowLayout());
-
+		
+		ELProperty<MediaControls, Boolean> notPlayingEnabled = ELProperty.create("${!" + PLAYING_ENABLED + "}");
+		BeanProperty<MediaControls, Boolean> playingDisabled = BeanProperty.create(PLAYING_DISABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, notPlayingEnabled, this, playingDisabled);
+		bindingGroup.addBinding(enabledBinding);
+		bindingGroup.bind();
+		
+		setSlider(new JSlider(JSlider.HORIZONTAL, 0, 1000, 0));
+		getSlider().setPaintTicks(false);
+		getSlider().setPaintLabels(true);
+		getSlider().setSnapToTicks(false);
+		BeanProperty<JSlider, Boolean> sliderEnabled = BeanProperty.create("enabled");
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, playingEnabled, getSlider(), sliderEnabled);
+		bindingGroup.addBinding(enabledBinding);
+		
+		// Listener for the scroll
+		getSlider().addMouseListener(new MouseAdapter() {
+			public void mouseReleased(MouseEvent e) {
+				if (player != null && player.isActive()) {
+					int position = getSlider().getValue() * player.getDuration() / 1000;
+					getLogger().debug("Slide stateChanged : " + position);
+					player.setPosition(position);
+				}
+			}
+		});
+		add(getSlider(), "wrap, grow, gapbottom 10");
+		
+		//add control buttons
 		createJButton("previousSnapshot"); 
 		createJButton("slower"); 
 		createJButton("record");
@@ -107,43 +127,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		createJButton("showCameraSettings"); 
 		createJButton("fullScreen"); 
 
-		setSlider(new JSlider(JSlider.HORIZONTAL, 0, 1000, 0));
-		getSlider().setPaintTicks(false);
-		getSlider().setPaintLabels(true);
-		getSlider().setSnapToTicks(false);
-		getSlider().setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-		BeanProperty<JSlider, Boolean> sliderEnabled = BeanProperty.create("enabled");
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, playingEnabled, getSlider(), sliderEnabled);
-		bindingGroup.addBinding(enabledBinding);
-
-		ELProperty<MediaControls, Boolean> notPlayingEnabled = ELProperty.create("${!" + PLAYING_ENABLED + "}");
-		BeanProperty<MediaControls, Boolean> playingDisabled = BeanProperty.create(PLAYING_DISABLED);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, notPlayingEnabled, this, playingDisabled);
-		bindingGroup.addBinding(enabledBinding);
-		bindingGroup.bind();
-
-		// Listener for the scroll
-		getSlider().addMouseListener(new MouseAdapter() {
-			public void mouseReleased(MouseEvent e) {
-				if (player != null && player.isActive()) {
-					int position = getSlider().getValue() * player.getDuration() / 1000;
-					getLogger().debug("Slide stateChanged : " + position);
-					player.setPosition(position);
-				}
-			}
-		});
-
 		time = new JLabel();
 		clearStatusInfo();
-
-		JPanel playerPanel = new JPanel();
-		playerPanel.setBorder(new EmptyBorder(new Insets(10,10,0,10)));
-		playerPanel.setLayout(new BorderLayout());
-		playerPanel.add(getSlider(), BorderLayout.NORTH);
-		playerPanel.add(time, BorderLayout.EAST);
-		playerPanel.add(buttonPanel, BorderLayout.CENTER);
-
-		add(playerPanel);
+		add(time, "gapleft 15");
 	}
 
 	private AbstractButton createJToggleButton(String actionName, String iconResourceName) {
@@ -159,11 +145,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private AbstractButton createJButton(String actionName, boolean toggleButton) {
 		javax.swing.Action action = getAction(actionName);
 		AbstractButton button = toggleButton ? new JToggleButton(action) : new JButton(action);
-		button.setMargin(new Insets(0, 0, 0, 0));
+		button.setMargin(new Insets(1, 1, 1, 1));
 		//		BeanProperty<AbstractButton, Boolean> buttonEnabled = BeanProperty.create("enabled");
 		//		Binding<?, Boolean, ?, Boolean> enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, sourceProperty, button, buttonEnabled);
 		//		bindingGroup.addBinding(enabledBinding);
-		buttonPanel.add(button);
+		add(button, "gap 0");
 		return button;
 	}
 

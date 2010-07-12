@@ -4,14 +4,19 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
-import com.runwalk.video.RunwalkVideoApp;
-
+/**
+ * This interface defines a basic set of methods providing access to some common Swing Application Framework (SAF) functionalities.
+ * 
+ * @author Jeroen Peelaerts
+ *
+ */
 public interface AppComponent {
 	
-	public RunwalkVideoApp getApplication();
+	public Application getApplication();
 
 	public ResourceMap getResourceMap();
 	

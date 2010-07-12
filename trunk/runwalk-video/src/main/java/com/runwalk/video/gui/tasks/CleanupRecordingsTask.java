@@ -96,4 +96,5 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 				getLogger().error(e);
 			} 
 		}
+
 	}
