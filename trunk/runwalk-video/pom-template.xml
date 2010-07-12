@@ -342,6 +342,11 @@
 			<artifactId>scrollabledesktop</artifactId>
 			<version>1.01</version>
 		</dependency>
+		<dependency>
+			<groupId>net.java.dev.glazedlists</groupId>
+			<artifactId>glazedlists_java15</artifactId>
+			<version>1.8.0</version>
+		</dependency>
 		<!-- Persistence libraries -->
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>

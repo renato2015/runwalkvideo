@@ -119,7 +119,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		analysis.setRecording(recording);
 		AppUtil.persistEntity(analysis);
 		try {
-//			getItemList().add(analysis);
 			selectedClient.addAnalysis(analysis);
 			setSelectedItem(analysis);
 		} finally {
@@ -141,7 +140,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		try {
 			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 			Analysis selectedAnalysis = getSelectedItem();
-//			getEventSelectionModel().getSelected().remove(selectedAnalysis);
 			getItemList().remove(selectedAnalysis);
 			getApplication().getSelectedClient().removeAnalysis(selectedAnalysis);
 			setSelectedItem(lastSelectedRowIndex - 1);
@@ -150,7 +148,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
-//		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
+		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
 	@Override

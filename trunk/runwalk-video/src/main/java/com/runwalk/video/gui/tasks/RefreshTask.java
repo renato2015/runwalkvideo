@@ -59,11 +59,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 							return parent.getAnalyses();
 						}
 
-						@Override
-						public String toString() {
-							return "selectedAnalyses";
-						}
-
 					});
 					AnalysisTablePanel analysisTablePanel = RunwalkVideoApp.getApplication().getAnalysisTablePanel();
 					analysisTablePanel.setItemList(selectedClientAnalyses, new AnalysisConnector());
@@ -72,11 +67,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 						public List<Analysis> getChildren(Client parent) {
 							return parent.getAnalyses();
-						}
-
-						@Override
-						public String toString() {
-							return "deselectedAnalyses";
 						}
 						
 					});

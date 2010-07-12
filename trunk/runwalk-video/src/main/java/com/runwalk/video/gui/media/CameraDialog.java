@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
