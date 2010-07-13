@@ -321,45 +321,32 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, phoneField, enabled);
 		bindingGroup.addBinding(enabledBinding);
 		add(phoneField, "wrap, span");
-
-		Query cityQuery = Beans.isDesignTime() ? null : RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
-		EventList<City> cityList = GlazedLists.eventList(cityQuery.getResultList());
-		
-		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
-		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
 		
 		JLabel locationLabel = new JLabel();
 		locationLabel.setFont(AppSettings.MAIN_FONT);
 		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
 		add(locationLabel);		
 
-		final JComboBox locationField = new JComboBox();
-		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, locationField, selectedItem);
-		comboBoxBinding.setSourceNullValue(null);
-		comboBoxBinding.setSourceUnreadableValue(null);
-		bindingGroup.addBinding(comboBoxBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, locationField, enabled);
-		bindingGroup.addBinding(enabledBinding);
-
-		final JComboBox zipCodeField = new JComboBox();
-		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, zipCodeField, selectedItem);
-		comboBoxBinding.setSourceNullValue(null);
-		comboBoxBinding.setSourceUnreadableValue(null);
-		bindingGroup.addBinding(comboBoxBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, zipCodeField, enabled);
-		bindingGroup.addBinding(enabledBinding);
+		Query cityQuery = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
+		EventList<City> cityList = GlazedLists.eventList(cityQuery.getResultList());
+		
+		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
+		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
 		
 		class CityInfoRenderer extends DefaultListCellRenderer {
 
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				JLabel result = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				City city = (City) value;
-				result.setText(city.getCode() + " " + city.getName());
+				if (value != null) {
+					City city = (City) value;
+					result.setText(city.getCode() + " " + city.getName());
+				}
 				return result;
 			}
 		}
 		
+		final JComboBox zipCodeField = new JComboBox();
 		AutoCompleteSupport<City> zipCodeCompletion = AutoCompleteSupport.install(zipCodeField, cityList, GlazedLists.textFilterator("code"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
@@ -382,17 +369,26 @@ public class ClientInfoPanel extends AppPanel {
 			}
 			
 		});
+		zipCodeCompletion.setFirstItem(null);
 		zipCodeCompletion.setStrict(true);
 		zipCodeCompletion.setBeepOnStrictViolation(false);
-		
 		zipCodeField.setRenderer(new CityInfoRenderer());
 		zipCodeField.setFont(AppSettings.MAIN_FONT);
+		
+		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, zipCodeField, selectedItem);
+		comboBoxBinding.setSourceNullValue(null);
+		comboBoxBinding.setSourceUnreadableValue(null);
+		bindingGroup.addBinding(comboBoxBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, zipCodeField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(zipCodeField);
 		
+		final JComboBox locationField = new JComboBox();
 		AutoCompleteSupport<City> locationCompletion = AutoCompleteSupport.install(locationField, cityList, GlazedLists.textFilterator("name"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-				StringBuffer result = new StringBuffer();
+				StringBuffer result = new StringBuffer("");
 				if (obj instanceof City) {
 					result.append(((City) obj).getName());
 				}
@@ -401,17 +397,52 @@ public class ClientInfoPanel extends AppPanel {
 
 			public Object parseObject(String value, ParsePosition pos) {
 				City selectedCity = (City) locationField.getSelectedItem();
-				Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByName");
-				query.setParameter("name", value);
-				List<?> resultList = query.getResultList();
+				List<?> resultList = null;
+				if (selectedCity != null) {
+					Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findByName");
+					query.setParameter("name", value);
+					resultList = query.getResultList();
+				}
 				return resultList != null && !resultList.isEmpty() ? resultList.get(0) : selectedCity;
 			}
 			
 		});
+		locationCompletion.setFirstItem(null);
 		locationCompletion.setStrict(true);
 		locationCompletion.setBeepOnStrictViolation(false);
 		locationField.setRenderer(new CityInfoRenderer());
 		locationField.setFont(AppSettings.MAIN_FONT);
+		
+		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, locationField, selectedItem);
+		comboBoxBinding.setSourceNullValue(null);
+		comboBoxBinding.setSourceUnreadableValue(null);
+		comboBoxBinding.addBindingListener(new AbstractBindingListener() {
+
+			@Override
+			public void sourceChanged(Binding binding, PropertyStateEvent event) {
+				super.sourceChanged(binding, event);
+			}
+
+			@Override
+			public void synced(Binding binding) {
+				super.synced(binding);
+			}
+
+			@Override
+			public void syncFailed(Binding binding, SyncFailure failure) {
+				super.syncFailed(binding, failure);
+			}
+
+			@Override
+			public void targetChanged(Binding binding, PropertyStateEvent event) {
+				super.targetChanged(binding, event);
+			}
+			
+			
+		});
+		bindingGroup.addBinding(comboBoxBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, locationField, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(locationField);
 
 		bindingGroup.addBindingListener(new AbstractBindingListener() {
