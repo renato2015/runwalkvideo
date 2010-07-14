@@ -9,6 +9,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,7 +36,7 @@ public class Client extends SerializableEntity<Client> {
 	public static final String ADDRESS = "address";
 	public static final String NAME = "name";
 	public static final String BIRTH_DATE = "birthDate";
-	public static final String MALE = "male";
+	public static final String GENDER = "gender";
 	
 	@Id
 	@Column(name = "id")
@@ -54,7 +56,7 @@ public class Client extends SerializableEntity<Client> {
 	@Column(name = FIRSTNAME)
 	private String firstname;
 	@Column(name = "mail")
-	private int mail = 1;
+	private boolean inMailingList;
 	@Column(name = ORGANIZATION)
 	private String organization;
 	@Column(name = "phone")
@@ -63,7 +65,8 @@ public class Client extends SerializableEntity<Client> {
 	@Temporal(value = TemporalType.DATE)
 	private Date birthDate;
 	@Column(name = "male")
-	private Integer male;
+	@Enumerated(EnumType.ORDINAL)
+	private Gender gender;
 	@Transient
 	private Date lastAnalysisDate;
 
@@ -81,12 +84,12 @@ public class Client extends SerializableEntity<Client> {
 		firePropertyChange(NAME, this.name, this.name = name);
 	}
 
-	public boolean isMale() {
-		return male != null && male == 1 ? true : false;
+	public void setGender(Gender gender) {
+		firePropertyChange(GENDER, this.gender, this.gender = gender);
 	}
-
-	public void setMale(boolean male) {
-		firePropertyChange(MALE, this.male, this.male = male ? 1 : 0);
+	
+	public Gender getGender() {
+		return gender;
 	}
 
 	public String getEmailAddress() {
@@ -117,12 +120,12 @@ public class Client extends SerializableEntity<Client> {
 		return address;
 	}
 
-	public int getMail() {
-		return this.mail;
+	public boolean isInMailingList() {
+		return inMailingList;
 	}
 
-	public void setMail(int mail) {
-		this.mail = mail;
+	public void setInMailingList(boolean inMailingList) {
+		this.inMailingList = inMailingList;
 	}
 
 	public int getAnalysesCount() {
@@ -218,6 +221,16 @@ public class Client extends SerializableEntity<Client> {
 
 	public int compareTo(Client o) {
 		return this.equals(o) ? 0 : getId() != null ? getId().compareTo(o.getId()) : 1;
+	}
+	
+	/**
+	 * Enum for denoting the gender of the client
+	 * 
+	 * WARNING: this field is mapped to the database by ordinal.
+	 * Changing the order of declaration of the constants will change the parsed values in the application!
+	 */
+	public enum Gender {
+		FEMALE, MALE;
 	}
 
 }
