@@ -20,7 +20,6 @@ import org.jdesktop.application.session.WindowState;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.AppWindowWrapper.AppWindowWrapperListener;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**

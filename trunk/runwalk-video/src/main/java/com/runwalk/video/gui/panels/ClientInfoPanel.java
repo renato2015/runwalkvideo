@@ -150,8 +150,8 @@ public class ClientInfoPanel extends AppPanel {
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
 		taxField.setFont(AppSettings.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> taxNo = BeanProperty.create("selectedItem.btwnr");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNo, taxField, textFieldValue);
+		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.taxNumber");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, textFieldValue);
 		valueBinding.setValidator(new Validator () {
 			
 			public Validator.Result validate(Object arg) {
@@ -315,7 +315,7 @@ public class ClientInfoPanel extends AppPanel {
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
 		phoneField.setFont(AppSettings.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.phone");
+		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.phoneNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, phone, phoneField, textFieldValue);
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, phoneField, enabled);
@@ -329,7 +329,6 @@ public class ClientInfoPanel extends AppPanel {
 
 		Query cityQuery = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllCities");
 		EventList<City> cityList = GlazedLists.eventList(cityQuery.getResultList());
-		
 		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
 		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
 		
@@ -370,7 +369,6 @@ public class ClientInfoPanel extends AppPanel {
 			
 		});
 		zipCodeCompletion.setFirstItem(null);
-		zipCodeCompletion.setStrict(true);
 		zipCodeCompletion.setBeepOnStrictViolation(false);
 		zipCodeField.setRenderer(new CityInfoRenderer());
 		zipCodeField.setFont(AppSettings.MAIN_FONT);
@@ -388,7 +386,7 @@ public class ClientInfoPanel extends AppPanel {
 		AutoCompleteSupport<City> locationCompletion = AutoCompleteSupport.install(locationField, cityList, GlazedLists.textFilterator("name"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-				StringBuffer result = new StringBuffer("");
+				StringBuffer result = new StringBuffer();
 				if (obj instanceof City) {
 					result.append(((City) obj).getName());
 				}
@@ -408,7 +406,6 @@ public class ClientInfoPanel extends AppPanel {
 			
 		});
 		locationCompletion.setFirstItem(null);
-		locationCompletion.setStrict(true);
 		locationCompletion.setBeepOnStrictViolation(false);
 		locationField.setRenderer(new CityInfoRenderer());
 		locationField.setFont(AppSettings.MAIN_FONT);

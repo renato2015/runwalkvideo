@@ -40,9 +40,9 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 //			setProgress(0, 0, 3);
 			final Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
 			query.setHint("eclipselink.left-join-fetch", "c.analyses.recording");
+//			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			message("fetchMessage");
 //			setProgress(1, 0, 3);
-//			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			final List<Client> resultList = query.getResultList();
 //			setProgress(2, 0, 3);
 			SwingUtilities.invokeAndWait(new Runnable() {

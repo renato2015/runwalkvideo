@@ -145,7 +145,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private AbstractButton createJButton(String actionName, boolean toggleButton) {
 		javax.swing.Action action = getAction(actionName);
 		AbstractButton button = toggleButton ? new JToggleButton(action) : new JButton(action);
-		button.setMargin(new Insets(1, 1, 1, 1));
+		button.setMargin(new Insets(2, 2, 2, 2));
 		//		BeanProperty<AbstractButton, Boolean> buttonEnabled = BeanProperty.create("enabled");
 		//		Binding<?, Boolean, ?, Boolean> enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, sourceProperty, button, buttonEnabled);
 		//		bindingGroup.addBinding(enabledBinding);
