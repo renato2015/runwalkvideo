@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
-import java.beans.Beans;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -12,9 +11,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.Query;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.InputVerifier;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -39,7 +38,6 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -48,11 +46,12 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Client.Gender;
+import com.runwalk.video.gui.EnumButtonGroup;
 import com.runwalk.video.util.AppSettings;
 
 /**
  * TODO validatie met hibernate validators implementeren
- * verder opkuisen met 
  * 
  * @author Jeroen Peelaerts
  *
@@ -80,6 +79,7 @@ public class ClientInfoPanel extends AppPanel {
 		//component enabling binding
 		ELProperty<ClientTablePanel, Boolean> isSelected = ELProperty.create("${selectedItem != null}");
 		BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("enabled");
+		BeanProperty<JComponent, Boolean> selected = BeanProperty.create("selected");
 		Binding<? extends AbstractTablePanel<Client>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
 		
 		/**
@@ -145,7 +145,7 @@ public class ClientInfoPanel extends AppPanel {
 		JLabel taxLabel = new JLabel();
 		taxLabel.setFont(AppSettings.MAIN_FONT);
 		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
-		add(taxLabel, "split 2");
+		add(taxLabel, "split");
 
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
@@ -167,7 +167,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, taxField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(taxField, "wrap, width :120:, gapright push");
+		add(taxField, "wrap, grow");
 		
 		JLabel emailLabel = new JLabel();
 		emailLabel.setFont(AppSettings.MAIN_FONT);
@@ -195,7 +195,20 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, emailField, enabled);
 		bindingGroup.addBinding(enabledBinding);
-		add(emailField, "wrap, span");
+		add(emailField, "span, split");
+		
+		JLabel mailingListLabel = new JLabel();
+		mailingListLabel.setFont(AppSettings.MAIN_FONT);
+		mailingListLabel.setText(getResourceMap().getString("mailingListLabel.text")); // NOI18N
+		add(mailingListLabel, "grow 0");
+		
+		JCheckBox mailingListCheckbox = new JCheckBox();
+		BeanProperty<ClientTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.inMailingList");
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, inMailingList, mailingListCheckbox, selected);
+		bindingGroup.addBinding(enabledBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, mailingListCheckbox, enabled);
+		bindingGroup.addBinding(enabledBinding);
+		add(mailingListCheckbox, "wrap, grow 0");
 		
 		JLabel birthdateLabel = new JLabel();
 		birthdateLabel.setFont(AppSettings.MAIN_FONT);
@@ -241,57 +254,30 @@ public class ClientInfoPanel extends AppPanel {
 		JLabel genderLabel = new JLabel();
 		genderLabel.setFont(AppSettings.MAIN_FONT);
 		genderLabel.setText(getResourceMap().getString("genderLabel.text")); // NOI18N
-		add(genderLabel, "split 3");
+		add(genderLabel, "split");
 		
 		JRadioButton maleRadioButton = new JRadioButton();
-		maleRadioButton.setEnabled(false);
 		maleRadioButton.setText(getResourceMap().getString("maleRadioButton.text")); // NOI18N
-		BeanProperty<ClientTablePanel, Boolean> male = BeanProperty.create("selectedItem.male");
-		BeanProperty<JRadioButton, Boolean> radioButtonSelected = BeanProperty.create("selected");
-		Binding<? extends AbstractTablePanel<Client>, Boolean, JRadioButton, Boolean> radioButtonSelectedBinding = null;
-/*		radioButtonSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, male, maleRadioButton, radioButtonSelected);
-		bindingGroup.addBinding(radioButtonSelectedBinding);
-		radioButtonSelectedBinding.addBindingListener(new AbstractBindingListener() {
-			
-			@Override
-			public void sourceChanged(Binding binding, PropertyStateEvent event) {
-				// TODO Auto-generated method stub
-				super.sourceChanged(binding, event);
-			}
-
-			@Override
-			public void synced(Binding binding) {
-				// TODO Auto-generated method stub
-				super.synced(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				// TODO Auto-generated method stub
-				super.syncFailed(binding, failure);
-			}
-			
-			
-			
-		});
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, maleRadioButton, enabled);
-		bindingGroup.addBinding(enabledBinding);*/
+		bindingGroup.addBinding(enabledBinding);
 		add(maleRadioButton);
 
 		JRadioButton femaleRadioButton = new JRadioButton();
-		femaleRadioButton.setEnabled(false);
 		femaleRadioButton.setText(getResourceMap().getString("femaleRadioButton.text")); // NOI18N
-//		ELProperty<ClientTablePanel, Boolean> female = ELProperty.create("${!selectedItem.male}");
-//		radioButtonSelectedBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, female, femaleRadioButton, radioButtonSelected);
-//		bindingGroup.addBinding(radioButtonSelectedBinding);
-//		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, femaleRadioButton, enabled);
-//		bindingGroup.addBinding(enabledBinding);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, femaleRadioButton, enabled);
+		bindingGroup.addBinding(enabledBinding);
 		add(femaleRadioButton, "wrap, gapright push");
+		//create a model for the radio buttons
+		EnumButtonGroup<Gender> ebg = new EnumButtonGroup<Gender>(Gender.class);
+		ebg.add(Gender.FEMALE, femaleRadioButton);
+		ebg.add(Gender.MALE, maleRadioButton);
+		ebg.assertButtonGroupCoversAllEnumConstants();
+		//add the binding for the radio buttons
+		BeanProperty<ClientTablePanel, Gender> gender = BeanProperty.create("selectedItem.gender");
+		Binding<? extends AbstractTablePanel<Client>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, gender, ebg, EnumButtonGroup.SELECTED_ENUM_PROPERTY);
+		bindingGroup.addBinding(genderBinding);
 		
-		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(maleRadioButton);
-		buttonGroup.add(femaleRadioButton);
-
 		JLabel addressLabel = new JLabel();
 		addressLabel.setFont(AppSettings.MAIN_FONT);
 		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
@@ -413,30 +399,6 @@ public class ClientInfoPanel extends AppPanel {
 		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, city, locationField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
-		comboBoxBinding.addBindingListener(new AbstractBindingListener() {
-
-			@Override
-			public void sourceChanged(Binding binding, PropertyStateEvent event) {
-				super.sourceChanged(binding, event);
-			}
-
-			@Override
-			public void synced(Binding binding) {
-				super.synced(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				super.syncFailed(binding, failure);
-			}
-
-			@Override
-			public void targetChanged(Binding binding, PropertyStateEvent event) {
-				super.targetChanged(binding, event);
-			}
-			
-			
-		});
 		bindingGroup.addBinding(comboBoxBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, isSelected, locationField, enabled);
 		bindingGroup.addBinding(enabledBinding);
