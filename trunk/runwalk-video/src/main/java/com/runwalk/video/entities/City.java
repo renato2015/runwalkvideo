@@ -27,7 +27,7 @@ public class City extends SerializableEntity<City> {
 	@Column(name="name")
 	private String name;
 
-	protected City() {	}
+	public City() {	}
 	
 	public City(int code, String name) {
 		super();

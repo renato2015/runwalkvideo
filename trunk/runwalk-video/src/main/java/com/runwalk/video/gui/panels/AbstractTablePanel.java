@@ -11,6 +11,8 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -33,7 +35,7 @@ import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel {
-	
+
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
 	protected static final String ROW_SELECTED = "rowSelected";
@@ -44,7 +46,8 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
 	private MouseListener jTableMouseListener;
-	
+	private T selectedItem;
+
 	public AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
@@ -53,43 +56,36 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		getTable().setFont(AppSettings.MAIN_FONT);
 		jTableMouseListener = new JTableButtonMouseListener();
 	}
-	
+
 	public AbstractTablePanel() {
 		this(null);
 	}
-	
+
 	public boolean isRowSelected() {
 		return this.rowSelected;
 	}
-	
+
 	public void setRowSelected(boolean rowSelected) {
 		this.firePropertyChange(ROW_SELECTED, this.rowSelected, this.rowSelected = rowSelected);
 	}
-	
+
 	/**
 	 * Verwijder het huidig geselecteerde item.
 	 */
 	public void clearSelectedItem() {
 		getEventSelectionModel().clearSelection();
 	}
-	
+
 	public T getSelectedItem() {
-		T selectedItem = null;
-		if (getEventSelectionModel() != null) {
-			EventList<T> selected = getEventSelectionModel().getTogglingSelected();
-			if (!selected.isEmpty()) {
-				selectedItem = Iterables.getOnlyElement(selected);
-			}
-		}
 		return selectedItem;
 	}
-	
+
 	public void setSelectedItem(T item) {
 		getEventSelectionModel().getTogglingSelected().add(item);
 		int rowIndex = getItemList().indexOf(item);
 		getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
 	}
-	
+
 	public void setSelectedItem(int row) {
 		if (row > -1) {
 			setSelectedItem(getItemList().get(row));
@@ -99,7 +95,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public JTable getTable() {
 		return table;
 	}
-	
+
 	/**
 	 * This method will add a {@link MouseListener} to the contained {@link JTable} in case it wasn't already added.
 	 */
@@ -125,7 +121,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public void setSecondButton(JButton newButton) {
 		this.secondButton = newButton;
 	}
-	
+
 	/**
 	 * Lijst met items wordt van buitenaf op de panel gezet. Deze zal dan klaar gemaakt worden voor 
 	 * gebruik met een {@link JTable} 
@@ -134,46 +130,47 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	 * @param itemConnector the connector that will forward changeEvents to the list.
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
-        EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
-        SortedList<T> sortedItems = SortedList.create(observedItems);
-        EventList<T> specializedList = specializeItemList(sortedItems);
-        firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
-        eventSelectionModel = new EventSelectionModel<T>(specializedList);
-        eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
-        eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
-        	
-        	@SuppressWarnings("deprecation")
+		EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
+		SortedList<T> sortedItems = SortedList.create(observedItems);
+		EventList<T> specializedList = specializeItemList(sortedItems);
+		firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
+		eventSelectionModel = new EventSelectionModel<T>(specializedList);
+		eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
+		eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
+
+			@SuppressWarnings("deprecation")
 			public void listChanged(ListEvent<T> listChanges) {
-        		while(listChanges.next()) {
-        			int changeType = listChanges.getType();
-        			if (changeType == ListEvent.DELETE) {
-        				if (listChanges.getOldValue() != ListEvent.UNKNOWN_VALUE) {
-        					T oldValue = listChanges.getOldValue();
-        					T newValue = getSelectedItem();
-        					firePropertyChange(SELECTED_ITEM, oldValue, newValue);
-        					setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-        				}
-        			} else if (changeType == ListEvent.INSERT) {
-        				if (listChanges.getOldValue() == ListEvent.UNKNOWN_VALUE) {
-        					firePropertyChange(SELECTED_ITEM, null, getSelectedItem());
-            				setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-        				}
-        			}
-        		}
-        	}
-        });
-        EventTableModel<T> dataModel = new EventTableModel<T>(specializedList, getTableFormat());
+
+				while(listChanges.next()) {
+					int changeType = listChanges.getType();
+					if (changeType == ListEvent.DELETE) {
+						if (listChanges.getOldValue() != ListEvent.UNKNOWN_VALUE) {
+							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+						}
+					} else if (changeType == ListEvent.INSERT) {
+						EventList<T> sourceList = listChanges.getSourceList();
+						T newValue = null;
+						if (!sourceList.isEmpty()) {
+							newValue = Iterables.getOnlyElement(sourceList);
+						}
+						firePropertyChange(SELECTED_ITEM, selectedItem, selectedItem = newValue);
+						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+					}
+				}
+			}
+		});
+		EventTableModel<T> dataModel = new EventTableModel<T>(specializedList, getTableFormat());
 		getTable().setModel(dataModel);
-        TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
-        getTable().setSelectionModel(eventSelectionModel);
-        getTable().setColumnSelectionAllowed(false);
+		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+		getTable().setSelectionModel(eventSelectionModel);
+		getTable().setColumnSelectionAllowed(false);
 	}
-	
+
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
 		Connector<T> beanConnector = new BeanConnector<T>(itemClass);
 		setItemList(itemList, beanConnector);
 	}
-	
+
 	/**
 	 * Specialization hook for the set {@link ObservableElementList}. You can override the exact type of the set {@link EventList} by implementing this method.
 	 * @param eventList The observable eventlist
@@ -182,17 +179,17 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	protected EventList<T> specializeItemList(EventList<T> eventList) {
 		return eventList;
 	}
-	
+
 	public abstract TableFormat<T> getTableFormat();
-	
+
 	public EventList<T> getItemList() {
 		return itemList;
 	}
-	
+
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
-	
+
 	protected class CustomJTableRenderer implements TableCellRenderer {
 		private TableCellRenderer __defaultRenderer;
 
@@ -210,42 +207,42 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 			return __defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 	}
-	
+
 	class JTableButtonMouseListener extends MouseAdapter {
 
-		  private void __forwardEventToButton(MouseEvent e) {
-		    TableColumnModel columnModel = getTable().getColumnModel();
-		    int column = columnModel.getColumnIndexAtX(e.getX());
-		    int row    = e.getY() / getTable().getRowHeight();
-		    Object value;
-		    JButton button;
-		    MouseEvent buttonEvent;
+		private void __forwardEventToButton(MouseEvent e) {
+			TableColumnModel columnModel = getTable().getColumnModel();
+			int column = columnModel.getColumnIndexAtX(e.getX());
+			int row    = e.getY() / getTable().getRowHeight();
+			Object value;
+			JButton button;
+			MouseEvent buttonEvent;
 
-		    if(row >= getTable().getRowCount() || row < 0 ||
-		       column >= getTable().getColumnCount() || column < 0)
-		      return;
+			if(row >= getTable().getRowCount() || row < 0 ||
+					column >= getTable().getColumnCount() || column < 0)
+				return;
 
-		    value = getTable().getValueAt(row, column);
+			value = getTable().getValueAt(row, column);
 
-		    if(!(value instanceof JButton))
-		      return;
+			if(!(value instanceof JButton))
+				return;
 
-		    button = (JButton)value;
+			button = (JButton)value;
 
-		    buttonEvent =
-		      (MouseEvent)SwingUtilities.convertMouseEvent(getTable(), e, button);
-		    button.dispatchEvent(buttonEvent);
-		    // This is necessary so that when a button is pressed and released
-		    // it gets rendered properly.  Otherwise, the button may still appear
-		    // pressed down when it has been released.
-		    getTable().repaint();
-		  }
-
-		  public void mouseClicked(MouseEvent e) {
-		    __forwardEventToButton(e);
-		  }
-		  
+			buttonEvent =
+				(MouseEvent)SwingUtilities.convertMouseEvent(getTable(), e, button);
+			button.dispatchEvent(buttonEvent);
+			// This is necessary so that when a button is pressed and released
+			// it gets rendered properly.  Otherwise, the button may still appear
+			// pressed down when it has been released.
+			getTable().repaint();
 		}
+
+		public void mouseClicked(MouseEvent e) {
+			__forwardEventToButton(e);
+		}
+
+	}
 
 
 }

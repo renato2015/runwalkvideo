@@ -167,7 +167,7 @@ public class AppSettings implements Serializable {
 		logger = Logger.getLogger(AppSettings.class);
 		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
 		logger.debug("Logging to file with location " + appndr.getFile());
-		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
+//		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 	
 	public float getSavedVolume() {
