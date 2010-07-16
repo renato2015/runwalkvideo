@@ -1,6 +1,10 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.io.File;
+
+import javax.swing.JInternalFrame;
 
 public interface IVideoCapturer extends IVideoComponent {
 
@@ -30,6 +34,10 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public String[] getCaptureDevices();
 
+	/**
+	 * Initialize the capturer and bring it to a state in which the {@link Component} returned by {@link #getComponent()} 
+	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are running and ready to be added to a swing container.
+	 */
 	public void startCapturer();
 	
 	public void togglePreview();

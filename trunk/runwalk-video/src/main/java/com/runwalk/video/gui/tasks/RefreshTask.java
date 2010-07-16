@@ -6,16 +6,10 @@ import java.util.logging.Level;
 import javax.persistence.Query;
 import javax.swing.SwingUtilities;
 
-import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.event.ListEventPublisher;
-import ca.odell.glazedlists.matchers.Matcher;
-import ca.odell.glazedlists.swing.GlazedListsSwing;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
@@ -37,14 +31,11 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		boolean success = true;
 		try {
 			message("startMessage");
-//			setProgress(0, 0, 3);
 			final Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
 			query.setHint("eclipselink.left-join-fetch", "c.analyses.recording");
 //			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			message("fetchMessage");
-//			setProgress(1, 0, 3);
 			final List<Client> resultList = query.getResultList();
-//			setProgress(2, 0, 3);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
@@ -78,6 +69,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					//Create the overview with unfinished analyses
 					AnalysisOverviewTablePanel analysisOverviewTablePanel = RunwalkVideoApp.getApplication().getAnalysisOverviewTable();
 					analysisOverviewTablePanel.setItemList(analysesOverview, new AnalysisConnector());
+					//check whether compressing should be enabled
+					analysisOverviewTablePanel.setCompressionEnabled(true);
 				}
 				
 			});

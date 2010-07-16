@@ -35,6 +35,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().lockAspectRatio(true);
 	}
 	
+	/** {@inheritDoc} */
 	public void startCapturer() {
 		startCapturer(FLAGS, null);
 	}
@@ -123,7 +124,8 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		dsi = DSCapture.queryDevices(1);
 		String[] devices = new String[dsi[0].length];
 		for (int i = 0; i < dsi[0].length; i++) {
-			devices[i] = dsi[0][i].getName();
+			DSFilterInfo dsFilterInfo = dsi[0][i];
+			devices[i] = dsFilterInfo.getName();
 		}
 		return devices;
 	}

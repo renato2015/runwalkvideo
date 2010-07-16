@@ -48,7 +48,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		} case DSMovie.EXPORT_PROGRESS : {
 			int progress = DSJUtils.getEventValue_int(evt);
 			double totalProgress = conversionCounter * part + ((double) progress / (double) conversionCount);
-			getLogger().debug("progress:" + progress + " total progress: " + totalProgress); 
+//			getLogger().debug("progress:" + progress + " total progress: " + totalProgress); 
 			setProgress((int) totalProgress);
 			break;
 		} case DSMovie.EXPORT_STARTED: {

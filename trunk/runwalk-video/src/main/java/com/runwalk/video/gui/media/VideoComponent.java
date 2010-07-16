@@ -15,6 +15,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.Timer;
 import javax.swing.event.InternalFrameListener;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.ApplicationContext;
@@ -37,10 +38,12 @@ import com.runwalk.video.util.AppUtil;
  */
 public abstract class VideoComponent extends AbstractBean implements AppWindowWrapper {
 
-	public static final String IDLE = "idle";
 	public static final String FULLSCREEN = "fullscreen";
+	public static final String IDLE = "idle";
+	public static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
 	public static final String STATE = "state";
-	
+	public static final String MONITOR_ID = "monitorId";
+
 	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 	private Recording recording;
 	protected Frame fullScreenFrame;
@@ -49,12 +52,51 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	boolean fullscreen = false;
 	private ActionMap actionMap;
 	private State state;
+	private Integer monitorId;
+	private boolean fullScreenEnabled;
+	
+	/**
+	 * This variable is used to determine the default monitor on which this component will be shown.
+	 */
+	private final int componentId;
+	
+	/**
+	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
+	 * The resulting number will be used for showing a {@link VideoCapturer} or {@link VideoPlayer} instance, 
+	 * which both have uniquely numbered instances.
+	 * 
+	 * <ul>
+	 * <li>If the total number of available monitors is smaller than 2, then the last monitor index will be used at all times.</li>
+	 * <li>If the total number of available monitors is greater than 2, then the assigned monitor index will alternate between 1 and the last
+	 * monitor index according to the value of the componentId parameter.</li>
+	 * 
+	 * @param graphicsDevicesCount The amount of available screens
+	 * @param componentId The instance number
+	 * @return The screen id
+	 */
+	public static int getDefaultScreenId(int graphicsDevicesCount, int componentId) {
+		int result = graphicsDevicesCount - 1;
+		if (graphicsDevicesCount > 2) {
+			int availableScreenCount = graphicsDevicesCount - 1;
+			result = 0;
+			// assign a different (alternating) monitor for each instance if there are more than 2 in total
+			for (int i = 1; i <= componentId; i++) {
+				if (result >= availableScreenCount) {
+					result = 1;
+				} else {
+					result ++;
+				}
+			}
+		}
+		return result;
+	}
 
-	public VideoComponent(PropertyChangeListener listener) {
+	public VideoComponent(PropertyChangeListener listener, int componentId) {
+		this.componentId = componentId;
 		addPropertyChangeListener(listener);
 		setState(State.IDLE);
 	}
-	
+
 	//TODO review code!
 	protected void reAttachAppWindowWrapperListeners() {
 		if (isFullscreen() && getFullscreenFrame() != null) {
@@ -74,7 +116,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			}
 		}
 	}
-	
+
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
 		appWindowWrapperListeners.add(listener);
 		if (getFullscreenFrame() != null) {
@@ -94,7 +136,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			getInternalFrame().removeInternalFrameListener(listener);
 		}
 	}
-	
+
 	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
 		return appWindowWrapperListeners;
 	}
@@ -123,6 +165,10 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return internalFrame;
 	}
 
+	public int getComponentId() {
+		return componentId;
+	}
+
 	protected void setComponentTitle(String title) {
 		if (isFullscreen()) {
 			getFullscreenFrame().setTitle(title);
@@ -147,49 +193,79 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getRecording() != null;
 	}
 
-	public boolean isFullscreen() {
-		return this.fullscreen;
+	protected void setMonitorId(int monitorId) {
+		this.monitorId = monitorId;
 	}
 
-	//TODO een strategie om te bepalen op welk scherm de fullscreen versie moet getoond worden??
-	//TODO eventueel nakijken hoe heet afsluiten of aansluiten van een scherm kan opgevangen worden
-	protected void setFullscreen(boolean fullscreen) {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
-		if (fullscreen) {
-			if (gs.length > 1) {
-				getApplication().hideComponent(internalFrame);
-				getVideoImpl().setFullScreen(gs[1], fullscreen);
-				fullScreenFrame = getVideoImpl().getFullscreenFrame();
-			}
+	public boolean isFullscreen() {
+		return fullscreen;
+	}
+	
+	protected void showComponent() {
+		showComponent(null);
+	}
+	
+	protected void showComponent(Integer monitorId) {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		int defaultScreenId = getDefaultScreenId(graphicsDevices.length, getComponentId());
+		// check preconditions
+		if (monitorId != null && monitorId < graphicsDevices.length) {
+			// use monitor screen set by user
+			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getVideoImpl().getTitle() + ".");
 		} else {
-			getVideoImpl().setFullScreen(gs[0], fullscreen);
+			// use default monitor screen, because it wasn't set or invalid
+			monitorId = defaultScreenId;
+			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getVideoImpl().getTitle() + ".");
+		}
+		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
+		// go fullscreen if the selected monitor is not the primary one (index 0)
+		boolean fullscreen = monitorId > 0;
+		if (fullscreen) {
+			getApplication().hideComponent(internalFrame);
+			getVideoImpl().setFullScreen(graphicsDevice, fullscreen);
+			fullScreenFrame = getVideoImpl().getFullscreenFrame();
+		} else {
+			getVideoImpl().setFullScreen(graphicsDevice, fullscreen);
 			if (internalFrame == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				internalFrame.add(getVideoImpl().getComponent());
 			}
-			getApplication().createOrShowComponent(this);
 		}
+		firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
+		getApplication().createOrShowComponent(this);
 		reAttachAppWindowWrapperListeners();
 		setComponentTitle(getTitle());
 	}
-	
-	@org.jdesktop.application.Action(enabledProperty=IDLE, block=BlockingScope.APPLICATION)
+
+	@org.jdesktop.application.Action(enabledProperty=FULL_SCREEN_ENABLED, block=BlockingScope.APPLICATION)
 	public void toggleFullscreen() {
-		setFullscreen(!isFullscreen());
+		// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
+		monitorId = monitorId != null && monitorId == 0 ? null : 0;
+		showComponent(monitorId);
 	}
-	
-	protected void setState(State newState) {
-		State oldState = this.state;
-		firePropertyChange(STATE, oldState, this.state = newState);
-		firePropertyChange(IDLE, oldState == State.IDLE, newState == State.IDLE);
+
+	protected void setState(State state) {
+		firePropertyChange(STATE, this.state, this.state = state);
+		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
+		boolean isIdle = state == State.IDLE;
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		setFullScreenEnabled(isIdle && graphicsDevices.length > 1);
 	}
-	
+
 	public State getState() {
 		return state;
 	}
 	
+	public void setFullScreenEnabled(boolean fullScreenEnabled) {
+		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
+	}
+	
+	public boolean isFullScreenEnabled() {
+		return fullScreenEnabled;
+	}
+
 	public boolean isIdle() {
 		return getState() == State.IDLE;
 	}
@@ -198,11 +274,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		getVideoImpl().dispose();
 		setRecording(null);
 	}
-	
+
 	public String getTitle() {
 		return getVideoImpl().getTitle();
 	}
-	
+
 	public abstract IVideoComponent getVideoImpl();
 
 	public void toFront() {
@@ -212,11 +288,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			getInternalFrame().toFront();
 		}
 	}
-	
+
 	public boolean isActive() {
 		return getHolder().isVisible() && getVideoImpl().isActive();
 	}
-	
+
 	public Action getAction(String name) {
 		return getApplicationActionMap().get(name);
 	}
@@ -238,7 +314,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	/**
-	 * Merge the actinmap of the implementation with the one of this instance..
+	 * Merge the {@link ActionMap} of the implementation with the one of this instance..
 	 */
 	public ActionMap getApplicationActionMap() {
 		if (actionMap == null) {
@@ -247,7 +323,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		}
 		return actionMap;
 	}
-	
+
 	public enum State {
 		PLAYING, RECORDING, IDLE
 	}

@@ -11,8 +11,6 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskEvent;
-import org.jdesktop.application.TaskListener;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
