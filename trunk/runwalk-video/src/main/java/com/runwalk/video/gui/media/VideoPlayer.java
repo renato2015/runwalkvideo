@@ -20,14 +20,19 @@ public class VideoPlayer extends VideoComponent {
 	public static final String POSITION = "position";
 
 	private static int playerCount = 0;
-	private int playerId;
+	
 	private static final float[] PLAY_RATES = AppSettings.PLAY_RATES;
+
 	private int playRateIndex = AppSettings.getInstance().getRateIndex();
+	
 	private int position;
+	
 	private float volume;
+	
 	private IVideoPlayer playerImpl;
 
 	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording) throws FileNotFoundException {
+		playerCount++;
 		IVideoPlayer result = null;
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 			result = new DSJPlayer();
@@ -38,10 +43,8 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	protected VideoPlayer(PropertyChangeListener listener, Recording recording, IVideoPlayer playerImpl) throws FileNotFoundException {
-		super(listener);
+		super(listener, playerCount);
 		this.playerImpl = playerImpl;
-		playerCount++;
-		this.playerId = playerCount;
 		setTimer(new Timer(25, null));
 		getTimer().addActionListener(new ActionListener() {
 
@@ -58,12 +61,9 @@ public class VideoPlayer extends VideoComponent {
 	public void loadFile(Recording recording) throws FileNotFoundException {
 		setRecording(recording);
 		if (getVideoImpl().loadFile(recording.getVideoFile())) {
-			//TODO the window state should be respected here...
-			//Add the shit here...
-			setFullscreen(true);
-			reAttachAppWindowWrapperListeners();
+			showComponent();
 		}
-		//getVideoImpl().setPlayRate(getPlayRate());
+//		getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
 	
@@ -198,7 +198,7 @@ public class VideoPlayer extends VideoComponent {
 
 	@Override
 	public String getTitle() {
-		return getResourceMap().getString("windowTitle.text", playerId);
+		return getResourceMap().getString("windowTitle.text", getComponentId());
 	}
 
 }

@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -167,7 +165,7 @@ public class AppSettings implements Serializable {
 		logger = Logger.getLogger(AppSettings.class);
 		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
 		logger.debug("Logging to file with location " + appndr.getFile());
-//		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
+		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 	
 	public float getSavedVolume() {

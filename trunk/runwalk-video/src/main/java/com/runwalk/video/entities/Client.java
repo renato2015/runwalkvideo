@@ -56,7 +56,7 @@ public class Client extends SerializableEntity<Client> {
 	@Column(name = FIRSTNAME)
 	private String firstname;
 	@Column(name = "mail")
-	private boolean inMailingList;
+	private boolean inMailingList = true;
 	@Column(name = ORGANIZATION)
 	private String organization;
 	@Column(name = "phone")

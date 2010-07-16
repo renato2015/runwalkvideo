@@ -22,8 +22,11 @@ public class VideoCapturer extends VideoComponent {
 
 	protected static final String TIME_RECORDING = "timeRecorded";
 
-	private static CameraDialog cameraSelectionDialog;
-
+	/**
+	 * Keeps track of the total number of capturer instances that have been instantiated
+	 */
+	private static int capturerCount = 0;
+	
 	private int selectedFormat = -1;
 
 	private long timeStarted, timeRecorded;
@@ -31,30 +34,43 @@ public class VideoCapturer extends VideoComponent {
 	private IVideoCapturer capturerImpl;
 
 	public static VideoCapturer createInstance(PropertyChangeListener listener) {
+		capturerCount++;
 		final IVideoCapturer capturerImpl = new DSJCapturer();
-		synchronized(VideoCapturer.class) {
-			if (cameraSelectionDialog == null) {
-				cameraSelectionDialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl);
-				cameraSelectionDialog.addPropertyChangeListener(new PropertyChangeListener()  { 
+		final VideoCapturer capturer = new VideoCapturer(listener, capturerImpl);
+		// create a dialog to let the user choose which capture device to start on which monitor
+		CameraDialog dialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl, capturer.getComponentId());
+		dialog.setLocationRelativeTo(RunwalkVideoApp.getApplication().getMainFrame());
+		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
+
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
+					// user selected a capture device
+					Integer selectedIndex = (Integer) evt.getNewValue();
+					capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
+				} else if (evt.getPropertyName().equals(MONITOR_ID)) {
+					// user clicked a monitor button
+					int monitorId = Integer.parseInt(evt.getNewValue().toString());
+					capturer.setMonitorId(monitorId);
 					
-					public void propertyChange(PropertyChangeEvent evt) {
-						if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
-							Integer selectedIndex = (Integer) evt.getNewValue();
-							capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
-						}
-					}
-				});
-			} else {
-				cameraSelectionDialog.setCapturerImpl(capturerImpl);
+				}
 			}
-		}
-		//initialize the capturer for the chosen device & encoder
+		};
+		dialog.addPropertyChangeListener(changeListener);
+		//populate dialog with capture devices and look for connected monitors
+		dialog.refreshCaptureDevices();
+		// show the dialog on screen
+		RunwalkVideoApp.getApplication().show(dialog);
+		// remove the listener to avoid memory leaking
+		dialog.removePropertyChangeListener(changeListener);
+		// initialize the capturer's native resources for the chosen device and start running
 		capturerImpl.startCapturer();
-		return new VideoCapturer(listener, capturerImpl);
+		// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
+		capturer.showComponent();
+		return capturer;
 	}
 
-	public VideoCapturer(PropertyChangeListener listener, IVideoCapturer capturerImpl) {
-		super(listener);
+	private VideoCapturer(PropertyChangeListener listener, IVideoCapturer capturerImpl) {
+		super(listener, capturerCount);
 		this.capturerImpl = capturerImpl;
 		setTimer(new Timer(1000, null));
 		getTimer().addActionListener(new ActionListener() {
@@ -62,13 +78,8 @@ public class VideoCapturer extends VideoComponent {
 			public void actionPerformed(ActionEvent e) {
 				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = System.currentTimeMillis() - timeStarted);
 				getRecording().setDuration(timeRecorded);
-				//text kan je setten met een binding!!
 			}
 		});
-		cameraSelectionDialog.setCurrentSelection(getVideoImpl().getSelectedCaptureDeviceIndex());
-		cameraSelectionDialog.setLocationRelativeTo(getApplication().getMainFrame());
-		getApplication().show(cameraSelectionDialog);
-		setFullscreen(true);
 	}
 
 	@Action

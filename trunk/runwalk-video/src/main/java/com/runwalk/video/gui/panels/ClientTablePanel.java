@@ -96,9 +96,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Override
 	public void setItemList(EventList<Client> itemList, Class<Client> itemClass) {
 		super.setItemList(itemList, itemClass);
-		getTable().getColumnModel().getColumn(0).setMinWidth(30);
-		getTable().getColumnModel().getColumn(0).setPreferredWidth(30);
-		getTable().getColumnModel().getColumn(0).setMaxWidth(30);
+		getTable().getColumnModel().getColumn(0).setMinWidth(35);
+		getTable().getColumnModel().getColumn(0).setPreferredWidth(35);
+		getTable().getColumnModel().getColumn(0).setMaxWidth(35);
 		getTable().getColumnModel().getColumn(1).setMinWidth(70);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(1).setMaxWidth(160);

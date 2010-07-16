@@ -3,7 +3,6 @@ package com.runwalk.video.gui.media;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
 
 import javax.swing.ActionMap;
@@ -120,14 +119,10 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void setFullScreen(GraphicsDevice device, boolean fullscreen) {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		if (gs.length > 1) {
-			if (fullscreen) {
-				getFiltergraph().goFullScreen(device == null ? gs[1] : device, 1);
-			} else {
-				getFiltergraph().leaveFullScreen();
-			}
+		if (fullscreen) {
+			getFiltergraph().goFullScreen(device, 1);
+		} else {
+			getFiltergraph().leaveFullScreen();
 		}
 	}
 

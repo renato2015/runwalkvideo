@@ -146,7 +146,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
-		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 	}
 
 	@Override

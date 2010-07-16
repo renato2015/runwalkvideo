@@ -43,7 +43,7 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
 
-	private static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
+	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYING_ENABLED = "playingEnabled";
@@ -58,7 +58,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private VideoPlayer player;
 	private VideoCapturer capturer;
-	private VideoComponent frontmostComponent;
+	private VideoComponent frontMostComponent;
 
 	public MediaControls() {
 		super("Media controls", false);
@@ -117,6 +117,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 		createJButton("stop"); 
 		playButton = createJToggleButton("togglePlay", "togglePlay.Action.pressedIcon"); 
+		playButton.setRolloverEnabled(false);
 		createJButton("faster"); 
 		createJButton("nextSnapshot"); 
 		createJButton("makeSnapshot"); 
@@ -156,7 +157,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	//TODO kan dit eventueel met een proxy action??
 	@Action(enabledProperty=FULL_SCREEN_ENABLED, block=BlockingScope.APPLICATION)
 	public void fullScreen() { 
-		frontmostComponent.toggleFullscreen();
+		frontMostComponent.toggleFullscreen();
 	}
 
 	@Action(enabledProperty=STOP_ENABLED)
@@ -285,19 +286,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return fullScreenEnabled;
 	}
 
+	@Action
 	public void startCapturer() {
-		if (capturer == null) {
-			capturer = VideoCapturer.createInstance(this);
-			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
-			getApplication().createOrShowComponent(capturer);
-			//TODO eventueel een dialoog om het scherm en fullscreen of niet te kiezen..
-		}
+//		if (capturer == null) {
+		capturer = VideoCapturer.createInstance(this);
+		capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
+		getApplication().createOrShowComponent(capturer);
+//		}
 		captureFrameToFront();
 	}
 
 	@Action(enabledProperty=RECORDING_ENABLED)
 	public void record() {
-//		capturer.toFront();
 		Analysis analysis = RunwalkVideoApp.getApplication().getSelectedAnalysis();
 		if (analysis != null) {
 			Recording recording = analysis.getRecording();
@@ -428,7 +428,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		Object newValue = evt.getNewValue();
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
 			State state = (State) evt.getNewValue();
-			boolean enabled = state == VideoComponent.State.IDLE && evt.getSource() == frontmostComponent;
+			boolean enabled = state == VideoComponent.State.IDLE && evt.getSource() == frontMostComponent;
 			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
 			playButton.setSelected(state == State.PLAYING);
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
@@ -464,9 +464,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 */
 	private void enableVideoComponentControls(VideoComponent component, boolean enable) {
 		//a player or capturer is requesting the focus.. this will only be given if the frontmost component is idle
-		if (frontmostComponent == null || enable && frontmostComponent.isIdle()) {
+		if (frontMostComponent == null || enable && frontMostComponent.isIdle()) {
 			StringBuilder title = new StringBuilder(getName() + " > " + component.getTitle());
 			if (component instanceof VideoCapturer) {
+				capturer = (VideoCapturer) frontMostComponent;
 				clearStatusInfo();
 				setRecordingEnabled(true);
 				setPlayingEnabled(false);
@@ -479,8 +480,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				title.append(" > " ).append(player.getRecording().getVideoFileName());
 			}
 			setTitle(title.toString());
-			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isIdle());	
-			frontmostComponent = component;
+			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isFullScreenEnabled());	
+			frontMostComponent = component;
 		} /*else {
 			if (isFrontmostVideoComponent(component)) {
 				//disable all controls??
