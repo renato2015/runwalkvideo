@@ -121,7 +121,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	}
 	
 	public String[] getCaptureDevices() {
-		dsi = DSCapture.queryDevices(1);
+		dsi = DSCapture.queryDevices(0);
 		String[] devices = new String[dsi[0].length];
 		for (int i = 0; i < dsi[0].length; i++) {
 			DSFilterInfo dsFilterInfo = dsi[0][i];
