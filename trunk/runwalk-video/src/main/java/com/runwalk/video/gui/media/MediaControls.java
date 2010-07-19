@@ -285,12 +285,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action
 	public void startCapturer() {
-//		if (capturer == null) {
 		capturer = VideoCapturer.createInstance(this);
-		capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
-		getApplication().createOrShowComponent(capturer);
-//		}
-		captureFrameToFront();
+		if (capturer != null) {
+			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
+			getApplication().createOrShowComponent(capturer);
+			captureFrameToFront();
+		}
 	}
 
 	@Action(enabledProperty=RECORDING_ENABLED)
@@ -433,6 +433,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
 			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
 			Long timeRecorded = (Long) newValue;
+			//only update status info if it is the fronmost capturer
 			if (this.capturer.equals(capturer)) {
 				updateTimeStamps(timeRecorded, 0);
 				if (!isStopEnabled()) {
@@ -443,6 +444,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
 			VideoPlayer player = (VideoPlayer) evt.getSource();
+			//only update status info if it is the fronmost player
 			if (this.player.equals(player)) {
 				if (position == 0) {
 					stop();
@@ -498,10 +500,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void setPlayingEnabled(boolean playingEnabled) {
 		firePropertyChange(PLAYING_ENABLED, this.playingEnabled, this.playingEnabled = playingEnabled);
 		firePropertyChange(PLAYING_DISABLED, this.playingDisabled, this.playingDisabled = !playingEnabled);
-	}
-
-	public void setPlayingDisabled(boolean playingDisabled) {
-//		firePropertyChange(PLAYING_DISABLED, this.playingDisabled, this.playingDisabled = playingDisabled);
 	}
 
 	public void captureFrameToFront() {

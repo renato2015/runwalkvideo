@@ -1,10 +1,7 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.Component;
-import java.awt.Window;
 import java.io.File;
-
-import javax.swing.JInternalFrame;
 
 public interface IVideoCapturer extends IVideoComponent {
 

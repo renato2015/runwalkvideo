@@ -8,7 +8,6 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
