@@ -4,22 +4,37 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 
+import org.jdesktop.application.utils.PlatformType;
+
 import de.humatic.dsj.DSCapture;
+import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSMediaType;
 import de.humatic.dsj.DSCapture.CaptureDevice;
 import de.humatic.dsj.DSFilter.DSPin;
 
+/**
+ * This class is a concrete implementation for the DirectShow for Java libary (dsj), 
+ * which enables capturing on the {@link PlatformType#WINDOWS} platform.
+ * 
+ * @author Jeroen Peelaerts
+ */
 public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
-
-	private static final int FLAGS = DSFiltergraph.DD7;
 
 	public final static DSFilterInfo[] VIDEO_ENCODERS = {
 		DSFilterInfo.doNotRender(), 
 		DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
 		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
 	};
+
+	private static final int FLAGS = DSFiltergraph.DD7;
+	
+	// load DLL's and set debugging level at class loading time
+	static {
+		DSEnvironment.setDebugLevel(4);
+		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
+	}
 
 	private DSFilterInfo[][] dsi;
 

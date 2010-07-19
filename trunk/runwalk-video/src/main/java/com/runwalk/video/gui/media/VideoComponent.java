@@ -212,11 +212,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		// check preconditions
 		if (monitorId != null && monitorId < graphicsDevices.length) {
 			// use monitor screen set by user
-			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getVideoImpl().getTitle() + ".");
+			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
 		} else {
 			// use default monitor screen, because it wasn't set or invalid
 			monitorId = defaultScreenId;
-			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getVideoImpl().getTitle() + ".");
+			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getTitle() + ".");
 		}
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// go fullscreen if the selected monitor is not the primary one (index 0)

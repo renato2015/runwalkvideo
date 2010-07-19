@@ -33,6 +33,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		loadFile(videoFile, flags, listener);
 	}
 	
+	/** {@inheritDoc} */
 	public boolean loadFile(File videoFile) {
 		return loadFile(videoFile, FLAGS, null);
 	}

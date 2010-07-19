@@ -11,14 +11,11 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.swing.AbstractButton;
-import javax.swing.BoundedRangeModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -71,7 +68,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYING_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${!selectedItem.recording.recorded}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${!selectedItem.recording.recorded && rowSelected}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getAnalysisTablePanel(), recorded, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
@@ -80,18 +77,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			@SuppressWarnings("unchecked")
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecorded = (Boolean) binding.getSourceValueForTarget().getValue();
-			}			
+			}
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
 		enabledBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(enabledBinding);
-		
-//		ELProperty<MediaControls, Boolean> notPlayingEnabled = ELProperty.create("${!" + PLAYING_ENABLED + "}");
-//		BeanProperty<MediaControls, Boolean> playingDisabled = BeanProperty.create(PLAYING_DISABLED);
-//		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, notPlayingEnabled, this, playingDisabled);
-//		bindingGroup.addBinding(enabledBinding);
-		
+				
 		setSlider(new JSlider(JSlider.HORIZONTAL, 0, 1000, 0));
 		getSlider().setPaintTicks(false);
 		getSlider().setPaintLabels(true);
@@ -245,7 +237,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	/**
-	 * This property is under two different conditions:
+	 * This property is changed two different conditions:
 	 * 
 	 * <ul>
 	 * <li>When an {@link Analysis} is selected in the table then we have to perform a check on the activity of the capture graph here, too</li>
