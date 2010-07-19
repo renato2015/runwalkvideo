@@ -11,8 +11,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -81,9 +79,11 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	}
 
 	public void setSelectedItem(T item) {
-		getEventSelectionModel().getTogglingSelected().add(item);
 		int rowIndex = getItemList().indexOf(item);
-		getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
+		if (rowIndex > -1) {
+			getEventSelectionModel().getTogglingSelected().add(item);
+			getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
+		}
 	}
 
 	public void setSelectedItem(int row) {

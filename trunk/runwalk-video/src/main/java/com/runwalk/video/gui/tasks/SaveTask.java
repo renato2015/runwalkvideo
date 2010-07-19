@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
+import org.apache.log4j.Level;
+
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
 
@@ -31,14 +33,15 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 			for(int i = 0; i < listSize; i ++) {
 				T item = itemList.get(i);
 				if (item.isDirty()) {
+					getLogger().log(Level.INFO, "Saving " + item.toString());
 					T mergedItem = em.merge(item);
 					if (mergedItem == null) {
 						mergedList = null;
 						setProgress(listSize, 0, listSize);
 						break;
 					}
+					item.setDirty(false);
 					mergedList.add(mergedItem);
-//					itemList.set(i, mergedItem);
 				}
 				setProgress(i, 0, listSize);
 			}

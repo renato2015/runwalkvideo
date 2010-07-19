@@ -19,6 +19,8 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -70,26 +72,12 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		return Application.getInstance(RunwalkVideoApp.class);
 	}
 
-	/**
-	 * 
-	 * Main method launching the application.
+	/*
+	 * Main method launching the application. 
+	 * After loggin has been set up, the application will launch using the bsaf framework.
 	 */
 	public static void main(String[] args) {
 		AppSettings.configureLog4j();
-		/*if (System.getProperty( "javawebstart.version" ) == null) {
-			StringBuilder dllPathBuilder = new StringBuilder(System.getProperty("user.dir"));
-			if (args.length > 0) {
-				dllPathBuilder.append(args[0]);
-			} else {
-			
-				dllPathBuilder.append("\\target\\lib\\");
-			}
-			dllPathBuilder.append("dsj.dll");
-			LOGGER.debug("DSJ Dll path = " + dllPathBuilder.toString());
-			DSEnvironment.setDLLPath(dllPathBuilder.toString());
-		}¨*/
-		DSEnvironment.setDebugLevel(4);
-		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
 		launch(RunwalkVideoApp.class, args);
 	}
 
@@ -108,6 +96,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		getContext().getSessionStorage().save(getClientMainView(), "mainFrame.xml");
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void initialize(String[] args) {
 		AppSettings.getInstance().loadSettings();
@@ -116,7 +105,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	/**
-	 * At startup create and show the main frame of the application.
+	 * Initialize and show the application GUI.
 	 */
 	protected void startup() {
 		//the actions that the user can undertake?
@@ -154,14 +143,15 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void ready() {
+		// load data from the db using the bsaf task mechanism
 		Action refreshAction = clientTablePanel.getApplicationActionMap().get("refresh");
 		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "refresh");
 		refreshAction.actionPerformed (actionEvent);
 	}
 
-	//TODO make this createOrShowComponent!! .. this method can be more efficient!!
 	public void createOrShowComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent == null ? null : appComponent.getHolder();
 		if (container != null) {
@@ -191,6 +181,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override 
 	protected void shutdown() {
 		Action uploadLogFilesAction = getApplicationActionMap().get("uploadLogFiles");
@@ -273,7 +264,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	public Query createQuery(String query) {
-		return getEntityManagerFactory().createEntityManager().createQuery(query).setHint("toplink.refresh", "true").setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts ");
+		return getEntityManagerFactory().createEntityManager().createQuery(query)
+		.setHint("toplink.refresh", "true")
+		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts ");
 	}
 
 	public Query createNativeQuery(String query) {
@@ -320,7 +313,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	public static class RunwalkLogger extends org.eclipse.persistence.logging.AbstractSessionLog {
 
-		@Override
 		public void log(org.eclipse.persistence.logging.SessionLogEntry arg0) {
 			LOGGER.log(Level.toLevel(arg0.getLevel()), arg0.getMessage());
 		}

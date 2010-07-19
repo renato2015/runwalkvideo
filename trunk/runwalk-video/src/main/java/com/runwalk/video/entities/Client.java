@@ -153,6 +153,8 @@ public class Client extends SerializableEntity<Client> {
 	public boolean addAnalysis(Analysis analysis) {
 		boolean result = getAnalyses().add(analysis);
 		setLastAnalysisDate(analysis.getCreationDate());
+		// set dirty to make sure a PCE will be fired (will have effect only if saved recently)
+		setDirty(true);
 		return result;
 	}
 

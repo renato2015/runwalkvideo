@@ -55,7 +55,6 @@ public class VideoPlayer extends VideoComponent {
 			}
 		});
 		loadFile(recording);
-		getVideoImpl().setPlayRate(getPlayRate());
 	}
 
 	public void loadFile(Recording recording) throws FileNotFoundException {
@@ -63,7 +62,8 @@ public class VideoPlayer extends VideoComponent {
 		if (getVideoImpl().loadFile(recording.getVideoFile())) {
 			showComponent();
 		}
-//		getVideoImpl().setPlayRate(getPlayRate());
+		// set playback rate
+		getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
 	
