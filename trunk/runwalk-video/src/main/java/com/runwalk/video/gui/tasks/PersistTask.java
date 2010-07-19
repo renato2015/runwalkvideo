@@ -1,8 +1,5 @@
 package com.runwalk.video.gui.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 

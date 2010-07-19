@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
