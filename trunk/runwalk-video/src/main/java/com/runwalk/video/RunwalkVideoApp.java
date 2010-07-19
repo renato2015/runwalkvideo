@@ -19,6 +19,8 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -36,6 +38,8 @@ import com.runwalk.video.gui.panels.StatusPanel;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
+
+import de.humatic.dsj.DSEnvironment;
 
 /**
  * The main class of the application.
@@ -70,10 +74,11 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	/*
 	 * Main method launching the application. 
-	 * After loggin has been set up, the application will launch using the bsaf framework.
+	 * After loggin has been set up, the application will launch using the swing application framework (SAF).
 	 */
 	public static void main(String[] args) {
 		AppSettings.configureLog4j();
+		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
 
@@ -85,7 +90,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	private void saveUIState() throws IOException {
-		LOGGER.log(Level.INFO, "Saving UI state to: " + getContext().getLocalStorage().getDirectory());
+		LOGGER.log(Level.INFO, "Saving UI state to directory " + getContext().getLocalStorage().getDirectory());
 		getContext().getSessionStorage().save(getMainFrame(), "desktopPane.xml");
 		if (getMediaControls() != null) {
 			getContext().getSessionStorage().save(getMediaControls(), "controlFrame.xml");
