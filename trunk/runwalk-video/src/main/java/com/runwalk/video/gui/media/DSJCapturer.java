@@ -30,7 +30,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private static final int FLAGS = DSFiltergraph.DD7;
 	
-	// load DLL's and set debugging level at class loading time
 	static {
 		DSEnvironment.setDebugLevel(4);
 		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
@@ -136,7 +135,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	}
 	
 	public String[] getCaptureDevices() {
-		dsi = DSCapture.queryDevices(0);
+		dsi = DSCapture.queryDevices(1);
 		String[] devices = new String[dsi[0].length];
 		for (int i = 0; i < dsi[0].length; i++) {
 			DSFilterInfo dsFilterInfo = dsi[0][i];

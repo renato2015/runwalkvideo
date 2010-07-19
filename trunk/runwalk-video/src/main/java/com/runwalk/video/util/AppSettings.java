@@ -96,7 +96,7 @@ public class AppSettings implements Serializable {
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, FILE_ENCODING);
 			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
 			fos = appContext.getLocalStorage().openOutputFile(settingsFile.getName());
-			logger.debug("Writing application settings to file " + settingsFile.getName());
+			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
 			marshaller.marshal(settings, fos);
 		} catch (Exception e) {
 			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, e);
