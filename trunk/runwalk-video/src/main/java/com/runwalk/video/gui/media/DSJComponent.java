@@ -13,6 +13,7 @@ import org.jdesktop.application.Action;
 
 import com.runwalk.video.RunwalkVideoApp;
 
+import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
@@ -24,7 +25,13 @@ import de.humatic.dsj.DSFiltergraph;
  * @param <T> The specific DSFiltergraph class used by this component
  */
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
-
+	
+	static {
+		// initialize and unlock dsj dll's at class loading time
+		DSEnvironment.setDebugLevel(4);
+		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
+	}
+	
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;
