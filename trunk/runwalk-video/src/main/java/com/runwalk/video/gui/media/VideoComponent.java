@@ -69,6 +69,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	 * <li>If the total number of available monitors is smaller than 2, then the last monitor index will be used at all times.</li>
 	 * <li>If the total number of available monitors is greater than 2, then the assigned monitor index will alternate between 1 and the last
 	 * monitor index according to the value of the componentId parameter.</li>
+	 * </ul>
 	 * 
 	 * @param graphicsDevicesCount The amount of available screens
 	 * @param componentId The instance number
@@ -79,7 +80,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		if (graphicsDevicesCount > 2) {
 			int availableScreenCount = graphicsDevicesCount - 1;
 			result = 0;
-			// assign a different (alternating) monitor for each instance if there are more than 2 in total
+			// assign a different (alternating) monitor for each instance if there are more than 2 monitors in total
 			for (int i = 1; i <= componentId; i++) {
 				if (result >= availableScreenCount) {
 					result = 1;
@@ -165,10 +166,24 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return internalFrame;
 	}
 
+	/**
+	 * Returns an unique id for this concrete {@link VideoComponent} type.
+	 * Implementations can be numbered independently from each other.
+	 * Most of the time a static counter will be used at creation time, that 
+	 * is incremented in the subclass 
+	 * 
+	 * @return The number
+	 */
 	public int getComponentId() {
 		return componentId;
 	}
 
+	/**
+	 * Set the title of the component that is currently shown, which will become
+	 * visible in the top of the window frame.
+	 * 
+	 * @param title The title
+	 */
 	protected void setComponentTitle(String title) {
 		if (isFullscreen()) {
 			getFullscreenFrame().setTitle(title);
@@ -214,7 +229,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			// use monitor screen set by user
 			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
 		} else {
-			// use default monitor screen, because it wasn't set or invalid
+			// use default monitor screen, because it wasn't set or found to be invalid
 			monitorId = defaultScreenId;
 			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getTitle() + ".");
 		}

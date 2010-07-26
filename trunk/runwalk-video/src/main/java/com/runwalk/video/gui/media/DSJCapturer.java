@@ -7,7 +7,6 @@ import java.util.Arrays;
 import org.jdesktop.application.utils.PlatformType;
 
 import de.humatic.dsj.DSCapture;
-import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSMediaType;
@@ -15,7 +14,7 @@ import de.humatic.dsj.DSCapture.CaptureDevice;
 import de.humatic.dsj.DSFilter.DSPin;
 
 /**
- * This class is a concrete implementation for the DirectShow for Java libary (dsj), 
+ * This class is a concrete implementation for the DirectShow for Java (dsj) libary, 
  * which enables capturing on the {@link PlatformType#WINDOWS} platform.
  * 
  * @author Jeroen Peelaerts
@@ -30,11 +29,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private static final int FLAGS = DSFiltergraph.DD7;
 	
-	static {
-		DSEnvironment.setDebugLevel(4);
-		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
-	}
-
 	private DSFilterInfo[][] dsi;
 
 	/**
