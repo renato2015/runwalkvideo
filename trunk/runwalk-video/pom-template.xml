@@ -194,6 +194,7 @@
 						</goals>
 						<configuration>
 							<artifactItems>
+								<!-- TODO dsj artifact should only be extracted on windows.. otherwise use jmc?? -->
 								<artifactItem>
 									<groupId>de.humatic</groupId>
 									<artifactId>dsj-nativelib</artifactId>

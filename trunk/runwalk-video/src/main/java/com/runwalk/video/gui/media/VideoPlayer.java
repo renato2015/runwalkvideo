@@ -3,6 +3,7 @@ package com.runwalk.video.gui.media;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import javax.swing.Timer;
@@ -13,7 +14,6 @@ import org.jdesktop.application.utils.PlatformType;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.util.AppSettings;
-import com.runwalk.video.util.AppUtil;
 
 public class VideoPlayer extends VideoComponent {
 
@@ -31,18 +31,18 @@ public class VideoPlayer extends VideoComponent {
 	
 	private IVideoPlayer playerImpl;
 
-	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording) throws FileNotFoundException {
+	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, File videoFile) throws FileNotFoundException {
 		playerCount++;
 		IVideoPlayer result = null;
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 			result = new DSJPlayer();
 		} else {
-			result = new JMCPlayer(recording.getVideoFile());
+			result = new JMCPlayer(videoFile);
 		}
-		return new VideoPlayer(listener, recording, result);
+		return new VideoPlayer(listener, recording, videoFile, result);
 	}
 
-	protected VideoPlayer(PropertyChangeListener listener, Recording recording, IVideoPlayer playerImpl) throws FileNotFoundException {
+	protected VideoPlayer(PropertyChangeListener listener, Recording recording, File videoFile, IVideoPlayer playerImpl) throws FileNotFoundException {
 		super(listener, playerCount);
 		this.playerImpl = playerImpl;
 		setTimer(new Timer(25, null));
@@ -50,19 +50,20 @@ public class VideoPlayer extends VideoComponent {
 
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
-					firePropertyChange(POSITION, position, position = getVideoImpl().getPosition());
+					firePropertyChange(POSITION, position, position = getPosition());
 				}
 			}
 		});
-		loadFile(recording);
+		loadFile(recording, videoFile);
 	}
 
-	public void loadFile(Recording recording) throws FileNotFoundException {
+	public void loadFile(Recording recording, File videoFile) throws FileNotFoundException {
+		setVideoFile(videoFile);
 		setRecording(recording);
-		if (getVideoImpl().loadFile(recording.getVideoFile())) {
+		if (getVideoImpl().loadFile(videoFile)) {
 			showComponent();
 		}
-		// set playback rate
+		// set playback rate 
 		getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
@@ -85,7 +86,16 @@ public class VideoPlayer extends VideoComponent {
 		getVideoImpl().stop();
 	}
 
+	/**
+	 * Set the current playback position of the player. If the position is greater than the duration of the
+	 * currently loaded video, then it will be set to 0.
+	 * 
+	 * @param pos The playback position
+	 */
 	public void setPosition(int pos) {
+		if (pos >= getDuration()) {
+			pos = 0;
+		}
 		getVideoImpl().setPosition(pos);
 		firePropertyChange(POSITION, this.position, this.position = pos);
 	}
@@ -105,25 +115,25 @@ public class VideoPlayer extends VideoComponent {
 		}
 		return result;
 	}
-
-	public void nextSnapshot() {
+	
+	public void pauseIfPlaying() {
 		if (isPlaying()) {
 			pause();
 		}
+	}
+
+	public void nextSnapshot() {
 		getRecording().sortKeyframes();
 		for (Keyframe frame : getRecording().getKeyframes()) {
-			if (frame.getPosition() > getVideoImpl().getPosition()) {
+			if (frame.getPosition() > getPosition()) {
 				setPosition(frame.getPosition());
-				getLogger().debug("NEXT: Keyframe position " + getVideoImpl().getPosition() + " " + frame.getPosition());
+				getLogger().debug("NEXT: Keyframe position " + getPosition() + " " + frame.getPosition());
 				return;
 			}
 		}
 	}
 
 	public void previousSnapshot() {
-		if (isPlaying()) {
-			pause();
-		}
 		getRecording().sortKeyframes();
 		for (int i = getRecording().getKeyframeCount()-1; i >= 0; i--) {
 			Keyframe frame = getRecording().getKeyframes().get(i);
@@ -136,18 +146,12 @@ public class VideoPlayer extends VideoComponent {
 		setPosition(0);
 	}
 
-	public int makeSnapshot() {
-		if (isPlaying()) {
-			pause();
-		}
-		int position = getVideoImpl().getPosition();
-		getLogger().debug("Position found :" + position);
+	public int getKeyframePosition() {
+		int position = getPosition();
+		getLogger().debug("Position found: " + position);
 		setPosition(position);
-		position = getVideoImpl().getPosition();
-		getLogger().debug("Final position :" + position);
-		Keyframe snapshot = new Keyframe(getRecording(), position);
-		AppUtil.persistEntity(snapshot);
-		getRecording().addKeyframe(snapshot);
+		position = getPosition();
+		getLogger().debug("Final position: " + position);
 		return position;
 	}
 

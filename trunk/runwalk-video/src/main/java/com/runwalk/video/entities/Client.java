@@ -31,6 +31,11 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
 public class Client extends SerializableEntity<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
+	
+	/**
+	 * 'Synthetic' property to allow firing events when adding/removing analyses
+	 */
+	public static final String ANALYSIS_COUNT = "analysisCount";
 	public static final String ORGANIZATION = "organization";
 	public static final String FIRSTNAME = "firstname";
 	public static final String ADDRESS = "address";
@@ -139,7 +144,9 @@ public class Client extends SerializableEntity<Client> {
 	public boolean removeAnalysis(Analysis analysis) {
 		boolean result = false;
 		if (analysis != null) {
+			int oldSize = getAnalysesCount();
 			result = getAnalyses().remove(analysis);
+			firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
 			Date lastAnalysisDate = null;
 			if (!getAnalyses().isEmpty()) {
 				Analysis lastAnalysis = getAnalyses().get(getAnalysesCount() - 1);
@@ -151,10 +158,10 @@ public class Client extends SerializableEntity<Client> {
 	}
 
 	public boolean addAnalysis(Analysis analysis) {
+		int oldSize = getAnalysesCount();
 		boolean result = getAnalyses().add(analysis);
+		firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
 		setLastAnalysisDate(analysis.getCreationDate());
-		// set dirty to make sure a PCE will be fired (will have effect only if saved recently)
-		setDirty(true);
 		return result;
 	}
 

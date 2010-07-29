@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(name="prod_category", schema = "testdb")
 public class ProdCategory implements Serializable {
 	@Id
@@ -15,8 +16,6 @@ public class ProdCategory implements Serializable {
 	private String catname;
 
 	private byte publish;
-
-	private static final long serialVersionUID = 1L;
 
 	protected ProdCategory() { }
 

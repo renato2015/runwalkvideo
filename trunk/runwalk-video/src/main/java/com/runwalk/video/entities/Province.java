@@ -7,14 +7,13 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(schema="testdb", name="province")
 public class Province implements Serializable {
 	@Id
 	private int id;
 
 	private String name;
-
-	private static final long serialVersionUID = 1L;
 
 	protected Province() {	}
 

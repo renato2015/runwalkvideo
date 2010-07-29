@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(name="prod_subcategory", schema = "testdb")
 public class ProdSubcategory implements Serializable {
 	@Id
@@ -20,8 +21,6 @@ public class ProdSubcategory implements Serializable {
 
 	@Column(name="ext_url")
 	private String extUrl;
-
-	private static final long serialVersionUID = 1L;
 
 	protected ProdSubcategory() { }
 

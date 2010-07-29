@@ -92,6 +92,7 @@ public class CameraDialog extends AppDialog {
 			
 		});
 		pack();
+		toFront();
 	}
 
 	@Action

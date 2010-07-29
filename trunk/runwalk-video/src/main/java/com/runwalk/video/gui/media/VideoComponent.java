@@ -6,6 +6,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,6 +46,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public static final String MONITOR_ID = "monitorId";
 
 	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
+	private File videoFile;
 	private Recording recording;
 	protected Frame fullScreenFrame;
 	protected AppInternalFrame internalFrame;
@@ -142,6 +144,14 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return appWindowWrapperListeners;
 	}
 
+	public File getVideoFile() {
+		return videoFile;
+	}
+
+	public void setVideoFile(File videoFile) {
+		this.videoFile = videoFile;
+	}
+
 	public Recording getRecording() {
 		return recording;
 	}
@@ -204,8 +214,8 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return container;
 	}
 
-	protected boolean hasRecording() {
-		return getRecording() != null;
+	protected boolean hasVideoFile() {
+		return getVideoFile() != null;
 	}
 
 	protected void setMonitorId(int monitorId) {
@@ -287,6 +297,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 
 	public void dispose() {
 		getVideoImpl().dispose();
+		setVideoFile(null);
 		setRecording(null);
 	}
 

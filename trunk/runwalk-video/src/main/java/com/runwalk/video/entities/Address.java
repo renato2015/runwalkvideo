@@ -10,8 +10,8 @@ import javax.persistence.ManyToOne;
 import org.jdesktop.application.AbstractBean;
 
 @Embeddable
+@SuppressWarnings("serial")
 public class Address extends AbstractBean implements Serializable {
-	private static final long serialVersionUID = 1L;
 	
 	@Column(name = "address1")
 	private String address;
