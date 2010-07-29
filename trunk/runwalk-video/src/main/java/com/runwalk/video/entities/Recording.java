@@ -1,6 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.io.FileNotFoundException;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,17 +10,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PostLoad;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.log4j.Logger;
-
-import com.runwalk.video.entities.VideoFile.CompressedVideoFile;
-import com.runwalk.video.entities.VideoFile.UncompressedVideoFile;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -29,15 +25,15 @@ import com.runwalk.video.util.AppUtil;
 @Table(schema="testdb", name="movies")
 public class Recording extends SerializableEntity<Recording> {
 	
-	private static final String RECORDED = "recorded";
+	public static final String RECORDED = "recorded";
 
-	private static final String COMPRESSED = "compressed";
+	public static final String COMPRESSED = "compressed";
 
-	private static final String RECORDING_STATUS = "recordingStatus";
+	public static final String RECORDING_STATUS = "recordingStatus";
 
-	private static final String DURATION = "duration";
+	public static final String DURATION = "duration";
 
-	private static final String KEYFRAME_COUNT = "keyframeCount";
+	public static final String KEYFRAME_COUNT = "keyframeCount";
 
 	public static final String VIDEO_CONTAINER_FORMAT = ".avi";
 	
@@ -46,7 +42,8 @@ public class Recording extends SerializableEntity<Recording> {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@OneToOne(mappedBy="recording")
+	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
+	@JoinColumn(name="analysisid", nullable=false)
 	private Analysis analysis;
 
 	@Column(name="oldfilename")
@@ -60,13 +57,10 @@ public class Recording extends SerializableEntity<Recording> {
 	@Column(name="lastmodified")
 	private Long lastModified;
 	
-	private Integer statuscode = RecordingStatus.NON_EXISTANT_FILE.getCode();
+	private Integer statusCode = RecordingStatus.NON_EXISTANT_FILE.getCode();
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
-	//TODO deze dingen moeten hier ontkoppeld worden!
-	@Transient
-	private VideoFile uncompressedVideoFile, compressedVideoFile, videoFile;
 
 	/**
 	 * Transient field containing the actual status code. The value of this code is copied back
@@ -89,10 +83,10 @@ public class Recording extends SerializableEntity<Recording> {
 		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.DATE_FORMATTER);
 		Client client = analysis.getClient();
 		int analysisCount = client.getAnalysesCount();
-		String prefix = analysisCount == 0 ? "" : analysisCount + "_";
+		int recordingCount = analysis.getRecordingCount();
+		String prefix = analysisCount == 0 ? "" : (analysisCount + recordingCount) +  "_";
 		this.videoFileName = prefix + client.getName() + "_" + client.getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;
 		this.analysis = analysis;
-		refreshVideoFiles();
 	}
 
 	public Long getId() {
@@ -104,13 +98,6 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	public long getDuration() {
-		if (duration == 0 && isRecorded()) {
-			try {
-				duration = getVideoFile().getDuration();
-			} catch (Exception e) {
-				Logger.getLogger(getClass()).error("Failed to read meta info from " + getClass().getSimpleName() +  " with name " + getVideoFileName(), e);
-			}
-		}
 		return duration;
 	}
 	
@@ -141,112 +128,46 @@ public class Recording extends SerializableEntity<Recording> {
 	public RecordingStatus getRecordingStatus() {
 		return recordingStatus;
 	}
+	
+	@PostLoad
+	@SuppressWarnings("unused")
+	private void postLoad() {
+		// initialize transient fields
+		recordingStatus = RecordingStatus.getByCode(statusCode);
+	}
 
 	/**
 	 * This method should set the right status code according to the available recordings on the disk.
+	 * The status code will not be persisted to the database if it is found to be erroneous, because
+	 * the videofiles are always local to an application's file system.
 	 * 
 	 * @param status The status to be applied
 	 */
 	public void setRecordingStatus(RecordingStatus status) {
-		if (status.refreshNeeded()) {
-			videoFile = null;
-			cacheVideoFile();
-		} else {
-			this.firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
+		this.firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
+		// don't change the statuscode if it is erroneous.
+		if (!status.isErroneous()) {
+			this.statusCode = recordingStatus.getCode();
 		}
-		this.statuscode = recordingStatus.getCode();
-	}
-
-	@PostLoad
-	private void refreshVideoFiles() {
-		videoFile = null;
-		compressedVideoFile = new CompressedVideoFile(getVideoFileName());
-		uncompressedVideoFile = new UncompressedVideoFile(getVideoFileName());
-		cacheVideoFile();
-	}
-
-	private VideoFile cacheVideoFile() {
-		if (videoFile == null || !videoFile.canReadAndExists())  {
-			if (getCompressedVideoFile().exists()) {
-				if (getCompressedVideoFile().canRead()) {
-					firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.COMPRESSED);
-					videoFile = getCompressedVideoFile();
-					/*try {
-						if (hasDuplicateFiles() && getCompressedVideoFile().getDuration() != getUncompressedVideoFile().getDuration()) {
-							 // bestand is leesbaar maar de lengtes van de twee versies zijn niet hetzelfde. Best om de compresseerde versie in quarantaine te zetten..
-							getCompressedVideoFile().delete();
-							recordingStatus = RecordingStatus.UNCOMPRESSED;
-							videoFile = getUncompressedVideoFile();
-						}
-					} catch (DSJException e) {
-						 // een exception hier wil zeggen dat de uncompressed version om zeep is.. voorlopig gewoon loggen
-						Logger.getLogger(getClass()).error("Failed to read meta info from " + getClass().getSimpleName() +  " with name " + getUncompressedVideoFile().getName(), e);
-					}*/
-				} else {
-					//bestand is helemaal niet leesbaar, best verwijderen..
-					//TODO kuis code op..
-					//FIXME wat als er geen niet gecomprimeerde versie meer is??
-/*					if (getCompressedVideoFile().delete()) {
-						videoFile = cacheVideoFile();
-					} else {*/
-					firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
-					videoFile = getUncompressedVideoFile();
-					//}
-				}
-			} else if (getUncompressedVideoFile().canReadAndExists()) {
-				firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.UNCOMPRESSED);
-				videoFile = getUncompressedVideoFile();
-			} else {
-				Logger.getLogger(Recording.class).warn("No videofile found for recording with filename " + getVideoFileName());
-				firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = RecordingStatus.NON_EXISTANT_FILE);
-				return videoFile = null;
-			}
-		}
-		return videoFile;
 	}
 	
 	public String getVideoFileName() {
 		return videoFileName;
 	}
 
-	public String getVideoFilePath() throws FileNotFoundException {
-		return getVideoFile().getAbsolutePath();
-	}
-	
-	public VideoFile getVideoFile() throws FileNotFoundException {
-		VideoFile videoFile = cacheVideoFile();
-		if (videoFile == null) {
-			throw new FileNotFoundException();
-		}
-		return videoFile;
-	}
-
-	public VideoFile getUncompressedVideoFile() {
-		return uncompressedVideoFile;
-	}
-
-	public VideoFile getCompressedVideoFile() {
-		return compressedVideoFile;
-	}
-
-	public boolean hasDuplicateFiles() {
-		return getCompressedVideoFile().exists() && getUncompressedVideoFile().exists();
-	}
-
 	public boolean isCompressable() {
 		return getRecordingStatus() != RecordingStatus.COMPRESSED && 
 		getRecordingStatus() != RecordingStatus.FILE_NOT_ACCESSIBLE &&
 		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
-		getRecordingStatus() != RecordingStatus.DSJ_ERROR && 
-		getUncompressedVideoFile().exists();
+		getRecordingStatus() != RecordingStatus.DSJ_ERROR;
 	}
 	
-	public boolean isUncompressed() {
-		return getRecordingStatus() == RecordingStatus.UNCOMPRESSED && getUncompressedVideoFile().exists();
+	public  boolean isUncompressed() {
+		return getRecordingStatus() == RecordingStatus.UNCOMPRESSED;
 	}
 
 	public boolean isCompressed() {
-		return getRecordingStatus() == RecordingStatus.COMPRESSED && getCompressedVideoFile().exists();
+		return getRecordingStatus() == RecordingStatus.COMPRESSED;
 	}
 
 	public boolean isRecorded() {
@@ -275,7 +196,7 @@ public class Recording extends SerializableEntity<Recording> {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + " [id=" + id + ", statuscode=" + statuscode	+ ", videoFileName=" + videoFileName + "]";
+		return getClass().getSimpleName() + " [id=" + id + ", statuscode=" + statusCode	+ ", videoFileName=" + videoFileName + "]";
 	}
 
 

@@ -32,7 +32,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		try {
 			message("startMessage");
 			final Query query = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager().createNamedQuery("findAllClients"); // NOI18N
-			query.setHint("eclipselink.left-join-fetch", "c.analyses.recording");
+			query.setHint("eclipselink.left-join-fetch", "c.analyses.recordings");
 //			query.setHint("eclipselink.left-join-fetch", "c.address.city");
 			message("fetchMessage");
 			final List<Client> resultList = query.getResultList();
@@ -69,11 +69,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					//Create the overview with unfinished analyses
 					AnalysisOverviewTablePanel analysisOverviewTablePanel = RunwalkVideoApp.getApplication().getAnalysisOverviewTable();
 					analysisOverviewTablePanel.setItemList(analysesOverview, new AnalysisConnector());
-					//check whether compressing should be enabled
-					analysisOverviewTablePanel.setCompressionEnabled(true);
 				}
 				
 			});
+			RunwalkVideoApp.getApplication().getVideoFileManager().clear();
+			//check whether compressing should be enabled
+			RunwalkVideoApp.getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
 //			setProgress(3, 0, 3);
 			message("endMessage");
 		} catch(Exception ignore) {

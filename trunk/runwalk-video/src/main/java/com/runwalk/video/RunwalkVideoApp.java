@@ -64,6 +64,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	private JScrollableDesktopPane pane;
 
+	private VideoFileManager videoFileManager;
+
 	/**
 	 * A convenient static getter for the application instance.
 	 * @return the instance of RunwalkVideoApp
@@ -104,6 +106,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		AppSettings.getInstance().loadSettings();
 		String puName = getContext().getResourceMap().getString("Application.name");
 		emFactory = Persistence.createEntityManagerFactory(puName);
+		// video file manager is created here and injected into the components
+		// this design increases testability
+		videoFileManager = new VideoFileManager();
 	}
 
 	/**
@@ -116,16 +121,16 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel();
 		clientInfoPanel = new  ClientInfoPanel();
-		analysisPanel = new  AnalysisTablePanel();
+		analysisPanel = new  AnalysisTablePanel(videoFileManager);
 		setSaveNeeded(false);
-		overviewPanel = new AnalysisOverviewTablePanel();    	
+		overviewPanel = new AnalysisOverviewTablePanel(videoFileManager);    	
 
 		pane = new JScrollableDesktopPane();
 		getMainFrame().add(pane);
 
 		menuBar = new VideoMenuBar();
 
-		mediaControls = new MediaControls();
+		mediaControls = new MediaControls(videoFileManager);
 		mediaControls.startCapturer();
 		clientMainView = new ClientMainView();
 		
@@ -252,6 +257,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	//some convenience methods
+
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
 
 	public boolean isSaveNeeded() {
 		return getClientTablePanel().isSaveNeeded();

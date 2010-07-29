@@ -1,5 +1,8 @@
 package com.runwalk.video.gui.panels;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +21,12 @@ import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.matchers.Matcher;
 
+import com.google.common.collect.Iterables;
+import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.gui.DateTableCellRenderer;
-import com.runwalk.video.gui.OpenRecordingButton;
 import com.runwalk.video.gui.tasks.CleanupRecordingsTask;
 import com.runwalk.video.gui.tasks.CompressTask;
 import com.runwalk.video.util.AppSettings;
@@ -38,13 +42,16 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
-	public AnalysisOverviewTablePanel() {
+	private final VideoFileManager videoFileManager;
+
+	public AnalysisOverviewTablePanel(VideoFileManager videoFileManager) {
 		super(new MigLayout("fill, nogrid"));
+		this.videoFileManager = videoFileManager;
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow");
-		
+
 		JButton cleanupButton = new JButton(getAction("cleanup"));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
 		add(cleanupButton);
@@ -61,7 +68,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = COMPRESSION_ENABLED, block=Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
-		return new CompressTask(getUncompressedRecordings(), AppSettings.getInstance().getTranscoder());
+		String transcoder = AppSettings.getInstance().getTranscoder();
+		return new CompressTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
 	}
 
 	public boolean isCompressionEnabled() {
@@ -71,9 +79,12 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public void setCompressionEnabled(boolean compressionEnabled) {
 		if (compressionEnabled) {
 			for(Analysis analysis : getItemList()) {
-				if (analysis.hasCompressableRecording()) {
-					firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = true);
-					return;
+				for (Recording recording : analysis.getRecordings()) {
+					File videoFile = getVideoFileManager().getVideoFile(recording);
+					if (recording.isCompressable() && getVideoFileManager().canReadAndExists(videoFile)) {
+						firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = true);
+						return;
+					}
 				}
 			}
 		} else {
@@ -81,29 +92,35 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		}
 	}
 
-	public List<Recording> getUncompressedRecordings() {
+	public List<Recording> getCompressableRecordings() {
 		List<Recording> list = new ArrayList<Recording>();
 		for (Analysis analysis : getItemList()) {
-			Recording recording = analysis.getRecording();
-			if (recording != null && recording.isCompressable()) {
-				list.add(recording);
+			for (Recording recording : analysis.getRecordings()) {
+				if (recording.isCompressable()) {
+					list.add(recording);
+				}
 			}
 		}
 		return list;
 	}
-	
+
 	public TableFormat<Analysis> getTableFormat() {
 		return new AnalysisOverviewTableFormat();
 	}
-	
+
 	@Override
 	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
 		return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
 
 			public boolean matches(Analysis item) {
-				return item.getRecording() != null && !item.getRecording().isCompressed();
+				for (Recording recording : item.getRecordings()) {
+					if (recording.isCompressable()) {
+						return true;
+					}
+				}
+				return false;
 			}
-			
+
 		});
 	}
 
@@ -122,44 +139,65 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		addMouseListenerToTable();
 	}
-	
+
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
+
 	public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 
-	    public int getColumnCount() {
-	        return 7;
-	    }
+		public int getColumnCount() {
+			return 7;
+		}
 
-	    public String getColumnName(int column) {
-	        if(column == 0)      return "";
-	        else if(column == 1) return "Tijdstip analyse";
-	        else if(column == 2) return "Naam klant";
-	        else if(column == 3) return "Aantal keyframes";
-	        else if(column == 4) return "Duur video";
-	        else if(column == 5) return "Status";
-	        else if(column == 6) return "";
-	        throw new IllegalStateException();
-	    }
+		public String getColumnName(int column) {
+			if(column == 0)      return "";
+			else if(column == 1) return "Tijdstip analyse";
+			else if(column == 2) return "Naam klant";
+			else if(column == 3) return "Aantal keyframes";
+			else if(column == 4) return "Duur video";
+			else if(column == 5) return "Status";
+			else if(column == 6) return "";
+			throw new IllegalStateException();
+		}
 
-	    public Object getColumnValue(Analysis analysis, int column) {
-	    	switch(column) {
-	    	case 0: return analysis.getRecording() != null && analysis.getRecording().isCompressed() ? completedIcon : incompleteIcon;
-	    	case 1: return analysis.getCreationDate();
-	    	case 2: return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
-	    	case 3: return analysis.getRecording() != null ? analysis.getRecording().getKeyframeCount() : 0;
-	    	case 4: return analysis.getRecording() != null ? analysis.getRecording().getDuration() : 0L;
-	    	case 5: {
-	    		String result = "<geen>";
-	    		if (analysis.getRecording() != null) {
-	    			String resourceKey = analysis.getRecording().getRecordingStatus().getResourceKey();
-	    			result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
-	    		} 
-	    		return result;
-	    	}
-	    	case 6: return new OpenRecordingButton(analysis.getRecording());
-	    	default: return null;
-	    	}
-	    }
-		
+		public Object getColumnValue(final Analysis analysis, int column) {
+			// existance of the recording's video file should be checked by the videoFileManager upon load
+			final boolean recordingNotNull = analysis.hasRecordings();
+			Recording recording = null;
+			if (recordingNotNull) {
+				recording = Iterables.getLast(analysis.getRecordings());
+			}
+			switch(column) {
+			case 0: return recordingNotNull && recording.isCompressed() ? completedIcon : incompleteIcon;
+			case 1: return analysis.getCreationDate();
+			case 2: return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
+			case 3: return recordingNotNull ? recording.getKeyframeCount() : 0;
+			case 4: return recordingNotNull ? recording.getDuration() : 0L;
+			case 5: {
+				String result = "<geen>";
+				RecordingStatus recordingStatus = recording.getRecordingStatus();
+				if (recordingNotNull && recordingStatus != null) {
+					String resourceKey = recordingStatus.getResourceKey();
+					result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
+				} 
+				return result;
+			}
+			case 6: {
+				JButton button = new JButton("open");
+				setFont(AppSettings.MAIN_FONT);
+				button.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						getApplication().getMediaControls().playRecordings(analysis);
+					}
+				});
+				button.setEnabled(analysis.isRecorded());
+				return button;
+			}
+			default: return null;
+			}
+		}
+
 	}
 
 }

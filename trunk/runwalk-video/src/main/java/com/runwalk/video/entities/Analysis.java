@@ -1,27 +1,35 @@
 package com.runwalk.video.entities;
 
-import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.eclipse.persistence.annotations.JoinFetch;
+import org.eclipse.persistence.annotations.JoinFetchType;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(schema="testdb", name="analysis")
 public class Analysis extends SerializableEntity<Analysis> {
 
+	public final static String RECORDING_COUNT = "recordingCount";
+		
 	@Id
 	@Column(name="id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -31,13 +39,13 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@JoinColumn(name="clientid", nullable=false)
 	private Client client;
 	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "analysis")
+	@JoinFetch(JoinFetchType.OUTER)
+	private List<Recording> recordings = new ArrayList<Recording>();
+	
 	@OneToOne
 	@JoinColumn(name="articleid")
 	private Article article;
-	
-	@OneToOne(cascade=CascadeType.ALL)
-	@JoinColumn(name="movieid", unique = true)
-	private Recording recording;
 	
 	@Column(name="date")
 	@Temporal(value=TemporalType.TIMESTAMP)
@@ -85,17 +93,37 @@ public class Analysis extends SerializableEntity<Analysis> {
 		this.firePropertyChange("article", this.article, this.article = art);
 	}
 
-	public Recording getRecording() {
-		return recording;
+	public List<Recording> getRecordings() {
+		return recordings;
 	}
 
 	/**
-	 * Set a {@link Recording} and removes all of the installed {@link PropertyChangeListener}s from the previous recording if 
-	 * the specified one is not the same as the one in the instance field.
-	 * @param recording The recording
+	 * Add a recording to the association. Fires a 'synthetic' PCE to notify listeners about this change.
+	 * 
+	 * @param recording The recording to add
 	 */
-	public void setRecording(Recording recording) {
-		this.firePropertyChange("recording", this.recording, this.recording = recording);
+	public boolean addRecording(Recording recording) {
+		int oldSize = getRecordingCount();
+		boolean result = getRecordings().add(recording);
+		firePropertyChange(RECORDING_COUNT, oldSize, getRecordingCount());
+		return result;
+	}	
+	
+	/**
+	 * Remove a {@link Recording} from the association. Fires a 'synthetic' PCE to notify listeners about this change.
+	 * 
+	 * @param recording The recording to remove
+	 * @return <code>true</code> if the recording was removed
+	 */
+	public boolean removeRecording(Recording recording) {
+		int oldSize = getRecordingCount();
+		boolean result = getRecordings().remove(recording);
+		firePropertyChange(RECORDING_COUNT, oldSize, getRecordingCount());
+		return result;
+	}
+	
+	public int getRecordingCount() {
+		return getRecordings().size();
 	}
 	
 	public Long getId() {
@@ -134,16 +162,17 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
 	}
 
-	public boolean hasRecording() {
-		return getRecording() != null && getRecording().isRecorded();
+	public boolean hasRecordings() {
+		return getRecordings() != null && !getRecordings().isEmpty();
 	}
-
-	public boolean hasCompressableRecording() {
-		return getRecording() != null && getRecording().isCompressable();
-	}
-
-	public boolean hasCompressedRecording() {
-		return getRecording() != null && getRecording().isCompressed();
+	
+	public boolean isRecorded() {
+		for (Recording recording : getRecordings()) {
+			if (recording.isRecorded()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

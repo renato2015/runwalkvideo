@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Arrays;
 
 import javax.swing.JOptionPane;
@@ -17,7 +18,6 @@ import org.jdesktop.application.utils.PlatformType;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.entities.VideoFile;
 
 public class VideoCapturer extends VideoComponent {
 
@@ -36,6 +36,15 @@ public class VideoCapturer extends VideoComponent {
 
 	private IVideoCapturer capturerImpl;
 
+	/** 
+	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
+	 * At this time capturing is only available for {@link PlatformType#WINDOWS}. Calling this method
+	 * on any other platform will return null without showing the selection dialog.
+	 * 
+	 * @param listener a PropertyChangeListener to notify when internal properties change
+	 * @return the created instance or null if unsupported
+	 * 
+	 */
 	public static VideoCapturer createInstance(PropertyChangeListener listener) {
 		// at this moment capturing is only available on windows
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
@@ -84,8 +93,9 @@ public class VideoCapturer extends VideoComponent {
 		getTimer().addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = System.currentTimeMillis() - timeStarted);
-				getRecording().setDuration(timeRecorded);
+				long currentTime = System.currentTimeMillis();
+				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = currentTime - timeStarted);
+				getRecording().setDuration(timeRecorded);	
 			}
 		});
 	}
@@ -134,19 +144,19 @@ public class VideoCapturer extends VideoComponent {
 		return capturerImpl;
 	}
 
-	public void startRecording(Recording recording) {
-		if (recording == null && !hasRecording()) {
-			throw new IllegalArgumentException("No valid recording specified");
-		} else if (recording != null) {
-			setRecording(recording);
-		}
-		getRecording().setRecordingStatus(RecordingStatus.RECORDING);
+	public void startRecording(Recording recording, File videoFile) {
+		if (videoFile == null || recording == null) {
+			throw new IllegalArgumentException("No valid file or recording specified");
+		} 
+		setVideoFile(videoFile);
+		setRecording(recording);
+		
 		getApplication().getStatusPanel().setIndeterminate(true);
 		timeStarted = System.currentTimeMillis();
-
-		VideoFile destFile = getRecording().getUncompressedVideoFile();
-		getVideoImpl().startRecording(destFile);
-		getLogger().debug("Recording to file " + destFile.getAbsolutePath() + "");
+		
+		getVideoImpl().startRecording(videoFile);
+		recording.setRecordingStatus(RecordingStatus.RECORDING);
+		getLogger().debug("Recording to file " + videoFile.getAbsolutePath() + "");
 
 		getTimer().restart();
 		setState(State.RECORDING);

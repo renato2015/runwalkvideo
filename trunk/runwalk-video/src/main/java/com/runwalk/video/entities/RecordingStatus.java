@@ -3,7 +3,7 @@ package com.runwalk.video.entities;
 public enum RecordingStatus {
 
 	/**
-	 * All error constants are denoted by negative numbers
+	 * All error constants are denoted by negative numbers (except for fileNotFound)
 	 */
 	FILE_NOT_ACCESSIBLE(-2, "status.fileNotAccessible"),
 	
@@ -12,7 +12,7 @@ public enum RecordingStatus {
 	COMPRESSED(0, true, "status.compressed"),
 	
 	READY (1, "status.ready"),
-	
+
 	NON_EXISTANT_FILE(4, "status.fileNotFound"),
 	
 	UNCOMPRESSED(6, true, "status.uncompressed"),
@@ -57,7 +57,7 @@ public enum RecordingStatus {
 	}
 	
 	public boolean isErroneous() {
-		return getCode() < 0;
+		return getCode() < 0 || getCode() == 4;
 	}
 	
 	public boolean refreshNeeded() {

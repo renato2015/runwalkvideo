@@ -2,15 +2,16 @@ package com.runwalk.video.gui.tasks;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.entities.VideoFile;
 import com.runwalk.video.gui.media.DSJPlayer;
 import com.runwalk.video.util.AppUtil;
 
@@ -27,12 +28,14 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private Recording recording;
 	private List<Recording> recordings;
 	private DSFilterInfo transcoder;
+	private VideoFileManager videoFileManager;
 	private volatile boolean finished = false;
 
-	public CompressTask(List<Recording> recordings, String transcoder) {
+	public CompressTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
 		super("compress");
 		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
 		this.recordings = recordings;
+		this.videoFileManager = videoFileManager;
 		setUserCanCancel(true);
 	}
 
@@ -66,8 +69,8 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
 			RecordingStatus statusCode = recording.getRecordingStatus();
-			VideoFile sourceFile = recording.getUncompressedVideoFile();
-			VideoFile newFile = recording.getCompressedVideoFile();
+			File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
+			File newFile = getVideoFileManager().getCompressedVideoFile(recording);
 			try {
 				recording.setRecordingStatus(RecordingStatus.READY);
 				if (exporter == null) {
@@ -118,9 +121,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			exporter.dispose();
 		}
 		if (recording != null) {
-			if (recording.getCompressedVideoFile().exists()) {
-				recording.getCompressedVideoFile().delete();
-			}
+			//TODO clean up file that failed to convert..
 			recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 		}
 	}
@@ -145,5 +146,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 		}
 	}
 
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
+	
 
 }
