@@ -57,7 +57,7 @@ public class Recording extends SerializableEntity<Recording> {
 	@Column(name="lastmodified")
 	private Long lastModified;
 	
-	private Integer statusCode = RecordingStatus.NON_EXISTANT_FILE.getCode();
+	private Integer statusCode = RecordingStatus.READY.getCode();
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
@@ -158,7 +158,7 @@ public class Recording extends SerializableEntity<Recording> {
 	public boolean isCompressable() {
 		return getRecordingStatus() != RecordingStatus.COMPRESSED && 
 		getRecordingStatus() != RecordingStatus.FILE_NOT_ACCESSIBLE &&
-		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
+//		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
 		getRecordingStatus() != RecordingStatus.DSJ_ERROR;
 	}
 	

@@ -5,13 +5,10 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.util.Arrays;
 
-import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-
-import com.runwalk.video.RunwalkVideoApp;
 
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
@@ -19,15 +16,16 @@ import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 
 /**
- * This class bundls all DSJ specific stuff for the {@link IVideoCapturer} and {@link IVideoPlayer} implementations.
+ * This class bundls all common DSJ functionality for the {@link IVideoCapturer} and {@link IVideoPlayer} implementations.
+ * 
  * @author Jeroen Peelaerts
  *
- * @param <T> The specific DSFiltergraph class used by this component
+ * @param <T> The specific DSFiltergraph subclass used by this component
  */
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
 	
 	static {
-		// initialize and unlock dsj dll's at class loading time
+		// initialize and unlock dsj dll at class loading time
 		DSEnvironment.setDebugLevel(4);
 		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
 	}
@@ -37,8 +35,9 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	private boolean rejectPauseFilter = false;
 
 	/**
-	 * Constructor for fullscreen mode..
-	 * @param device the {@link GraphicsDevice} where the Frame will be displayed
+	 * Constructor for fullscreen mode.
+	 * 
+	 * @param device the {@link GraphicsDevice} on which the {@link Frame} will be displayed
 	 */
 	public DSJComponent(GraphicsDevice device) { }
 
@@ -74,7 +73,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 			filterInfo[i] = filters[i].getName();
 		}
 		String selectedString =  (String) JOptionPane.showInputDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
+				null,
 				"Kies een filter:",
 				"Bekijk filter..",
 				JOptionPane.PLAIN_MESSAGE,
@@ -95,11 +94,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		if (getFiltergraph() != null) {
 			DSFilter[] installedFilters = getFiltergraph().listFilters();
 			DSFilter filter = getFiltergraph().addFilterToGraph(filterinfo);
-			filter.showPropertiesDialog();
 			filter.connectDownstream(filter.getPin(0,0), installedFilters[1].getPin(1, 0), true);
 			filter.dumpConnections();
 			getLogger().debug("Inserting filter before " + installedFilters[1].getName() + " after " + installedFilters[3].getName());
 			getFiltergraph().insertFilter(installedFilters[1], installedFilters[3], filterinfo);
+			filter.showPropertiesDialog();
 		}
 	}
 
@@ -131,10 +130,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		} else {
 			getFiltergraph().leaveFullScreen();
 		}
-	}
-
-	public ActionMap getActionMap() {
-		return RunwalkVideoApp.getApplication().getContext().getActionMap(DSJComponent.class, this);
 	}
 
 }

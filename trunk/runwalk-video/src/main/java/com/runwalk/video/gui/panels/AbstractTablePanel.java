@@ -45,6 +45,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	private EventSelectionModel<T> eventSelectionModel;
 	private MouseListener jTableMouseListener;
 	private T selectedItem;
+	private TableFormat<T> tableFormat;
 
 	public AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
@@ -123,15 +124,20 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	}
 
 	/**
-	 * Lijst met items wordt van buitenaf op de panel gezet. Deze zal dan klaar gemaakt worden voor 
-	 * gebruik met een {@link JTable} 
+	 * The {@link EventList} will be injected from the outside. This method will further prepare it to 
+	 * use it with a {@link JTable}.
 	 * 
-	 * @param itemList the list
-	 * @param itemConnector the connector that will forward changeEvents to the list.
+	 * @param itemList The list
+	 * @param itemConnector The connector that will forward changeEvents to the list.
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
+		if (this.itemList != null) {
+			// dispose the current list, so it can be garbage collected
+			this.itemList.dispose();
+		}
 		EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
 		SortedList<T> sortedItems = SortedList.create(observedItems);
+		sortedItems.setMode(SortedList.AVOID_MOVING_ELEMENTS);
 		EventList<T> specializedList = specializeItemList(sortedItems);
 		firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
 		eventSelectionModel = new EventSelectionModel<T>(specializedList);
@@ -180,7 +186,13 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		return eventList;
 	}
 
-	public abstract TableFormat<T> getTableFormat();
+	public TableFormat<T> getTableFormat() {
+		return tableFormat;
+	}
+	
+	public void setTableFormat(TableFormat<T> tableFormat) {
+		this.tableFormat = tableFormat;
+	}
 
 	public EventList<T> getItemList() {
 		return itemList;

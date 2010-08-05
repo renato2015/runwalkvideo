@@ -15,10 +15,6 @@ import com.runwalk.video.RunwalkVideoApp;
 @SuppressWarnings("serial")
 public class AppDialog extends JDialog implements AppComponent {
 
-	public AppDialog() {
-		super();
-	}
-
 	public AppDialog(Frame owner) {
 		super(owner);
 	}

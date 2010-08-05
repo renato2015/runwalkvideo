@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -26,9 +25,10 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	private double part;
 	private DSJPlayer exporter;
 	private Recording recording;
-	private List<Recording> recordings;
-	private DSFilterInfo transcoder;
-	private VideoFileManager videoFileManager;
+	private final List<Recording> recordings;
+	private final DSFilterInfo transcoder;
+	private final VideoFileManager videoFileManager;
+	/** volatile flag so changes can be seen directly by all threads */
 	private volatile boolean finished = false;
 
 	public CompressTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
@@ -132,17 +132,17 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			String dlogMessage = getResourceString("finishedMessage", conversionCount);
 			String dlogTitle = getResourceString("endMessage");
 			if (get()) {
-				JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
-						dlogMessage, dlogTitle, JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(null, dlogMessage, dlogTitle, JOptionPane.PLAIN_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),dlogMessage + 
+				JOptionPane.showMessageDialog(null, dlogMessage + 
 						getResourceString("errorMessage", errorCount), dlogTitle, JOptionPane.WARNING_MESSAGE); 					
 			}
 		} catch (Exception e) {
 			errorMessage("endErrorMessage", errorCount);
 		} finally {
-			String syncMsg = getResourceString("lastSyncMessage", AppUtil.formatDate(new Date(), AppUtil.DATE_FORMATTER)); 
-			RunwalkVideoApp.getApplication().getStatusPanel().showMessage(syncMsg);
+			String formattedDate = AppUtil.formatDate(new Date(), AppUtil.DATE_FORMATTER);
+			String syncMsg = getResourceString("lastSyncMessage", formattedDate); 
+			setMessage(syncMsg);
 		}
 	}
 

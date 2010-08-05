@@ -10,13 +10,11 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import javax.swing.ActionMap;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.sun.media.jmc.MediaProvider;
 import com.sun.media.jmc.control.AudioControl;
 import com.sun.media.jmc.control.VideoRenderControl;
@@ -40,9 +38,10 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	private JPanel videoPanel;
 	private JFrame frame;
 
-	public JMCPlayer(File videoFile) {
+	public JMCPlayer(float rate, File videoFile) {
 		this.mp = new MediaProvider();
 		loadFile(videoFile);
+		setPlayRate(rate);
 		ac = mp.getControl(AudioControl.class);
 		vrc = mp.getControl(VideoRenderControl.class);
 		vrc.addVideoRendererListener(this);
@@ -169,10 +168,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
 		//FIXME not supported yet??
 		
-	}
-	
-	public ActionMap getActionMap() {
-		return RunwalkVideoApp.getApplication().getContext().getActionMap(this);
 	}
 
 	private class VideoPanel extends JPanel {

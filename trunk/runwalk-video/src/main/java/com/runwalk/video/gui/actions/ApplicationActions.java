@@ -23,6 +23,12 @@ public class ApplicationActions extends AbstractBean {
 	private UndoManager undo = new UndoManager();
 	private boolean undoEnabled;
 	private boolean redoEnabled;
+	
+	private final AppSettings appSettings;
+
+	public ApplicationActions(AppSettings appSettings) {
+		this.appSettings = appSettings;
+	}
 
 	private class MyUndoableEditListener implements UndoableEditListener {
 		public void undoableEditHappened(UndoableEditEvent e) {
@@ -86,24 +92,41 @@ public class ApplicationActions extends AbstractBean {
 	}
 
 	@Action
-	public void exit() {
-		RunwalkVideoApp.getApplication().exit();
-	}
-
-	@Action
 	public void selectVideoDir() {
-		File chosenDir = AppSettings.getInstance().getVideoDir();
+		File chosenDir = getAppSettings().getVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setVideoDir(result);
+	}
+	
+	@Action
+	public void selectUncompressedVideoDir() {
+		File chosenDir = getAppSettings().getUncompressedVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setUncompressedVideoDir(result);
+	}
+	
+	private File selectDirectory(File chosenDir) {
 		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = chooser.showDialog(RunwalkVideoApp.getApplication().getMainFrame(), "Selecteer");
+		int returnVal = chooser.showDialog(null, "Selecteer");
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    	AppSettings.getInstance().setVideoDir(chooser.getSelectedFile());
+	    	return chooser.getSelectedFile();
 	    }
+	    return chosenDir;
 	}
 	
 	@Action
 	public Task<Void, Void> uploadLogFiles() {
-		return new UploadLogFilesTask();
+		return new UploadLogFilesTask(getAppSettings().getLogFile());
+	}
+
+	public AppSettings getAppSettings() {
+		return appSettings;
+	}
+	
+	@Action
+	public void exit() {
+		RunwalkVideoApp.getApplication().exit();
 	}
 
 }

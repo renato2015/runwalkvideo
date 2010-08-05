@@ -345,9 +345,19 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public ActionMap getApplicationActionMap() {
 		if (actionMap == null) {
 			ActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
-			this.actionMap = AppUtil.mergeActionMaps(actionMap, getVideoImpl().getActionMap());
+			Class<?> videoComponentImplementor = getActionSuperClass(getVideoImpl().getClass());
+			ActionMap videoImplActionMap = getContext().getActionMap(videoComponentImplementor, getVideoImpl());
+			this.actionMap = AppUtil.mergeActionMaps(actionMap, videoImplActionMap);
 		}
 		return actionMap;
+	}
+	
+	private Class<?> getActionSuperClass(Class<?> theClass) {
+		List<Class<?>> interfaces = Arrays.asList(theClass.getInterfaces());
+		if (!interfaces.contains(IVideoComponent.class)) {
+			return getActionSuperClass(theClass.getSuperclass());
+		}
+		return theClass;
 	}
 
 	public enum State {

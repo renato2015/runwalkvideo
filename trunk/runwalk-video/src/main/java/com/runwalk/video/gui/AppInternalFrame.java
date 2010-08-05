@@ -144,6 +144,8 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 				if ((gcBounds0 != null) && (gcBounds0.equals(gcBounds1)) && (sc0 == sc1)) {
 					if (w.isResizable()) {
 						w.setBounds(windowState.getBounds());
+					} else {
+						w.setLocation(windowState.getBounds().x, windowState.getBounds().y);
 					}
 				}
 			}

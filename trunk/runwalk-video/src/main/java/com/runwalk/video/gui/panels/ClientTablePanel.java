@@ -4,6 +4,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -26,7 +27,6 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.RefreshTask;
@@ -41,8 +41,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	private boolean saveNeeded = false;
 
-	private JTextField searchField;
-	private TextComponentMatcherEditor<Client> matcherEditor;
+	private final JTextField searchField;
+	private final TextComponentMatcherEditor<Client> matcherEditor;
 
 	public ClientTablePanel() {
 		super(new MigLayout("nogrid, fill"));
@@ -62,7 +62,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		add(getFirstButton());
 
-		JButton saveButton = new  JButton(getAction("save"));
+		JButton saveButton = new JButton(getAction("save"));
 		saveButton.setFont(AppSettings.MAIN_FONT);
 		add(saveButton);
 
@@ -71,6 +71,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 		searchField = new JTextField();
 		searchField.setFont(AppSettings.MAIN_FONT);
+		matcherEditor = new TextComponentMatcherEditor<Client>(searchField.getDocument(), GlazedLists.toStringTextFilterator());
 
 		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
 		theLabel.setFont(AppSettings.MAIN_FONT);
@@ -116,15 +117,13 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 	
 	private TextComponentMatcherEditor<Client> getSearchEngineTextFieldMatcherEditor() {
-		if (this.matcherEditor == null) {
-			this.matcherEditor = new TextComponentMatcherEditor<Client>(searchField.getDocument(), GlazedLists.toStringTextFilterator());
-		}
-		return this.matcherEditor;
+		return matcherEditor;
 	}
 
 	@Action(enabledProperty=SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
-		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getItemList());
+		EntityManager em = getApplication().getEntityManagerFactory().createEntityManager();
+		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getItemList(), em);
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -141,8 +140,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 
 	public void setSaveNeeded(boolean saveNeeded) {
-		this.saveNeeded = saveNeeded;
-		this.firePropertyChange(SAVE_NEEDED, !isSaveNeeded(), isSaveNeeded());
+		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
 	}
 
 	@Action
@@ -159,7 +157,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(enabledProperty = ROW_SELECTED)
 	public void deleteClient() {
 		int n = JOptionPane.showConfirmDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
+				null,
 				getResourceMap().getString("deleteClient.confirmDialog.text"),
 				getResourceMap().getString("deleteClient.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
@@ -184,7 +182,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	 */
 	@Action(block=Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		return new RefreshTask();
+		return new RefreshTask(getApplication().getVideoFileManager(), getApplication().getEntityManagerFactory().createEntityManager());
 	}
 
 	public TableFormat<Client> getTableFormat() {

@@ -17,7 +17,6 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.log4j.Level;
 import org.jdesktop.application.TaskMonitor;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
@@ -71,7 +70,7 @@ public class StatusPanel extends AppPanel {
 		statusAnimationLabel.setIcon(idleIcon);
 		
 		// connecting action tasks to status bar via TaskMonitor
-		taskMonitor = new TaskMonitor(RunwalkVideoApp.getApplication().getContext());
+		taskMonitor = new TaskMonitor(getContext());
 		taskMonitor.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				final String propertyName = evt.getPropertyName();

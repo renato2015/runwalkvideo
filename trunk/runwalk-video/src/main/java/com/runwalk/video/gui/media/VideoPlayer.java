@@ -5,39 +5,44 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.TreeSet;
 
 import javax.swing.Timer;
 
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
+import com.google.common.collect.Sets;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.util.AppSettings;
 
 public class VideoPlayer extends VideoComponent {
+
+	private final static TreeSet<Float> PLAY_RATES = Sets.newTreeSet(Arrays.asList(0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f));
 
 	public static final String POSITION = "position";
 
 	private static int playerCount = 0;
-	
-	private static final float[] PLAY_RATES = AppSettings.PLAY_RATES;
 
-	private int playRateIndex = AppSettings.getInstance().getRateIndex();
-	
 	private int position;
 	
 	private float volume;
 	
 	private IVideoPlayer playerImpl;
 
-	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, File videoFile) throws FileNotFoundException {
+	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, File videoFile, float playRate) throws FileNotFoundException {
 		playerCount++;
+		// check if the play rate is supported by the video player, if not then use the lowest one
+		if (!PLAY_RATES.contains(playRate)) {
+			playRate = PLAY_RATES.first();
+		}
+		// instantiate a suitable video player implementation for the current platform
 		IVideoPlayer result = null;
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
-			result = new DSJPlayer();
+			result = new DSJPlayer(playRate);
 		} else {
-			result = new JMCPlayer(videoFile);
+			result = new JMCPlayer(playRate, videoFile);
 		}
 		return new VideoPlayer(listener, recording, videoFile, result);
 	}
@@ -63,26 +68,26 @@ public class VideoPlayer extends VideoComponent {
 		if (getVideoImpl().loadFile(videoFile)) {
 			showComponent();
 		}
-		// set playback rate 
-		getVideoImpl().setPlayRate(getPlayRate());
 		setComponentTitle(getTitle());
 	}
 	
 	public void pause() {
+		setState(State.IDLE);
 		getVideoImpl().pause();
 		getTimer().stop();
-		setState(State.IDLE);
 	}
 	
 	public void play() {
-		getTimer().restart();
-		getVideoImpl().play();
 		setState(State.PLAYING);
+		getVideoImpl().play();
+		getTimer().restart();
 	}
 
 	public void stop() {
-		getTimer().stop();
 		setState(State.IDLE);
+		getTimer().stop();
+		// set position to 0 here and for player this instance and its 'native' implementation
+		position = 0;
 		getVideoImpl().stop();
 	}
 
@@ -100,20 +105,32 @@ public class VideoPlayer extends VideoComponent {
 		firePropertyChange(POSITION, this.position, this.position = pos);
 	}
 
-	public boolean backward() {
-		boolean result = false;
-		if (result = playRateIndex > 0) {
-			setPlayRateIndex(--playRateIndex);
+	public float slower() {
+		float playRate = getPlayRate();
+		Float newPlayRate = PLAY_RATES.lower(playRate);
+		if (newPlayRate != null) {
+			playRate = newPlayRate;
+			setPlayRate(newPlayRate);
 		}
-		return result;
+		return playRate;
 	}
 
-	public boolean forward() {
-		boolean result = false;
-		if (result = playRateIndex < PLAY_RATES.length - 1) {
-			setPlayRateIndex(++playRateIndex);
+	public float faster() {
+		Float playRate = getPlayRate();
+		Float newPlayRate = PLAY_RATES.higher(playRate);
+		if (newPlayRate != null) {
+			playRate = newPlayRate;
+			setPlayRate(newPlayRate);
 		}
-		return result;
+		return playRate;
+	}
+	
+	public float getPlayRate() {
+		return getVideoImpl().getPlayRate();
+	}
+
+	private void setPlayRate(float rate) {
+		getVideoImpl().setPlayRate(rate);
 	}
 	
 	public void pauseIfPlaying() {
@@ -161,16 +178,6 @@ public class VideoPlayer extends VideoComponent {
 
 	public void decreaseVolume() {
 		getVideoImpl().setVolume( getVideoImpl().getVolume() / 1.25f);
-	}
-
-	public float getPlayRate() {
-		return PLAY_RATES[playRateIndex];
-	}
-
-	private void setPlayRateIndex(int rate) {
-		this.playRateIndex = rate;
-		AppSettings.getInstance().setRateIndex(this.playRateIndex);
-		getVideoImpl().setPlayRate(getPlayRate());
 	}
 
 	public boolean mute() {

@@ -1,14 +1,11 @@
 package com.runwalk.video.gui.panels;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.persistence.Query;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.event.UndoableEditListener;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -20,17 +17,12 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
-import ca.odell.glazedlists.gui.TableFormat;
-import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
-import com.google.common.collect.Iterables;
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
@@ -49,11 +41,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private Boolean clientSelected = false;
 	
-	private VideoFileManager videoFileManager;
+	private final VideoFileManager videoFileManager;
 
-	public AnalysisTablePanel(VideoFileManager videoFileManager) {
+	private final ClientTablePanel clientTablePanel;
+
+	private EventList<Article> articleList;
+
+	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
+		this.clientTablePanel = clientTablePanel;
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -71,7 +68,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
-		comments.getDocument().addUndoableEditListener(getApplication().getApplicationActions().getUndoableEditListener());
+		comments.getDocument().addUndoableEditListener(undoableEditListener);
 		comments.setFont(AppSettings.MAIN_FONT);
 		comments.setColumns(20);
 		comments.setRows(3);
@@ -96,7 +93,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<ClientTablePanel, Boolean> isClientSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<AnalysisTablePanel, Boolean> clientSelected = BeanProperty.create(CLIENT_SELECTED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> clientSelectedBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getClientTablePanel(), isClientSelected, this, clientSelected);
+			Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), isClientSelected, this, clientSelected);
 		clientSelectedBinding.setSourceNullValue(false);
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
@@ -110,9 +107,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = CLIENT_SELECTED)
 	public void addAnalysis() {
 		//insert a new analysis record
-		final Client selectedClient = RunwalkVideoApp.getApplication().getSelectedClient();
+		final Client selectedClient = getClientTablePanel().getSelectedItem();
 		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
-			JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(), 
+			JOptionPane.showMessageDialog(null, 
 					"Voer eerst een naam in voor deze klant!", 
 					"Fout aanmaken analyse", 
 					JOptionPane.ERROR_MESSAGE);
@@ -127,13 +124,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
-		getApplication().getMediaControls().capturersToFront();
+	}
+
+	private ClientTablePanel getClientTablePanel() {
+		return clientTablePanel;
 	}
 
 	@Action(enabledProperty = ROW_SELECTED)
 	public void deleteAnalysis() {		
 		int n = JOptionPane.showConfirmDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
+				null,
 				getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
 				getResourceMap().getString("deleteAnalysis.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
@@ -144,7 +144,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 			Analysis selectedAnalysis = getSelectedItem();
 			getItemList().remove(selectedAnalysis);
-			getApplication().getSelectedClient().removeAnalysis(selectedAnalysis);
+			getClientTablePanel().getSelectedItem().removeAnalysis(selectedAnalysis);
 			// delete the video files
 			for (Recording recording : selectedAnalysis.getRecordings()) {
 				getVideoFileManager().deleteVideoFile(recording);
@@ -167,7 +167,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					final int changeIndex = listChanges.getIndex();
 					final int changeType = listChanges.getType();
 					if (changeType == ListEvent.UPDATE) {
-						getApplication().setSaveNeeded(true);
+						getClientTablePanel().setSaveNeeded(true);
 						Analysis changedItem = listChanges.getSourceList().get(changeIndex);
 						changedItem.getClient().setDirty(true);
 					}
@@ -176,15 +176,26 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		});
 		return eventList;
 	}
+	
+	public void setArticleList(EventList<Article> articleList) {
+		if (this.articleList != null) {
+			// dispose the current list, so it can be garbage collected
+			this.articleList.dispose();
+		}
+		this.articleList = articleList;
+	}
+	
+	public EventList<Article> getArticleList() {
+		return this.articleList;
+	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
 		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		Query query = RunwalkVideoApp.getApplication().createQuery("SELECT OBJECT(ar) from Article ar"); // NOI18N
-		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(GlazedLists.eventList(query.getResultList()));
+		// create special table cell editor for selecting articles
+		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 		CustomJTableRenderer comboBoxRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JComboBox.class));
 		getTable().getColumnModel().getColumn(1).setCellRenderer(comboBoxRenderer);
@@ -208,69 +219,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
 	}
 
-	public TableFormat<Analysis> getTableFormat() {
-		return new AnalysisTableFormat();
-	}
-
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
-	}
-
-	public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
-
-		public int getColumnCount() {
-			return 5;
-		}
-
-		public String getColumnName(int column) {
-			if(column == 0)      return "Datum";
-			else if(column == 1) return "Gekozen schoen";
-			else if(column == 2) return "Aantal keyframes";
-			else if(column == 3) return "Aantal opnames";
-			else if(column == 4) return "Duur video";
-			else if(column == 5) return "Open video";
-			throw new IllegalStateException();
-		}
-
-		public Object getColumnValue(final Analysis analysis, int column) {
-			final boolean recordingNotNull = analysis.hasRecordings();
-			Recording recording = null;
-			if (recordingNotNull) {
-				recording = Iterables.getLast(analysis.getRecordings());
-			}
-			switch(column) {
-			case 0: return analysis.getCreationDate();
-			case 1: return analysis.getArticle();
-			case 2: {
-				return recordingNotNull ? recording.getKeyframeCount() : 0;
-			}
-			case 3: return recordingNotNull ? recording.getDuration() : 0L;
-			case 4: {
-				JButton button = new JButton("open");
-	    		setFont(AppSettings.MAIN_FONT);
-	    		button.addMouseListener(new MouseAdapter() {
-	    			public void mouseClicked(MouseEvent e) {
-   						getApplication().getMediaControls().playRecordings(analysis);
-	    			}
-	    		});
-	    		button.setEnabled(analysis.isRecorded());
-	    		return button;
-			}
-			default: return null;
-			}
-		}
-
-		public boolean isEditable(Analysis baseObject, int column) {
-			return column == 1;
-		}
-
-		public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
-			if (editedValue instanceof Article) {
-				analysis.setArticle((Article) editedValue);
-			}
-			return analysis;
-		}
-
 	}
 
 }

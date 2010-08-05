@@ -4,8 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 
-import org.jdesktop.application.utils.PlatformType;
-
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
