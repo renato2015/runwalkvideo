@@ -4,29 +4,31 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
+import javax.swing.JTabbedPane;
+import javax.swing.event.UndoableEditListener;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
-import org.jdesktop.application.utils.PlatformType;
 
-import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.gui.AnalysisOverviewTableFormat;
+import com.runwalk.video.gui.AnalysisTableFormat;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
-import com.runwalk.video.gui.ClientMainView;
 import com.runwalk.video.gui.VideoMenuBar;
 import com.runwalk.video.gui.actions.ApplicationActions;
 import com.runwalk.video.gui.media.MediaControls;
@@ -39,8 +41,6 @@ import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
-import de.humatic.dsj.DSEnvironment;
-
 /**
  * The main class of the application.
  */
@@ -48,13 +48,13 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
 
-	private  ClientTablePanel clientTablePanel;
-	private  StatusPanel statusPanel;
-	private  AnalysisTablePanel analysisPanel;
-	private  AnalysisOverviewTablePanel overviewPanel;
-	private  ClientInfoPanel clientInfoPanel;
+	private ClientTablePanel clientTablePanel;
+	private StatusPanel statusPanel;
+	private AnalysisTablePanel analysisTablePanel;
+	private AnalysisOverviewTablePanel overviewTablePanel;
+	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
-	private ClientMainView clientMainView;
+	private AppInternalFrame clientMainView;
 
 	private VideoMenuBar menuBar;
 
@@ -84,70 +84,49 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		launch(RunwalkVideoApp.class, args);
 	}
 
-	private void loadUIState() throws IOException {
-		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
-		getContext().getSessionStorage().restore(getMainFrame(), "desktopPane.xml");
-		getContext().getSessionStorage().restore(getMediaControls(), "controlFrame.xml");
-		getContext().getSessionStorage().restore(getClientMainView(), "mainFrame.xml");
-	}
-
-	private void saveUIState() throws IOException {
-		LOGGER.log(Level.INFO, "Saving UI state to directory " + getContext().getLocalStorage().getDirectory());
-		getContext().getSessionStorage().save(getMainFrame(), "desktopPane.xml");
-		if (getMediaControls() != null) {
-			getContext().getSessionStorage().save(getMediaControls(), "controlFrame.xml");
-		}
-		getContext().getSessionStorage().save(getClientMainView(), "mainFrame.xml");
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	protected void initialize(String[] args) {
 		AppSettings.getInstance().loadSettings();
 		String puName = getContext().getResourceMap().getString("Application.name");
 		emFactory = Persistence.createEntityManagerFactory(puName);
-		// video file manager is created here and injected into the components
-		// this design increases testability
-		videoFileManager = new VideoFileManager();
+		// create video file manager
+		videoFileManager = new VideoFileManager(AppSettings.getInstance());
 	}
 
 	/**
 	 * Initialize and show the application GUI.
 	 */
 	protected void startup() {
-		//the actions that the user can undertake?
-		applicationActions = new ApplicationActions();
-
+		// create common application actions class
+		applicationActions = new ApplicationActions(AppSettings.getInstance());
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel();
-		clientInfoPanel = new  ClientInfoPanel();
-		analysisPanel = new  AnalysisTablePanel(videoFileManager);
-		setSaveNeeded(false);
-		overviewPanel = new AnalysisOverviewTablePanel(videoFileManager);    	
-
+		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
+		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager());
+		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
+		// create main desktop scrollpane
 		pane = new JScrollableDesktopPane();
 		getMainFrame().add(pane);
-
+		// create menu bar
 		menuBar = new VideoMenuBar();
-
-		mediaControls = new MediaControls(videoFileManager);
+		// create mediaplayer controls
+		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager());
 		mediaControls.startCapturer();
-		clientMainView = new ClientMainView();
-		
-		//add all internal frames from here!!!
+		// set tableformats for the two last panels
+		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
+		overviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(getMediaControls()));
+		// create the main panel that holds customer and analysis controls & info
+		clientMainView = createMainView();
+		// add all internal frames from here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
-		
-		//add the window to the WINDOW menu
+		// add the window to the WINDOW menu
 		createOrShowComponent(getMediaControls());
 		createOrShowComponent(getClientMainView());
-
+		// create a custom property to support saving internalframe sessions state
+		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
+		// show the main frame, all its session settings from the last time will be restored
 		show(getMainFrame());
-		
-		try {
-			loadUIState();
-		} catch (IOException e) {
-			LOGGER.error("Failed to load UI state", e);
-		}
 	}
 
 	/** {@inheritDoc} */
@@ -176,7 +155,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 	}
-	
+
 	public void hideComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent == null ? null : appComponent.getHolder();
 		if (container != null) {
@@ -191,6 +170,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	/** {@inheritDoc} */
 	@Override 
 	protected void shutdown() {
+		super.shutdown();
 		Action uploadLogFilesAction = getApplicationActionMap().get("uploadLogFiles");
 		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "uploadLogFiles");
 		uploadLogFilesAction.actionPerformed (actionEvent);
@@ -204,27 +184,40 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 		AppSettings.getInstance().saveSettings();
-		try {
-			saveUIState();
-			getContext().getTaskService().shutdown();
-			while(!getContext().getTaskService().isTerminated()) {
-				Thread.yield();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to save UI state", e);
-		} finally {
-			emFactory.close();
-			super.shutdown();
+		getContext().getTaskService().shutdown();
+		while(!getContext().getTaskService().isTerminated()) {
+			Thread.yield();
 		}
+		getEntityManagerFactory().close();
+	}
+	
+	private AppInternalFrame createMainView() {
+		AppInternalFrame result = new AppInternalFrame("Klanten en analyses", true);
+		ResourceMap resourceMap = getContext().getResourceMap();
+		result.setName(resourceMap.getString("mainView.title"));
+		// create the tabpanel
+		JTabbedPane tabPanel = new  JTabbedPane();
+		tabPanel.setName("detailTabbedPane");
+		tabPanel.addTab(resourceMap.getString("infoPanel.TabConstraints.tabTitle"),  getClientInfoPanel()); // NOI18N
+		tabPanel.addTab(resourceMap.getString("analysisPanel.TabConstraints.tabTitle"),  getAnalysisTablePanel()); // NOI18N
+		tabPanel.addTab(resourceMap.getString("conversionPanel.TabConstraints.tabTitle"),  getAnalysisOverviewTablePanel()); // NOI18N
+		// set layout and add everything to the frame
+		result.setLayout(new MigLayout("flowy", "[grow,fill]", "[grow,fill]"));
+		result.add(getClientTablePanel());
+		result.add(tabPanel, "height :280:");
+		result.add(getStatusPanel(), "height 30!");
+		return result;
 	}
 
-	//Getters & Setters for the main objects in this program
+	/*
+	 * Getters & Setters for the main objects in this program
+	 */
 
 	public ApplicationActions getApplicationActions() {
 		return applicationActions;
 	}
-	
-	public ClientMainView getClientMainView() {
+
+	public AppInternalFrame getClientMainView() {
 		return clientMainView;
 	}
 
@@ -241,11 +234,11 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	public AnalysisTablePanel getAnalysisTablePanel() {
-		return analysisPanel;
+		return analysisTablePanel;
 	}
 
-	public AnalysisOverviewTablePanel getAnalysisOverviewTable() {
-		return overviewPanel;
+	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
+		return overviewTablePanel;
 	}
 
 	public ClientInfoPanel getClientInfoPanel() {
@@ -256,22 +249,28 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		return mediaControls;
 	}
 
-	//some convenience methods
-
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
 
-	public boolean isSaveNeeded() {
-		return getClientTablePanel().isSaveNeeded();
-	}
-
-	public void setSaveNeeded(boolean saveNeeded) {
-		getClientTablePanel().setSaveNeeded(saveNeeded);
-	}
-
 	public EntityManagerFactory getEntityManagerFactory() {
 		return emFactory;
+	}
+
+	/*
+	 * Convenience methods
+	 */
+
+	private boolean isSaveNeeded() {
+		return getClientTablePanel().isSaveNeeded();
+	}
+	
+	private UndoableEditListener createUndoableEditListener() {
+		return getApplicationActions().getUndoableEditListener();
+	}
+	
+	public EntityManager createEntityManager() {
+		return emFactory.createEntityManager();
 	}
 
 	public Query createQuery(String query) {
@@ -291,22 +290,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public void showError(String error) {
 		Toolkit.getDefaultToolkit().beep();
 		getStatusPanel().showErrorMessage(error);
-	}
-
-	public JTable getClientTable() {
-		return getClientTablePanel().getTable();
-	}
-
-	public JTable getAnalysisTable() {
-		return getAnalysisTablePanel().getTable();
-	}
-
-	public Client getSelectedClient() {
-		return getClientTablePanel().getSelectedItem();
-	}
-
-	public Analysis getSelectedAnalysis() {
-		return getAnalysisTablePanel().getSelectedItem();
 	}
 
 	public void clearStatusMessage() {

@@ -57,6 +57,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		fileMenu.add(new JSeparator());
 		JMenuItem selectVideoDir = new  JMenuItem( getApplication().getApplicationActionMap().get("selectVideoDir"));
 		fileMenu.add(selectVideoDir);
+		JMenuItem selectUncompressedVideoDir = new  JMenuItem( getApplication().getApplicationActionMap().get("selectUncompressedVideoDir"));
+		fileMenu.add(selectUncompressedVideoDir);
 		
 		fileMenu.add(new JSeparator());
 		JMenuItem exitMenuItem = new  JMenuItem( getApplication().getApplicationActionMap().get("exit"));
@@ -136,7 +138,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 			checkedItem.setSelected(component.isVisible());
 			windowBoxMap.put(appComponent, checkedItem);
 			windowBoxMap.inverse().put(checkedItem, appComponent);
-			KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.forDigit(windowBoxMap.size(), 9), ActionEvent.CTRL_MASK);
+			char shortcut = Character.forDigit(windowBoxMap.size(), 9);
+			KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
 			checkedItem.setAccelerator(keyStroke);
 			menu.add(checkedItem);
 
@@ -178,9 +181,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	}
 
 	public void setCheckboxSelection(AppWindowWrapper appComponent) {
-		JCheckBoxMenuItem chckBox = windowBoxMap.get(appComponent);
-		if (chckBox != null) {
-			chckBox.setSelected(appComponent.getHolder().isVisible());
+		JCheckBoxMenuItem checkBox = windowBoxMap.get(appComponent);
+		if (checkBox != null) {
+			checkBox.setSelected(appComponent.getHolder().isVisible());
 		}
 	}
 

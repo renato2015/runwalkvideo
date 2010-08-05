@@ -31,9 +31,9 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
@@ -42,6 +42,7 @@ import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
+import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -67,20 +68,25 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private VideoCapturer frontMostCapturer;
 	
 	private final VideoFileManager videoFileManager;
+	private final AppSettings appSettings;
+	private final AnalysisTablePanel analysisTablePanel;
+
 	private boolean recording;
 	
-	public MediaControls(VideoFileManager videoFileManager) {
+	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager) {
 		super("Media controls", false);
-		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		this.videoFileManager = videoFileManager;
+		this.appSettings = appSettings;
+		this.analysisTablePanel = analysisTablePanel;
 		
+		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYING_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${!selectedItem.recorded && rowSelected}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recorded}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getApplication().getAnalysisTablePanel(), recorded, this, recordingEnabled);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, analysisTablePanel, recorded, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 
 			@Override
@@ -88,6 +94,40 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
 			}
+
+			@Override
+			public void synced(Binding binding) {
+				// TODO Auto-generated method stub
+				System.out.println("synced");
+				super.synced(binding);
+			}
+
+			@Override
+			public void syncFailed(Binding binding, SyncFailure failure) {
+				// TODO Auto-generated method stub
+				System.out.println("sync failed");
+				super.syncFailed(binding, failure);
+			}
+
+			@Override
+			public void targetChanged(Binding binding, PropertyStateEvent event) {
+				System.out.println("target changed");
+				super.targetChanged(binding, event);
+			}
+
+			@Override
+			public void sourceEdited(Binding binding) {
+				System.out.println("source edited");
+				super.sourceEdited(binding);
+			}
+
+			@Override
+			public void targetEdited(Binding binding) {
+				System.out.println("target edited");
+				super.targetEdited(binding);
+			}
+			
+			
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
@@ -214,11 +254,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	@Action(enabledProperty=PLAYING_ENABLED)
 	public void slower() {
 		for (VideoPlayer player : players) {
-			if (player.backward()) {
-				getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
-			} else if (player.isPlaying()) {
+			if (!player.isPlaying()) {
 				togglePlay();
-			}
+			} else {
+				float playRate = player.slower();
+				// save play rate to settings
+				getAppSettings().setPlayRate(playRate);
+				getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+			} 
 		}
 	}
 
@@ -228,7 +271,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			if (!player.isPlaying()) {
 				togglePlay();
 			} else {
-				player.forward();
+				float playRate = player.faster();
+				// save play rate to settings
+				getAppSettings().setPlayRate(playRate);
 				getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
 			}
 		}
@@ -265,11 +310,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	@Action(enabledProperty=PLAYING_ENABLED)
 	public void makeSnapshot() {
 		int newPosition = 0;
+		int duration = 0;
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
 			int position = player.getKeyframePosition();
 			if (frontMostPlayer == player) {
 				newPosition = position;
+				duration = player.getDuration();
 			}
 			// create a new Keyframe for the player's current recording
 			Recording recording = player.getRecording();
@@ -280,8 +327,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		// set the slider's position to that of the frontmost player's newly created Keyframe
 		int sliderPosition = getSliderPosition(newPosition);
 		getSlider().getLabelTable().put(sliderPosition, new JLabel("*"));
+		setStatusInfo(newPosition, duration);
 		getSlider().updateUI();
-		getSlider().revalidate();
 		String formattedDate = AppUtil.formatDate(new Date(newPosition), AppUtil.EXTENDED_DURATION_FORMATTER);
 		getApplication().showMessage("Snapshot genomen op " + formattedDate); 
 	}
@@ -336,7 +383,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return fullScreenEnabled;
 	}
 
-	@Action
+	@Action(name = "Start Camera")
 	public void startCapturer() {
 		VideoCapturer capturer = VideoCapturer.createInstance(this);
 		if (capturer != null) {
@@ -349,8 +396,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(enabledProperty=RECORDING_ENABLED)
 	public void record() {
-		Analysis analysis = RunwalkVideoApp.getApplication().getSelectedAnalysis();
+		Analysis analysis = getAnalysisTablePanel().getSelectedItem();
 		if (analysis != null) {
+			boolean isRecording = false;
 			for (VideoCapturer capturer : capturers) {
 				Recording recording = new Recording(analysis);
 				// persist recording first, then add it to the analysis
@@ -358,14 +406,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				analysis.addRecording(recording);
 				File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
 				capturer.startRecording(recording, videoFile);
+				isRecording = true;
 			}
-			getApplication().getStatusPanel().setIndeterminate(true);
-			//TODO zoek uit wat er met die selectedProperty mogelijk is
-			setRecordingEnabled(false);
-			setStopEnabled(true);
-			setRecording(true);
-			getApplication().showMessage("Opname voor " + analysis.getClient().getName() + " " + 
-					analysis.getClient().getFirstname() + " gestart..");
+			if (isRecording) {
+				getApplication().getStatusPanel().setIndeterminate(true);
+				//TODO zoek uit wat er met die selectedProperty mogelijk is
+				setRecordingEnabled(false);
+				setStopEnabled(true);
+				setRecording(true);
+				getApplication().showMessage("Opname voor " + analysis.getClient().getName() + " " + 
+						analysis.getClient().getFirstname() + " gestart..");
+			}
 		}
 	}
 
@@ -386,7 +437,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		// set this manually as such a specific propertyChangeEvent won't be fired
 		selectedRecordingRecordable = false;
 		getApplication().getStatusPanel().setIndeterminate(false);
-		getApplication().getAnalysisOverviewTable().setCompressionEnabled(true);
+		getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
 	}
 	
 	private void stopPlaying() {
@@ -407,15 +458,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					if (recordingCount < players.size()) {
 						player = players.get(recordingCount++);
 						player.loadFile(recording, videoFile);
+						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 						setSliderLabels(recording);
 					} else {
-						player = VideoPlayer.createInstance(this, recording, videoFile);
+						float playRate = getAppSettings().getPlayRate();
+						player = VideoPlayer.createInstance(this, recording, videoFile, playRate);
 						player.addAppWindowWrapperListener(new WindowStateChangeListener(player));
 						getApplication().createOrShowComponent(player);
 						players.add(player);
 					} 
 				} catch (FileNotFoundException e) {
-					JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
+					JOptionPane.showMessageDialog(null,
 							"Het bestand dat u probeerde te openen kon niet worden gevonden",
 							"Fout bij openen filmpje",
 							JOptionPane.ERROR_MESSAGE);
@@ -424,6 +477,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				player.toFront();
 			}
 		}
+		setSliderPosition(0);
 	}
 
 	private Hashtable<Integer, JLabel> createLabelTable() {
@@ -509,10 +563,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			//only update status info if it is the fronmost capturer
 			if (frontMostCapturer == capturer) {
 				updateTimeStamps(timeRecorded, 0);
-				if (!isStopEnabled()) {
-					getLogger().warn("Stop button was set to false. re-enabling..");
-					setStopEnabled(true);
-				}
 			}
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
@@ -584,6 +634,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
+	}
+
+	public AppSettings getAppSettings() {
+		return appSettings;
+	}
+	
+	public AnalysisTablePanel getAnalysisTablePanel() {
+		return analysisTablePanel;
 	}
 
 	private class WindowStateChangeListener extends AppWindowWrapperListener {

@@ -6,11 +6,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
 @Table(schema="testdb", name = "articles")
+@NamedQueries(value={
+		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar"),
+})
 public class Article implements Serializable {
 	@Id
 	@Column(name="id")

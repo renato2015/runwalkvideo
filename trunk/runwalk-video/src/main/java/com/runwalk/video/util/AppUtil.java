@@ -1,6 +1,7 @@
 package com.runwalk.video.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
@@ -11,12 +12,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.swing.ActionMap;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
-
-import de.humatic.dsj.DSJUtils;
 
 public class AppUtil {
 	//duration formats
@@ -28,22 +28,28 @@ public class AppUtil {
 	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH'h'mm'm'ss");
 
 	private AppUtil() { }
-
-	//methods for parsing the video directory
-	static File parseDir(String path) {
-		File newDir = null;
-		if (path != null) {
-			newDir = new File(path);
+	
+	/**
+	 * This method checks for existence of the given directory and will create it when it doesn't exist. 
+	 * If creation of the first directory fails, then the method will return the second specified directory, 
+	 * which will also be created if necessary.
+	 * 
+	 * @param directory The first directory 
+	 * @param defaultDir The second directory to return when creation of the first one fails
+	 * @return The resulting directory
+	 */
+	public static File createDirectories(File directory, File defaultDir) {
+		if (directory != null && !directory.exists()) {
+			try {
+				FileUtils.forceMkdir(directory);
+			} catch(IOException exception) {
+				Logger.getLogger(AppUtil.class).error("Directory " + directory.getAbsolutePath() + " couldn't be created.", exception);
+				return createDirectories(defaultDir, null);
+			}
+		} else if (directory == null && defaultDir != null) {
+			return createDirectories(defaultDir, null);
 		}
-		return parseDir(newDir) ? newDir : null;
-	}
-
-	public static boolean parseDir(File dir) {
-		boolean parsed = false;
-		if (dir != null) {
-			parsed = dir.canRead() && dir.exists() && dir.isDirectory() && dir.canWrite();
-		}
-		return parsed;
+		return directory;
 	}
 	
 	public static Date granularity(Date date, int precision) {
@@ -76,14 +82,6 @@ public class AppUtil {
 		return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1) : s;
 	}
 
-	public static int getMovieDuration(String path) {
-		int duration = 0;
-		if (new File(path).exists()) {
-			duration = DSJUtils.getBasicFileStats(path)[0];
-		}
-		return duration;
-	}
-	
 	/**
 	 * This method will merge all the keys in a new ActionMap
 	 * @param map1 The first map 

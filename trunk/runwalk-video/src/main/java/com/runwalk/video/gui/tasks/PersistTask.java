@@ -5,7 +5,6 @@ import javax.persistence.EntityTransaction;
 
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.util.AppUtil;
 
@@ -13,19 +12,21 @@ public class PersistTask<T extends SerializableEntity<T>> extends AbstractTask<V
 
 	private final T item;
 	
-	public PersistTask(T item) {
+	private EntityManager entityManager;
+	
+	public PersistTask(T item, EntityManager entityManager) {
 		super("persist");
 		this.item = item;
+		this.entityManager = entityManager;
 	}
 
 	protected Void doInBackground() {
 		message("startMessage");
-		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
 		EntityTransaction tx = null;
 		try {
-			tx = em.getTransaction();
+			tx = getEntityManager().getTransaction();
 			tx.begin();
-			em.persist(item);
+			getEntityManager().persist(item);
 			tx.commit();
 			message("endMessage");
 			Logger.getLogger(AppUtil.class).debug(item.getClass().getSimpleName() + " with ID " + item.getId() + " was persisted.");
@@ -35,9 +36,13 @@ public class PersistTask<T extends SerializableEntity<T>> extends AbstractTask<V
 				tx.rollback();
 			}
 		} finally {
-			em.close();
+			getEntityManager().close();
 		}
 		return null;
+	}
+	
+	private EntityManager getEntityManager() {
+		return this.entityManager;
 	}
 
 }

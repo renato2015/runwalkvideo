@@ -52,7 +52,7 @@ public class VideoCapturer extends VideoComponent {
 			final IVideoCapturer capturerImpl = new DSJCapturer();
 			final VideoCapturer capturer = new VideoCapturer(listener, capturerImpl);
 			// create a dialog to let the user choose which capture device to start on which monitor
-			CameraDialog dialog = new CameraDialog(RunwalkVideoApp.getApplication().getMainFrame(), capturerImpl, capturer.getComponentId());
+			CameraDialog dialog = new CameraDialog(null, capturerImpl, capturer.getComponentId());
 			dialog.setLocationRelativeTo(RunwalkVideoApp.getApplication().getMainFrame());
 			PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 				
@@ -104,7 +104,7 @@ public class VideoCapturer extends VideoComponent {
 	public void setVideoFormat() {
 		String[] formats = getVideoImpl().getVideoFormats();
 		String selectedFormat = (String)JOptionPane.showInputDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
+				null,
 				"Kies het opnameformaat:",
 				"Kies opnameformaat..",
 				JOptionPane.PLAIN_MESSAGE,
@@ -126,7 +126,7 @@ public class VideoCapturer extends VideoComponent {
 	public void setCaptureEncoder() {
 		String[] captureEncoders = getVideoImpl().getCaptureEncoders();
 		String selectedEncoder =  (String) JOptionPane.showInputDialog(
-				RunwalkVideoApp.getApplication().getMainFrame(),
+				null,
 				"Kies een video encoder: ",
 				"Video encoder wijzigen..",
 				JOptionPane.PLAIN_MESSAGE,

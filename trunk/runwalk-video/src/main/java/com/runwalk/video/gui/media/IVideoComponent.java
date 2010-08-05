@@ -1,11 +1,8 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.Component;
-
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
-
-import javax.swing.ActionMap;
 
 /**
  * This class can be seen as the "implementor" of the used bridge pattern for providing the abstract {@link VideoPlayer} with a concrete
@@ -29,7 +26,7 @@ public interface IVideoComponent {
 	public Component getComponent();
 	
 	/**
-	 * TODO deze method ook in de compresstask gebruiken!
+	 * Dispose all the resources involved for showing this component to screen.
 	 */
 	public void dispose();
 
@@ -37,6 +34,4 @@ public interface IVideoComponent {
 
 	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b);
 	
-	public ActionMap getActionMap();
-
 }

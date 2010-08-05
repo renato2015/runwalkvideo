@@ -28,7 +28,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Entity
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
-@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c LEFT JOIN FETCH c.analyses")
+@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c")
 public class Client extends SerializableEntity<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	

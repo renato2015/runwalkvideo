@@ -26,29 +26,32 @@ import com.runwalk.video.RunwalkVideoApp;
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {
 
-	public final static float[] PLAY_RATES = new float[] {0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f};
-	
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
 
 	public final static String FILE_ENCODING = "UTF-8";
-	
+
 	private final static String FILE_APPENDER_NAME = "A1";
-	
+
 	private final static String SETTINGS_XML = "settings.xml";
 
-	private final static String TEMP_VIDEO_DIRNAME = "uncompressed";
+	private final static String UNCOMPRESSED_VIDEO_DIRNAME = "uncompressed";
 
 	private static Logger logger;
-
+	
+	// this is the only (?) thread safe way to initialize a singleton
 	private final static AppSettings INSTANCE = new AppSettings();
 
 	private File logFile;
 
 	private transient JAXBContext jaxbContext;
-	
+
+	/** This object's fields will be mapped to XML using JaxB */
 	private Settings settings;
-	
+
+	/** The parsed directories for both uncompressed and compressed video's are cached here after lazy initialization */
+	private File videoDir, uncompressedVideoDir;
+
 	private AppSettings() {
 		settings = new Settings();
 	}
@@ -56,7 +59,7 @@ public class AppSettings implements Serializable {
 	public synchronized static AppSettings getInstance() {
 		return INSTANCE;
 	}
-	
+
 	public void loadSettings() {
 		logger.debug("Initializing ApplicationSettings..");
 		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
@@ -86,6 +89,7 @@ public class AppSettings implements Serializable {
 			settings = settings == null ? new Settings() : settings;
 		}
 		Logger.getLogger(getClass()).debug("Found videodir: " + getVideoDir().getAbsolutePath());
+		Logger.getLogger(getClass()).debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
 	}
 
 	public void saveSettings() {
@@ -115,41 +119,61 @@ public class AppSettings implements Serializable {
 	public Settings getSettings() {
 		return settings;
 	}
-
+	
+	/**
+	 * Set a new directory for storing and reading compressed video files. 
+	 * The directory will be lazily reloaded by clearing the cached value.
+	 * 
+	 * @param dir The new directory
+	 */
 	public void setVideoDir(File dir) {
 		settings.videoDir = dir.getAbsolutePath();
-	}
-
-	public File getDirectory(String path) {
-		File dir = AppUtil.parseDir(path);
-		if (path == null || dir == null) {
-			dir = new File(System.getProperty("user.dir"));
-		}
-		return dir;
-	}
-
-	public File getCameraDir() {
-		return getDirectory(settings.cameraDir);
+		// reset the cached value for this directory so it will be reinitialized during the next request
+		videoDir = null;
 	}
 
 	public File getVideoDir() {
-		return getDirectory(settings.videoDir);
+		if (videoDir == null) {
+			File defaultDir = new File(System.getProperty("user.dir"));
+			videoDir = getDirectory(getSettings().videoDir, defaultDir);
+		}
+		return videoDir;
+	}
+	
+	/**
+	 * Set a new directory for storing and reading uncompressed video files. 
+	 * The directory will be lazily reloaded by clearing the cached value.
+	 * 
+	 * @param dir The new directory
+	 */
+	public void setUncompressedVideoDir(File dir) {
+		settings.uncompressedVideoDir = dir.getAbsolutePath();
+		// reset the cached value for this directory so it will be reinitialized during the next request
+		uncompressedVideoDir = null;
 	}
 
 	public File getUncompressedVideoDir() {
-		File tempDir = new File(getVideoDir(), TEMP_VIDEO_DIRNAME);
-		if (!AppUtil.parseDir(tempDir)) {
-			try {
-				if (tempDir.mkdir()) {
-					logger.debug("Directory " + tempDir.getAbsolutePath() + " created.");
-				}
-			} catch(SecurityException excp) {
-				logger.error("Directory " + tempDir.getAbsolutePath() + " couldn't be created.", excp);
-			}
+		if (uncompressedVideoDir == null) {
+			File defaultDir = new File(getVideoDir(), UNCOMPRESSED_VIDEO_DIRNAME);
+			uncompressedVideoDir = getDirectory(getSettings().uncompressedVideoDir, defaultDir);
 		}
-		return tempDir;
+		return uncompressedVideoDir;
 	}
 	
+	public File getDirectory(String path, File defaultDir) {
+		File result = null;
+		// first check whether the path in the settings is null or not
+		if (path == null) {
+			// if null, use default layout and create
+			result = defaultDir;
+		} else {
+			// if not null, then try to create directory
+			File dir = new File(path);
+			result = AppUtil.createDirectories(dir, defaultDir);
+		}
+		return result;
+	}
+
 	public File getLogFile() {
 		if (logFile == null || !logFile.exists()) {
 			FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
@@ -158,7 +182,7 @@ public class AppSettings implements Serializable {
 		}
 		return logFile;
 	}
-	
+
 	public static void configureLog4j() {
 		URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties");
 		PropertyConfigurator.configure(resource);
@@ -167,7 +191,7 @@ public class AppSettings implements Serializable {
 		logger.debug("Logging to file with location " + appndr.getFile());
 		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
-	
+
 	public float getSavedVolume() {
 		return getSettings().savedVolume;
 	}
@@ -175,35 +199,35 @@ public class AppSettings implements Serializable {
 	public void setSavedVolume(float savedVolume) {
 		settings.savedVolume = savedVolume;
 	}
-	
-	public int getRateIndex() {
-		return settings.rateIndex;
+
+	public float getPlayRate() {
+		return settings.playRate;
 	}
 
-	public void setRateIndex(int rateIndex) {
-		settings.rateIndex = rateIndex;
+	public void setPlayRate(float rateIndex) {
+		settings.playRate = rateIndex;
 	}
 
 	public String getTranscoder() {
 		return getSettings().selectedTranscoderName;
 	}
-	
+
 	@XmlRootElement
 	public static class Settings implements Serializable {
 		@XmlElement
 		private String videoDir = "D:\\Video's";
 
 		@XmlElement
-		private String cameraDir = "C:\\Documents and Settings\\Administrator\\Mijn documenten\\Mijn video's";
-		
+		private String uncompressedVideoDir;
+
 		@XmlElement
-		private int rateIndex = 3;
-		
+		private float playRate;
+
 		@XmlElement
 		private float savedVolume;
-		
+
 		@XmlElement
 		private String selectedTranscoderName = "XviD MPEG-4 Codec";
-		
+
 	}
 }
