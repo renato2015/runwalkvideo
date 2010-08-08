@@ -1,15 +1,16 @@
 package com.runwalk.video.gui.media;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 
+import org.jdesktop.application.utils.PlatformType;
+
 import de.humatic.dsj.DSCapture;
+import de.humatic.dsj.DSCapture.CaptureDevice;
+import de.humatic.dsj.DSFilter.DSPin;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSMediaType;
-import de.humatic.dsj.DSCapture.CaptureDevice;
-import de.humatic.dsj.DSFilter.DSPin;
 
 /**
  * This class is a concrete implementation for the DirectShow for Java (dsj) libary, 
@@ -35,16 +36,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	private DSFilterInfo selectedDevice = null;
 
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
-	
-	public void startCapturer(int flags, PropertyChangeListener listener) {
-		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), listener));
-		getFiltergraph().lockAspectRatio(true);
-	}
-	
-	/** {@inheritDoc} */
-	public void startCapturer() {
-		startCapturer(FLAGS, null);
-	}
 
 	public String[] getVideoFormats() {
 		DSPin activePin = getActivePin();
@@ -85,8 +76,8 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void startRecording(File destFile) {
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
 		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(),	DSFilterInfo.doNotRender(),	true);
-		getLogger().debug("Video encoder = " + getCaptureEncoder().getName() + ".");
-		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter()+ ".");
+		getLogger().debug("Video encoder for " + getTitle() + " set to " + getCaptureEncoder().getName());
+		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter());
 		getFiltergraph().record();
 
 		Thread thread = new Thread(new Runnable() {
@@ -113,8 +104,10 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void togglePreview() {
 		if (getFiltergraph().getState() == DSCapture.PREVIEW) {
 			getFiltergraph().stop();
+			getLogger().debug("Filtergraph for " + getTitle() + " stopped");
 		} else {
 			getFiltergraph().setPreview();
+			getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 		}
 	}
 
@@ -135,15 +128,31 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		}
 		return devices;
 	}
-
-	public void setSelectedCaptureDeviceIndex(int selectedIndex) {
-		this.selectedDevice = dsi[0][selectedIndex];
-	}
-
+	
 	public int getSelectedCaptureDeviceIndex() {
 		return Arrays.asList(dsi[0]).indexOf(selectedDevice);
 	}
+
+	/** {@inheritDoc} */
+	public void setSelectedCaptureDeviceIndex(int selectedIndex) {
+		if (isInitialized()) {
+			// dispose filtergraph if there was already one started
+			getFiltergraph().dispose();
+		}
+		this.selectedDevice = dsi[0][selectedIndex];
+		// initialize the capturer's native resources for the chosen device so settings
+		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), null));
+		getFiltergraph().lockAspectRatio(true);
+	}
 	
+	/**
+	 * Check whether native resources have already been initialized for the currently selected capturedevice.
+	 * @return <code>true</code> if already initialized
+	 */
+	private boolean isInitialized() {
+		return getFiltergraph() != null;
+	}
+
 	public void setSelectedCaptureEncoderIndex(int index) {
 		this.captureEncoder = VIDEO_ENCODERS[index];
 	}

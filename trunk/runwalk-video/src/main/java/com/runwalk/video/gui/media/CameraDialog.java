@@ -1,6 +1,7 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -10,7 +11,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
 
+import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -28,6 +31,12 @@ import com.runwalk.video.gui.AppDialog;
 @SuppressWarnings("serial")
 public class CameraDialog extends AppDialog {
 
+	private static final String SHOW_CAMERA_SETTINGS = "showCameraSettings";
+
+	private static final String SHOW_CAPTURER_SETINGS = "showCapturerSettings";
+
+	private static final String TOGGLE_PREVIEW = "togglePreview";
+
 	private JComboBox captureDeviceComboBox;
 
 	private int selectedDeviceIndex = -1, capturerId;
@@ -38,7 +47,17 @@ public class CameraDialog extends AppDialog {
 
 	private JPanel buttonPanel;
 
-	public CameraDialog(Frame parent, IVideoCapturer capturerImpl, int capturerId) {
+	/**
+	 * Create a dialog that allows the user start a capture device. A {@link IVideoCapturer} implementation must be passed
+	 * which it will use to query for the available capture devices. Selection notification will be done by firing {@link PropertyChangeEvent}s 
+	 * to registered listeners. 
+	 * 
+	 * @param parent The parent {@link Frame} whose focusing behavior will be inherited
+	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
+	 * @param capturerImpl A {@link IVideoCapturer} implementation which will be queried for available capture devices 
+	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
+	 */
+	public CameraDialog(Frame parent, ActionMap actionMap, IVideoCapturer capturerImpl, int capturerId) {
 		super(parent, true);
 		this.capturerId = capturerId;
 		this.capturerImpl = capturerImpl;
@@ -78,6 +97,10 @@ public class CameraDialog extends AppDialog {
 		}
 		JButton refreshButton = new JButton(getAction("refreshCaptureDevices")); // NOI18N
 		add(refreshButton, "align right");
+		// add some extra actions to configure the capture device with
+		addAction(SHOW_CAMERA_SETTINGS, actionMap);
+		addAction(SHOW_CAPTURER_SETINGS, actionMap);
+		addAction(TOGGLE_PREVIEW, actionMap);
 		JButton okButton = new JButton(getAction("dismissDialog"));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
@@ -93,6 +116,16 @@ public class CameraDialog extends AppDialog {
 		});
 		pack();
 		toFront();
+	}
+	
+	private void addAction(String actionName, ActionMap actionMap) {
+		if (actionMap != null) {
+			javax.swing.Action action = actionMap.get(actionName);
+			if (action != null) {
+				JButton chooseCapturerSettings = new JButton(action);
+				add(chooseCapturerSettings, "align right");
+			}
+		}
 	}
 
 	@Action
@@ -111,7 +144,7 @@ public class CameraDialog extends AppDialog {
 	@Action
 	public void refreshCaptureDevices() {
 		// refresh capture devices by querying the capturer implementaion
-		String[] captureDevices = capturerImpl.getCaptureDevices();
+		String[] captureDevices = getCapturerImpl().getCaptureDevices();
 		captureDeviceComboBox.setModel(new DefaultComboBoxModel(captureDevices));
 		// notify listeners about default selection
 		int deviceIndex = captureDeviceComboBox.getSelectedIndex();
@@ -164,4 +197,8 @@ public class CameraDialog extends AppDialog {
 		this.capturerImpl = capturerImpl;
 	}
 
+	public IVideoCapturer getCapturerImpl() {
+		return capturerImpl;
+	}
+	
 }

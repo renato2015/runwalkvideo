@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Component;
 import java.io.File;
 
 public interface IVideoCapturer extends IVideoComponent {
@@ -17,6 +16,10 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public int getSelectedCaptureDeviceIndex();
 
+	/**
+	 * Initialize the capturer and bring it to a state in which the {@link Component} returned by {@link #getComponent()} 
+	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are running and ready to be added to a swing container.
+	 */
 	public void setSelectedCaptureDeviceIndex(int selectedIndex);
 
 	public void setSelectedVideoFormatIndex(int selectedFormat);
@@ -31,12 +34,6 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public String[] getCaptureDevices();
 
-	/**
-	 * Initialize the capturer and bring it to a state in which the {@link Component} returned by {@link #getComponent()} 
-	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are running and ready to be added to a swing container.
-	 */
-	public void startCapturer();
-	
 	public void togglePreview();
-
+	
 }

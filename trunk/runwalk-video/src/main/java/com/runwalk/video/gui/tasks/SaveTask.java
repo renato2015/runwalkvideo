@@ -46,6 +46,7 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 				}
 				setProgress(i, 0, listSize);
 			}
+			// actual updating is done here!
 			tx.commit();
 			message("endMessage");
 		} catch(Exception e) {

@@ -3,7 +3,6 @@ package com.runwalk.video.gui;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
@@ -26,6 +25,4 @@ public interface AppComponent {
 	
 	public ActionMap getApplicationActionMap();
 	
-	public Logger getLogger();
-
 }
