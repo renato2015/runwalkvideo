@@ -133,7 +133,9 @@ public class Recording extends SerializableEntity<Recording> {
 	@SuppressWarnings("unused")
 	private void postLoad() {
 		// initialize transient fields
-		recordingStatus = RecordingStatus.getByCode(statusCode);
+		if (statusCode != null) {
+			recordingStatus = RecordingStatus.getByCode(statusCode);
+		}
 	}
 
 	/**

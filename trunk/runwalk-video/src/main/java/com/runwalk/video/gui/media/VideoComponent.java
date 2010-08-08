@@ -331,7 +331,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getApplication().getContext();
 	}
 
-	public Logger getLogger() {
+	protected Logger getLogger() {
 		return Logger.getLogger(getClass());
 	}
 

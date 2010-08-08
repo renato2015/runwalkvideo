@@ -26,12 +26,10 @@ public class VideoCapturer extends VideoComponent {
 	protected static final String TIME_RECORDING = "timeRecorded";
 
 	/**
-	 * Keeps track of the total number of capturer instances that have been instantiated
+	 * Keeps track of the total number of capturer instances
 	 */
 	private static int capturerCount = 0;
 	
-	private int selectedFormat = -1;
-
 	private long timeStarted, timeRecorded;
 
 	private IVideoCapturer capturerImpl;
@@ -52,8 +50,8 @@ public class VideoCapturer extends VideoComponent {
 			final IVideoCapturer capturerImpl = new DSJCapturer();
 			final VideoCapturer capturer = new VideoCapturer(listener, capturerImpl);
 			// create a dialog to let the user choose which capture device to start on which monitor
-			CameraDialog dialog = new CameraDialog(null, capturerImpl, capturer.getComponentId());
-			dialog.setLocationRelativeTo(RunwalkVideoApp.getApplication().getMainFrame());
+			CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturerImpl, capturer.getComponentId());
+			dialog.setLocationRelativeTo(null);
 			PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 				
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -76,8 +74,6 @@ public class VideoCapturer extends VideoComponent {
 			RunwalkVideoApp.getApplication().show(dialog);
 			// remove the listener to avoid memory leaking
 			dialog.removePropertyChangeListener(changeListener);
-			// initialize the capturer's native resources for the chosen device and start running
-			capturerImpl.startCapturer();
 			// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
 			capturer.showComponent();
 			return capturer;
@@ -112,8 +108,9 @@ public class VideoCapturer extends VideoComponent {
 				formats,
 				formats[0]);
 		if (selectedFormat != null) {
-			this.selectedFormat = Arrays.asList(formats).indexOf(selectedFormat);
-			getVideoImpl().setSelectedVideoFormatIndex(this.selectedFormat);
+			int selectedIndex = Arrays.asList(formats).indexOf(selectedFormat);
+			getVideoImpl().setSelectedVideoFormatIndex(selectedIndex);
+			getLogger().debug("Video format for " + getTitle() + " set to " + selectedFormat);
 		}
 	}
 
@@ -169,10 +166,12 @@ public class VideoCapturer extends VideoComponent {
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 	}
 
-	public void showCaptureSettings() {
+	@Action
+	public void showCapturerSettings() {
 		getVideoImpl().showCaptureSettings();
 	}
 
+	@Action
 	public void showCameraSettings() {
 		getVideoImpl().showCameraSettings();
 	}

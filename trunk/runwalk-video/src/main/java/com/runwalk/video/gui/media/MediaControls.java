@@ -282,7 +282,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	//TODO this action should not be available when there is no capturer open
 	@Action(enabledProperty=PLAYING_DISABLED)
 	public void showCaptureSettings() {
-		frontMostCapturer.showCaptureSettings();
+		frontMostCapturer.showCapturerSettings();
 	}
 
 	@Action(enabledProperty=PLAYING_DISABLED)
