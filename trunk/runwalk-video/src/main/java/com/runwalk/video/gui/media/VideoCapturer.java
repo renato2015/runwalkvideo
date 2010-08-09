@@ -2,7 +2,6 @@ package com.runwalk.video.gui.media;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
@@ -10,18 +9,12 @@ import java.util.Arrays;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.utils.AppHelper;
-import org.jdesktop.application.utils.PlatformType;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 
 public class VideoCapturer extends VideoComponent {
-
-	public static final String CAPTURE_DEVICE = "captureDevice";
 
 	protected static final String TIME_RECORDING = "timeRecorded";
 
@@ -32,59 +25,10 @@ public class VideoCapturer extends VideoComponent {
 	
 	private long timeStarted, timeRecorded;
 
-	private IVideoCapturer capturerImpl;
+	private IVideoCapturer videoImpl;
 
-	/** 
-	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
-	 * At this time capturing is only available for {@link PlatformType#WINDOWS}. Calling this method
-	 * on any other platform will return null without showing the selection dialog.
-	 * 
-	 * @param listener a PropertyChangeListener to notify when internal properties change
-	 * @return the created instance or null if unsupported
-	 * 
-	 */
-	public static VideoCapturer createInstance(PropertyChangeListener listener) {
-		// at this moment capturing is only available on windows
-		if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
-			capturerCount++;
-			final IVideoCapturer capturerImpl = new DSJCapturer();
-			final VideoCapturer capturer = new VideoCapturer(listener, capturerImpl);
-			// create a dialog to let the user choose which capture device to start on which monitor
-			CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturerImpl, capturer.getComponentId());
-			dialog.setLocationRelativeTo(null);
-			PropertyChangeListener changeListener = new PropertyChangeListener()  { 
-				
-				public void propertyChange(PropertyChangeEvent evt) {
-					if (evt.getPropertyName().equals(CAPTURE_DEVICE)) {
-						// user selected a capture device
-						Integer selectedIndex = (Integer) evt.getNewValue();
-						capturerImpl.setSelectedCaptureDeviceIndex(selectedIndex);
-					} else if (evt.getPropertyName().equals(MONITOR_ID)) {
-						// user clicked a monitor button
-						int monitorId = Integer.parseInt(evt.getNewValue().toString());
-						capturer.setMonitorId(monitorId);
-						
-					}
-				}
-			};
-			dialog.addPropertyChangeListener(changeListener);
-			//populate dialog with capture devices and look for connected monitors
-			dialog.refreshCaptureDevices();
-			// show the dialog on screen
-			RunwalkVideoApp.getApplication().show(dialog);
-			// remove the listener to avoid memory leaking
-			dialog.removePropertyChangeListener(changeListener);
-			// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
-			capturer.showComponent();
-			return capturer;
-		}
-		Logger.getLogger(VideoCapturer.class).warn("No capturing implementation found for this platform. Capturing will be disabled.");
-		return null;
-	}
-
-	private VideoCapturer(PropertyChangeListener listener, IVideoCapturer capturerImpl) {
-		super(listener, capturerCount);
-		this.capturerImpl = capturerImpl;
+	VideoCapturer(PropertyChangeListener listener) {
+		super(listener, ++capturerCount);
 		setTimer(new Timer(1000, null));
 		getTimer().addActionListener(new ActionListener() {
 
@@ -138,7 +82,11 @@ public class VideoCapturer extends VideoComponent {
 	}
 
 	public IVideoCapturer getVideoImpl() {
-		return capturerImpl;
+		return videoImpl;
+	}
+	
+	public void setVideoImpl(IVideoCapturer videoImpl) {
+		this.videoImpl = videoImpl;
 	}
 
 	public void startRecording(Recording recording, File videoFile) {
