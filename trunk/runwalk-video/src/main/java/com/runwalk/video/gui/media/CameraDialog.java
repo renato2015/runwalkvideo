@@ -101,7 +101,7 @@ public class CameraDialog extends AppDialog {
 		}
 		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURE_DEVICES)); // NOI18N
 		add(refreshButton, "align right, grow");
-		JButton initButton = new JButton(getAction(CAPTURER_INITIALIZED)); // NOI18N
+		JButton initButton = new JButton(getAction("initializeCapturer")); // NOI18N
 		add(initButton, "grow, wrap");
 		// add some extra actions to configure the capture device with
 		addAction(SHOW_CAMERA_SETTINGS, actionMap);
@@ -117,6 +117,7 @@ public class CameraDialog extends AppDialog {
 				JComboBox source = (JComboBox) e.getSource();
 				String captureDevice = source.getSelectedItem().toString();
 				firePropertyChange(SELECTED_CAPTURE_DEVICE, selectedCaptureDevice, selectedCaptureDevice = captureDevice);
+				firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = false);
 			}
 			
 		});
@@ -145,9 +146,9 @@ public class CameraDialog extends AppDialog {
 	}
 	
 	@Action
-	public void initializeCamera() {
+	public void initializeCapturer() {
 		firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = true);
-		getAction("initializeCamera").setEnabled(false);
+		getAction("initializeCapturer").setEnabled(false);
 	}
 	
 	@Action
@@ -156,7 +157,7 @@ public class CameraDialog extends AppDialog {
 		// release native screen resources
 		dispose();
 		// initialize if that didn't already happen
-		initializeCamera();
+		initializeCapturer();
 	}
 
 	/**
