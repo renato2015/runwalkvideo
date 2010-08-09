@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.media;
 
 import java.io.File;
-import java.util.Arrays;
 
 import org.jdesktop.application.utils.PlatformType;
 
@@ -9,6 +8,7 @@ import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSCapture.CaptureDevice;
 import de.humatic.dsj.DSFilter.DSPin;
 import de.humatic.dsj.DSFilterInfo;
+import de.humatic.dsj.DSFilterInfo.DSPinInfo;
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSMediaType;
 
@@ -25,29 +25,37 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
 		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
 	};
-
+	
 	private static final int FLAGS = DSFiltergraph.DD7;
 	
-	private DSFilterInfo[][] dsi;
-
 	/**
 	 * The selected capture device for this recorder
 	 */
 	private DSFilterInfo selectedDevice = null;
 
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
+	
+	DSJCapturer(DSFilterInfo selectedDevice) {
+		this.selectedDevice = selectedDevice;
+		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), null));
+		getFiltergraph().lockAspectRatio(true);
+	}
 
 	public String[] getVideoFormats() {
+		String[] result = new String[] {""};
 		DSPin activePin = getActivePin();
 		getLogger().debug("Currently active pin : "  + activePin.getName());
-		DSFilterInfo.DSPinInfo usedPinInfo = selectedDevice.getDownstreamPins()[activePin.getIndex()];
-		DSMediaType[] mf = usedPinInfo.getFormats();
-		String[] formats = new String[mf.length];
-
-		for (int i = 0; i < mf.length; i++) {
-			formats[i] = mf[i].getDisplayString() + " @ " + mf[i].getFrameRate();
+		int pinIndex = activePin.getIndex();
+		DSPinInfo[] downstreamPins = selectedDevice.getDownstreamPins();
+		if (pinIndex < downstreamPins.length) {
+			DSFilterInfo.DSPinInfo usedPinInfo = downstreamPins[pinIndex];
+			DSMediaType[] mf = usedPinInfo.getFormats();
+			result = new String[mf.length];
+			for (int i = 0; i < mf.length; i++) {
+				result[i] = mf[i].getDisplayString() + " @ " + mf[i].getFrameRate();
+			}
 		}
-		return formats;
+		return result;
 	}
 
 	public void setSelectedVideoFormatIndex(int index) {
@@ -119,40 +127,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_CAPTURE);
 	}
 	
-	public String[] getCaptureDevices() {
-		dsi = DSCapture.queryDevices(1);
-		String[] devices = new String[dsi[0].length];
-		for (int i = 0; i < dsi[0].length; i++) {
-			DSFilterInfo dsFilterInfo = dsi[0][i];
-			devices[i] = dsFilterInfo.getName();
-		}
-		return devices;
-	}
-	
-	public int getSelectedCaptureDeviceIndex() {
-		return Arrays.asList(dsi[0]).indexOf(selectedDevice);
-	}
-
-	/** {@inheritDoc} */
-	public void setSelectedCaptureDeviceIndex(int selectedIndex) {
-		if (isInitialized()) {
-			// dispose filtergraph if there was already one started
-			getFiltergraph().dispose();
-		}
-		this.selectedDevice = dsi[0][selectedIndex];
-		// initialize the capturer's native resources for the chosen device so settings
-		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), null));
-		getFiltergraph().lockAspectRatio(true);
-	}
-	
-	/**
-	 * Check whether native resources have already been initialized for the currently selected capturedevice.
-	 * @return <code>true</code> if already initialized
-	 */
-	private boolean isInitialized() {
-		return getFiltergraph() != null;
-	}
-
 	public void setSelectedCaptureEncoderIndex(int index) {
 		this.captureEncoder = VIDEO_ENCODERS[index];
 	}
@@ -160,7 +134,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public String getSelectedCaptureEncoderName() {
 		return captureEncoder.getName();
 	}
-
+	
 	public String[] getCaptureEncoders() {
 		String[] result = new String[VIDEO_ENCODERS.length];
 		for (int i = 0; i < result.length; i++) {

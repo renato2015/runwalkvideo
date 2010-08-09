@@ -385,7 +385,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(name = "Start Camera")
 	public void startCapturer() {
-		VideoCapturer capturer = VideoCapturer.createInstance(this);
+		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this);
 		if (capturer != null) {
 			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
 			capturers.add(capturer);

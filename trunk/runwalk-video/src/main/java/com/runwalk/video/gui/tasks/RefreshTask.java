@@ -50,26 +50,22 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		try {
 			message("startMessage");
 			message("fetchMessage");
-			setProgress(0, 0, 6);
 			// get all clients from the db
 			Query query = getEntityManager().createNamedQuery("findAllClients"); // NOI18N
 			query.setHint("eclipselink.left-join-fetch", "c.analyses.recordings")
 			.setHint("toplink.refresh", "true")
 			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 			final EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(query.getResultList()));
-			setProgress(1, 0, 6);
 			// get all cities from the db
 			query = getEntityManager().createNamedQuery("findAllCities")
 			.setHint("toplink.refresh", "true")
 			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 			final EventList<City> cityList = GlazedLists.eventList(query.getResultList());
-			setProgress(2, 0, 6);
 			// get all articles from the db
 			query = getEntityManager().createNamedQuery("findAllArticles")
 			.setHint("toplink.refresh", "true")
 			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts"); // NOI18N
 			final EventList<Article> articleList = GlazedLists.eventList(query.getResultList());
-			setProgress(3, 0, 6);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
@@ -107,16 +103,17 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				}
 
 			});
-			setProgress(4, 0, 6);
 			// clear video file cache
 			getVideoFileManager().clear();
 			// some not so beautiful way to refresh the cache
+			message("loadingVideoFilesMessage");
+			int clientCounter = 1;
 			for (Client theClient : clientList) {
 				for (Analysis analysis : theClient.getAnalyses()) {
 					getVideoFileManager().refreshCache(analysis);
 				}
+				setProgress(clientCounter++, 0, clientList.size());
 			}
-			setProgress(5, 0, 6);
 			// check whether compressing should be enabled
 			RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
 			getEntityManager().close();

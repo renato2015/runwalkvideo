@@ -14,14 +14,6 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public void showCameraSettings();
 
-	public int getSelectedCaptureDeviceIndex();
-
-	/**
-	 * Initialize the capturer and bring it to a state in which the {@link Component} returned by {@link #getComponent()} 
-	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are running and ready to be added to a swing container.
-	 */
-	public void setSelectedCaptureDeviceIndex(int selectedIndex);
-
 	public void setSelectedVideoFormatIndex(int selectedFormat);
 
 	public String[] getVideoFormats();
@@ -29,10 +21,8 @@ public interface IVideoCapturer extends IVideoComponent {
 	public String getSelectedCaptureEncoderName();
 
 	public void setSelectedCaptureEncoderIndex(int index);
-
+	
 	public String[] getCaptureEncoders();
-
-	public String[] getCaptureDevices();
 
 	public void togglePreview();
 	

@@ -12,6 +12,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
@@ -31,19 +32,23 @@ import com.runwalk.video.gui.AppDialog;
 @SuppressWarnings("serial")
 public class CameraDialog extends AppDialog {
 
+	public static final String CAPTURER_INITIALIZED = "capturerInitialized";
+	public static final String REFRESH_CAPTURE_DEVICES = "refreshCaptureDevices";
+	public static final String SELECTED_CAPTURE_DEVICE = "selectedCaptureDevice";
 	private static final String SHOW_CAMERA_SETTINGS = "showCameraSettings";
-
 	private static final String SHOW_CAPTURER_SETINGS = "showCapturerSettings";
-
 	private static final String TOGGLE_PREVIEW = "togglePreview";
+	private static final String DISMISS_DIALOG = "dismissDialog";
 
 	private JComboBox captureDeviceComboBox;
 
-	private int selectedDeviceIndex = -1, capturerId;
+	private String selectedCaptureDevice;
+	
+	private int capturerId;
+	
+	private boolean capturerInitialized;
 	
 	private String selectedMonitorId;
-
-	private IVideoCapturer capturerImpl;
 
 	private JPanel buttonPanel;
 
@@ -57,10 +62,9 @@ public class CameraDialog extends AppDialog {
 	 * @param capturerImpl A {@link IVideoCapturer} implementation which will be queried for available capture devices 
 	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
 	 */
-	public CameraDialog(Frame parent, ActionMap actionMap, IVideoCapturer capturerImpl, int capturerId) {
+	public CameraDialog(Frame parent, ActionMap actionMap, int capturerId) {
 		super(parent, true);
 		this.capturerId = capturerId;
-		this.capturerImpl = capturerImpl;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
 		final boolean isReady = getApplication().isReady();
@@ -93,15 +97,17 @@ public class CameraDialog extends AppDialog {
 		if (!isReady) {
 			javax.swing.Action cancelAction = getApplication().getApplicationActionMap().get("exit");
 			JButton cancelButton = new JButton(cancelAction); // NOI18N
-			add(cancelButton);
+			add(cancelButton, "grow");
 		}
-		JButton refreshButton = new JButton(getAction("refreshCaptureDevices")); // NOI18N
-		add(refreshButton, "align right");
+		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURE_DEVICES)); // NOI18N
+		add(refreshButton, "align right, grow");
+		JButton initButton = new JButton(getAction(CAPTURER_INITIALIZED)); // NOI18N
+		add(initButton, "grow, wrap");
 		// add some extra actions to configure the capture device with
 		addAction(SHOW_CAMERA_SETTINGS, actionMap);
 		addAction(SHOW_CAPTURER_SETINGS, actionMap);
-		addAction(TOGGLE_PREVIEW, actionMap);
-		JButton okButton = new JButton(getAction("dismissDialog"));
+//		addAction(TOGGLE_PREVIEW, actionMap);
+		JButton okButton = new JButton(getAction(DISMISS_DIALOG));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
 		// populate combobox with the capture device list
@@ -109,8 +115,8 @@ public class CameraDialog extends AppDialog {
 
 			public void itemStateChanged(ItemEvent e) {
 				JComboBox source = (JComboBox) e.getSource();
-				int deviceIndex = source.getSelectedIndex();
-				firePropertyChange(VideoCapturer.CAPTURE_DEVICE, selectedDeviceIndex, selectedDeviceIndex = deviceIndex);
+				String captureDevice = source.getSelectedItem().toString();
+				firePropertyChange(SELECTED_CAPTURE_DEVICE, selectedCaptureDevice, selectedCaptureDevice = captureDevice);
 			}
 			
 		});
@@ -120,21 +126,37 @@ public class CameraDialog extends AppDialog {
 	
 	private void addAction(String actionName, ActionMap actionMap) {
 		if (actionMap != null) {
-			javax.swing.Action action = actionMap.get(actionName);
+			final javax.swing.Action action = actionMap.get(actionName);
 			if (action != null) {
+				action.setEnabled(false);
+				addPropertyChangeListener(new PropertyChangeListener() {
+
+					public void propertyChange(PropertyChangeEvent evt) {
+						if (evt.getPropertyName().equals(CAPTURER_INITIALIZED)) {
+							action.setEnabled((Boolean) evt.getNewValue());
+						}
+					}
+					
+				});
 				JButton chooseCapturerSettings = new JButton(action);
 				add(chooseCapturerSettings, "align right");
 			}
 		}
 	}
-
+	
+	@Action
+	public void initializeCamera() {
+		firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = true);
+		getAction("initializeCamera").setEnabled(false);
+	}
+	
 	@Action
 	public void dismissDialog() {
 		setVisible(false);
-		// clean up so the dialog can be garbage collected
-		capturerImpl = null;
 		// release native screen resources
 		dispose();
+		// initialize if that didn't already happen
+		initializeCamera();
 	}
 
 	/**
@@ -144,12 +166,12 @@ public class CameraDialog extends AppDialog {
 	@Action
 	public void refreshCaptureDevices() {
 		// refresh capture devices by querying the capturer implementaion
-		String[] captureDevices = getCapturerImpl().getCaptureDevices();
+		String[] captureDevices = VideoCapturerFactory.getInstance().getCaptureDevices();
 		captureDeviceComboBox.setModel(new DefaultComboBoxModel(captureDevices));
 		// notify listeners about default selection
-		int deviceIndex = captureDeviceComboBox.getSelectedIndex();
-		firePropertyChange(VideoCapturer.CAPTURE_DEVICE, selectedDeviceIndex, selectedDeviceIndex = deviceIndex);
-
+		String selectedCapturer = captureDeviceComboBox.getSelectedItem().toString();
+		firePropertyChange(SELECTED_CAPTURE_DEVICE, selectedCaptureDevice, selectedCaptureDevice = selectedCapturer);
+		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		// let user choose on which screen to show the capturer, only if more than one is connected
@@ -193,12 +215,4 @@ public class CameraDialog extends AppDialog {
 		}
 	}
 
-	public void setCapturerImpl(IVideoCapturer capturerImpl) {
-		this.capturerImpl = capturerImpl;
-	}
-
-	public IVideoCapturer getCapturerImpl() {
-		return capturerImpl;
-	}
-	
 }
