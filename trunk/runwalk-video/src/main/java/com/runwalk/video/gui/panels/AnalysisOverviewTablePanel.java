@@ -102,7 +102,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		List<Recording> list = new ArrayList<Recording>();
 		for (Analysis analysis : getItemList()) {
 			for (Recording recording : analysis.getRecordings()) {
-				if (recording.isUncompressed()) {
+				if (recording.isUncompressed() && getVideoFileManager().canReadAndExists(recording)) {
 					list.add(recording);
 				}
 			}

@@ -47,7 +47,7 @@ public class VideoPlayer extends VideoComponent {
 		return new VideoPlayer(listener, recording, videoFile, result);
 	}
 
-	protected VideoPlayer(PropertyChangeListener listener, Recording recording, File videoFile, IVideoPlayer playerImpl) throws FileNotFoundException {
+	private VideoPlayer(PropertyChangeListener listener, Recording recording, File videoFile, IVideoPlayer playerImpl) throws FileNotFoundException {
 		super(listener, playerCount);
 		this.playerImpl = playerImpl;
 		setTimer(new Timer(25, null));

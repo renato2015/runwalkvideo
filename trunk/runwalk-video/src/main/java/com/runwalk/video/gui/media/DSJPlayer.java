@@ -47,11 +47,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 			}
 		} catch(DSJException e) {
 			rebuilt = true;
-			/*JOptionPane.showMessageDialog(RunwalkVideoApp.getApplication().getMainFrame(),
-					"Er heeft zich een fout voorgedaan bij het openen van een filmpje.\n" +
-					"Probeer het gerust nog eens opnieuw.",
-					"Fout bij openen filmpje",
-					JOptionPane.ERROR_MESSAGE);*/
 			Logger.getLogger(DSJPlayer.class).error("Movie initialization failed.", e);
 			dispose();
 			initFiltergraph(path, flags, listener);

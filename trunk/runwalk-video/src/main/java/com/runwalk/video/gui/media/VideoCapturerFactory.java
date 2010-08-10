@@ -2,6 +2,7 @@ package com.runwalk.video.gui.media;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
@@ -12,8 +13,34 @@ public abstract class VideoCapturerFactory {
 
 	private static VideoCapturerFactory factory;
 	
-	private String selectedCapturer;
+	/**
+	 * Initialize the capturer with the given name. Visible components should not be initialized until
+	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be expensive.
+	 * 
+	 * @param capturerName The name or id of the newly selected capture device
+	 * @return A video implementation that is ready to start running
+	 */
+	public abstract IVideoCapturer initializeCapturer(String capturerName);
+	
+	/**
+	 * This method should return a list with all the capturer's names available at the moment. 
+	 * 
+	 * @return The {@link List} with available capturers
+	 */
+	public abstract String[] getCapturers();
 
+	/**
+	 * This method should dispose the resources used by the given capturer after looking it up.
+	 * It should check whether the given capturer is an existant and running one first.
+	 * 
+	 * @param capturerName The name of the capturer
+	 */
+	public abstract void disposeCapturer(String capturerName);
+
+	/**
+	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
+	 * @return The factory
+	 */
 	public static synchronized VideoCapturerFactory getInstance() {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
@@ -28,8 +55,7 @@ public abstract class VideoCapturerFactory {
 
 	/** 
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
-	 * At this time capturing is only available for {@link PlatformType#WINDOWS}. Calling this method
-	 * on any other platform will return null without showing the selection dialog.
+	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
 	 * @param listener a PropertyChangeListener to notify when internal properties change
 	 * @return the created instance or null if unsupported
@@ -45,21 +71,26 @@ public abstract class VideoCapturerFactory {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURE_DEVICE)) {
 					// user changed capture device selection. dispose if there was something running
-					disposeCapturer(selectedCapturer);
-					selectedCapturer = evt.getNewValue().toString();
+					if (capturer.getVideoImpl() != null) {
+						disposeCapturer(capturer.getVideoImpl().getTitle());
+					}
+					// initialize the new capturer
+					String selectedCapturer = evt.getNewValue().toString();
+					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
+					capturer.setVideoImpl(capturerImpl);
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
 					// user clicked a monitor button
 					int monitorId = Integer.parseInt(evt.getNewValue().toString());
 					capturer.setMonitorId(monitorId);
 				} else if (evt.getPropertyName().equals(CameraDialog.CAPTURER_INITIALIZED)) {
-					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
-					capturer.setVideoImpl(capturerImpl);
+					// prepare the capturer for showing live video
+					capturer.getVideoImpl().startCapturer();
 				}
 			}
 		};
 		dialog.addPropertyChangeListener(changeListener);
 		//populate dialog with capture devices and look for connected monitors
-		dialog.refreshCaptureDevices();
+		dialog.refreshCapturers();
 		// show the dialog on screen
 		RunwalkVideoApp.getApplication().show(dialog);
 		// remove the listener to avoid memory leaking
@@ -69,18 +100,6 @@ public abstract class VideoCapturerFactory {
 		// if the video implementation is null then the created capturer is useless
 		return capturer.getVideoImpl() == null ? null : capturer;
 	}
-
-	/**
-	 * Initialize the capturer and bring it to a state in which the {@link Component} returned by {@link #getComponent()} 
-	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are running and ready to be added to a swing container.
-	 * 
-	 * @param capturerName The name or id of the newly selected capture device
-	 */
-	public abstract IVideoCapturer initializeCapturer(String capturerName);
-
-	public abstract String[] getCaptureDevices();
-
-	public abstract void disposeCapturer(String capturerName);
 
 	/**
 	 * A dummy factory that doesn't do anything.
@@ -93,12 +112,11 @@ public abstract class VideoCapturerFactory {
 			return null;
 		}
 
-		public String[] getCaptureDevices() {
+		public String[] getCapturers() {
 			return new String[] {"none"};
 		}
 
-		public void disposeCapturer(String capturerName) {
-		}
+		public void disposeCapturer(String capturerName) {	}
 
 	}
 
