@@ -82,13 +82,11 @@ public class ApplicationActions extends AbstractBean {
 	}
 
 	public void setUndoEnabled(boolean undoEnabled) {
-		this.undoEnabled = undoEnabled;
-		this.firePropertyChange(UNDO_ENABLED, !isUndoEnabled(), isUndoEnabled());
+		this.firePropertyChange(UNDO_ENABLED, this.undoEnabled, this.undoEnabled = undoEnabled);
 	}
 
 	public void setRedoEnabled(boolean redoEnabled) {
-		this.redoEnabled = redoEnabled;
-		this.firePropertyChange(REDO_ENABLED, !isRedoEnabled(), isRedoEnabled());
+		this.firePropertyChange(REDO_ENABLED, this.redoEnabled, this.redoEnabled = redoEnabled);
 	}
 
 	@Action

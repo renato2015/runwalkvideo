@@ -4,13 +4,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 import org.jdesktop.application.Action;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 
@@ -42,17 +43,17 @@ public class VideoCapturer extends VideoComponent {
 
 	@Action
 	public void setVideoFormat() {
-		String[] formats = getVideoImpl().getVideoFormats();
+		List<String> videoFormats = getVideoImpl().getVideoFormats();
 		String selectedFormat = (String)JOptionPane.showInputDialog(
 				null,
 				"Kies het opnameformaat:",
 				"Kies opnameformaat..",
 				JOptionPane.PLAIN_MESSAGE,
 				null,
-				formats,
-				formats[0]);
+				Iterables.toArray(videoFormats, String.class),
+				null);
 		if (selectedFormat != null) {
-			int selectedIndex = Arrays.asList(formats).indexOf(selectedFormat);
+			int selectedIndex = videoFormats.indexOf(selectedFormat);
 			getVideoImpl().setSelectedVideoFormatIndex(selectedIndex);
 			getLogger().debug("Video format for " + getTitle() + " set to " + selectedFormat);
 		}
@@ -65,17 +66,17 @@ public class VideoCapturer extends VideoComponent {
 
 	@Action
 	public void setCaptureEncoder() {
-		String[] captureEncoders = getVideoImpl().getCaptureEncoders();
+		List<String> captureEncoders = getVideoImpl().getCaptureEncoders();
 		String selectedEncoder =  (String) JOptionPane.showInputDialog(
 				null,
 				"Kies een video encoder: ",
 				"Video encoder wijzigen..",
 				JOptionPane.PLAIN_MESSAGE,
 				null,
-				captureEncoders,
+				Iterables.toArray(captureEncoders, String.class),
 				getVideoImpl().getSelectedCaptureEncoderName());
 		if (selectedEncoder != null) {
-			int selectedIndex = Arrays.asList(captureEncoders).indexOf(selectedEncoder);
+			int selectedIndex = captureEncoders.indexOf(selectedEncoder);
 			getVideoImpl().setSelectedCaptureEncoderIndex(selectedIndex);
 			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getVideoImpl().getSelectedCaptureEncoderName());
 		}

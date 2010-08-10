@@ -2,6 +2,7 @@ package com.runwalk.video.gui.media;
 
 import java.util.List;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import de.humatic.dsj.DSCapture;
@@ -37,15 +38,13 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 			activeFiltergraph.dispose();
 		}
 	}
-
+		
 	public IVideoCapturer initializeCapturer(String capturerName) {
-		DSFilterInfo selectedDevice = DSFilterInfo.filterInfoForName(capturerName);
 		// initialize the capturer's native resources for the chosen device so settings
-		DSJCapturer dsjCapturer = new DSJCapturer(selectedDevice);
-		return dsjCapturer;
+		return new DSJCapturer(capturerName);
 	}
 
-	public String[] getCaptureDevices() {
+	public String[] getCapturers() {
 		List<String> result = Lists.newArrayList();
 		// query first with bit set to 0 to get quick listing of available capture devices
 		DSFilterInfo[][] dsi = DSCapture.queryDevices(0 | DSCapture.SKIP_AUDIO);
@@ -57,7 +56,7 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 				result.add(filterName);
 			}
 		}
-		return result.toArray(new String[result.size()]);
+		return Iterables.toArray(result, String.class);
 	}
-	
+
 }

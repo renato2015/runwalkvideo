@@ -455,7 +455,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				VideoPlayer player = null;
 				try {
 					File videoFile = getVideoFileManager().getVideoFile(recording);
-					if (recordingCount < players.size()) {
+					if (++recordingCount < players.size()) {
 						player = players.get(recordingCount++);
 						player.loadFile(recording, videoFile);
 						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
@@ -627,8 +627,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void capturersToFront() {
-		for (VideoCapturer capturer : capturers) {
-			capturer.toFront();
+		if (!(frontMostComponent instanceof VideoCapturer)) {
+			for (VideoCapturer capturer : capturers) {
+				capturer.toFront();
+			}
 		}
 	}
 	

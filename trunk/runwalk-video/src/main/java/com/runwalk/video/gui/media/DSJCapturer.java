@@ -1,8 +1,12 @@
 package com.runwalk.video.gui.media;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jdesktop.application.utils.PlatformType;
+
+import com.google.common.collect.Lists;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSCapture.CaptureDevice;
@@ -25,53 +29,98 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
 		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
 	};
-	
+
 	private static final int FLAGS = DSFiltergraph.DD7;
-	
-	/**
-	 * The selected capture device for this recorder
-	 */
-	private DSFilterInfo selectedDevice = null;
 
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
-	
-	DSJCapturer(DSFilterInfo selectedDevice) {
-		this.selectedDevice = selectedDevice;
-		setFiltergraph(new DSCapture(FLAGS, selectedDevice, false, DSFilterInfo.doNotRender(), null));
+
+	private DSFilterInfo filterInfo;
+
+	private String capturerName;
+
+	DSJCapturer(String capturerName) {
+		this.capturerName = capturerName;
+		filterInfo = DSFilterInfo.filterInfoForName(capturerName);
+	}
+
+	/**
+	 * Get {@link DSFilterInfo} depending on the state in which the capturer is. 
+	 * If a {@link DSFiltergraph} is already created, then this method will return 
+	 * the {@link DSFilterInfo} of the active {@link CaptureDevice}.
+	 * 
+	 * @return The requested filter info for this capturer
+	 */
+	private DSFilterInfo getDSFilterInfo() {
+		DSFilterInfo result = filterInfo;
+		if (isActive()) {
+			result = getCaptureDevice().getFilterInfo();
+			filterInfo = null;
+		}
+		return result;
+	}
+
+	/** {@inheritDoc} */
+	public void startCapturer() {
+		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
 		getFiltergraph().lockAspectRatio(true);
 	}
 
-	public String[] getVideoFormats() {
-		String[] result = new String[] {""};
-		DSPin activePin = getActivePin();
-		getLogger().debug("Currently active pin : "  + activePin.getName());
-		int pinIndex = activePin.getIndex();
-		DSPinInfo[] downstreamPins = selectedDevice.getDownstreamPins();
-		if (pinIndex < downstreamPins.length) {
-			DSFilterInfo.DSPinInfo usedPinInfo = downstreamPins[pinIndex];
-			DSMediaType[] mf = usedPinInfo.getFormats();
-			result = new String[mf.length];
-			for (int i = 0; i < mf.length; i++) {
-				result[i] = mf[i].getDisplayString() + " @ " + mf[i].getFrameRate();
+	public List<String> getVideoFormats() {
+		List<String> result = Lists.newArrayList();
+		if (isActive()) {
+			DSPin activePin = getActivePin();
+			getLogger().debug("Currently active pin : "  + activePin.getName());
+			DSPinInfo pinInfo = activePin.getPinInfo();
+			for (DSMediaType mediaFormat : pinInfo.getFormats()) {
+				String format = mediaFormat.getDisplayString() + " @ " + mediaFormat.getFrameRate();
+				result.add(format);
+			}
+		} else {
+			DSPinInfo[] ouputPins = getDSFilterInfo().getDownstreamPins();
+			for (DSPinInfo pinInfo : ouputPins) {
+				for (DSMediaType mediaFormat : pinInfo.getFormats()) {
+					String format = mediaFormat.getDisplayString() + " @ " + mediaFormat.getFrameRate();
+					result.add(format);
+				}
 			}
 		}
 		return result;
 	}
 
 	public void setSelectedVideoFormatIndex(int index) {
-		DSPin activePin = getActivePin();
-		getFiltergraph().getActiveVideoDevice().setOutputFormat(activePin, index);
-		getFiltergraph().getActiveVideoDevice().setOutputFormat(index);
+		if (isActive()) {
+//			getCaptureDevice().setOutputFormat(getActivePin(), index);
+			getCaptureDevice().setOutputFormat(index);
+		} else {
+			int counter = 0;
+			for (DSPinInfo pinInfo : getDSFilterInfo().getDownstreamPins()) {
+				for(DSMediaType mediaFormat : pinInfo.getFormats()) {
+					if (++ counter == index) {
+						int formatIndex = Arrays.asList(pinInfo.getFormats()).indexOf(mediaFormat);
+						pinInfo.setPreferredFormat(formatIndex);
+					}
+				}
+			}
+		}
 		getLogger().debug("Pin " + getActivePin().getName() + " fps: " + getActiveDeviceFps());
 	}
-	
+
+	/**
+	 * Return the {@link CaptureDevice} for the current {@link DSFiltergraph} if there is one.
+	 * 
+	 * @return The active {@link CaptureDevice}
+	 */
+	protected CaptureDevice getCaptureDevice() {
+		return getFiltergraph() != null ? getFiltergraph().getActiveVideoDevice() : null;
+	}
+
 	private DSPin getActivePin() {
 		CaptureDevice vDev = getFiltergraph().getActiveVideoDevice();
 		DSPin previewOut = vDev.getDeviceOutput(DSCapture.CaptureDevice.PIN_CATEGORY_PREVIEW);
 		DSPin captureOut = vDev.getDeviceOutput(DSCapture.CaptureDevice.PIN_CATEGORY_CAPTURE);
 		return previewOut != null ? previewOut : captureOut;
 	}
-	
+
 	private float getActiveDeviceFps() {
 		CaptureDevice vDev = getFiltergraph().getActiveVideoDevice();
 		return vDev.getFrameRate(getActivePin());
@@ -126,27 +175,31 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void showCameraSettings() {
 		getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_CAPTURE);
 	}
-	
+
 	public void setSelectedCaptureEncoderIndex(int index) {
-		this.captureEncoder = VIDEO_ENCODERS[index];
+		captureEncoder = VIDEO_ENCODERS[index];
 	}
-	
+
 	public String getSelectedCaptureEncoderName() {
 		return captureEncoder.getName();
 	}
-	
-	public String[] getCaptureEncoders() {
-		String[] result = new String[VIDEO_ENCODERS.length];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = VIDEO_ENCODERS[i].getName();
+
+	public List<String> getCaptureEncoders() {
+		List<String> result = Lists.newArrayList();
+		for (DSFilterInfo videoEncoder : VIDEO_ENCODERS) {
+			result.add(videoEncoder.getName());
 		}
 		return result;
 	}
 
+	/**
+	 * This method should return the name of the capturer, 
+	 * which was originally provided by {@link VideoCapturerFactory#initializeCapturer(String)}.
+	 */
 	public String getTitle() {
-		return selectedDevice != null ? selectedDevice.getName() : "";
+		return capturerName;
 	}
-	
+
 	private boolean isRecording() {
 		return getFiltergraph().getState() == DSCapture.RECORDING;
 	}

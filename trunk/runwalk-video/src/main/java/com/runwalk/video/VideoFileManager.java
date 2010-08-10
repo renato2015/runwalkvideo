@@ -84,6 +84,11 @@ public class VideoFileManager extends AbstractBean {
 	public boolean canReadAndExists(File videoFile) {
 		return videoFile != null && videoFile.exists() && videoFile.canRead();
 	}
+	
+	public boolean canReadAndExists(Recording recording) {
+		File videoFile = getVideoFile(recording);
+		return canReadAndExists(videoFile);
+	}
 
 	public File getCompressedVideoFile(Recording recording) {
 		return new File(getAppSettings().getVideoDir(), recording.getVideoFileName());
