@@ -16,10 +16,6 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	public void showCameraSettings();
 
-	public void setSelectedVideoFormatIndex(int selectedFormat);
-
-	public List<String> getVideoFormats();
-
 	public String getSelectedCaptureEncoderName();
 
 	public void setSelectedCaptureEncoderIndex(int index);
