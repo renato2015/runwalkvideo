@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.media;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 
 import org.jdesktop.application.utils.PlatformType;
@@ -10,11 +9,8 @@ import com.google.common.collect.Lists;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSCapture.CaptureDevice;
-import de.humatic.dsj.DSFilter.DSPin;
 import de.humatic.dsj.DSFilterInfo;
-import de.humatic.dsj.DSFilterInfo.DSPinInfo;
 import de.humatic.dsj.DSFiltergraph;
-import de.humatic.dsj.DSMediaType;
 
 /**
  * This class is a concrete implementation for the DirectShow for Java (dsj) libary, 
@@ -43,66 +39,12 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		filterInfo = DSFilterInfo.filterInfoForName(capturerName);
 	}
 
-	/**
-	 * Get {@link DSFilterInfo} depending on the state in which the capturer is. 
-	 * If a {@link DSFiltergraph} is already created, then this method will return 
-	 * the {@link DSFilterInfo} of the active {@link CaptureDevice}.
-	 * 
-	 * @return The requested filter info for this capturer
-	 */
-	private DSFilterInfo getDSFilterInfo() {
-		DSFilterInfo result = filterInfo;
-		if (isActive()) {
-			result = getCaptureDevice().getFilterInfo();
-			filterInfo = null;
-		}
-		return result;
-	}
-
 	/** {@inheritDoc} */
 	public void startCapturer() {
 		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
+		// clear filterInfo as it may have changed due to the filtergraph setup
+		filterInfo = null;
 		getFiltergraph().lockAspectRatio(true);
-	}
-
-	public List<String> getVideoFormats() {
-		List<String> result = Lists.newArrayList();
-		if (isActive()) {
-			DSPin activePin = getActivePin();
-			getLogger().debug("Currently active pin : "  + activePin.getName());
-			DSPinInfo pinInfo = activePin.getPinInfo();
-			for (DSMediaType mediaFormat : pinInfo.getFormats()) {
-				String format = mediaFormat.getDisplayString() + " @ " + mediaFormat.getFrameRate();
-				result.add(format);
-			}
-		} else {
-			DSPinInfo[] ouputPins = getDSFilterInfo().getDownstreamPins();
-			for (DSPinInfo pinInfo : ouputPins) {
-				for (DSMediaType mediaFormat : pinInfo.getFormats()) {
-					String format = mediaFormat.getDisplayString() + " @ " + mediaFormat.getFrameRate();
-					result.add(format);
-				}
-			}
-		}
-		return result;
-	}
-
-	public void setSelectedVideoFormatIndex(int index) {
-		if (isActive()) {
-//			getCaptureDevice().setOutputFormat(getActivePin(), index);
-			getCaptureDevice().setOutputFormat(index);
-		} else {
-			int counter = 0;
-			for (DSPinInfo pinInfo : getDSFilterInfo().getDownstreamPins()) {
-				for(DSMediaType mediaFormat : pinInfo.getFormats()) {
-					if (++ counter == index) {
-						int formatIndex = Arrays.asList(pinInfo.getFormats()).indexOf(mediaFormat);
-						pinInfo.setPreferredFormat(formatIndex);
-					}
-				}
-			}
-		}
-		getLogger().debug("Pin " + getActivePin().getName() + " fps: " + getActiveDeviceFps());
 	}
 
 	/**
@@ -112,18 +54,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	 */
 	protected CaptureDevice getCaptureDevice() {
 		return getFiltergraph() != null ? getFiltergraph().getActiveVideoDevice() : null;
-	}
-
-	private DSPin getActivePin() {
-		CaptureDevice vDev = getFiltergraph().getActiveVideoDevice();
-		DSPin previewOut = vDev.getDeviceOutput(DSCapture.CaptureDevice.PIN_CATEGORY_PREVIEW);
-		DSPin captureOut = vDev.getDeviceOutput(DSCapture.CaptureDevice.PIN_CATEGORY_CAPTURE);
-		return previewOut != null ? previewOut : captureOut;
-	}
-
-	private float getActiveDeviceFps() {
-		CaptureDevice vDev = getFiltergraph().getActiveVideoDevice();
-		return vDev.getFrameRate(getActivePin());
 	}
 
 	private DSFilterInfo getCaptureEncoder() {

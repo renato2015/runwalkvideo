@@ -40,25 +40,7 @@ public class VideoCapturer extends VideoComponent {
 			}
 		});
 	}
-
-	@Action
-	public void setVideoFormat() {
-		List<String> videoFormats = getVideoImpl().getVideoFormats();
-		String selectedFormat = (String)JOptionPane.showInputDialog(
-				null,
-				"Kies het opnameformaat:",
-				"Kies opnameformaat..",
-				JOptionPane.PLAIN_MESSAGE,
-				null,
-				Iterables.toArray(videoFormats, String.class),
-				null);
-		if (selectedFormat != null) {
-			int selectedIndex = videoFormats.indexOf(selectedFormat);
-			getVideoImpl().setSelectedVideoFormatIndex(selectedIndex);
-			getLogger().debug("Video format for " + getTitle() + " set to " + selectedFormat);
-		}
-	}
-
+	
 	@Action
 	public void togglePreview() {
 		getVideoImpl().togglePreview();
