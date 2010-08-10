@@ -31,15 +31,14 @@ import com.runwalk.video.gui.AppDialog;
 
 @SuppressWarnings("serial")
 public class CameraDialog extends AppDialog {
-	
+
 	// class properties
 	public static final String CAPTURER_INITIALIZED = "capturerInitialized";
 	public static final String SELECTED_CAPTURE_DEVICE = "selectedCaptureDevice";
-	
+
 	// class actions
 	public static final String INITIALIZE_CAPTURER_ACTION = "initializeCapturer";
 	public static final String REFRESH_CAPTURER_ACTION = "refreshCapturers";
-	public static final String SET_VIDEOFORMAT_ACTION = "setVideoFormat";
 	private static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCameraSettings";
 	private static final String SHOW_CAPTURER_DEVICE_SETINGS_ACTION = "showCapturerSettings";
 	private static final String TOGGLE_PREVIEW_ACTION = "togglePreview";
@@ -49,11 +48,11 @@ public class CameraDialog extends AppDialog {
 	private JComboBox capturerComboBox;
 
 	private String selectedCapturer;
-	
+
 	private int capturerId;
-	
+
 	private boolean capturerInitialized;
-	
+
 	private String selectedMonitorId;
 
 	private JPanel buttonPanel;
@@ -110,10 +109,9 @@ public class CameraDialog extends AppDialog {
 		JButton initButton = new JButton(getAction(INITIALIZE_CAPTURER_ACTION)); // NOI18N
 		add(initButton, "grow, wrap");
 		// add some extra actions to configure the capture device with
-		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap, true);
-		addAction(SHOW_CAPTURER_DEVICE_SETINGS_ACTION, actionMap, true);
-		addAction(SET_VIDEOFORMAT_ACTION, actionMap, false);
-//		addAction(TOGGLE_PREVIEW, actionMap);
+		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap);
+		addAction(SHOW_CAPTURER_DEVICE_SETINGS_ACTION, actionMap);
+		//		addAction(TOGGLE_PREVIEW, actionMap);
 		JButton okButton = new JButton(getAction(DISMISS_DIALOG_ACTION));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
@@ -126,52 +124,50 @@ public class CameraDialog extends AppDialog {
 				setSelectedCaptureDevice(captureDevice);
 				setCapturerInitialized(false);
 			}
-			
+
 		});
 		pack();
 		toFront();
 	}
-	
-	private void addAction(String actionName, ActionMap actionMap, boolean setEnabledState) {
+
+	private void addAction(String actionName, ActionMap actionMap) {
 		if (actionMap != null) {
 			final javax.swing.Action action = actionMap.get(actionName);
 			if (action != null) {
-				if (setEnabledState) {
-					action.setEnabled(isCapturerInitialized());
-					addPropertyChangeListener(new PropertyChangeListener() {
-						
-						public void propertyChange(PropertyChangeEvent evt) {
-							if (evt.getPropertyName().equals(CAPTURER_INITIALIZED)) {
-								action.setEnabled((Boolean) evt.getNewValue());
-							}
+				action.setEnabled(isCapturerInitialized());
+				addPropertyChangeListener(new PropertyChangeListener() {
+
+					public void propertyChange(PropertyChangeEvent evt) {
+						if (evt.getPropertyName().equals(CAPTURER_INITIALIZED)) {
+							action.setEnabled((Boolean) evt.getNewValue());
 						}
-						
-					});
-				}
+					}
+
+				});
 				JButton chooseCapturerSettings = new JButton(action);
 				add(chooseCapturerSettings, "align right");
 			}
 		}
 	}
-	
+
 	@Action
 	public void initializeCapturer(javax.swing.Action action) {
 		action.setEnabled(false);
 		setCapturerInitialized(true);
 	}
-	
+
 	public void setCapturerInitialized(boolean initialized) {
 		firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = initialized);
 	}
-	
+
 	public boolean isCapturerInitialized() {
 		return capturerInitialized;
 	}
-	
+
 	public void setSelectedCaptureDevice(String captureDevice) {
 		firePropertyChange(SELECTED_CAPTURE_DEVICE, selectedCapturer, selectedCapturer = captureDevice);
 	}
-	
+
 	@Action
 	public void dismissDialog() {
 		setVisible(false);
@@ -199,10 +195,10 @@ public class CameraDialog extends AppDialog {
 		// let user choose on which screen to show the capturer, only if more than one is connected
 		if (graphicsDevices.length > 2) {
 			buttonPanel.removeAll();
-			
+
 			JLabel screenLabel = new JLabel("Kies een scherm ");
 			buttonPanel.add(screenLabel, "wrap, grow, span");
-			
+
 			JButton button = null;
 			ButtonGroup screenButtonGroup = new ButtonGroup();
 			// get the default monitor id for this capturer
