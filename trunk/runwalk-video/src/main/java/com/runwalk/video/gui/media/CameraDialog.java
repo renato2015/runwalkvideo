@@ -34,6 +34,7 @@ public class CameraDialog extends AppDialog {
 
 	// class properties
 	public static final String CAPTURER_INITIALIZED = "capturerInitialized";
+	private static final String CAPTURER_NOT_INITIALIZED = "capturerNotInitialized";
 	public static final String SELECTED_CAPTURE_DEVICE = "selectedCaptureDevice";
 
 	// class actions
@@ -51,7 +52,7 @@ public class CameraDialog extends AppDialog {
 
 	private int capturerId;
 
-	private boolean capturerInitialized;
+	private boolean capturerInitialized, capturerNotInitialized;
 
 	private String selectedMonitorId;
 
@@ -111,7 +112,7 @@ public class CameraDialog extends AppDialog {
 		// add some extra actions to configure the capture device with
 		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap);
 		addAction(SHOW_CAPTURER_DEVICE_SETINGS_ACTION, actionMap);
-		//		addAction(TOGGLE_PREVIEW, actionMap);
+		addAction(TOGGLE_PREVIEW_ACTION, actionMap);
 		JButton okButton = new JButton(getAction(DISMISS_DIALOG_ACTION));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
@@ -150,14 +151,18 @@ public class CameraDialog extends AppDialog {
 		}
 	}
 
-	@Action
-	public void initializeCapturer(javax.swing.Action action) {
-		action.setEnabled(false);
+	@Action(enabledProperty = CAPTURER_NOT_INITIALIZED)
+	public void initializeCapturer() {
 		setCapturerInitialized(true);
 	}
 
 	public void setCapturerInitialized(boolean initialized) {
 		firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = initialized);
+		firePropertyChange(CAPTURER_NOT_INITIALIZED, capturerNotInitialized, capturerNotInitialized = !initialized);
+	}
+	
+	public boolean isCapturerNotInitialized() {
+		return capturerNotInitialized;
 	}
 
 	public boolean isCapturerInitialized() {
@@ -181,7 +186,7 @@ public class CameraDialog extends AppDialog {
 	 * This method refreshes the list with connected capture devices 
 	 * and displaying devices. The layout of this dialog will be changed accordingly.
 	 */
-	@Action
+	@Action(enabledProperty = CAPTURER_NOT_INITIALIZED)
 	public void refreshCapturers() {
 		// refresh capture devices by querying the capturer implementaion
 		String[] captureDevices = VideoCapturerFactory.getInstance().getCapturers();
@@ -189,6 +194,7 @@ public class CameraDialog extends AppDialog {
 		// notify listeners about default selection
 		String selectedCapturer = capturerComboBox.getSelectedItem().toString();
 		setSelectedCaptureDevice(selectedCapturer);
+		setCapturerInitialized(false);
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

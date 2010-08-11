@@ -34,17 +34,21 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private String capturerName;
 
+	private boolean running;
+
 	DSJCapturer(String capturerName) {
 		this.capturerName = capturerName;
 		filterInfo = DSFilterInfo.filterInfoForName(capturerName);
+		setRunning(false);
 	}
 
 	/** {@inheritDoc} */
 	public void startCapturer() {
 		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
 		// clear filterInfo as it may have changed due to the filtergraph setup
-		filterInfo = null;
+		filterInfo = getFiltergraph().getActiveVideoDevice().getFilterInfo();
 		getFiltergraph().lockAspectRatio(true);
+		setRunning(true);
 	}
 
 	/**
@@ -87,13 +91,25 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().record();
 		getFiltergraph().setPreview();
 	}
+	
+	private boolean isRunning() {
+		return running;
+	}
+	
+	private void setRunning(boolean running) {
+		this.running = running;
+	}
 
 	public void togglePreview() {
-		if (getFiltergraph().getState() == DSCapture.PREVIEW) {
+		if (isRunning()) {
 			getFiltergraph().stop();
-			getLogger().debug("Filtergraph for " + getTitle() + " stopped");
+			setRunning(false);
+			getLogger().debug("Filtergraph for " + getTitle() + " paused");
 		} else {
 			getFiltergraph().setPreview();
+			getFiltergraph().graphChanged();
+			getFiltergraph().play();
+			setRunning(true);
 			getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 		}
 	}
