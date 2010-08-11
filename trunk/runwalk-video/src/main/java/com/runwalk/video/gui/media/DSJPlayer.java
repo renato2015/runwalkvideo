@@ -15,7 +15,7 @@ import de.humatic.dsj.DSMovie;
 
 public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
-	private static final int FLAGS = DSFiltergraph.DD7 | DSMovie.INIT_PAUSED;
+	private static final int FLAGS = DSFiltergraph.D3D9 | DSMovie.INIT_PAUSED;
 
 	private boolean customFramerateEnabled = false;
 
@@ -97,7 +97,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	public void stop() {
 		// it seems to be more appropriate to pause the filtergraph instead of stopping it
 		getFiltergraph().pause();
-		getFiltergraph().setTimeValue(0);
+		setPosition(0);
 	}
 
 	public int getPosition(){
@@ -109,16 +109,17 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	}
 
 	public void play() {
-		getFiltergraph().setRate(rate);
+		setPlayRate(rate);
 	}
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
+		getFiltergraph().play();
 		getFiltergraph().setRate(rate);
 	}
 
 	public float getPlayRate() {
-		return rate;
+		return getFiltergraph().getRate();
 	}
 
 	public float getVolume() {

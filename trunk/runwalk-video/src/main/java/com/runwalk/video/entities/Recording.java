@@ -82,9 +82,11 @@ public class Recording extends SerializableEntity<Recording> {
 	public Recording(Analysis analysis) {
 		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.DATE_FORMATTER);
 		Client client = analysis.getClient();
-		int analysisCount = client.getAnalysesCount();
-		int recordingCount = analysis.getRecordingCount();
-		String prefix = analysisCount == 0 ? "" : (analysisCount + recordingCount) +  "_";
+		int totalRecordings = 0;
+		for (Analysis an : client.getAnalyses()) {
+			totalRecordings += an.getRecordingCount();
+		}
+		String prefix = totalRecordings == 0 ? "" : totalRecordings +  "_";
 		this.videoFileName = prefix + client.getName() + "_" + client.getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;
 		this.analysis = analysis;
 	}

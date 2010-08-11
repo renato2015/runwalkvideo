@@ -348,15 +348,15 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		for (VideoCapturer capturer : capturers) {
 			capturersReady = capturer.isActive() && !capturer.isRecording();
 		}
-		boolean isRecordingEnabled = capturersReady && recordSelected && selectedRecordingRecordable && !isRecording();
+		boolean recordingEnabled = capturersReady && recordSelected && selectedRecordingRecordable && !isRecording();
 		for (VideoPlayer player : players) {
-			isRecordingEnabled &= player.isIdle();
+			recordingEnabled &= player.isIdle();
 		}
-		this.firePropertyChange(RECORDING_ENABLED, this.recordingEnabled, this.recordingEnabled = isRecordingEnabled);
-		if (isRecordingEnabled()) {
+		if (recordingEnabled && !this.recordingEnabled) {
 			setPlayingEnabled(false);
 			capturersToFront();
 		}
+		firePropertyChange(RECORDING_ENABLED, this.recordingEnabled, this.recordingEnabled = recordingEnabled);
 	}
 
 	public boolean isRecordingEnabled() {
@@ -455,8 +455,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				VideoPlayer player = null;
 				try {
 					File videoFile = getVideoFileManager().getVideoFile(recording);
-					if (++recordingCount < players.size()) {
-						player = players.get(recordingCount++);
+					if (recordingCount < players.size()) {
+						player = players.get(recordingCount);
 						player.loadFile(recording, videoFile);
 						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 						setSliderLabels(recording);
@@ -464,9 +464,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 						float playRate = getAppSettings().getPlayRate();
 						player = VideoPlayer.createInstance(this, recording, videoFile, playRate);
 						player.addAppWindowWrapperListener(new WindowStateChangeListener(player));
-						getApplication().createOrShowComponent(player);
 						players.add(player);
 					} 
+					recordingCount++;
+					// show players that have new loaded files
+					getApplication().createOrShowComponent(player);
 				} catch (FileNotFoundException e) {
 					JOptionPane.showMessageDialog(null,
 							"Het bestand dat u probeerde te openen kon niet worden gevonden",
@@ -476,6 +478,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				}
 				player.toFront();
 			}
+		}
+		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
+		// hide players that don't show any opened files
+		for (int i = recordingCount; i < players.size(); i++) {
+			getApplication().hideComponent(players.get(i));
 		}
 		setSliderPosition(0);
 	}
@@ -570,6 +577,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			//only update status info for the frontmost player
 			if (frontMostPlayer == player) {
 				if (position == 0) {
+					getLogger().debug("playback position set to 0");
 					stop();
 				}
 				setStatusInfo(position, player.getDuration());
@@ -627,11 +635,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void capturersToFront() {
-		if (!(frontMostComponent instanceof VideoCapturer)) {
+//		if (!(frontMostComponent instanceof VideoCapturer)) {
+		// TODO flickering??
 			for (VideoCapturer capturer : capturers) {
 				capturer.toFront();
 			}
-		}
+//		}
 	}
 	
 	public VideoFileManager getVideoFileManager() {

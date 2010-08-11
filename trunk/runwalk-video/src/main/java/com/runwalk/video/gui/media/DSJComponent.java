@@ -44,7 +44,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public DSJComponent() { }
 
 	public T getFiltergraph() {
-		return this.filtergraph;
+		return filtergraph;
 	}
 
 	public void setFiltergraph(T graph) {
