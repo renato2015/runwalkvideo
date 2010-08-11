@@ -171,6 +171,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@Override 
 	protected void shutdown() {
 		super.shutdown();
+		getMediaControls().disposeGraphs();
 		Action uploadLogFilesAction = getApplicationActionMap().get("uploadLogFiles");
 		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "uploadLogFiles");
 		uploadLogFilesAction.actionPerformed (actionEvent);
