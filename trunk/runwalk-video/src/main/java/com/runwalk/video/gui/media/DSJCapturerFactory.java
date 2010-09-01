@@ -2,7 +2,6 @@ package com.runwalk.video.gui.media;
 
 import java.util.List;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import de.humatic.dsj.DSCapture;
@@ -31,6 +30,7 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 		return null;
 	}
 	
+	/** {@inheritDoc} */
 	public void disposeCapturer(String capturerName) {
 		// dispose filtergraph if there was already one started by the camera dialog
 		DSFiltergraph activeFiltergraph = getFiltergraphByFilter(capturerName);
@@ -39,24 +39,25 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 		}
 	}
 		
+	/** {@inheritDoc} */
 	public IVideoCapturer initializeCapturer(String capturerName) {
-		// initialize the capturer's native resources for the chosen device so settings
+		// initialize the capturer's native resources
 		return new DSJCapturer(capturerName);
 	}
 
-	public String[] getCapturers() {
+	/** {@inheritDoc} */
+	public List<String> getCapturers() {
 		List<String> result = Lists.newArrayList();
 		// query first with bit set to 0 to get quick listing of available capture devices
 		DSFilterInfo[][] dsi = DSCapture.queryDevices(0 | DSCapture.SKIP_AUDIO);
-		for (int i = 0; i < dsi[0].length; i++) {
-			DSFilterInfo dsFilterInfo = dsi[0][i];
+		for(DSFilterInfo dsFilterInfo : dsi[0]) {
 			String filterName = dsFilterInfo.getName();
 			// remove filters that are already added to a filtergraph
-			if (getFiltergraphByFilter(filterName) == null) {
+			if (getFiltergraphByFilter(filterName) == null && !"none".equals(filterName)) {
 				result.add(filterName);
 			}
 		}
-		return Iterables.toArray(result, String.class);
+		return result;
 	}
 
 }

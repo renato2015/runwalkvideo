@@ -8,14 +8,11 @@ import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
-import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSMovie;
 
 
 public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
-
-	private static final int FLAGS = DSFiltergraph.D3D9 | DSMovie.INIT_PAUSED;
 
 	private boolean customFramerateEnabled = false;
 
