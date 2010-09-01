@@ -4,9 +4,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
+import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
 
 public abstract class VideoCapturerFactory {
@@ -15,7 +18,7 @@ public abstract class VideoCapturerFactory {
 	
 	/**
 	 * Initialize the capturer with the given name. Visible components should not be initialized until
-	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be expensive.
+	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be very expensive.
 	 * 
 	 * @param capturerName The name or id of the newly selected capture device
 	 * @return A video implementation that is ready to start running
@@ -23,11 +26,11 @@ public abstract class VideoCapturerFactory {
 	public abstract IVideoCapturer initializeCapturer(String capturerName);
 	
 	/**
-	 * This method should return a list with all the capturer's names available at the moment. 
+	 * This method should return a list with all <b>uninitialized</b> capturer names.
 	 * 
 	 * @return The {@link List} with available capturers
 	 */
-	public abstract String[] getCapturers();
+	public abstract List<String> getCapturers();
 
 	/**
 	 * This method should dispose the resources used by the given capturer after looking it up.
@@ -74,29 +77,35 @@ public abstract class VideoCapturerFactory {
 					if (capturer.getVideoImpl() != null) {
 						disposeCapturer(capturer.getVideoImpl().getTitle());
 					}
-					// initialize the new capturer
+					// initialize the selected capturer
 					String selectedCapturer = evt.getNewValue().toString();
 					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
 					capturer.setVideoImpl(capturerImpl);
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
-					// user clicked a monitor button
+					// user clicked a monitor button, set it on the capturer
 					int monitorId = Integer.parseInt(evt.getNewValue().toString());
 					capturer.setMonitorId(monitorId);
-				} else if (evt.getPropertyName().equals(CameraDialog.CAPTURER_INITIALIZED)) {
+				} /*else if (evt.getPropertyName().equals(CameraDialog.CAPTURER_INITIALIZED)) {
 					// prepare the capturer for showing live video
 					capturer.getVideoImpl().startCapturer();
-				}
+				}*/
 			}
 		};
 		dialog.addPropertyChangeListener(changeListener);
-		//populate dialog with capture devices and look for connected monitors
-		dialog.refreshCapturers();
-		// show the dialog on screen
-		RunwalkVideoApp.getApplication().show(dialog);
-		// remove the listener to avoid memory leaking
-		dialog.removePropertyChangeListener(changeListener);
-		// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
-		capturer.showComponent();
+		// populate dialog with capture devices and look for connected monitors
+		boolean devicesFound = dialog.refreshCapturers();
+		if (devicesFound) {
+			// show the dialog on screen
+			RunwalkVideoApp.getApplication().show(dialog);
+			// remove the listener to avoid memory leaking
+			dialog.removePropertyChangeListener(changeListener);
+			// prepare the capturer for showing live video
+			capturer.getVideoImpl().startCapturer();
+			// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
+			capturer.showComponent();
+		} else {
+			JOptionPane.showMessageDialog(null, "Geen camera's gevonden..");
+		}
 		// if the video implementation is null then the created capturer is useless
 		return capturer.getVideoImpl() == null ? null : capturer;
 	}
@@ -112,8 +121,8 @@ public abstract class VideoCapturerFactory {
 			return null;
 		}
 
-		public String[] getCapturers() {
-			return new String[] {"none"};
+		public List<String> getCapturers() {
+			return Lists.newArrayList("none");
 		}
 
 		public void disposeCapturer(String capturerName) {	}

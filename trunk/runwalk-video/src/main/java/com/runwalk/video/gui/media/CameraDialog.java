@@ -12,7 +12,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
@@ -27,14 +27,13 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.gui.AppDialog;
 
 @SuppressWarnings("serial")
 public class CameraDialog extends AppDialog {
 
 	// class properties
-	public static final String CAPTURER_INITIALIZED = "capturerInitialized";
-	private static final String CAPTURER_NOT_INITIALIZED = "capturerNotInitialized";
 	public static final String SELECTED_CAPTURE_DEVICE = "selectedCaptureDevice";
 
 	// class actions
@@ -42,7 +41,6 @@ public class CameraDialog extends AppDialog {
 	public static final String REFRESH_CAPTURER_ACTION = "refreshCapturers";
 	private static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCameraSettings";
 	private static final String SHOW_CAPTURER_DEVICE_SETINGS_ACTION = "showCapturerSettings";
-	private static final String TOGGLE_PREVIEW_ACTION = "togglePreview";
 	private static final String DISMISS_DIALOG_ACTION = "dismissDialog";
 	private static final String EXIT_ACTION = "exit";
 
@@ -51,8 +49,6 @@ public class CameraDialog extends AppDialog {
 	private String selectedCapturer;
 
 	private int capturerId;
-
-	private boolean capturerInitialized, capturerNotInitialized;
 
 	private String selectedMonitorId;
 
@@ -106,13 +102,10 @@ public class CameraDialog extends AppDialog {
 			add(cancelButton, "grow");
 		}
 		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURER_ACTION)); // NOI18N
-		add(refreshButton, "align right, grow");
-		JButton initButton = new JButton(getAction(INITIALIZE_CAPTURER_ACTION)); // NOI18N
-		add(initButton, "grow, wrap");
-		// add some extra actions to configure the capture device with
-		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap);
+		add(refreshButton, "align right");
+		// add some extra actions to configure the capture device
+		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap, true);
 		addAction(SHOW_CAPTURER_DEVICE_SETINGS_ACTION, actionMap);
-		addAction(TOGGLE_PREVIEW_ACTION, actionMap);
 		JButton okButton = new JButton(getAction(DISMISS_DIALOG_ACTION));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
@@ -123,54 +116,30 @@ public class CameraDialog extends AppDialog {
 				JComboBox source = (JComboBox) e.getSource();
 				String captureDevice = source.getSelectedItem().toString();
 				setSelectedCaptureDevice(captureDevice);
-				setCapturerInitialized(false);
 			}
 
 		});
 		pack();
 		toFront();
 	}
-
+	
 	private void addAction(String actionName, ActionMap actionMap) {
+		addAction(actionName, actionMap, false);
+	}
+
+	private void addAction(String actionName, ActionMap actionMap, boolean wrap) {
 		if (actionMap != null) {
 			final javax.swing.Action action = actionMap.get(actionName);
 			if (action != null) {
-				action.setEnabled(isCapturerInitialized());
-				addPropertyChangeListener(new PropertyChangeListener() {
-
-					public void propertyChange(PropertyChangeEvent evt) {
-						if (evt.getPropertyName().equals(CAPTURER_INITIALIZED)) {
-							action.setEnabled((Boolean) evt.getNewValue());
-						}
-					}
-
-				});
 				JButton chooseCapturerSettings = new JButton(action);
-				add(chooseCapturerSettings, "align right");
+				String wrapButton = wrap ? ", wrap" : "";
+				add(chooseCapturerSettings, "align right, grow" + wrapButton);
 			}
 		}
 	}
 
-	@Action(enabledProperty = CAPTURER_NOT_INITIALIZED)
-	public void initializeCapturer() {
-		setCapturerInitialized(true);
-	}
-
-	public void setCapturerInitialized(boolean initialized) {
-		firePropertyChange(CAPTURER_INITIALIZED, capturerInitialized, capturerInitialized = initialized);
-		firePropertyChange(CAPTURER_NOT_INITIALIZED, capturerNotInitialized, capturerNotInitialized = !initialized);
-	}
-	
-	public boolean isCapturerNotInitialized() {
-		return capturerNotInitialized;
-	}
-
-	public boolean isCapturerInitialized() {
-		return capturerInitialized;
-	}
-
-	public void setSelectedCaptureDevice(String captureDevice) {
-		firePropertyChange(SELECTED_CAPTURE_DEVICE, selectedCapturer, selectedCapturer = captureDevice);
+	public void setSelectedCaptureDevice(String selectedCapturer) {
+		firePropertyChange(SELECTED_CAPTURE_DEVICE, this.selectedCapturer, this.selectedCapturer = selectedCapturer);
 	}
 
 	@Action
@@ -178,41 +147,48 @@ public class CameraDialog extends AppDialog {
 		setVisible(false);
 		// release native screen resources
 		dispose();
-		// initialize if that didn't already happen
-		setCapturerInitialized(true);
 	}
 
 	/**
 	 * This method refreshes the list with connected capture devices 
 	 * and displaying devices. The layout of this dialog will be changed accordingly.
 	 */
-	@Action(enabledProperty = CAPTURER_NOT_INITIALIZED)
-	public void refreshCapturers() {
-		// refresh capture devices by querying the capturer implementaion
-		String[] captureDevices = VideoCapturerFactory.getInstance().getCapturers();
-		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevices));
+	@Action
+	public boolean refreshCapturers() {
+		// refresh capture devices by querying the capturer implementation for uninitialzed capture devices
+		List<String> captureDevices = VideoCapturerFactory.getInstance().getCapturers();
+		// check if there was a previously selected item (dialog was already open)
+		Object selectedItem = capturerComboBox.getSelectedItem();
+		if (selectedItem != null) {
+			// add the previously selected item to the list, as its native resources were already initialized
+			captureDevices.add(selectedItem.toString());
+		}
+		// return if no capturers found
+		if (captureDevices.isEmpty()) {
+			return false;
+		}
+		String[] captureDevicesArray = Iterables.toArray(captureDevices, String.class);
+		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
+		// retain the previous selection if there was one. Otherwise use the default combobox model selection
+		selectedItem = selectedItem == null ? capturerComboBox.getSelectedItem() : selectedItem;
 		// notify listeners about default selection
-		String selectedCapturer = capturerComboBox.getSelectedItem().toString();
-		setSelectedCaptureDevice(selectedCapturer);
-		setCapturerInitialized(false);
+		setSelectedCaptureDevice(selectedItem.toString());
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		// let user choose on which screen to show the capturer, only if more than one is connected
 		if (graphicsDevices.length > 2) {
 			buttonPanel.removeAll();
-
 			JLabel screenLabel = new JLabel("Kies een scherm ");
 			buttonPanel.add(screenLabel, "wrap, grow, span");
-
-			JButton button = null;
+			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();
 			// get the default monitor id for this capturer
 			int defaultMonitorId = VideoComponent.getDefaultScreenId(graphicsDevices.length, capturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
-				button = new JButton(monitorIdString);
+				JButton button = new JButton(monitorIdString);
 				button.addActionListener(new ActionListener() {
 
 					public void actionPerformed(ActionEvent e) {
@@ -237,6 +213,7 @@ public class CameraDialog extends AppDialog {
 			screenLabel.setVisible(true);
 			buttonPanel.setVisible(true);
 		}
+		return true;
 	}
 
 }

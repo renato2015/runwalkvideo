@@ -26,8 +26,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
 	};
 
-	private static final int FLAGS = DSFiltergraph.DD7;
-
 	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
 
 	private DSFilterInfo filterInfo;
@@ -39,12 +37,13 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	DSJCapturer(String capturerName) {
 		this.capturerName = capturerName;
 		filterInfo = DSFilterInfo.filterInfoForName(capturerName);
+		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
 		setRunning(false);
 	}
 
 	/** {@inheritDoc} */
 	public void startCapturer() {
-		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
+		getFiltergraph().play();
 		// clear filterInfo as it may have changed due to the filtergraph setup
 		filterInfo = getFiltergraph().getActiveVideoDevice().getFilterInfo();
 		getFiltergraph().lockAspectRatio(true);
