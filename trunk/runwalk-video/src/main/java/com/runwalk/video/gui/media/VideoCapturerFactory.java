@@ -93,8 +93,7 @@ public abstract class VideoCapturerFactory {
 		};
 		dialog.addPropertyChangeListener(changeListener);
 		// populate dialog with capture devices and look for connected monitors
-		boolean devicesFound = dialog.refreshCapturers();
-		if (devicesFound) {
+		if (dialog.refreshCapturers()) {
 			// show the dialog on screen
 			RunwalkVideoApp.getApplication().show(dialog);
 			// remove the listener to avoid memory leaking
