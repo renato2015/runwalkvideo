@@ -5,10 +5,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.Query;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
@@ -25,6 +23,10 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
 
+import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.jpa.JpaClientDao;
+import com.runwalk.video.dao.jpa.JpaDaoManager;
+import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisOverviewTableFormat;
 import com.runwalk.video.gui.AnalysisTableFormat;
 import com.runwalk.video.gui.AppInternalFrame;
@@ -60,11 +62,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	private ApplicationActions applicationActions;
 
-	private EntityManagerFactory emFactory = null;
-
 	private JScrollableDesktopPane pane;
 
 	private VideoFileManager videoFileManager;
+	private DaoManager daoManager;
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -89,7 +90,13 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	protected void initialize(String[] args) {
 		AppSettings.getInstance().loadSettings();
 		String puName = getContext().getResourceMap().getString("Application.name");
-		emFactory = Persistence.createEntityManagerFactory(puName);
+		// create entityManagerFactory for default persistence unit
+		EntityManagerFactory emFactory = Persistence.createEntityManagerFactory(puName);
+		// create specialized dao's
+		JpaClientDao clientDao = new JpaClientDao(Client.class, emFactory);
+		// create daoManager and add specialized dao's
+		daoManager = new JpaDaoManager(emFactory);
+		getDaoManager().addDao(clientDao);
 		// create video file manager
 		videoFileManager = new VideoFileManager(AppSettings.getInstance());
 	}
@@ -101,9 +108,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create common application actions class
 		applicationActions = new ApplicationActions(AppSettings.getInstance());
 		statusPanel = new StatusPanel();
-		clientTablePanel = new ClientTablePanel();
+		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoManager());
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
-		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager());
+		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager(), getDaoManager());
 		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
 		// create main desktop scrollpane
 		pane = new JScrollableDesktopPane();
@@ -111,7 +118,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create menu bar
 		menuBar = new VideoMenuBar();
 		// create mediaplayer controls
-		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager());
+		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager(), daoManager);
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
@@ -189,7 +196,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		while(!getContext().getTaskService().isTerminated()) {
 			Thread.yield();
 		}
-		getEntityManagerFactory().close();
+		getDaoManager().shutdown();
 	}
 	
 	private AppInternalFrame createMainView() {
@@ -253,9 +260,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-
-	public EntityManagerFactory getEntityManagerFactory() {
-		return emFactory;
+	
+	private DaoManager getDaoManager() {
+		return daoManager;
 	}
 
 	/*
@@ -268,20 +275,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	
 	private UndoableEditListener createUndoableEditListener() {
 		return getApplicationActions().getUndoableEditListener();
-	}
-	
-	public EntityManager createEntityManager() {
-		return emFactory.createEntityManager();
-	}
-
-	public Query createQuery(String query) {
-		return getEntityManagerFactory().createEntityManager().createQuery(query)
-		.setHint("toplink.refresh", "true")
-		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts ");
-	}
-
-	public Query createNativeQuery(String query) {
-		return getEntityManagerFactory().createEntityManager().createNativeQuery(query);
 	}
 
 	public void showMessage(String msg) {

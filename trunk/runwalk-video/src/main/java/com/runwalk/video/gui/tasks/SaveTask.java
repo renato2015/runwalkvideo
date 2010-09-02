@@ -1,71 +1,61 @@
 package com.runwalk.video.gui.tasks;
 
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-
-import org.apache.log4j.Level;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.runwalk.video.dao.DaoManager;
 import com.runwalk.video.entities.SerializableEntity;
 
 public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List<T>, Void> {
-	
-	private List<T> itemList;
-	
-	private EntityManager entityManager;
 
-	public SaveTask(List<T> itemList, EntityManager entityManager) {
+	private List<T> itemList;
+
+	private final DaoManager daoManager;
+
+	private Class<T> theClass;
+
+	public SaveTask(Class<T> theClass, List<T> itemList, DaoManager daoManager) {
 		super("save");
 		this.itemList = new ArrayList<T>(itemList);
-		this.entityManager = entityManager;
+		this.daoManager = daoManager;
+		this.theClass = theClass;
 	}
 
 	@Override 
 	protected List<T> doInBackground() {
 		message("startMessage");
-		int listSize = getItemList().size();
-		List<T> mergedList = new ArrayList<T>(listSize);
-		EntityTransaction tx = null;
-		try {
-			tx = getEntityManager().getTransaction();
-			tx.begin();
-			for(int i = 0; i < listSize; i ++) {
-				T item = getItemList().get(i);
-				if (item.isDirty()) {
-					getLogger().log(Level.INFO, "Saving " + item.toString());
-					T mergedItem = getEntityManager().merge(item);
-					if (mergedItem == null) {
-						mergedList = null;
-						setProgress(listSize, 0, listSize);
-						break;
-					}
-					item.setDirty(false);
-					mergedList.add(mergedItem);
-				}
-				setProgress(i, 0, listSize);
+		// filter out the dirty items using the dirty flag
+		Iterable<T> dirtyItems = Iterables.filter(getItemList(), new Predicate<T>() {
+
+			public boolean apply(T input) {
+				return input.isDirty();
 			}
-			// actual updating is done here!
-			tx.commit();
-			message("endMessage");
-		} catch(Exception e) {
-			getLogger().error("Exception thrown while saving item list.", e);
-			if (tx != null && tx.isActive()) {
-				tx.rollback();
-			}
-		} finally {
-			getEntityManager().close();
+
+		});
+		// find some neat way to discover the actual generic type at runtime here..
+		List<?> asList = Arrays.asList(getClass().getTypeParameters());
+//		TypeVariable<?> last = Iterables.getLast(asList);
+		List<T> mergedList = getDaoManager().getDao(theClass).merge(dirtyItems);
+		// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
+		for(T item : mergedList) {
+			int index = getItemList().indexOf(item);
+			getItemList().set(index, item);
+			item.setDirty(false);
 		}
+		message("endMessage");
 		return mergedList;
 	}
 
-	private EntityManager getEntityManager() {
-		return entityManager;
+	private DaoManager getDaoManager() {
+		return daoManager;
 	}
-	
+
 	private List<T> getItemList() {
 		return itemList;
 	}
-	
+
 }

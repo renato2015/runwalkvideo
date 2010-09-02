@@ -3,8 +3,6 @@ package com.runwalk.video.gui.tasks;
 import java.util.List;
 import java.util.logging.Level;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Task;
@@ -16,6 +14,7 @@ import ca.odell.glazedlists.GlazedLists;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.dao.DaoManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
@@ -33,39 +32,30 @@ import com.runwalk.video.gui.panels.ClientTablePanel;
  */
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
-	private EntityManager entityManager;
-	
-	private VideoFileManager videoFileManager;
+	private final DaoManager daoManager;
+	private final VideoFileManager videoFileManager;
 
-	public RefreshTask(VideoFileManager videoFileManager, EntityManager entityManager) {
+	public RefreshTask(VideoFileManager videoFileManager, DaoManager daoManager) {
 		super("refresh");
 		this.videoFileManager = videoFileManager;
-		this.entityManager = entityManager;
+		this.daoManager = daoManager;
 	}
 
 	@Override 
-	@SuppressWarnings("unchecked")
 	protected Boolean doInBackground() {
 		boolean success = true;
 		try {
 			message("startMessage");
 			message("fetchMessage");
 			// get all clients from the db
-			Query query = getEntityManager().createNamedQuery("findAllClients"); // NOI18N
-			query.setHint("eclipselink.left-join-fetch", "c.analyses.recordings")
-			.setHint("toplink.refresh", "true")
-			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
-			final EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(query.getResultList()));
+			List<Client> allClients = getDaoManager().getDao(Client.class).getAll();
+			final EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(allClients));
 			// get all cities from the db
-			query = getEntityManager().createNamedQuery("findAllCities")
-			.setHint("toplink.refresh", "true")
-			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
-			final EventList<City> cityList = GlazedLists.eventList(query.getResultList());
+			List<City> allCities = getDaoManager().getDao(City.class).getAll();
+			final EventList<City> cityList = GlazedLists.eventList(allCities);
 			// get all articles from the db
-			query = getEntityManager().createNamedQuery("findAllArticles")
-			.setHint("toplink.refresh", "true")
-			.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts"); // NOI18N
-			final EventList<Article> articleList = GlazedLists.eventList(query.getResultList());
+			List<Article> allArticles = getDaoManager().getDao(Article.class).getAll();
+			final EventList<Article> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
@@ -116,7 +106,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			}
 			// check whether compressing should be enabled
 			RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
-			getEntityManager().close();
 			setProgress(6, 0, 6);
 			message("endMessage");
 		} catch(Exception ignore) {
@@ -127,11 +116,11 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 	}
 	
 	private VideoFileManager getVideoFileManager() {
-		return this.videoFileManager;
+		return videoFileManager;
 	}
 	
-	private EntityManager getEntityManager() {
-		return entityManager;
+	private DaoManager getDaoManager() {
+		return daoManager;
 	}
 
 }

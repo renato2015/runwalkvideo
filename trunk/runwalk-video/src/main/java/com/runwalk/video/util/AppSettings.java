@@ -140,6 +140,14 @@ public class AppSettings implements Serializable {
 		return videoDir;
 	}
 	
+	public void setDefaultCapturerName(String defaultCapturerName) {
+		getSettings().defaultCapturerName = defaultCapturerName;	
+	}
+	
+	public String getDefaultCapturerName() {
+		return getSettings().defaultCapturerName;
+	}
+	
 	/**
 	 * Set a new directory for storing and reading uncompressed video files. 
 	 * The directory will be lazily reloaded by clearing the cached value.
@@ -219,6 +227,12 @@ public class AppSettings implements Serializable {
 
 		@XmlElement
 		private String uncompressedVideoDir;
+		
+		/**
+		 * The last selected capturer on startup.
+		 */
+		@XmlElement
+		private String defaultCapturerName;
 
 		@XmlElement
 		private float playRate;
@@ -230,4 +244,5 @@ public class AppSettings implements Serializable {
 		private String selectedTranscoderName = "XviD MPEG-4 Codec";
 
 	}
+
 }

@@ -1,5 +1,6 @@
 package com.runwalk.video.entities;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -21,6 +22,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.JoinFetchType;
@@ -74,6 +76,10 @@ public class Client extends SerializableEntity<Client> {
 	private Gender gender;
 	@Transient
 	private Date lastAnalysisDate;
+//	@Version
+	@Transient
+	@SuppressWarnings("unused")
+	private int version;
 
 	public Client() {	}
 
@@ -199,6 +205,14 @@ public class Client extends SerializableEntity<Client> {
 	
 	private void setLastAnalysisDate(Date lastAnalysisDate) {
 		firePropertyChange(LAST_ANALYSIS_DATE, this.lastAnalysisDate, this.lastAnalysisDate = lastAnalysisDate);
+	}
+	
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 
 	@Override
