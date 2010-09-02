@@ -10,11 +10,11 @@ import javax.swing.event.UndoableEditListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ObservableElementList;
@@ -24,6 +24,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
 import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.dao.DaoManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
@@ -47,9 +48,12 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private EventList<Article> articleList;
 
-	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager) {
+	private DaoManager daoManager;
+
+	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager, DaoManager daoManager) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
+		this.daoManager = daoManager;
 		this.clientTablePanel = clientTablePanel;
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -117,7 +121,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		getItemList().getReadWriteLock().writeLock().lock();
 		Analysis analysis = new Analysis(selectedClient);
-		AppUtil.persistEntity(analysis);
+		getDaoManager().getDao(Analysis.class).persist(analysis);
 		try {
 			selectedClient.addAnalysis(analysis);
 			setSelectedItem(analysis);
@@ -150,7 +154,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				getVideoFileManager().deleteVideoFile(recording);
 			}
 			setSelectedItem(lastSelectedRowIndex - 1);
-			AppUtil.deleteEntity(selectedAnalysis);
+			getDaoManager().getDao(Analysis.class).delete(selectedAnalysis);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 			//TODO handle failed delete?
@@ -221,6 +225,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
+	}
+	
+	private DaoManager getDaoManager() {
+		return daoManager;
 	}
 
 }

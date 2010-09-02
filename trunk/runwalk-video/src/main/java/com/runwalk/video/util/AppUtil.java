@@ -8,15 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.swing.ActionMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-
-import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.entities.SerializableEntity;
 
 public class AppUtil {
 	//duration formats
@@ -99,42 +94,4 @@ public class AppUtil {
 		return result;
 	}
 
-	public static <T> void persistEntity(SerializableEntity<T> item) {
-		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
-		EntityTransaction tx = null;
-		try {
-			tx = em.getTransaction();
-			tx.begin();
-			em.persist(item);
-			tx.commit();
-			Logger.getLogger(AppUtil.class).debug(item.getClass().getSimpleName() + " with ID " + item.getId() + " was persisted.");
-		} catch(Exception e) {
-			Logger.getLogger(AppUtil.class).error("Exception thrown while persisting entity." , e);
-			if (tx != null && tx.isActive()) {
-				tx.rollback();
-			}
-		} finally {
-			em.close();
-		}
-	}
-
-	public static <T> void deleteEntity(SerializableEntity<T> detachedItem) {
-		EntityManager em = RunwalkVideoApp.getApplication().getEntityManagerFactory().createEntityManager();
-		EntityTransaction tx = null;
-		try {
-			tx = em.getTransaction();
-			tx.begin();
-			SerializableEntity<T> mergedItem = em.merge(detachedItem);
-			em.remove(mergedItem);
-			tx.commit();
-			Logger.getLogger(AppUtil.class).debug(detachedItem.getClass().getSimpleName() + " with ID " + detachedItem.getId() + " removed from persistence.");
-		} catch(Exception e) {
-			Logger.getLogger(AppUtil.class).error("Exception thrown while deleting entity.", e);
-			if (tx != null && tx.isActive()) {
-				tx.rollback();
-			}
-		} finally {
-			em.close();
-		}
-	}
 }

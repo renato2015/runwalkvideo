@@ -24,17 +24,18 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.dao.DaoManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
@@ -67,15 +68,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private VideoPlayer frontMostPlayer;
 	private VideoCapturer frontMostCapturer;
 	
-	private final VideoFileManager videoFileManager;
 	private final AppSettings appSettings;
 	private final AnalysisTablePanel analysisTablePanel;
 
+	private final VideoFileManager videoFileManager;
+	private final DaoManager daoManager;
+
 	private boolean recording;
 	
-	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager) {
+	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager, DaoManager daoManager) {
 		super("Media controls", false);
 		this.videoFileManager = videoFileManager;
+		this.daoManager = daoManager;
 		this.appSettings = appSettings;
 		this.analysisTablePanel = analysisTablePanel;
 		
@@ -90,7 +94,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 
 			@Override
-			@SuppressWarnings("unchecked")
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
 			}
@@ -321,7 +324,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			// create a new Keyframe for the player's current recording
 			Recording recording = player.getRecording();
 			Keyframe snapshot = new Keyframe(recording, position);
-			AppUtil.persistEntity(snapshot);
+			getDaoManager().getDao(Keyframe.class).persist(snapshot);
 			recording.addKeyframe(snapshot);
 		}
 		// set the slider's position to that of the frontmost player's newly created Keyframe
@@ -385,8 +388,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(name = "Start Camera")
 	public void startCapturer() {
-		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this);
+		String defaultCapturerName = getAppSettings().getDefaultCapturerName();
+		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this, defaultCapturerName);
 		if (capturer != null) {
+			// save chosen name only if this is the first chosen capturer
+			if (capturers.isEmpty()) {
+				getAppSettings().setDefaultCapturerName(capturer.getVideoImpl().getTitle());
+			}
 			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
 			capturers.add(capturer);
 			getApplication().createOrShowComponent(capturer);
@@ -402,7 +410,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			for (VideoCapturer capturer : capturers) {
 				Recording recording = new Recording(analysis);
 				// persist recording first, then add it to the analysis
-				AppUtil.persistEntity(recording);
+				getDaoManager().getDao(Recording.class).persist(recording);
 				analysis.addRecording(recording);
 				File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
 				capturer.startRecording(recording, videoFile);
@@ -645,6 +653,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
+	}
+	
+	public DaoManager getDaoManager() {
+		return daoManager;
 	}
 
 	public AppSettings getAppSettings() {

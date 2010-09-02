@@ -47,8 +47,10 @@ public class CameraDialog extends AppDialog {
 	private JComboBox capturerComboBox;
 
 	private String selectedCapturer;
+	
+	private final String defaultCapturerName;
 
-	private int capturerId;
+	private final int capturerId;
 
 	private String selectedMonitorId;
 
@@ -61,12 +63,13 @@ public class CameraDialog extends AppDialog {
 	 * 
 	 * @param parent The parent {@link Frame} whose focusing behavior will be inherited
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
-	 * @param capturerImpl A {@link IVideoCapturer} implementation which will be queried for available capture devices 
 	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
+	 * @param defaultCapturer The name of the default selected capturer
 	 */
-	public CameraDialog(Frame parent, ActionMap actionMap, int capturerId) {
+	public CameraDialog(Frame parent, ActionMap actionMap, int capturerId, String defaultCapturerName) {
 		super(parent, true);
 		this.capturerId = capturerId;
+		this.defaultCapturerName = defaultCapturerName;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
 		final boolean isReady = getApplication().isReady();
@@ -169,10 +172,15 @@ public class CameraDialog extends AppDialog {
 		}
 		String[] captureDevicesArray = Iterables.toArray(captureDevices, String.class);
 		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
-		// retain the previous selection if there was one. Otherwise use the default combobox model selection
-		selectedItem = selectedItem == null ? capturerComboBox.getSelectedItem() : selectedItem;
-		// notify listeners about default selection
-		setSelectedCaptureDevice(selectedItem.toString());
+		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
+		String defaultCapturerName = capturerComboBox.getSelectedItem().toString();
+		if (this.defaultCapturerName != null && captureDevices.contains(this.defaultCapturerName)) {
+			defaultCapturerName = this.defaultCapturerName;
+		}
+		// retain the previous selection if there was one. Otherwise use the default selected capturer name
+		selectedItem = selectedItem == null ? defaultCapturerName : selectedItem;
+		// set the selected item on the combobox
+		capturerComboBox.setSelectedItem(selectedItem);
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

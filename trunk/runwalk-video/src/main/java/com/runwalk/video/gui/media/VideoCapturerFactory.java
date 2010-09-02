@@ -55,6 +55,10 @@ public abstract class VideoCapturerFactory {
 		}
 		return factory;
 	}
+	
+	public VideoCapturer createCapturer(final PropertyChangeListener listener) {
+		return createCapturer(listener, null);
+	}
 
 	/** 
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
@@ -64,10 +68,10 @@ public abstract class VideoCapturerFactory {
 	 * @return the created instance or null if unsupported
 	 * 
 	 */
-	public VideoCapturer createCapturer(final PropertyChangeListener listener) {
+	public VideoCapturer createCapturer(final PropertyChangeListener listener, String defaultCapturer) {
 		final VideoCapturer capturer = new VideoCapturer(listener);
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturer.getComponentId());
+		CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturer.getComponentId(), defaultCapturer);
 		dialog.setLocationRelativeTo(null);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 

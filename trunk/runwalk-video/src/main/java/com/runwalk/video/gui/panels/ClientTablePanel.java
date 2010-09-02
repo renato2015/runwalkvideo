@@ -4,7 +4,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -17,7 +16,6 @@ import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Application;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
@@ -28,6 +26,8 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
+import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.dao.DaoManager;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.RefreshTask;
@@ -45,8 +45,14 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private final JTextField searchField;
 	private final TextComponentMatcherEditor<Client> matcherEditor;
 
-	public ClientTablePanel() {
+	private final VideoFileManager videoFileManager;
+	private final DaoManager daoManager;
+
+	public ClientTablePanel(VideoFileManager videoFileManager, DaoManager daoManager) {
 		super(new MigLayout("nogrid, fill"));
+		this.videoFileManager = videoFileManager;
+		this.daoManager = daoManager;
+		
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
@@ -123,8 +129,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	@Action(enabledProperty=SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
-		EntityManager em = getApplication().getEntityManagerFactory().createEntityManager();
-		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getItemList(), em);
+		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(Client.class, getItemList(), getDaoManager());
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -148,7 +153,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public void addClient() {
 		clearSearchField();
 		Client client = new Client();
-		AppUtil.persistEntity(client);
+		getDaoManager().getDao(Client.class).persist(client);
 		getItemList().add(client);
 		setSelectedItem(client);
 		getApplication().getClientInfoPanel().requestFocus();
@@ -167,7 +172,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 		Client selectedClient = getSelectedItem();
 		getItemList().remove(selectedClient);
-		AppUtil.deleteEntity(selectedClient);
+		getDaoManager().getDao(Client.class).delete(selectedClient);
 		//select previous record..
 		setSelectedItem(lastSelectedRowIndex - 1);
 		setSaveNeeded(true);
@@ -183,13 +188,21 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	 */
 	@Action(block=Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(getApplication().getVideoFileManager(), getApplication().getEntityManagerFactory().createEntityManager());
+		return new RefreshTask(getVideoFileManager(), getDaoManager());
 	}
 
 	public TableFormat<Client> getTableFormat() {
 		return new ClientTableFormat();
 	}
 	
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
+
+	public DaoManager getDaoManager() {
+		return daoManager;
+	}
+
 	public class ClientTableFormat implements TableFormat<Client> {
 		
 		public int getColumnCount() {
