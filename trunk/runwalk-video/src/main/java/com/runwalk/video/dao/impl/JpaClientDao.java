@@ -1,4 +1,4 @@
-package com.runwalk.video.dao.jpa;
+package com.runwalk.video.dao.impl;
 
 import java.util.List;
 

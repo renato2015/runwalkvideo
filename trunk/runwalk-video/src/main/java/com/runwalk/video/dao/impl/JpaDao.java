@@ -1,4 +1,4 @@
-package com.runwalk.video.dao.jpa;
+package com.runwalk.video.dao.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,13 +7,14 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.LockModeType;
+import javax.persistence.OptimisticLockException;
 import javax.persistence.Query;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
 
 /**
@@ -113,15 +114,20 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return query.getResultList();
 	}
 
-	public E merge(E item) {
+	public E merge(E item) throws OptimisticLockException {
 		EntityTransaction tx = null;
 		E result = null;
 		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
+			Logger.getLogger(getClass()).log(Level.INFO, "Merging " + item.toString());
 			result = entityManager.merge(item);
+			// force the version field to increment
+			entityManager.lock(result, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 			tx.commit();
+		} catch (OptimisticLockException exc) {
+			throw exc;
 		} catch(Exception e) {
 			Logger.getLogger(getClass()).error(e);
 			if (tx != null && tx.isActive()) {
@@ -133,7 +139,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return result;
 	}
 	
-	public List<E> merge(Iterable<E> items) {
+	public List<E> merge(Iterable<E> items) throws OptimisticLockException {
 		EntityTransaction tx = null;
 		List<E> result = new ArrayList<E>();
 		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
@@ -141,10 +147,15 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			for(E item : items) {
-				Logger.getLogger(getClass()).log(Level.INFO, "Saving " + item.toString());
-				result.add(entityManager.merge(item));
+				Logger.getLogger(getClass()).log(Level.INFO, "Merging " + item.toString());
+				E mergedItem = entityManager.merge(item);
+				// force the version field to increment
+				entityManager.lock(mergedItem, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+				result.add(mergedItem);
 			}
 			tx.commit();
+		} catch (OptimisticLockException exc) {
+			throw exc;
 		} catch(Exception e) {
 			Logger.getLogger(getClass()).error(e);
 			if (tx != null && tx.isActive()) {

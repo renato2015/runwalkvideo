@@ -24,7 +24,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
 import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
@@ -42,18 +42,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private Boolean clientSelected = false;
 	
+	private EventList<Article> articleList;
+
 	private final VideoFileManager videoFileManager;
 
 	private final ClientTablePanel clientTablePanel;
 
-	private EventList<Article> articleList;
+	private final DaoService daoService;
 
-	private DaoManager daoManager;
-
-	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager, DaoManager daoManager) {
+	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
-		this.daoManager = daoManager;
+		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -121,7 +121,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		getItemList().getReadWriteLock().writeLock().lock();
 		Analysis analysis = new Analysis(selectedClient);
-		getDaoManager().getDao(Analysis.class).persist(analysis);
+		getDaoService().getDao(Analysis.class).persist(analysis);
 		try {
 			selectedClient.addAnalysis(analysis);
 			setSelectedItem(analysis);
@@ -154,7 +154,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				getVideoFileManager().deleteVideoFile(recording);
 			}
 			setSelectedItem(lastSelectedRowIndex - 1);
-			getDaoManager().getDao(Analysis.class).delete(selectedAnalysis);
+			getDaoService().getDao(Analysis.class).delete(selectedAnalysis);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 			//TODO handle failed delete?
@@ -227,8 +227,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return videoFileManager;
 	}
 	
-	private DaoManager getDaoManager() {
-		return daoManager;
+	private DaoService getDaoService() {
+		return daoService;
 	}
 
 }

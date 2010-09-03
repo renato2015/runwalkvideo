@@ -1,4 +1,6 @@
-package com.runwalk.video.dao;
+package com.runwalk.video.dao.impl;
+
+import com.runwalk.video.dao.Dao;
 
 public abstract class AbstractDao<E> implements Dao<E> {
 

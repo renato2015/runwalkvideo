@@ -27,7 +27,7 @@ import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.RefreshTask;
@@ -46,9 +46,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private final TextComponentMatcherEditor<Client> matcherEditor;
 
 	private final VideoFileManager videoFileManager;
-	private final DaoManager daoManager;
+	private final DaoService daoManager;
 
-	public ClientTablePanel(VideoFileManager videoFileManager, DaoManager daoManager) {
+	public ClientTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
 		super(new MigLayout("nogrid, fill"));
 		this.videoFileManager = videoFileManager;
 		this.daoManager = daoManager;
@@ -135,7 +135,23 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			@Override
 			public void succeeded(TaskEvent<List<Client>> event) {
 				setSaveNeeded(event.getValue() == null);
+				for(Client mergedClient : event.getValue()) {
+					// these are the merged client instances
+					int index = getItemList().indexOf(mergedClient);
+					Client client = getItemList().get(index);
+					// set dirty flag to false again
+					client.setDirty(false);
+					// increment version field
+					client.incrementVersion();
+				}
 			}
+
+			@Override
+			public void failed(TaskEvent<Throwable> event) {
+				JOptionPane.showMessageDialog(null, event.getValue().getMessage(), 
+						"Fout bij bewaren", JOptionPane.ERROR_MESSAGE);
+			}
+
 
 		});
 		return saveTask;
@@ -199,7 +215,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return videoFileManager;
 	}
 
-	public DaoManager getDaoManager() {
+	public DaoService getDaoManager() {
 		return daoManager;
 	}
 

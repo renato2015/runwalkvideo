@@ -1,12 +1,13 @@
-package com.runwalk.video.dao;
+package com.runwalk.video.dao.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.runwalk.video.dao.jpa.JpaClientDao;
+import com.runwalk.video.dao.Dao;
+import com.runwalk.video.dao.DaoService;
 
-public abstract class DaoManager {
+public abstract class AbstractDaoService implements DaoService {
 
 	private final Map<Class<?>,Dao<?>> daos = new HashMap<Class<?>, Dao<?>>();
 
@@ -23,15 +24,10 @@ public abstract class DaoManager {
 		return daos;
 	}
 
-	public abstract <E, D extends Dao<E>> D getDao(Class<E> type);
-
 	public void addDao(JpaClientDao clientDao) {
 		getDaos().put(clientDao.getTypeParameter(), clientDao);
 	}
 	
-	/**
-	 * 
-	 */
 	public abstract void shutdown();
 
 }
