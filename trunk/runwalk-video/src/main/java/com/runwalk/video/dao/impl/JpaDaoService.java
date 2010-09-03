@@ -1,15 +1,14 @@
-package com.runwalk.video.dao.jpa;
+package com.runwalk.video.dao.impl;
 
 import javax.persistence.EntityManagerFactory;
 
 import com.runwalk.video.dao.Dao;
-import com.runwalk.video.dao.DaoManager;
 
-public class JpaDaoManager extends DaoManager {
+public class JpaDaoService extends AbstractDaoService {
 
 	private final EntityManagerFactory entityManagerFactory;
 
-	public JpaDaoManager(EntityManagerFactory entityManagerFactory) {
+	public JpaDaoService(EntityManagerFactory entityManagerFactory) {
 		this.entityManagerFactory = entityManagerFactory;
 	}
 	

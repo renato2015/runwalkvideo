@@ -14,7 +14,7 @@ import ca.odell.glazedlists.GlazedLists;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
@@ -32,13 +32,13 @@ import com.runwalk.video.gui.panels.ClientTablePanel;
  */
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
-	private final DaoManager daoManager;
+	private final DaoService daoService;
 	private final VideoFileManager videoFileManager;
 
-	public RefreshTask(VideoFileManager videoFileManager, DaoManager daoManager) {
+	public RefreshTask(VideoFileManager videoFileManager, DaoService daoService) {
 		super("refresh");
 		this.videoFileManager = videoFileManager;
-		this.daoManager = daoManager;
+		this.daoService = daoService;
 	}
 
 	@Override 
@@ -48,13 +48,13 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			message("startMessage");
 			message("fetchMessage");
 			// get all clients from the db
-			List<Client> allClients = getDaoManager().getDao(Client.class).getAll();
+			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
 			final EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(allClients));
 			// get all cities from the db
-			List<City> allCities = getDaoManager().getDao(City.class).getAll();
+			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
 			// get all articles from the db
-			List<Article> allArticles = getDaoManager().getDao(Article.class).getAll();
+			List<Article> allArticles = getDaoService().getDao(Article.class).getAll();
 			final EventList<Article> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -119,8 +119,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return videoFileManager;
 	}
 	
-	private DaoManager getDaoManager() {
-		return daoManager;
+	private DaoService getDaoService() {
+		return daoService;
 	}
 
 }

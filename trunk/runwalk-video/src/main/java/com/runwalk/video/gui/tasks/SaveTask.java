@@ -1,34 +1,32 @@
 package com.runwalk.video.gui.tasks;
 
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
 
 public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List<T>, Void> {
 
-	private List<T> itemList;
+	private final List<T> itemList;
 
-	private final DaoManager daoManager;
+	private final DaoService daoService;
 
-	private Class<T> theClass;
+	private final Class<T> theClass;
 
-	public SaveTask(Class<T> theClass, List<T> itemList, DaoManager daoManager) {
+	public SaveTask(Class<T> theClass, List<T> itemList, DaoService daoService) {
 		super("save");
 		this.itemList = new ArrayList<T>(itemList);
-		this.daoManager = daoManager;
+		this.daoService = daoService;
 		this.theClass = theClass;
 	}
 
 	@Override 
 	protected List<T> doInBackground() {
 		message("startMessage");
-		// filter out the dirty items using the dirty flag
+		// filter out the dirty items in the list
 		Iterable<T> dirtyItems = Iterables.filter(getItemList(), new Predicate<T>() {
 
 			public boolean apply(T input) {
@@ -36,26 +34,24 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 			}
 
 		});
-		// find some neat way to discover the actual generic type at runtime here..
-		List<?> asList = Arrays.asList(getClass().getTypeParameters());
-//		TypeVariable<?> last = Iterables.getLast(asList);
-		List<T> mergedList = getDaoManager().getDao(theClass).merge(dirtyItems);
+		List<T> result = null;
 		// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
-		for(T item : mergedList) {
-			int index = getItemList().indexOf(item);
-			getItemList().set(index, item);
-			item.setDirty(false);
-		}
+		result = getDaoService().getDao(getTypeParameter()).merge(dirtyItems);
+		// dirty flag should be set back to false by a task listener
 		message("endMessage");
-		return mergedList;
+		return result;
 	}
 
-	private DaoManager getDaoManager() {
-		return daoManager;
+	private DaoService getDaoService() {
+		return daoService;
 	}
 
 	private List<T> getItemList() {
 		return itemList;
+	}
+
+	private Class<T> getTypeParameter() {
+		return theClass;
 	}
 
 }

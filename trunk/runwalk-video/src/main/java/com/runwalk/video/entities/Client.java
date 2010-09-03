@@ -1,6 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -16,7 +15,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -30,7 +28,6 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Entity
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
-@NamedQuery(name="findAllClients", query="SELECT DISTINCT c FROM Client c")
 public class Client extends SerializableEntity<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	
@@ -76,9 +73,7 @@ public class Client extends SerializableEntity<Client> {
 	private Gender gender;
 	@Transient
 	private Date lastAnalysisDate;
-//	@Version
-	@Transient
-	@SuppressWarnings("unused")
+	@Version
 	private int version;
 
 	public Client() {	}
@@ -213,6 +208,10 @@ public class Client extends SerializableEntity<Client> {
 
 	public void setVersion(int version) {
 		this.version = version;
+	}
+	
+	public void incrementVersion() {
+		version++;
 	}
 
 	@Override

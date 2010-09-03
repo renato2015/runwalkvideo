@@ -35,7 +35,7 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.dao.DaoManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
@@ -72,14 +72,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private final AnalysisTablePanel analysisTablePanel;
 
 	private final VideoFileManager videoFileManager;
-	private final DaoManager daoManager;
+	private final DaoService daoService;
 
 	private boolean recording;
 	
-	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager, DaoManager daoManager) {
+	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super("Media controls", false);
 		this.videoFileManager = videoFileManager;
-		this.daoManager = daoManager;
+		this.daoService = daoService;
 		this.appSettings = appSettings;
 		this.analysisTablePanel = analysisTablePanel;
 		
@@ -324,7 +324,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			// create a new Keyframe for the player's current recording
 			Recording recording = player.getRecording();
 			Keyframe snapshot = new Keyframe(recording, position);
-			getDaoManager().getDao(Keyframe.class).persist(snapshot);
+			getDaoService().getDao(Keyframe.class).persist(snapshot);
 			recording.addKeyframe(snapshot);
 		}
 		// set the slider's position to that of the frontmost player's newly created Keyframe
@@ -410,7 +410,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			for (VideoCapturer capturer : capturers) {
 				Recording recording = new Recording(analysis);
 				// persist recording first, then add it to the analysis
-				getDaoManager().getDao(Recording.class).persist(recording);
+				getDaoService().getDao(Recording.class).persist(recording);
 				analysis.addRecording(recording);
 				File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
 				capturer.startRecording(recording, videoFile);
@@ -655,8 +655,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return videoFileManager;
 	}
 	
-	public DaoManager getDaoManager() {
-		return daoManager;
+	public DaoService getDaoService() {
+		return daoService;
 	}
 
 	public AppSettings getAppSettings() {

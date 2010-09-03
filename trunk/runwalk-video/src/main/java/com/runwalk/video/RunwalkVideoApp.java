@@ -23,9 +23,9 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
 
-import com.runwalk.video.dao.DaoManager;
-import com.runwalk.video.dao.jpa.JpaClientDao;
-import com.runwalk.video.dao.jpa.JpaDaoManager;
+import com.runwalk.video.dao.DaoService;
+import com.runwalk.video.dao.impl.JpaClientDao;
+import com.runwalk.video.dao.impl.JpaDaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisOverviewTableFormat;
 import com.runwalk.video.gui.AnalysisTableFormat;
@@ -65,7 +65,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private JScrollableDesktopPane pane;
 
 	private VideoFileManager videoFileManager;
-	private DaoManager daoManager;
+	private DaoService daoService;
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -95,8 +95,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create specialized dao's
 		JpaClientDao clientDao = new JpaClientDao(Client.class, emFactory);
 		// create daoManager and add specialized dao's
-		daoManager = new JpaDaoManager(emFactory);
-		getDaoManager().addDao(clientDao);
+		daoService = new JpaDaoService(emFactory);
+		getDaoService().addDao(clientDao);
 		// create video file manager
 		videoFileManager = new VideoFileManager(AppSettings.getInstance());
 	}
@@ -108,9 +108,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create common application actions class
 		applicationActions = new ApplicationActions(AppSettings.getInstance());
 		statusPanel = new StatusPanel();
-		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoManager());
+		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
-		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager(), getDaoManager());
+		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager(), getDaoService());
 		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
 		// create main desktop scrollpane
 		pane = new JScrollableDesktopPane();
@@ -118,7 +118,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create menu bar
 		menuBar = new VideoMenuBar();
 		// create mediaplayer controls
-		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager(), daoManager);
+		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager(), getDaoService());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
@@ -196,7 +196,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		while(!getContext().getTaskService().isTerminated()) {
 			Thread.yield();
 		}
-		getDaoManager().shutdown();
+		getDaoService().shutdown();
 	}
 	
 	private AppInternalFrame createMainView() {
@@ -261,8 +261,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		return videoFileManager;
 	}
 	
-	private DaoManager getDaoManager() {
-		return daoManager;
+	private DaoService getDaoService() {
+		return daoService;
 	}
 
 	/*

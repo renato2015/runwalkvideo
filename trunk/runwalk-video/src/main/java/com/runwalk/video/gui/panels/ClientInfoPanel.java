@@ -77,7 +77,6 @@ public class ClientInfoPanel extends AppPanel {
 	/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
 	private final BindingListener changeListener = new AbstractBindingListener() {
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public void targetChanged(Binding binding, PropertyStateEvent event) {
 			ClientTablePanel tablePanel = (ClientTablePanel) binding.getSourceObject();
