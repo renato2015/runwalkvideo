@@ -65,7 +65,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	/**
 	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
 	 * The resulting number will be used for showing a {@link VideoCapturer} or {@link VideoPlayer} instance, 
-	 * which both have uniquely numbered instances.
+	 * which both are uniquely numbered.
 	 * 
 	 * <ul>
 	 * <li>If the total number of available monitors is smaller than 2, then the last monitor index will be used at all times.</li>
@@ -246,12 +246,12 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// go fullscreen if the selected monitor is not the primary one (index 0)
 		boolean fullscreen = monitorId > 0;
-		if (fullscreen) {
+		if (monitorId > 0) {
 			getApplication().hideComponent(internalFrame);
-			getVideoImpl().setFullScreen(graphicsDevice, fullscreen);
+			getVideoImpl().setFullScreen(graphicsDevice, true);
 			fullScreenFrame = getVideoImpl().getFullscreenFrame();
 		} else {
-			getVideoImpl().setFullScreen(graphicsDevice, fullscreen);
+			getVideoImpl().setFullScreen(graphicsDevice, false);
 			if (internalFrame == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				internalFrame.add(getVideoImpl().getComponent());

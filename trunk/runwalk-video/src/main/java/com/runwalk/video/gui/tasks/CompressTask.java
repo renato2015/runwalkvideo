@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import org.apache.commons.io.FileUtils;
+
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -70,8 +72,13 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 			recording = recordings.get(conversionCounter);
 			RecordingStatus statusCode = recording.getRecordingStatus();
 			File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
-			File newFile = getVideoFileManager().getCompressedVideoFile(recording);
+			File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
 			try {
+				// create parent folder if it doesn't exist yet
+				File parentFolder = destinationFile.getParentFile();
+				if (!parentFolder.exists()) {
+					FileUtils.forceMkdir(parentFolder);
+				}
 				recording.setRecordingStatus(RecordingStatus.READY);
 				if (exporter == null) {
 					exporter = new DSJPlayer(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
@@ -80,7 +87,7 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				}
 				setProgress((int) (conversionCounter * part));
 				message("progressMessage",  conversionCounter + 1, conversionCount);
-				int result = exporter.getFiltergraph().export(newFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
+				int result = exporter.getFiltergraph().export(destinationFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
 				if (result < 0) {
 					//reconnect failed.. exception will be thrown here in future versions..
 					getLogger().error("graph reconnect failed!");
