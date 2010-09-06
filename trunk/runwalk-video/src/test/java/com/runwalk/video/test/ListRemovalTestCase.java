@@ -21,9 +21,11 @@ import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 
-import com.runwalk.video.test.entities.Analysis;
-import com.runwalk.video.test.entities.Client;
-import com.runwalk.video.test.entities.Recording;
+import com.runwalk.video.entities.Analysis;
+import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
+import com.runwalk.video.gui.AnalysisConnector;
 
 public class ListRemovalTestCase extends TestCase {
 
@@ -82,7 +84,12 @@ public class ListRemovalTestCase extends TestCase {
 				FilterList<Analysis> filteredAnalysisOverview = new FilterList<Analysis>(sortedAnalysisOverview, new Matcher<Analysis>() {
 
 					public boolean matches(Analysis item) {
-						return item.getRecording() != null && !item.getRecording().isCompressed();
+						for (Recording recording : item.getRecordings()) {
+							if (recording.isCompressable()) {
+								return true;
+							}
+						}
+						return false;
 					}
 					
 				});
@@ -106,8 +113,8 @@ public class ListRemovalTestCase extends TestCase {
 				Analysis analysis = new Analysis(client);
 				//Create a recording for the analysis
 				Recording recording = new Recording(analysis);
-				analysis.setRecording(recording);
-				recording.setCompressable(true);
+				analysis.addRecording(recording);
+				recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 
 				//Add an analysis to the selected client, this will trigger a propertychangeevent due to the fired lastanalysisdate PCE in the client
 				client.addAnalysis(analysis);

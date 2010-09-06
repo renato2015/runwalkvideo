@@ -29,10 +29,14 @@ public class VideoFileManager extends AbstractBean {
 
 	private Map<Recording, File> recordingFileMap = Maps.newHashMap();
 	
+	private VideoFolderRetrievalStrategy folderRetrievalStrategy;
+	
 	private final AppSettings appSettings;
 	
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
+		// use the default folder retrieval strategy here
+		this.folderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
 	}
 
 	public File getVideoFile(Recording recording) {
@@ -44,20 +48,12 @@ public class VideoFileManager extends AbstractBean {
 				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
 				// duration wasn't saved.. set again
 				videoFile = compressedVideoFile;
-				if (recording.getDuration() == 0) {
-					long duration = getDuration(videoFile);
-					recording.setDuration(duration);
-					Logger.getLogger(VideoFileManager.class).warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
-				}
+				checkRecordingDuration(recording, videoFile);
 			} else if (canReadAndExists(uncompressedVideoFile)) {
 				recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 				// duration wasn't saved.. set again
 				videoFile = uncompressedVideoFile;
-				if (recording.getDuration() == 0) {
-					long duration = getDuration(videoFile);
-					recording.setDuration(duration);
-					Logger.getLogger(VideoFileManager.class).warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
-				}
+				checkRecordingDuration(recording, videoFile);
 			} else if (recording.getDuration() == 0) {
 				// video file does not exist and duration is set to 0, prolly nothing recorded yet
 				recording.setRecordingStatus(RecordingStatus.READY);
@@ -69,6 +65,21 @@ public class VideoFileManager extends AbstractBean {
 			recordingFileMap.put(recording, videoFile);
 		}
 		return videoFile;
+	}
+
+	/**
+	 * Check if the duration for the given recording and videofile is synchronized correctly.
+	 * If not, then get the duration of the video file and set it on the recording.
+	 * 
+	 * @param recording The recording to check the duration for
+	 * @param videoFile The video file representing the given recording
+	 */
+	private void checkRecordingDuration(Recording recording, File videoFile) {
+		if (recording.getDuration() == 0) {
+			long duration = getDuration(videoFile);
+			recording.setDuration(duration);
+			Logger.getLogger(VideoFileManager.class).warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
+		}
 	}
 	
 	public void clear() {
@@ -91,7 +102,8 @@ public class VideoFileManager extends AbstractBean {
 	}
 
 	public File getCompressedVideoFile(Recording recording) {
-		return new File(getAppSettings().getVideoDir(), recording.getVideoFileName());
+		File parentFolder = folderRetrievalStrategy.getVideoFolder(getAppSettings().getVideoDir(), recording);
+		return new File(parentFolder, recording.getVideoFileName());
 	}
 
 	public File getUncompressedVideoFile(Recording recording) {
@@ -100,6 +112,14 @@ public class VideoFileManager extends AbstractBean {
 	
 	public AppSettings getAppSettings() {
 		return appSettings;
+	}
+	
+	public VideoFolderRetrievalStrategy getFolderRetrievalStrategy() {
+		return folderRetrievalStrategy;
+	}
+
+	public void setFolderRetrievalStrategy(VideoFolderRetrievalStrategy folderRetrievalStrategy) {
+		this.folderRetrievalStrategy = folderRetrievalStrategy;
 	}
 
 	/**

@@ -77,6 +77,11 @@ public class Client extends SerializableEntity<Client> {
 	private int version;
 
 	public Client() {	}
+	
+	public Client(String name, String firstName) {
+		setFirstname(firstName);
+		setName(name);
+	}
 
 	public Long getId() {
 		return this.id;
