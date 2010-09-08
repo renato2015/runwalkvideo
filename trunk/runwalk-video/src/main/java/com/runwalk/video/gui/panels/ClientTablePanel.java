@@ -149,7 +149,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
 				JOptionPane.showMessageDialog(null, event.getValue().getMessage(), 
-						"Fout bij bewaren", JOptionPane.ERROR_MESSAGE);
+						getResourceMap().getString("save.errorMessage"), JOptionPane.ERROR_MESSAGE);
 			}
 
 
@@ -206,7 +206,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public Task<Boolean, Void> refresh() {
 		return new RefreshTask(getVideoFileManager(), getDaoManager());
 	}
-
+	
 	public TableFormat<Client> getTableFormat() {
 		return new ClientTableFormat();
 	}
@@ -214,7 +214,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-
+	
 	public DaoService getDaoManager() {
 		return daoManager;
 	}

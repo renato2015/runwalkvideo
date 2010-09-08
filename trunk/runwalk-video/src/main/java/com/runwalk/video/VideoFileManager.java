@@ -11,6 +11,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.AppSettings.Settings;
 
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
@@ -28,15 +29,18 @@ import de.humatic.dsj.DSJUtils;
 public class VideoFileManager extends AbstractBean {
 
 	private Map<Recording, File> recordingFileMap = Maps.newHashMap();
-	
-	private VideoFolderRetrievalStrategy folderRetrievalStrategy;
-	
+
 	private final AppSettings appSettings;
-	
+
+	/** 
+	 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
+	 * 
+	 * @see Settings#videoFolderFormatString
+	 */
+	private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
+
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
-		// use the default folder retrieval strategy here
-		this.folderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
 	}
 
 	public File getVideoFile(Recording recording) {
@@ -81,11 +85,11 @@ public class VideoFileManager extends AbstractBean {
 			Logger.getLogger(VideoFileManager.class).warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
 		}
 	}
-	
+
 	public void clear() {
 		recordingFileMap.clear();
 	}
-	
+
 	public void refreshCache(Analysis analysis) {
 		for (Recording recording : analysis.getRecordings()) {
 			getVideoFile(recording);
@@ -95,31 +99,45 @@ public class VideoFileManager extends AbstractBean {
 	public boolean canReadAndExists(File videoFile) {
 		return videoFile != null && videoFile.exists() && videoFile.canRead();
 	}
-	
+
 	public boolean canReadAndExists(Recording recording) {
 		File videoFile = getVideoFile(recording);
 		return canReadAndExists(videoFile);
 	}
 
 	public File getCompressedVideoFile(Recording recording) {
-		File parentFolder = folderRetrievalStrategy.getVideoFolder(getAppSettings().getVideoDir(), recording);
+		File parentFolder = getVideoFolderRetrievalStrategy().getVideoFolder(getAppSettings().getVideoDir(), recording);
 		return new File(parentFolder, recording.getVideoFileName());
 	}
 
 	public File getUncompressedVideoFile(Recording recording) {
 		return new File(getAppSettings().getUncompressedVideoDir(), recording.getVideoFileName());
 	}
-	
+
 	public AppSettings getAppSettings() {
 		return appSettings;
 	}
-	
-	public VideoFolderRetrievalStrategy getFolderRetrievalStrategy() {
-		return folderRetrievalStrategy;
+
+	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
+		// get the stored format string from the application settings file
+		String formatString = getAppSettings().getVideoFolderFormatString();
+		if (videoFolderRetrievalStrategy == null) {
+			if (formatString == null) {
+				// use the default folder retrieval strategy if there is no format string set
+				videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
+			} else {
+				videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy(formatString);
+			}
+		}
+		return videoFolderRetrievalStrategy;
 	}
 
-	public void setFolderRetrievalStrategy(VideoFolderRetrievalStrategy folderRetrievalStrategy) {
-		this.folderRetrievalStrategy = folderRetrievalStrategy;
+	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
+		if (videoFolderRetrievalStrategy instanceof DateVideoFolderRetrievalStrategy) {
+			DateVideoFolderRetrievalStrategy newStrategy = (DateVideoFolderRetrievalStrategy) videoFolderRetrievalStrategy;
+			getAppSettings().setVideoFolderFormatString(newStrategy.getDateFormatString());
+		}
+		this.videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
 
 	/**
@@ -167,5 +185,5 @@ public class VideoFileManager extends AbstractBean {
 	public File getUncompressedVideoDir() {
 		return getAppSettings().getUncompressedVideoDir();
 	}
-	
+
 }

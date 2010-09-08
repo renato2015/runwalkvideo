@@ -41,7 +41,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		this.daoService = daoService;
 	}
 
-	@Override 
 	protected Boolean doInBackground() {
 		boolean success = true;
 		try {
@@ -97,12 +96,11 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			getVideoFileManager().clear();
 			// some not so beautiful way to refresh the cache
 			message("loadingVideoFilesMessage");
-			int clientCounter = 1;
-			for (Client theClient : clientList) {
-				for (Analysis analysis : theClient.getAnalyses()) {
+			for (Client client : clientList) {
+				for (Analysis analysis : client.getAnalyses()) {
 					getVideoFileManager().refreshCache(analysis);
 				}
-				setProgress(clientCounter++, 0, clientList.size());
+				setProgress(clientList.indexOf(client), 0, clientList.size());
 			}
 			// check whether compressing should be enabled
 			RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);

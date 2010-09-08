@@ -21,7 +21,10 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
+import com.runwalk.video.DateVideoFolderRetrievalStrategy;
+import com.runwalk.video.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.VideoFolderRetrievalStrategy;
 
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {
@@ -38,7 +41,7 @@ public class AppSettings implements Serializable {
 	private final static String UNCOMPRESSED_VIDEO_DIRNAME = "uncompressed";
 
 	private static Logger logger;
-	
+
 	// this is the only (?) thread safe way to initialize a singleton
 	private final static AppSettings INSTANCE = new AppSettings();
 
@@ -51,7 +54,7 @@ public class AppSettings implements Serializable {
 
 	/** The parsed directories for both uncompressed and compressed video's are cached here after lazy initialization */
 	private File videoDir, uncompressedVideoDir;
-
+	
 	private AppSettings() {
 		settings = new Settings();
 	}
@@ -102,15 +105,15 @@ public class AppSettings implements Serializable {
 			fos = appContext.getLocalStorage().openOutputFile(settingsFile.getName());
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
 			marshaller.marshal(settings, fos);
-		} catch (Exception e) {
-			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, e);
+		} catch (Exception exc) {
+			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, exc);
 		} finally {
 			if (fos != null) {
 				try {
 					fos.flush();
 					fos.close();
-				} catch (IOException e) {
-					logger.error("Exception thrown while flushing or closing outputstream for file " + SETTINGS_XML, e);
+				} catch (IOException exc) {
+					logger.error("Exception thrown while flushing or closing outputstream for file " + SETTINGS_XML, exc);
 				}
 			}
 		}
@@ -119,7 +122,7 @@ public class AppSettings implements Serializable {
 	public Settings getSettings() {
 		return settings;
 	}
-	
+
 	/**
 	 * Set a new directory for storing and reading compressed video files. 
 	 * The directory will be lazily reloaded by clearing the cached value.
@@ -139,15 +142,15 @@ public class AppSettings implements Serializable {
 		}
 		return videoDir;
 	}
-	
+
 	public void setDefaultCapturerName(String defaultCapturerName) {
 		getSettings().defaultCapturerName = defaultCapturerName;	
 	}
-	
+
 	public String getDefaultCapturerName() {
 		return getSettings().defaultCapturerName;
 	}
-	
+
 	/**
 	 * Set a new directory for storing and reading uncompressed video files. 
 	 * The directory will be lazily reloaded by clearing the cached value.
@@ -167,7 +170,7 @@ public class AppSettings implements Serializable {
 		}
 		return uncompressedVideoDir;
 	}
-	
+
 	public File getDirectory(String path, File defaultDir) {
 		File result = null;
 		// first check whether the path in the settings is null or not
@@ -219,6 +222,18 @@ public class AppSettings implements Serializable {
 	public String getTranscoder() {
 		return getSettings().selectedTranscoderName;
 	}
+	
+	public String getLogFileUploadUrl() {
+		return getSettings().logFileUploadUrl;
+	}
+	
+	public String getVideoFolderFormatString() {
+		return getSettings().videoFolderFormatString;
+	}
+	
+	public void setVideoFolderFormatString(String videoFolderFormatString) {
+		getSettings().videoFolderFormatString = videoFolderFormatString;
+	}
 
 	@XmlRootElement
 	public static class Settings implements Serializable {
@@ -227,7 +242,7 @@ public class AppSettings implements Serializable {
 
 		@XmlElement
 		private String uncompressedVideoDir;
-		
+
 		/**
 		 * The last selected capturer on startup.
 		 */
@@ -242,6 +257,12 @@ public class AppSettings implements Serializable {
 
 		@XmlElement
 		private String selectedTranscoderName = "XviD MPEG-4 Codec";
+		
+		@XmlElement
+		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
+
+		@XmlElement
+		private String videoFolderFormatString;
 
 	}
 

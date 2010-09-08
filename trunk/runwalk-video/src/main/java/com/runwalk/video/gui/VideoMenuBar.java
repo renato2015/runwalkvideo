@@ -43,25 +43,29 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		fileMenu.add(deleteClientMenuItem);
 		fileMenu.add(separator);
 
-		JMenuItem createAnalysisItem = new  JMenuItem( getApplication().getAnalysisTablePanel().getAction("addAnalysis"));
+		JMenuItem createAnalysisItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("addAnalysis"));
 		fileMenu.add(createAnalysisItem);
-		JMenuItem deleteAnalysisItem = new  JMenuItem( getApplication().getAnalysisTablePanel().getAction("deleteAnalysis"));
+		JMenuItem deleteAnalysisItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("deleteAnalysis"));
 		fileMenu.add(deleteAnalysisItem);
-		fileMenu.add(new JSeparator());
 
-		JMenuItem refreshMenuItem = new  JMenuItem( getApplication().getClientTablePanel().getAction("refresh"));
+		fileMenu.add(new JSeparator());
+		JMenuItem refreshMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("refresh"));
 		fileMenu.add(refreshMenuItem);
-		JMenuItem saveMenuItem = new  JMenuItem( getApplication().getClientTablePanel().getAction("save"));
+		JMenuItem saveMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem selectVideoDir = new  JMenuItem( getApplication().getApplicationActionMap().get("selectVideoDir"));
+		JMenuItem selectVideoDir = new JMenuItem( getApplication().getApplicationActionMap().get("selectVideoDir"));
 		fileMenu.add(selectVideoDir);
-		JMenuItem selectUncompressedVideoDir = new  JMenuItem( getApplication().getApplicationActionMap().get("selectUncompressedVideoDir"));
+		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getApplicationActionMap().get("selectUncompressedVideoDir"));
 		fileMenu.add(selectUncompressedVideoDir);
+
+		fileMenu.add(new JSeparator());
+		JMenuItem organiseVideoFiles = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("organiseVideoFiles"));
+		fileMenu.add(organiseVideoFiles);
 		
 		fileMenu.add(new JSeparator());
-		JMenuItem exitMenuItem = new  JMenuItem( getApplication().getApplicationActionMap().get("exit"));
+		JMenuItem exitMenuItem = new JMenuItem( getApplication().getApplicationActionMap().get("exit"));
 		fileMenu.add(exitMenuItem);
 		add(fileMenu);
 
