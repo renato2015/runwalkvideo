@@ -55,6 +55,8 @@ public class CameraDialog extends AppDialog {
 	private String selectedMonitorId;
 
 	private JPanel buttonPanel;
+	
+	private boolean cancelled = false;
 
 	/**
 	 * Create a dialog that allows the user start a capture device. A {@link IVideoCapturer} implementation must be passed
@@ -78,7 +80,7 @@ public class CameraDialog extends AppDialog {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (isReady) {
-					dismissDialog();
+					dismissDialog(new ActionEvent(CameraDialog.this, e.getID(), "cancelled"));
 				} else {
 					Runtime.getRuntime().exit(0);
 				}
@@ -146,10 +148,15 @@ public class CameraDialog extends AppDialog {
 	}
 
 	@Action
-	public void dismissDialog() {
+	public void dismissDialog(ActionEvent actionEvent) {
+		cancelled = actionEvent.getActionCommand().equals("cancelled");
 		setVisible(false);
 		// release native screen resources
 		dispose();
+	}
+	
+	public boolean wasCancelled() {
+		return cancelled;
 	}
 
 	/**
@@ -158,7 +165,7 @@ public class CameraDialog extends AppDialog {
 	 */
 	@Action
 	public boolean refreshCapturers() {
-		// refresh capture devices by querying the capturer implementation for uninitialzed capture devices
+		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
 		List<String> captureDevices = VideoCapturerFactory.getInstance().getCapturers();
 		// check if there was a previously selected item (dialog was already open)
 		Object selectedItem = capturerComboBox.getSelectedItem();
@@ -181,6 +188,8 @@ public class CameraDialog extends AppDialog {
 		selectedItem = selectedItem == null ? defaultCapturerName : selectedItem;
 		// set the selected item on the combobox
 		capturerComboBox.setSelectedItem(selectedItem);
+		// make another call to the setter here to make sure the selected capturer will be started
+		setSelectedCaptureDevice(selectedItem.toString());
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

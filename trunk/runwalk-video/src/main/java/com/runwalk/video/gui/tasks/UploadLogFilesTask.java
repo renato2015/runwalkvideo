@@ -9,18 +9,20 @@ import com.runwalk.video.util.ClientHttpRequest;
 
 public class UploadLogFilesTask extends AbstractTask<Void, Void> {
 
-	private File logFile;
+	private final File logFile;
+	private final String logFileUploadUrl;
 
-	public UploadLogFilesTask(File logFile) {
-		super("upload");
+	public UploadLogFilesTask(File logFile, String logFileUploadUrl) {
+		super("uploadLogFiles");
 		this.logFile = logFile;
+		this.logFileUploadUrl = logFileUploadUrl;
 	}
 
 	@Override
 	protected Void doInBackground() throws Exception {
 		message("startMessage");
         InputStream serverInput = ClientHttpRequest.post(
-                new java.net.URL(getResourceString("destfolder")), 
+                new java.net.URL(getLogFileUploadUrl()), 
                 new Object[] {"logfile", getLogFile()
                 	});
         BufferedReader reader = new BufferedReader(new InputStreamReader(serverInput));
@@ -37,6 +39,10 @@ public class UploadLogFilesTask extends AbstractTask<Void, Void> {
 	
 	public File getLogFile() {
 		return logFile;
+	}
+	
+	public String getLogFileUploadUrl() {
+		return logFileUploadUrl;
 	}
 
 }

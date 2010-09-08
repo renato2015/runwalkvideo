@@ -23,7 +23,6 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 		this.theClass = theClass;
 	}
 
-	@Override 
 	protected List<T> doInBackground() {
 		message("startMessage");
 		// filter out the dirty items in the list

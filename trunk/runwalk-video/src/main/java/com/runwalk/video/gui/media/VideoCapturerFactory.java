@@ -102,10 +102,12 @@ public abstract class VideoCapturerFactory {
 			RunwalkVideoApp.getApplication().show(dialog);
 			// remove the listener to avoid memory leaking
 			dialog.removePropertyChangeListener(changeListener);
-			// prepare the capturer for showing live video
-			capturer.getVideoImpl().startCapturer();
-			// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
-			capturer.showComponent();
+			if (!dialog.wasCancelled()) {
+				// prepare the capturer for showing live video
+				capturer.getVideoImpl().startCapturer();
+				// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
+				capturer.showComponent();
+			}
 		} else {
 			JOptionPane.showMessageDialog(null, "Geen camera's gevonden..");
 		}

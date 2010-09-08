@@ -4,6 +4,7 @@ import java.awt.Toolkit;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotUndoException;
@@ -13,7 +14,10 @@ import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
+import com.runwalk.video.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.VideoFolderRetrievalStrategy;
+import com.runwalk.video.gui.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.util.AppSettings;
 
@@ -115,9 +119,9 @@ public class ApplicationActions extends AbstractBean {
 	
 	@Action
 	public Task<Void, Void> uploadLogFiles() {
-		return new UploadLogFilesTask(getAppSettings().getLogFile());
+		return new UploadLogFilesTask(getAppSettings().getLogFile(), getAppSettings().getLogFileUploadUrl());
 	}
-
+	
 	public AppSettings getAppSettings() {
 		return appSettings;
 	}
