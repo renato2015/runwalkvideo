@@ -44,7 +44,8 @@ public class JpaDao<E> extends AbstractDao<E> {
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
-			entityManager.remove(item);
+			E mergedItem = entityManager.merge(item);
+			entityManager.remove(mergedItem);
 			tx.commit();
 		} catch(Exception e) {
 			Logger.getLogger(getClass()).error(e);

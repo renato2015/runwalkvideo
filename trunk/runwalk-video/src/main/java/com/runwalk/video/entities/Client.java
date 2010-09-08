@@ -210,10 +210,6 @@ public class Client extends SerializableEntity<Client> {
 	public int getVersion() {
 		return version;
 	}
-
-	public void setVersion(int version) {
-		this.version = version;
-	}
 	
 	public void incrementVersion() {
 		version++;
