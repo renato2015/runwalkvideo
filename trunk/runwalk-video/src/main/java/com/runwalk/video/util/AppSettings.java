@@ -21,10 +21,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
-import com.runwalk.video.DateVideoFolderRetrievalStrategy;
-import com.runwalk.video.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.VideoFolderRetrievalStrategy;
 
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {
@@ -234,7 +231,15 @@ public class AppSettings implements Serializable {
 	public void setVideoFolderFormatString(String videoFolderFormatString) {
 		getSettings().videoFolderFormatString = videoFolderFormatString;
 	}
-
+	
+/*	public String getVlcPath() {
+		return getSettings().vlcPath;
+	}
+	
+	public void setVlcPath(String vlcPath) {
+		getSettings().vlcPath = vlcPath;
+	}
+*/
 	@XmlRootElement
 	public static class Settings implements Serializable {
 		@XmlElement
@@ -263,7 +268,10 @@ public class AppSettings implements Serializable {
 
 		@XmlElement
 		private String videoFolderFormatString;
-
+		
+//		@XmlElement
+//		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+ 
 	}
 
 }

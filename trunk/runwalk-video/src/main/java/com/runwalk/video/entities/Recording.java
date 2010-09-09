@@ -148,7 +148,9 @@ public class Recording extends SerializableEntity<Recording> {
 	 * @param status The status to be applied
 	 */
 	public void setRecordingStatus(RecordingStatus status) {
-		this.firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
+//		boolean wasRecorded = isRecorded();
+		firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
+//		firePropertyChange(RECORDED, wasRecorded, isRecorded());
 		// don't change the statuscode if it is erroneous.
 		if (!status.isErroneous()) {
 			this.statusCode = recordingStatus.getCode();

@@ -24,14 +24,13 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.VideoFileManager;
@@ -97,40 +96,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
 			}
-
-			@Override
-			public void synced(Binding binding) {
-				// TODO Auto-generated method stub
-				System.out.println("synced");
-				super.synced(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				// TODO Auto-generated method stub
-				System.out.println("sync failed");
-				super.syncFailed(binding, failure);
-			}
-
-			@Override
-			public void targetChanged(Binding binding, PropertyStateEvent event) {
-				System.out.println("target changed");
-				super.targetChanged(binding, event);
-			}
-
-			@Override
-			public void sourceEdited(Binding binding) {
-				System.out.println("source edited");
-				super.sourceEdited(binding);
-			}
-
-			@Override
-			public void targetEdited(Binding binding) {
-				System.out.println("target edited");
-				super.targetEdited(binding);
-			}
-			
-			
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
