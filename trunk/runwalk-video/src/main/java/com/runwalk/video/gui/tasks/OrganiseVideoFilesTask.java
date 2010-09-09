@@ -42,18 +42,19 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 		int filesMoved = 0;
 		for (Analysis analysis : analysisList) {
 			for (Recording recording : analysis.getRecordings()) {
-				if (recording.isCompressed()) {
-					File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
-					// check whether a compressed video file exists for the given recording
-					if (compressedVideoFile.exists()) {
-						File newFolder = getVideoFolderRetrievalStrategy().getVideoFolder(videoDir, recording);
-						// copy the file to the new folder and create the directory if needed, maintaining file creation dates
-						try {
-							FileUtils.moveFileToDirectory(compressedVideoFile, newFolder, true);
-							filesMoved++;
-						} catch (IOException e) {
-							Logger.getLogger(VideoFileManager.class).error(e);
-						}
+				File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
+				// check whether a compressed video file exists for the given recording
+				if (compressedVideoFile.exists()) {
+					File newFolder = getVideoFolderRetrievalStrategy().getVideoFolder(videoDir, recording);
+					// copy the file to the new folder and create the directory if needed, maintaining file creation dates
+					try {
+						getLogger().debug("Moving video file " + recording.getVideoFileName() + " to " + newFolder);
+						FileUtils.moveFileToDirectory(compressedVideoFile, newFolder, true);
+						// delete cached file 
+						getVideoFileManager().refreshCache(recording);
+						filesMoved++;
+					} catch (IOException e) {
+						Logger.getLogger(VideoFileManager.class).error(e);
 					}
 				}
 			}
@@ -61,12 +62,31 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 		}
 		getVideoFileManager().setVideoFolderRetrievalStrategy(videoFolderRetrievalStrategy);
 		// delete empty directories after moving files to new folder structure
-		List<File> deletedDirectories = new EmptyDirectoryWalker().start(getVideoFileManager().getVideoDir());
+		int deletedDirectories = deleteEmptyDirectories(0, getVideoFileManager().getVideoDir());
 		message("endMessage");
 		JOptionPane.showMessageDialog(getParentFrame(), 
-				getResourceString("filesMovedMessage", filesMoved, deletedDirectories.size()), 
+				getResourceString("filesMovedMessage", filesMoved, deletedDirectories), 
 				getResourceString("startMessage"), JOptionPane.INFORMATION_MESSAGE);
 		return null;
+	}
+
+	/**
+	 * Recursively delete all empty directories found in a given directory.
+
+	 * @param directoryCount Current count of deleted directories
+	 * @param directory The directory to delete empty directories in
+	 * @return The total number of deleted directories
+	 */
+	private int deleteEmptyDirectories(int directoryCount, File directory) {
+		if( directory.exists() ) {
+			File[] files = directory.listFiles();
+			for(int i=0; i<files.length; i++) {
+				if(files[i].isDirectory()) {
+					deleteEmptyDirectories(directoryCount, files[i]);
+				} 
+			}
+		}
+		return directory.delete() ? directoryCount++ : directoryCount;
 	}
 
 	@Override
@@ -86,56 +106,9 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	public List<Analysis> getAnalysisList() {
 		return analysisList;
 	}
-	
+
 	public Frame getParentFrame() {
 		return parentFrame;
-	}
-
-	private class EmptyDirectoryWalker extends DirectoryWalker {
-
-		private EmptyDirectoryWalker() {
-			// don't process files, just find empty directories
-			super(new FileFilter() {
-
-				public boolean accept(File file) {
-					return !file.isFile();
-				}
-				
-			}, -1) ;
-		}
-		
-		public List<File> start(File startDirectory) throws IOException {
-			List<File> results = new ArrayList<File>();
-			walk(startDirectory, results);
-			return results;
-		}
-		
-		@Override
-		@SuppressWarnings("unchecked")
-		protected boolean handleDirectory(File directory, int depth, Collection results) {
-			// find empty directories
-			if (directory.listFiles().length == 0) {
-				if (directory.delete()) {
-					results.add(directory);
-				}
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		protected void handleDirectoryEnd(File directory, int depth, Collection results) throws IOException {
-			// check if parent directory became empty after going through child
-			File parentDirectory = directory.getParentFile();
-			// if parent directory became empty, then delete it
-			if (parentDirectory.listFiles().length == 0) {
-				if (parentDirectory.delete()) {
-					results.add(parentDirectory);
-				}
-			}
-		}
-
 	}
 
 }
