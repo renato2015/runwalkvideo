@@ -111,6 +111,8 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 					exporter.getFiltergraph().stop();
 				}
 				recording.setRecordingStatus(statusCode);
+				// video file needs to be removed from cached 
+				getVideoFileManager().refreshCache(recording);
 			}
 		}
 		if (exporter != null) {

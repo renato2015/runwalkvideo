@@ -95,6 +95,10 @@ public class VideoFileManager extends AbstractBean {
 			getVideoFile(recording);
 		}
 	}
+	
+	public void refreshCache(Recording recording) {
+		recordingFileMap.remove(recording);
+	}
 
 	public boolean canReadAndExists(File videoFile) {
 		return videoFile != null && videoFile.exists() && videoFile.canRead();

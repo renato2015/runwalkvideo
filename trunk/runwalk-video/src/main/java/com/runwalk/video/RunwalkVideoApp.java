@@ -110,7 +110,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
-		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), getVideoFileManager(), getDaoService());
+		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
+				AppSettings.getInstance(), getVideoFileManager(), getDaoService());
 		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
 		// create main desktop scrollpane
 		pane = new JScrollableDesktopPane();

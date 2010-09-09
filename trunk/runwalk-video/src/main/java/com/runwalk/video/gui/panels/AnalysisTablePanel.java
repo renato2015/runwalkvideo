@@ -1,5 +1,9 @@
 package com.runwalk.video.gui.panels;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -10,11 +14,16 @@ import javax.swing.event.UndoableEditListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
+import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.PropertyStateEvent;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ObservableElementList;
@@ -23,6 +32,7 @@ import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
@@ -38,10 +48,12 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String CLIENT_SELECTED = "clientSelected";
 
+	private static final String SELECTED_ITEM_RECORDED = "selectedItemRecorded";
+
 	private JTextArea comments;
 
 	private Boolean clientSelected = false;
-	
+
 	private EventList<Article> articleList;
 
 	private final VideoFileManager videoFileManager;
@@ -50,12 +62,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private final DaoService daoService;
 
-	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, VideoFileManager videoFileManager, DaoService daoService) {
+	private final AppSettings appSettings;
+
+	private boolean selectedItemRecorded;
+
+	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, 
+			AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
+		this.appSettings = appSettings;
 		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
@@ -101,7 +119,23 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		clientSelectedBinding.setSourceNullValue(false);
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
+
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recorded}");
+		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty.create(SELECTED_ITEM_RECORDED);
+		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> selectedItemRecordedBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ, this, recorded, this, selectedItemRecorded);
+		selectedItemRecordedBinding.setSourceUnreadableValue(false);
+		selectedItemRecordedBinding.setTargetNullValue(false);
+		bindingGroup.addBinding(selectedItemRecordedBinding);
 		bindingGroup.bind();
+	}
+
+	public boolean isSelectedItemRecorded() {
+		return selectedItemRecorded;
+	}
+
+	public void setSelectedItemRecorded(boolean selectedItemRecorded) {
+		firePropertyChange(SELECTED_ITEM_RECORDED, this.selectedItemRecorded, this.selectedItemRecorded = selectedItemRecorded);
 	}
 
 	public void clearComments() {
@@ -162,6 +196,20 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
 	}
 
+	@Action(enabledProperty = SELECTED_ITEM_RECORDED)
+	public void showVideoFile() throws IOException {
+		List<Recording> recordings = getSelectedItem().getRecordings();
+		if (!recordings.isEmpty()) {
+			Recording lastRecording = Iterables.getLast(recordings);
+			File videoFile = getVideoFileManager().getVideoFile(lastRecording);
+			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
+				String[] commands = new String[] {"cmd.exe", "/c", "explorer /select," + videoFile.getAbsolutePath()};
+//				String[] commands = new String[] {vlcPath, videoFile.getAbsolutePath(), " --rate=" + playRate};
+				Runtime.getRuntime().exec(commands);
+			}
+		}
+	}
+
 	@Override
 	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
 		eventList.addListEventListener(new ListEventListener<Analysis>() {
@@ -180,7 +228,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		});
 		return eventList;
 	}
-	
+
 	public void setArticleList(EventList<Article> articleList) {
 		if (this.articleList != null) {
 			// dispose the current list, so it can be garbage collected
@@ -188,7 +236,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		this.articleList = articleList;
 	}
-	
+
 	public EventList<Article> getArticleList() {
 		return this.articleList;
 	}
@@ -223,10 +271,14 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
 	}
 
+	public AppSettings getAppSettings() {
+		return appSettings;
+	}
+
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-	
+
 	private DaoService getDaoService() {
 		return daoService;
 	}

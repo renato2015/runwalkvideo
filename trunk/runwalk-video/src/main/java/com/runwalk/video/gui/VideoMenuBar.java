@@ -49,6 +49,12 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		fileMenu.add(deleteAnalysisItem);
 
 		fileMenu.add(new JSeparator());
+		JMenuItem showVideoFileItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("showVideoFile"));
+		fileMenu.add(showVideoFileItem);
+//		JMenuItem openVideoFileItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("openVideoFile"));
+//		fileMenu.add(openVideoFileItem);
+		
+		fileMenu.add(new JSeparator());
 		JMenuItem refreshMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("refresh"));
 		fileMenu.add(refreshMenuItem);
 		JMenuItem saveMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("save"));
