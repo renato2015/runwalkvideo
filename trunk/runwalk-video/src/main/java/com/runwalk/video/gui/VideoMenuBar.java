@@ -61,9 +61,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		fileMenu.add(saveMenuItem);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem selectVideoDir = new JMenuItem( getApplication().getApplicationActionMap().get("selectVideoDir"));
+		JMenuItem selectVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectVideoDir"));
 		fileMenu.add(selectVideoDir);
-		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getApplicationActionMap().get("selectUncompressedVideoDir"));
+		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectUncompressedVideoDir"));
 		fileMenu.add(selectUncompressedVideoDir);
 
 		fileMenu.add(new JSeparator());

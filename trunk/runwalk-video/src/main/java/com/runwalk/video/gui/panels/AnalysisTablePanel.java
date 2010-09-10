@@ -9,6 +9,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.event.UndoableEditListener;
 
 import net.miginfocom.swing.MigLayout;
@@ -16,13 +17,11 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
-import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
@@ -147,9 +146,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		//insert a new analysis record
 		final Client selectedClient = getClientTablePanel().getSelectedItem();
 		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
-			JOptionPane.showMessageDialog(null, 
-					"Voer eerst een naam in voor deze klant!", 
-					"Fout aanmaken analyse", 
+			JOptionPane.showMessageDialog(
+					SwingUtilities.windowForComponent(this), 
+					getResourceMap().getString("addAnalysis.errorDialog.text"),
+					getResourceMap().getString("addAnalysis.Action.text"), 
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
@@ -171,7 +171,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = ROW_SELECTED)
 	public void deleteAnalysis() {		
 		int n = JOptionPane.showConfirmDialog(
-				null,
+				SwingUtilities.windowForComponent(this),
 				getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
 				getResourceMap().getString("deleteAnalysis.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
@@ -207,6 +207,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 //				String[] commands = new String[] {vlcPath, videoFile.getAbsolutePath(), " --rate=" + playRate};
 				Runtime.getRuntime().exec(commands);
 			}
+			// TODO show the video file on different platforms?
 		}
 	}
 
@@ -260,7 +261,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(4).setResizable(false);
 		CustomJTableRenderer buttonRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class));
 		getTable().getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-		addMouseListenerToTable();
+		addMouseListenerToTable();				
 	}
 
 	public boolean isClientSelected() {

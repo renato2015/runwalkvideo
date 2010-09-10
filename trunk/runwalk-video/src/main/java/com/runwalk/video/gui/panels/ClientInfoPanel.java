@@ -1,6 +1,7 @@
 package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
+import java.lang.reflect.InvocationTargetException;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -20,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -64,7 +66,7 @@ public class ClientInfoPanel extends AppPanel {
 	private final static BeanProperty<JComponent, Boolean> SELECTED = BeanProperty.create("selected");
 	private final static BeanProperty<JTextField, String> TEXT = BeanProperty.create("text");
 	private final static BeanProperty<JTextField, String> TEXT_ON_FOCUS_LOST = BeanProperty.create("text_ON_FOCUS_LOST");
-	
+
 	private EventList<City> itemList;
 
 	private final JTextField firstnameField;
@@ -73,7 +75,7 @@ public class ClientInfoPanel extends AppPanel {
 	private AutoCompleteSupport<City> zipCodeCompletion;
 	private AutoCompleteSupport<City> locationCompletion;
 	private BindingGroup locationBindingGroup;
-	
+
 	/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
 	private final BindingListener changeListener = new AbstractBindingListener() {
 
@@ -86,11 +88,11 @@ public class ClientInfoPanel extends AppPanel {
 				tablePanel.setSaveNeeded(true);
 			}
 		}
-		
+
 	};
-	
+
 	private final ClientTablePanel clientTablePanel;
-	
+
 	@SuppressWarnings("unchecked")
 	public ClientInfoPanel(final ClientTablePanel clientTablePanel, UndoableEditListener undoListener) {
 		this.clientTablePanel = clientTablePanel;
@@ -101,22 +103,22 @@ public class ClientInfoPanel extends AppPanel {
 		Binding<? extends AbstractTablePanel<Client>, String, JTextField, String> valueBinding = null;
 		// component enabling binding
 		Binding<? extends AbstractTablePanel<Client>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
-		
+
 		/**
 		 * Converts first characters to uppercase
 		 */
 		class FirstCharacterToUpperCaseConverter extends Converter<String, String> {
-			
+
 			public String convertForward(String arg0) {
 				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
-			
+
 			public String convertReverse(String arg0) {
 				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
-			
+
 		};
-		
+
 		JLabel nameLabel = new JLabel();
 		nameLabel.setFont(AppSettings.MAIN_FONT);
 		nameLabel.setText(getResourceMap().getString("nameLabel.text")); // NOI18N
@@ -125,7 +127,7 @@ public class ClientInfoPanel extends AppPanel {
 		firstnameField = new JTextField();
 		firstnameField.setFont(AppSettings.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
-		
+
 		BeanProperty<ClientTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, firstname, firstnameField, TEXT);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
@@ -133,7 +135,7 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, firstnameField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(firstnameField);
-		
+
 		JTextField nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
 		nameField.setFont(AppSettings.MAIN_FONT);
@@ -145,7 +147,7 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, nameField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(nameField, "wrap");
-		
+
 		JLabel organizationLabel = new JLabel();
 		organizationLabel.setFont(AppSettings.MAIN_FONT);
 		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
@@ -161,7 +163,7 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBinding(enabledBinding);
 		organisationField.setFont(AppSettings.MAIN_FONT);
 		add(organisationField);
-		
+
 		JLabel taxLabel = new JLabel();
 		taxLabel.setFont(AppSettings.MAIN_FONT);
 		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
@@ -173,7 +175,7 @@ public class ClientInfoPanel extends AppPanel {
 		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.taxNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, TEXT);
 		valueBinding.setValidator(new Validator () {
-			
+
 			public Validator.Result validate(Object arg) {
 				String regexPattern = "[0-9]{9}";
 				Pattern pattern = Pattern.compile(regexPattern);
@@ -188,7 +190,7 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, taxField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(taxField, "wrap, grow");
-		
+
 		JLabel emailLabel = new JLabel();
 		emailLabel.setFont(AppSettings.MAIN_FONT);
 		emailLabel.setText(getResourceMap().getString("emailLabel.text")); // NOI18N
@@ -200,7 +202,7 @@ public class ClientInfoPanel extends AppPanel {
 		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, TEXT);
 		/*valueBinding.setValidator(new Validator() {
-					
+
 					public Validator.Result validate(Object arg) {        
 						String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
 						Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
@@ -216,12 +218,12 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, emailField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(emailField, "span, split");
-		
+
 		JLabel mailingListLabel = new JLabel();
 		mailingListLabel.setFont(AppSettings.MAIN_FONT);
 		mailingListLabel.setText(getResourceMap().getString("mailingListLabel.text")); // NOI18N
 		add(mailingListLabel, "grow 0");
-		
+
 		JCheckBox mailingListCheckbox = new JCheckBox();
 		BeanProperty<ClientTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.inMailingList");
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, inMailingList, mailingListCheckbox, SELECTED);
@@ -229,17 +231,17 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, mailingListCheckbox, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(mailingListCheckbox, "wrap, grow 0");
-		
+
 		JLabel birthdateLabel = new JLabel();
 		birthdateLabel.setFont(AppSettings.MAIN_FONT);
 		birthdateLabel.setText(getResourceMap().getString("birthdateLabel.text")); // NOI18N
 		add(birthdateLabel);
-		
+
 		JFormattedTextField birthdateField = new JFormattedTextField();
 		DateFormatter dateFormatter = new DateFormatter(new SimpleDateFormat("dd/MM/yyyy"));
 		birthdateField.setFormatterFactory(new DefaultFormatterFactory(dateFormatter));
 		birthdateField.setInputVerifier(new InputVerifier() {
-			
+
 			@Override
 			public boolean shouldYieldFocus(JComponent input) {
 				boolean inputOK = verify(input);
@@ -252,7 +254,7 @@ public class ClientInfoPanel extends AppPanel {
 				input.setInputVerifier(this);
 				return false;
 			}
-			
+
 			public boolean verify(JComponent input) {
 				boolean result = ((JFormattedTextField) input).isEditValid();
 				if (!(input instanceof JFormattedTextField)) {
@@ -270,12 +272,12 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, birthdateField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(birthdateField);
-		
+
 		JLabel genderLabel = new JLabel();
 		genderLabel.setFont(AppSettings.MAIN_FONT);
 		genderLabel.setText(getResourceMap().getString("genderLabel.text")); // NOI18N
 		add(genderLabel, "split");
-		
+
 		JRadioButton maleRadioButton = new JRadioButton();
 		maleRadioButton.setText(getResourceMap().getString("maleRadioButton.text")); // NOI18N
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, maleRadioButton, ENABLED);
@@ -297,7 +299,7 @@ public class ClientInfoPanel extends AppPanel {
 		Binding<? extends AbstractTablePanel<Client>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, gender, ebg, EnumButtonGroup.SELECTED_ENUM_PROPERTY);
 		bindingGroup.addBinding(genderBinding);
-		
+
 		JLabel addressLabel = new JLabel();
 		addressLabel.setFont(AppSettings.MAIN_FONT);
 		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
@@ -312,7 +314,7 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, addressField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(addressField, "span, wrap");
-		
+
 		JLabel telephoneLabel = new JLabel();
 		telephoneLabel.setFont(AppSettings.MAIN_FONT);
 		telephoneLabel.setText(getResourceMap().getString("telephoneLabel.text")); // NOI18N
@@ -327,7 +329,7 @@ public class ClientInfoPanel extends AppPanel {
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, phoneField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(phoneField, "wrap, span");
-		
+
 		JLabel locationLabel = new JLabel();
 		locationLabel.setFont(AppSettings.MAIN_FONT);
 		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
@@ -336,7 +338,7 @@ public class ClientInfoPanel extends AppPanel {
 		zipCodeField = new JComboBox();
 		zipCodeField.setFont(AppSettings.MAIN_FONT);
 		add(zipCodeField);
-		
+
 		locationField = new JComboBox();
 		locationField.setFont(AppSettings.MAIN_FONT);
 		add(locationField);
@@ -344,12 +346,12 @@ public class ClientInfoPanel extends AppPanel {
 		bindingGroup.addBindingListener(changeListener);
 		bindingGroup.bind();
 	}
-	
+
 	public EventList<City> getItemList() {
 		return itemList;
 	}
-	
-	public void setItemList(EventList<City> itemList) {
+
+	public void setItemList(final EventList<City> itemList) {
 		if (this.itemList != null) {
 			// dispose the current list, so it can be garbage collected
 			this.itemList.dispose();
@@ -377,20 +379,19 @@ public class ClientInfoPanel extends AppPanel {
 				}
 				return filterList != null && filterList.size() > 0 ? filterList.get(0) : selectedCity;
 			}
-			
+
 		});
 		zipCodeCompletion.setFirstItem(null);
 		zipCodeCompletion.setBeepOnStrictViolation(false);
 		zipCodeField.setRenderer(new CityInfoRenderer());
-		
+
 		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
 		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
-
 		if (locationBindingGroup != null) {
 			locationBindingGroup.unbind();
 		}
 		locationBindingGroup = new BindingGroup();
-		
+
 		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getClientTablePanel(), city, zipCodeField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
@@ -399,7 +400,6 @@ public class ClientInfoPanel extends AppPanel {
 		Binding<? extends AbstractTablePanel<Client>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), ITEM_SELECTED, zipCodeField, ENABLED);
 		locationBindingGroup.addBinding(enabledBinding);
-		
 		if (locationCompletion != null) {
 			locationCompletion.uninstall();
 		}
@@ -420,12 +420,12 @@ public class ClientInfoPanel extends AppPanel {
 				}
 				return filterList != null && !filterList.isEmpty() ? filterList.get(0) : selectedCity;
 			}
-			
+
 		});
 		locationCompletion.setFirstItem(null);
-		locationCompletion.setBeepOnStrictViolation(false);
+		locationCompletion.setBeepOnStrictViolation(false);				
 		locationField.setRenderer(new CityInfoRenderer());
-		
+
 		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getClientTablePanel(), city, locationField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
@@ -435,15 +435,15 @@ public class ClientInfoPanel extends AppPanel {
 		locationBindingGroup.addBindingListener(changeListener);
 		locationBindingGroup.bind();
 	}
-	
+
 	private ClientTablePanel getClientTablePanel() {
 		return clientTablePanel;
 	}
-	
+
 	public void requestFocus() {
 		firstnameField.requestFocus();
 	}
-	
+
 	public static class CityInfoRenderer extends DefaultListCellRenderer {
 
 		@Override

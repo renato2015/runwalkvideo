@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
@@ -52,11 +53,12 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		super(new MigLayout("nogrid, fill"));
 		this.videoFileManager = videoFileManager;
 		this.daoManager = daoManager;
-		
+
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
+				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow");
@@ -122,7 +124,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		filterList.setMatcherEditor(getSearchEngineTextFieldMatcherEditor());
 		return filterList;
 	}
-	
+
 	private TextComponentMatcherEditor<Client> getSearchEngineTextFieldMatcherEditor() {
 		return matcherEditor;
 	}
@@ -148,10 +150,12 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				JOptionPane.showMessageDialog(null, event.getValue().getMessage(), 
-						getResourceMap().getString("save.errorMessage"), JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(
+						SwingUtilities.windowForComponent(ClientTablePanel.this), 
+						event.getValue().getMessage(), 
+						getResourceMap().getString("save.errorMessage"), 
+						JOptionPane.ERROR_MESSAGE);
 			}
-
 
 		});
 		return saveTask;
@@ -179,7 +183,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(enabledProperty = ROW_SELECTED)
 	public void deleteClient() {
 		int n = JOptionPane.showConfirmDialog(
-				null,
+				SwingUtilities.windowForComponent(this),
 				getResourceMap().getString("deleteClient.confirmDialog.text"),
 				getResourceMap().getString("deleteClient.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
@@ -197,7 +201,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private void clearSearchField() {
 		searchField.setText("");
 	}
-	
+
 	/**
 	 * This calls the implementation of the {@link #update()} method in a created {@link Task}.
 	 * @return the created task
@@ -206,25 +210,25 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public Task<Boolean, Void> refresh() {
 		return new RefreshTask(getVideoFileManager(), getDaoManager());
 	}
-	
+
 	public TableFormat<Client> getTableFormat() {
 		return new ClientTableFormat();
 	}
-	
+
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-	
+
 	public DaoService getDaoManager() {
 		return daoManager;
 	}
 
 	public class ClientTableFormat implements TableFormat<Client> {
-		
+
 		public int getColumnCount() {
 			return 4;
 		}
-		
+
 		public String getColumnName(int column) {
 			if(column == 0)      return "ID";
 			else if(column == 1) return "Naam";
@@ -232,7 +236,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			else if(column == 3) return "Datum laatste analyze";
 			throw new IllegalStateException();
 		}
-		
+
 		public Object getColumnValue(Client client, int column) {
 			if(column == 0)      return client.getId();
 			else if(column == 1) return client.getName();
@@ -241,5 +245,5 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			throw new IllegalStateException();
 		}
 	}
-	
+
 }

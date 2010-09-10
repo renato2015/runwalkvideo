@@ -1,7 +1,9 @@
 package com.runwalk.video.gui.tasks;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -10,15 +12,15 @@ import com.runwalk.video.entities.SerializableEntity;
 
 public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List<T>, Void> {
 
-	private final List<T> itemList;
+	private final EventList<T> itemList;
 
 	private final DaoService daoService;
 
 	private final Class<T> theClass;
 
-	public SaveTask(Class<T> theClass, List<T> itemList, DaoService daoService) {
+	public SaveTask(Class<T> theClass, EventList<T> itemList, DaoService daoService) {
 		super("save");
-		this.itemList = new ArrayList<T>(itemList);
+		this.itemList = GlazedLists.eventList(itemList);
 		this.daoService = daoService;
 		this.theClass = theClass;
 	}

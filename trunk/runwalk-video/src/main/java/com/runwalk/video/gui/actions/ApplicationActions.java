@@ -92,30 +92,6 @@ public class ApplicationActions extends AbstractBean {
 	public void setRedoEnabled(boolean redoEnabled) {
 		this.firePropertyChange(REDO_ENABLED, this.redoEnabled, this.redoEnabled = redoEnabled);
 	}
-
-	@Action
-	public void selectVideoDir() {
-		File chosenDir = getAppSettings().getVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setVideoDir(result);
-	}
-	
-	@Action
-	public void selectUncompressedVideoDir() {
-		File chosenDir = getAppSettings().getUncompressedVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setUncompressedVideoDir(result);
-	}
-	
-	private File selectDirectory(File chosenDir) {
-		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = chooser.showDialog(null, "Selecteer");
-	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    	return chooser.getSelectedFile();
-	    }
-	    return chosenDir;
-	}
 	
 	@Action
 	public Task<Void, Void> uploadLogFiles() {

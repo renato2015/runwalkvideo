@@ -13,7 +13,7 @@ import com.runwalk.video.gui.AppComponent;
 
 @SuppressWarnings("serial")
 public class AppPanel extends JPanel implements AppComponent { 
-
+	
 	public Action getAction(String name) {
 		return getApplicationActionMap().get(name);
 	}

@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -364,6 +365,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			capturers.add(capturer);
 			getApplication().createOrShowComponent(capturer);
 			capturersToFront();
+		} else {
+			JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this), "Geen camera's gevonden..");
 		}
 	}
 
@@ -443,7 +446,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					// show players that have new loaded files
 					getApplication().createOrShowComponent(player);
 				} catch (FileNotFoundException e) {
-					JOptionPane.showMessageDialog(null,
+					JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this),
 							"Het bestand dat u probeerde te openen kon niet worden gevonden",
 							"Fout bij openen filmpje",
 							JOptionPane.ERROR_MESSAGE);

@@ -1,29 +1,31 @@
 package com.runwalk.video.gui.tasks;
 
-import java.awt.Frame;
+import java.awt.Component;
 import java.io.File;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+
+import ca.odell.glazedlists.EventList;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 
-public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
+public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 
 	private int filesDeleted = 0, fileCount = 0;
 
 	private final VideoFileManager videoFileManager;
 	
-	private final List<Analysis> analysisList;
+	private final EventList<Analysis> analysisList;
 	
-	private final Frame parentFrame;
+	private final Component parentComponent;
 
-	public CleanupRecordingsTask(Frame parentFrame, List<Analysis> analysisList, VideoFileManager videoFileManager) {
-		super("cleanupRecordings");
-		this.parentFrame = parentFrame;
+	public CleanupVideoFilesTask(Component parentComponent, EventList<Analysis> analysisList, VideoFileManager videoFileManager) {
+		super("cleanupVideoFiles");
+		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
 		this.analysisList = analysisList;
 	}
@@ -32,24 +34,29 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 	protected Boolean doInBackground() throws Exception {
 		message("startMessage");
 		List<File> filesToDelete = Lists.newArrayList();
-		for(Analysis analysis : getAnalysisList()) {
-			for(Recording recording : analysis.getRecordings()) {
-				File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
-				File uncompressedVideoFile = getVideoFileManager().getUncompressedVideoFile(recording);
-				if (compressedVideoFile.exists() && uncompressedVideoFile.exists()) {
-					long compressedDuration = VideoFileManager.getDuration(compressedVideoFile);
-					long uncompressedDuration = VideoFileManager.getDuration(uncompressedVideoFile);
-					if (compressedDuration == uncompressedDuration) {
-						filesToDelete.add(uncompressedVideoFile);
+		getAnalysisList().getReadWriteLock().readLock().lock();
+		try {
+			for(Analysis analysis : getAnalysisList()) {
+				for(Recording recording : analysis.getRecordings()) {
+					File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
+					File uncompressedVideoFile = getVideoFileManager().getUncompressedVideoFile(recording);
+					if (compressedVideoFile.exists() && uncompressedVideoFile.exists()) {
+						long compressedDuration = VideoFileManager.getDuration(compressedVideoFile);
+						long uncompressedDuration = VideoFileManager.getDuration(uncompressedVideoFile);
+						if (compressedDuration == uncompressedDuration) {
+							filesToDelete.add(uncompressedVideoFile);
+						}
 					}
 				}
+				setProgress(getAnalysisList().indexOf(analysis), 0, getAnalysisList().size());
 			}
-			setProgress(getAnalysisList().indexOf(analysis), 0, getAnalysisList().size());
+		} finally {
+			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
 		fileCount = filesToDelete.size();
 		boolean success = fileCount >= 0;
 		if (fileCount > 0) {
-			int chosenOption = JOptionPane.showConfirmDialog(getParentFrame(), 
+			int chosenOption = JOptionPane.showConfirmDialog(getParentComponent(), 
 					getResourceString("filesFoundMessage", fileCount), 
 					getResourceString("startMessage"), JOptionPane.OK_CANCEL_OPTION);
 			if (chosenOption == JOptionPane.OK_OPTION) {
@@ -72,14 +79,14 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 			String dialogMsg = getResourceString("finishedMessage", filesDeleted); 
 			String dialogTitle = getResourceString("endMessage");
 			if (fileCount == 0) {
-				JOptionPane.showMessageDialog(parentFrame, 
+				JOptionPane.showMessageDialog(getParentComponent(), 
 						getResourceString("noFilesFoundMessage"), 
 						dialogTitle, JOptionPane.INFORMATION_MESSAGE);
 			} else if (get()) {
-				JOptionPane.showMessageDialog(parentFrame,
+				JOptionPane.showMessageDialog(getParentComponent(),
 						dialogMsg, dialogTitle, JOptionPane.PLAIN_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(parentFrame,
+				JOptionPane.showMessageDialog(getParentComponent(),
 						dialogMsg + getResourceString("endErrorMessage", fileCount - filesDeleted),
 						dialogTitle, JOptionPane.WARNING_MESSAGE); 
 			}
@@ -92,12 +99,12 @@ public class CleanupRecordingsTask extends AbstractTask<Boolean, Void> {
 		return videoFileManager;
 	}
 
-	public List<Analysis> getAnalysisList() {
+	public EventList<Analysis> getAnalysisList() {
 		return analysisList;
 	}
 
-	public Frame getParentFrame() {
-		return parentFrame;
+	public Component getParentComponent() {
+		return parentComponent;
 	}
 	
 }
