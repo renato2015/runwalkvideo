@@ -31,11 +31,13 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	}
 	
 	/** {@inheritDoc} */
-	public void disposeCapturer(String capturerName) {
-		// dispose filtergraph if there was already one started by the camera dialog
-		DSFiltergraph activeFiltergraph = getFiltergraphByFilter(capturerName);
-		if (activeFiltergraph != null) {
-			activeFiltergraph.dispose();
+	public void disposeCapturer(IVideoCapturer capturerImpl) {
+		if (capturerImpl != null) {
+			// dispose filtergraph if there was already one started by the camera dialog
+			DSFiltergraph activeFiltergraph = getFiltergraphByFilter(capturerImpl.getTitle());
+			if (activeFiltergraph != null) {
+				activeFiltergraph.dispose();
+			}
 		}
 	}
 		

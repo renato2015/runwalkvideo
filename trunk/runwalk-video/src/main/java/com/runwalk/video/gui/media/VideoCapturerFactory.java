@@ -4,8 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -36,9 +34,9 @@ public abstract class VideoCapturerFactory {
 	 * This method should dispose the resources used by the given capturer after looking it up.
 	 * It should check whether the given capturer is an existant and running one first.
 	 * 
-	 * @param capturerName The name of the capturer
+	 * @param capturerImpl The capturer implementation
 	 */
-	public abstract void disposeCapturer(String capturerName);
+	public abstract void disposeCapturer(IVideoCapturer capturerImpl);
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -65,7 +63,7 @@ public abstract class VideoCapturerFactory {
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
 	 * @param listener a PropertyChangeListener to notify when internal properties change
-	 * @return the created instance or null if unsupported
+	 * @return The created capturer instance or null if no capturer devices were found
 	 * 
 	 */
 	public VideoCapturer createCapturer(final PropertyChangeListener listener, String defaultCapturer) {
@@ -77,10 +75,8 @@ public abstract class VideoCapturerFactory {
 
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURE_DEVICE)) {
-					// user changed capture device selection. dispose if there was something running
-					if (capturer.getVideoImpl() != null) {
-						disposeCapturer(capturer.getVideoImpl().getTitle());
-					}
+					// user changed capture device selection, dispose only if there was something running
+					disposeCapturer(capturer.getVideoImpl());
 					// initialize the selected capturer
 					String selectedCapturer = evt.getNewValue().toString();
 					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
@@ -107,10 +103,11 @@ public abstract class VideoCapturerFactory {
 				capturer.getVideoImpl().startCapturer();
 				// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
 				capturer.showComponent();
+			} else {
+				// dipose chosen capturer if dialog selection was cancelled
+				disposeCapturer(capturer.getVideoImpl());
 			}
-		} else {
-			JOptionPane.showMessageDialog(null, "Geen camera's gevonden..");
-		}
+		} 
 		// if the video implementation is null then the created capturer is useless
 		return capturer.getVideoImpl() == null ? null : capturer;
 	}
@@ -130,7 +127,7 @@ public abstract class VideoCapturerFactory {
 			return Lists.newArrayList("none");
 		}
 
-		public void disposeCapturer(String capturerName) {	}
+		public void disposeCapturer(IVideoCapturer capturerImpl) {	}
 
 	}
 

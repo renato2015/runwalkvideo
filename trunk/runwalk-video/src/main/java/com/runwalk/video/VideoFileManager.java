@@ -1,6 +1,7 @@
 package com.runwalk.video;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -86,18 +87,24 @@ public class VideoFileManager extends AbstractBean {
 		}
 	}
 
-	public void clear() {
+	public void refreshCache(List<Analysis> analyses) {
 		recordingFileMap.clear();
-	}
-
-	public void refreshCache(Analysis analysis) {
-		for (Recording recording : analysis.getRecordings()) {
-			getVideoFile(recording);
+		for (Analysis analysis : analyses) {
+			for (Recording recording : analysis.getRecordings()) {
+				getVideoFile(recording);
+			}
 		}
 	}
 	
-	public void refreshCache(Recording recording) {
+	public void refreshCache(Analysis analysis) {
+		for (Recording recording : analysis.getRecordings()) {
+			refreshCache(recording);
+		}
+	}
+	
+	public File refreshCache(Recording recording) {
 		recordingFileMap.remove(recording);
+		return getVideoFile(recording);
 	}
 
 	public boolean canReadAndExists(File videoFile) {

@@ -14,7 +14,6 @@ import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
-import de.humatic.dsj.DSMovie;
 
 /**
  * This class bundls all common DSJ functionality for the {@link IVideoCapturer} and {@link IVideoPlayer} implementations.
@@ -29,7 +28,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 * D3D9 renderer uses newer DirectX API and less CPU than the former when it can work on a capable GPU.
 	 * All filtergraphs are initialized in paused state.
 	 */
-	protected static final int FLAGS = DSFiltergraph.D3D9 | DSMovie.INIT_PAUSED;
+	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
 
 	static {
 		// initialize and unlock dsj dll at class loading time

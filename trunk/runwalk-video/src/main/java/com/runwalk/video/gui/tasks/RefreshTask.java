@@ -34,6 +34,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
 	private final VideoFileManager videoFileManager;
+	private CompositeList<Analysis> analysesOverview;
 
 	public RefreshTask(VideoFileManager videoFileManager, DaoService daoService) {
 		super("refresh");
@@ -83,7 +84,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 					});
 					// get analysis overview tablepanel and inject data
-					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
+					analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
 					analysesOverview.addMemberList(selectedClientAnalyses);
 					analysesOverview.addMemberList(deselectedClientAnalyses);
 					// create the overview with unfinished analyses
@@ -92,18 +93,19 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				}
 
 			});
-			// clear video file cache
-			getVideoFileManager().clear();
 			// some not so beautiful way to refresh the cache
 			message("loadingVideoFilesMessage");
-			for (Client client : clientList) {
-				for (Analysis analysis : client.getAnalyses()) {
+			analysesOverview.getReadWriteLock().readLock().lock();
+			try {
+				for (Analysis analysis : analysesOverview) {
 					getVideoFileManager().refreshCache(analysis);
+					setProgress(analysesOverview.indexOf(analysis), 0, analysesOverview.size());
 				}
-				setProgress(clientList.indexOf(client), 0, clientList.size());
+				RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
+			} finally {
+				analysesOverview.getReadWriteLock().readLock().unlock();
 			}
 			// check whether compressing should be enabled
-			RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
 			setProgress(6, 0, 6);
 			message("endMessage");
 		} catch(Exception ignore) {
@@ -112,11 +114,11 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		}
 		return success;
 	}
-	
+
 	private VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-	
+
 	private DaoService getDaoService() {
 		return daoService;
 	}

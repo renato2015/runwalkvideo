@@ -127,7 +127,7 @@ public class AppSettings implements Serializable {
 	 * @param dir The new directory
 	 */
 	public void setVideoDir(File dir) {
-		settings.videoDir = dir.getAbsolutePath();
+		getSettings().videoDir = dir.getAbsolutePath();
 		// reset the cached value for this directory so it will be reinitialized during the next request
 		videoDir = null;
 	}
@@ -155,7 +155,7 @@ public class AppSettings implements Serializable {
 	 * @param dir The new directory
 	 */
 	public void setUncompressedVideoDir(File dir) {
-		settings.uncompressedVideoDir = dir.getAbsolutePath();
+		getSettings().uncompressedVideoDir = dir.getAbsolutePath();
 		// reset the cached value for this directory so it will be reinitialized during the next request
 		uncompressedVideoDir = null;
 	}
@@ -232,14 +232,14 @@ public class AppSettings implements Serializable {
 		getSettings().videoFolderFormatString = videoFolderFormatString;
 	}
 	
-/*	public String getVlcPath() {
+	public String getVlcPath() {
 		return getSettings().vlcPath;
 	}
 	
 	public void setVlcPath(String vlcPath) {
 		getSettings().vlcPath = vlcPath;
 	}
-*/
+
 	@XmlRootElement
 	public static class Settings implements Serializable {
 		@XmlElement
@@ -269,8 +269,8 @@ public class AppSettings implements Serializable {
 		@XmlElement
 		private String videoFolderFormatString;
 		
-//		@XmlElement
-//		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+		@XmlElement
+		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
  
 	}
 

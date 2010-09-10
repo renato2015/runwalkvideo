@@ -1,13 +1,16 @@
 package com.runwalk.video.gui.panels;
 
+import java.awt.Window;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -26,9 +29,10 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.gui.DateTableCellRenderer;
-import com.runwalk.video.gui.tasks.CleanupRecordingsTask;
+import com.runwalk.video.gui.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.gui.tasks.CompressTask;
 import com.runwalk.video.gui.tasks.OrganiseVideoFilesTask;
+import com.runwalk.video.gui.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -40,8 +44,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	private boolean compressionEnabled;
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
-	
-	private EventList<Analysis> allAnalyses;
+
+	private EventList<Analysis> analysisList;
 
 	private final VideoFileManager videoFileManager;
 	private final AppSettings appSettings;
@@ -50,7 +54,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
-		
+
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
@@ -66,7 +70,49 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Action
 	public Task<Boolean, Void> cleanup() {
-		return new CleanupRecordingsTask(getApplication().getMainFrame(), getAllAnalyses(), getVideoFileManager());
+		Window parentWindow = SwingUtilities.windowForComponent(this);
+		return new CleanupVideoFilesTask(parentWindow, getAnalysisList(), getVideoFileManager());
+	}
+
+	@Action
+	public Task<Void, Void> selectUncompressedVideoDir() {
+		File chosenDir = getAppSettings().getUncompressedVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setUncompressedVideoDir(result);
+		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+	}
+	
+	@Action
+	public Task<Void,Void> selectVideoDir() {
+		File chosenDir = getAppSettings().getVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setVideoDir(result);
+		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+	}
+	
+	private File selectDirectory(File chosenDir) {
+		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = chooser.showDialog(null, "Selecteer");
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	    	return chooser.getSelectedFile();
+	    }
+	    return chosenDir;
+	}
+
+	@Action( block = Task.BlockingScope.APPLICATION)
+	public Task<Void, Void> organiseVideoFiles() {
+		Object formatString = JOptionPane.showInputDialog(SwingUtilities.windowForComponent(this), 
+				"Geef hier een folder structuur op door '/' als separator te gebruiken", 
+				"Organiseer bestanden", JOptionPane.QUESTION_MESSAGE, 
+				null, null, getAppSettings().getVideoFolderFormatString());
+		if (formatString != null) {
+			// create a new retrieval strategy using the specified format string
+			VideoFolderRetrievalStrategy newStrategy = new DateVideoFolderRetrievalStrategy(formatString.toString());
+			Window parentComponent = SwingUtilities.windowForComponent(this);
+			return new OrganiseVideoFilesTask(parentComponent, getAnalysisList(), getVideoFileManager(), newStrategy);
+		}
+		return null;
 	}
 
 	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
@@ -75,22 +121,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		String transcoder = getAppSettings().getTranscoder();
 		return new CompressTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
 	}
-	
-	@Action( block = Task.BlockingScope.APPLICATION)
-	public Task<Void, Void> organiseVideoFiles() {
-		Object formatString = JOptionPane.showInputDialog(getApplication().getMainFrame(), 
-				"Geef hier een folder structuur op door '/' als separator te gebruiken", 
-				"Organiseer bestanden", JOptionPane.QUESTION_MESSAGE, 
-				null, null, getAppSettings().getVideoFolderFormatString());
-		if (formatString != null) {
-			// create a new retrieval strategy using the specified format string
-			VideoFolderRetrievalStrategy newStrategy = new DateVideoFolderRetrievalStrategy(formatString.toString());
-			return new OrganiseVideoFilesTask(getApplication().getMainFrame(), getAllAnalyses(), getVideoFileManager(), newStrategy);
-		}
-		return null;
-	}
 
-	
 	public boolean isCompressionEnabled() {
 		return compressionEnabled;
 	}
@@ -127,14 +158,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		return list;
 	}
-	
-	private List<Analysis> getAllAnalyses() { 
-		return allAnalyses;
+
+	private EventList<Analysis> getAnalysisList() { 
+		return analysisList;
 	}
 
 	@Override
 	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
-		allAnalyses = eventList;
+		analysisList = eventList;
 		return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
 
 			public boolean matches(Analysis item) {
