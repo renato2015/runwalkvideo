@@ -12,6 +12,12 @@ import de.humatic.dsj.DSFiltergraph;
 
 public class DSJCapturerFactory extends VideoCapturerFactory {
 
+	/**
+	 * Find a {@link DSFiltergraph} that contains a filter with the specified name.
+	 * 
+	 * @param filterInfo The name of the filter
+	 * @return The {@link DSFiltergraph} that contains the filter
+	 */
 	private DSFiltergraph getFiltergraphByFilter(String filterInfo) {
 		if (filterInfo != null && !filterInfo.equals("none")) {
 			DSFilterInfo oldDevice = DSFilterInfo.filterInfoForName(filterInfo);
@@ -30,15 +36,8 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 		return null;
 	}
 	
-	/** {@inheritDoc} */
-	public void disposeCapturer(IVideoCapturer capturerImpl) {
-		if (capturerImpl != null) {
-			// dispose filtergraph if there was already one started by the camera dialog
-			DSFiltergraph activeFiltergraph = getFiltergraphByFilter(capturerImpl.getTitle());
-			if (activeFiltergraph != null) {
-				activeFiltergraph.dispose();
-			}
-		}
+	public boolean isActiveCapturer(String capturerName) {
+		return getFiltergraphByFilter(capturerName) != null;
 	}
 		
 	/** {@inheritDoc} */
@@ -48,14 +47,14 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	}
 
 	/** {@inheritDoc} */
-	public List<String> getCapturers() {
+	public synchronized List<String> getCapturers() {
 		List<String> result = Lists.newArrayList();
 		// query first with bit set to 0 to get quick listing of available capture devices
 		DSFilterInfo[][] dsi = DSCapture.queryDevices(0 | DSCapture.SKIP_AUDIO);
 		for(DSFilterInfo dsFilterInfo : dsi[0]) {
 			String filterName = dsFilterInfo.getName();
 			// remove filters that are already added to a filtergraph
-			if (getFiltergraphByFilter(filterName) == null && !"none".equals(filterName)) {
+			if (!"none".equals(filterName)) {
 				result.add(filterName);
 			}
 		}

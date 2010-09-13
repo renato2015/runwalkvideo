@@ -72,11 +72,16 @@ public class VideoCapturer extends VideoComponent {
 		this.videoImpl = videoImpl;
 	}
 
+	@Override
+	public void dispose() {
+		super.dispose();
+		setVideoImpl(null);
+	}
+
 	public void startRecording(Recording recording, File videoFile) {
 		if (videoFile == null || recording == null) {
 			throw new IllegalArgumentException("No valid file or recording specified");
 		} 
-		setVideoFile(videoFile);
 		setRecording(recording);
 		
 		getApplication().getStatusPanel().setIndeterminate(true);

@@ -9,6 +9,7 @@ import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URI;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -38,9 +39,8 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	private JPanel videoPanel;
 	private JFrame frame;
 
-	public JMCPlayer(float rate, File videoFile) {
+	public JMCPlayer(float rate) {
 		this.mp = new MediaProvider();
-		loadFile(videoFile);
 		setPlayRate(rate);
 		ac = mp.getControl(AudioControl.class);
 		vrc = mp.getControl(VideoRenderControl.class);
@@ -51,6 +51,21 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		frame.setTitle("JMC player");
 		frame.add(videoPanel);
 		frame.pack();
+	}
+	
+	public boolean loadFile(File videoFile) {
+		return loadVideo(videoFile.toURI().toString());
+	}
+	
+	public boolean loadVideo(String path) {
+		boolean rebuilt = false;
+		try {
+			mp.setSource(new URI(path));
+		} catch (Exception e) {
+			Logger.getLogger(JMCPlayer.class).error(e);
+			rebuilt = true;
+		}
+		return rebuilt;
 	}
 
 	public void dispose() {
@@ -74,17 +89,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 
 	public int getPosition() {
 		return (int) mp.getMediaTime();
-	}
-
-	public boolean loadFile(File videoFile) {
-		boolean rebuilt = false;
-		try {
-			mp.setSource(videoFile.toURI());
-		} catch (Exception e) {
-			Logger.getLogger(JMCPlayer.class).error(e);
-			rebuilt = true;
-		}
-		return rebuilt;
 	}
 
 	public void setPosition(int pos) {

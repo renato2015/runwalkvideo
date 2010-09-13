@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -28,6 +29,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.runwalk.video.gui.AppDialog;
 
 @SuppressWarnings("serial")
@@ -80,7 +82,7 @@ public class CameraDialog extends AppDialog {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (isReady) {
-					dismissDialog(new ActionEvent(CameraDialog.this, e.getID(), "cancelled"));
+					dismissDialog();
 				} else {
 					Runtime.getRuntime().exit(0);
 				}
@@ -120,7 +122,7 @@ public class CameraDialog extends AppDialog {
 			public void itemStateChanged(ItemEvent e) {
 				JComboBox source = (JComboBox) e.getSource();
 				String captureDevice = source.getSelectedItem().toString();
-				setSelectedCaptureDevice(captureDevice);
+				setSelectedCapturer(captureDevice);
 			}
 
 		});
@@ -143,19 +145,31 @@ public class CameraDialog extends AppDialog {
 		}
 	}
 
-	public void setSelectedCaptureDevice(String selectedCapturer) {
+	public void setSelectedCapturer(String selectedCapturer) {
 		firePropertyChange(SELECTED_CAPTURE_DEVICE, this.selectedCapturer, this.selectedCapturer = selectedCapturer);
+	}
+
+	public String getSelectedCapturer() {
+		return selectedCapturer;
+	}
+	
+	public void dismissDialog() {
+		dismissDialog(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "cancelled"));
 	}
 
 	@Action
 	public void dismissDialog(ActionEvent actionEvent) {
-		cancelled = actionEvent.getActionCommand().equals("cancelled");
+		setCancelled(actionEvent.getActionCommand().equals("cancelled"));
 		setVisible(false);
 		// release native screen resources
 		dispose();
 	}
 	
-	public boolean wasCancelled() {
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
+	}
+	
+	public boolean isCancelled() {
 		return cancelled;
 	}
 
@@ -168,28 +182,34 @@ public class CameraDialog extends AppDialog {
 		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
 		List<String> captureDevices = VideoCapturerFactory.getInstance().getCapturers();
 		// check if there was a previously selected item (dialog was already open)
-		Object selectedItem = capturerComboBox.getSelectedItem();
-		if (selectedItem != null) {
-			// add the previously selected item to the list, as its native resources were already initialized
-			captureDevices.add(selectedItem.toString());
+		for(String captureDevice : Lists.newArrayList(captureDevices)) {
+			// remove any running capturers from the list, except when it was started by the dialog itself
+			if (!captureDevice.equals(getSelectedCapturer()) && 
+					VideoCapturerFactory.getInstance().isActiveCapturer(captureDevice)) {
+				captureDevices.remove(captureDevice);
+			}
 		}
 		// return if no capturers found
 		if (captureDevices.isEmpty()) {
+			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorMessage"));
+			dismissDialog();
 			return false;
 		}
 		String[] captureDevicesArray = Iterables.toArray(captureDevices, String.class);
 		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
 		String defaultCapturerName = capturerComboBox.getSelectedItem().toString();
-		if (this.defaultCapturerName != null && captureDevices.contains(this.defaultCapturerName)) {
-			defaultCapturerName = this.defaultCapturerName;
-		}
 		// retain the previous selection if there was one. Otherwise use the default selected capturer name
-		selectedItem = selectedItem == null ? defaultCapturerName : selectedItem;
+		if (selectedCapturer == null && this.defaultCapturerName != null && 
+				captureDevices.contains(this.defaultCapturerName)) {
+			defaultCapturerName = this.defaultCapturerName;
+		} else if (selectedCapturer != null) {
+			defaultCapturerName = selectedCapturer;
+		}
 		// set the selected item on the combobox
-		capturerComboBox.setSelectedItem(selectedItem);
+		capturerComboBox.setSelectedItem(defaultCapturerName);
 		// make another call to the setter here to make sure the selected capturer will be started
-		setSelectedCaptureDevice(selectedItem.toString());
+		setSelectedCapturer(defaultCapturerName);
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

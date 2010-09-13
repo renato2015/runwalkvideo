@@ -1,7 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.io.File;
-
 import com.runwalk.video.util.AppSettings;
 
 public interface IVideoPlayer extends IVideoComponent {
@@ -12,11 +10,12 @@ public interface IVideoPlayer extends IVideoComponent {
 	 * by reconnecting it to a new source filter. Still, it may take a tiny change in the source media type to make the reconnection of an 
 	 * existing graph to a new source filter fail. This will require the code to dispose resources and rebuild the filtergraph to open another videofile.
 	 * 
-	 * @see DSJPlayer#loadFile(File)
-	 * @param videoFile The file to open
+	 * @see DSJPlayer#loadVideo(String)
+	 * @param path The path to the file or url to open
 	 * @return <code>true</code> if the native resources were disposed and rebuilt
 	 */
-	public boolean loadFile(File videoFile);
+	public boolean loadVideo(String path);
+
 
 	/**
 	 * Return the current playback position in milliseconds.

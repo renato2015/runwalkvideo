@@ -13,7 +13,7 @@ import com.runwalk.video.RunwalkVideoApp;
 public abstract class VideoCapturerFactory {
 
 	private static VideoCapturerFactory factory;
-	
+
 	/**
 	 * Initialize the capturer with the given name. Visible components should not be initialized until
 	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be very expensive.
@@ -22,7 +22,7 @@ public abstract class VideoCapturerFactory {
 	 * @return A video implementation that is ready to start running
 	 */
 	public abstract IVideoCapturer initializeCapturer(String capturerName);
-	
+
 	/**
 	 * This method should return a list with all <b>uninitialized</b> capturer names.
 	 * 
@@ -30,13 +30,7 @@ public abstract class VideoCapturerFactory {
 	 */
 	public abstract List<String> getCapturers();
 
-	/**
-	 * This method should dispose the resources used by the given capturer after looking it up.
-	 * It should check whether the given capturer is an existant and running one first.
-	 * 
-	 * @param capturerImpl The capturer implementation
-	 */
-	public abstract void disposeCapturer(IVideoCapturer capturerImpl);
+	public abstract boolean isActiveCapturer(String capturerName);
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -52,10 +46,6 @@ public abstract class VideoCapturerFactory {
 			}
 		}
 		return factory;
-	}
-	
-	public VideoCapturer createCapturer(final PropertyChangeListener listener) {
-		return createCapturer(listener, null);
 	}
 
 	/** 
@@ -76,7 +66,9 @@ public abstract class VideoCapturerFactory {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURE_DEVICE)) {
 					// user changed capture device selection, dispose only if there was something running
-					disposeCapturer(capturer.getVideoImpl());
+					if (capturer.getVideoImpl() != null) {
+						capturer.getVideoImpl().dispose();
+					}
 					// initialize the selected capturer
 					String selectedCapturer = evt.getNewValue().toString();
 					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
@@ -96,20 +88,20 @@ public abstract class VideoCapturerFactory {
 		if (dialog.refreshCapturers()) {
 			// show the dialog on screen
 			RunwalkVideoApp.getApplication().show(dialog);
-			// remove the listener to avoid memory leaking
-			dialog.removePropertyChangeListener(changeListener);
-			if (!dialog.wasCancelled()) {
+			if (!dialog.isCancelled()) {
 				// prepare the capturer for showing live video
 				capturer.getVideoImpl().startCapturer();
 				// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
 				capturer.showComponent();
 			} else {
-				// dipose chosen capturer if dialog selection was cancelled
-				disposeCapturer(capturer.getVideoImpl());
+				// dispose chosen capturer if canceled
+				capturer.dispose();
 			}
 		} 
+		// remove the listener to avoid memory leaking
+		dialog.removePropertyChangeListener(changeListener);
 		// if the video implementation is null then the created capturer is useless
-		return capturer.getVideoImpl() == null ? null : capturer;
+		return capturer.getVideoImpl() != null ? capturer : null;
 	}
 
 	/**
@@ -128,6 +120,10 @@ public abstract class VideoCapturerFactory {
 		}
 
 		public void disposeCapturer(IVideoCapturer capturerImpl) {	}
+
+		public boolean isActiveCapturer(String capturerName) {
+			return false;
+		}
 
 	}
 
