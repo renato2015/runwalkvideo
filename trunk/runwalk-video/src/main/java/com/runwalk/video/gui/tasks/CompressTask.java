@@ -81,9 +81,9 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 				}
 				recording.setRecordingStatus(RecordingStatus.READY);
 				if (exporter == null) {
-					exporter = new DSJPlayer(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
+					exporter = new DSJPlayer(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				} else {
-					exporter.loadFile(sourceFile, /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
+					exporter.loadVideo(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				}
 				setProgress((int) (conversionCounter * part));
 				message("progressMessage",  conversionCounter + 1, conversionCount);

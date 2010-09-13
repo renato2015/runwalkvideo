@@ -6,7 +6,6 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,12 +45,10 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public static final String MONITOR_ID = "monitorId";
 
 	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
-	private File videoFile;
 	private Recording recording;
-	protected Frame fullScreenFrame;
-	protected AppInternalFrame internalFrame;
+	private AppInternalFrame internalFrame;
 	private Timer timer;
-	boolean fullscreen = false;
+	private boolean fullscreen = false;
 	private ActionMap actionMap;
 	private State state;
 	private Integer monitorId;
@@ -144,14 +141,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return appWindowWrapperListeners;
 	}
 
-	public File getVideoFile() {
-		return videoFile;
-	}
-
-	public void setVideoFile(File videoFile) {
-		this.videoFile = videoFile;
-	}
-
 	public Recording getRecording() {
 		return recording;
 	}
@@ -214,10 +203,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return container;
 	}
 
-	protected boolean hasVideoFile() {
-		return getVideoFile() != null;
-	}
-
 	protected void setMonitorId(int monitorId) {
 		this.monitorId = monitorId;
 	}
@@ -249,7 +234,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		if (monitorId > 0) {
 			getApplication().hideComponent(internalFrame);
 			getVideoImpl().setFullScreen(graphicsDevice, true);
-			fullScreenFrame = getVideoImpl().getFullscreenFrame();
 		} else {
 			getVideoImpl().setFullScreen(graphicsDevice, false);
 			if (internalFrame == null) {
@@ -296,8 +280,17 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public void dispose() {
-		getVideoImpl().dispose();
-		setVideoFile(null);
+		// remove window listeners on the windows to make them eligible for garbage collection
+		for (AppWindowWrapperListener listener : getAppWindowWrapperListeners()) {
+			removeAppWindowWrapperListener(listener);
+		}
+		// remove property change listeners to make this instance eligible for garbage collection
+		for (PropertyChangeListener listener : getPropertyChangeListeners()) {
+			removePropertyChangeListener(listener);
+		}
+		if (getVideoImpl() != null) {			
+			getVideoImpl().dispose();
+		}
 		setRecording(null);
 	}
 
@@ -306,6 +299,8 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public abstract IVideoComponent getVideoImpl();
+	
+//	public abstract void setVideoImpl(IVideoComponent videoImpl);
 
 	public void toFront() {
 		if (isFullscreen()) {

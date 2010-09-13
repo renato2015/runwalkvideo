@@ -3,7 +3,6 @@ package com.runwalk.video.gui.media;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.TreeSet;
@@ -30,8 +29,8 @@ public class VideoPlayer extends VideoComponent {
 	private float volume;
 	
 	private IVideoPlayer playerImpl;
-
-	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, File videoFile, float playRate) throws FileNotFoundException {
+	
+	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, String path, float playRate) throws FileNotFoundException {
 		playerCount++;
 		// check if the play rate is supported by the video player, if not then use the lowest one
 		if (!PLAY_RATES.contains(playRate)) {
@@ -42,12 +41,12 @@ public class VideoPlayer extends VideoComponent {
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 			result = new DSJPlayer(playRate);
 		} else {
-			result = new JMCPlayer(playRate, videoFile);
+			result = new JMCPlayer(playRate);
 		}
-		return new VideoPlayer(listener, recording, videoFile, result);
+		return new VideoPlayer(listener, recording, path, result);
 	}
-
-	private VideoPlayer(PropertyChangeListener listener, Recording recording, File videoFile, IVideoPlayer playerImpl) throws FileNotFoundException {
+	
+	private VideoPlayer(PropertyChangeListener listener, Recording recording, String path, IVideoPlayer playerImpl) throws FileNotFoundException {
 		super(listener, playerCount);
 		this.playerImpl = playerImpl;
 		setTimer(new Timer(25, null));
@@ -59,13 +58,12 @@ public class VideoPlayer extends VideoComponent {
 				}
 			}
 		});
-		loadFile(recording, videoFile);
+		loadVideo(recording, path);
 	}
 
-	public void loadFile(Recording recording, File videoFile) throws FileNotFoundException {
-		setVideoFile(videoFile);
+	public void loadVideo(Recording recording, String path) throws FileNotFoundException {
 		setRecording(recording);
-		if (getVideoImpl().loadFile(videoFile)) {
+		if (getVideoImpl().loadVideo(path)) {
 			showComponent();
 		}
 		setComponentTitle(getTitle());
@@ -203,6 +201,16 @@ public class VideoPlayer extends VideoComponent {
 		return playerImpl;
 	}
 	
+	public void setVideoImpl(IVideoPlayer playerImpl) {
+		this.playerImpl = playerImpl;
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		setVideoImpl(null);
+	}
+
 	public boolean isPlaying() {
 		return getState() == VideoComponent.State.PLAYING;
 	}

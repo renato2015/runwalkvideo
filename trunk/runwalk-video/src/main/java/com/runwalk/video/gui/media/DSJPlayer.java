@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.media;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 
 import javax.swing.JOptionPane;
 
@@ -10,7 +9,6 @@ import org.jdesktop.application.Action;
 
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSMovie;
-
 
 public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
@@ -23,19 +21,17 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	public DSJPlayer(float rate) {
 		this.rate = rate;
 	}
-
-	public DSJPlayer(File videoFile, int flags, PropertyChangeListener listener) {
-		loadFile(videoFile, flags, listener);
+	
+	public DSJPlayer(String path, int flags, PropertyChangeListener listener) {
+		loadVideo(path, flags, listener);
 	}
 	
-	/** {@inheritDoc} */
-	public boolean loadFile(File videoFile) {
-		return loadFile(videoFile, FLAGS, null);
+	public boolean loadVideo(String path) {
+		return loadVideo(path, FLAGS, null);
 	}
 	
-	public boolean loadFile(File videoFile, int flags, PropertyChangeListener listener) {
+	public boolean loadVideo(String path, int flags, PropertyChangeListener listener) {
 		boolean rebuilt = false;
-		String path = videoFile.getAbsolutePath();
 		try {
 			if (rebuilt = getFiltergraph() == null) {
 				initFiltergraph(path, flags, listener);
@@ -130,6 +126,5 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	public String getTitle() {
 		return "DSJ player";
 	}
-
 
 }
