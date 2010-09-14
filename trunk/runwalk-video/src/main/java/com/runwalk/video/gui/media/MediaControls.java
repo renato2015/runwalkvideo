@@ -94,6 +94,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 
 			@Override
+			@SuppressWarnings("unchecked")
 			public void sourceChanged(Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
 			}
@@ -169,12 +170,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	//TODO kan dit eventueel met een proxy action??
-	@Action(enabledProperty=FULL_SCREEN_ENABLED, block=BlockingScope.APPLICATION)
+	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
 	public void fullScreen() { 
 		frontMostComponent.toggleFullscreen();
 	}
 
-	@Action(enabledProperty=STOP_ENABLED)
+	@Action(enabledProperty = STOP_ENABLED)
 	public void stop() {
 		if (isRecording()) {
 			stopRecording();
@@ -185,7 +186,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		setStopEnabled(false);
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED )
+	@Action(enabledProperty = PLAYING_ENABLED )
 	public void togglePlay() {
 		for (VideoPlayer player : players) {
 			if (player.isPlaying()) {
@@ -199,28 +200,28 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void increaseVolume() {
 		for (VideoPlayer player : players) {
 			player.increaseVolume();
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void decreaseVolume() {
 		for (VideoPlayer player : players) {
 			player.decreaseVolume();
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void mute() {
 		for (VideoPlayer player : players) {
 			player.mute();
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void slower() {
 		for (VideoPlayer player : players) {
 			if (!player.isPlaying()) {
@@ -234,7 +235,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void faster() {
 		for (VideoPlayer player : players) {
 			if (!player.isPlaying()) {
@@ -249,17 +250,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	//TODO this action should not be available when there is no capturer open
-	@Action(enabledProperty=PLAYING_DISABLED)
+	@Action(enabledProperty = PLAYING_DISABLED)
 	public void showCaptureSettings() {
 		frontMostCapturer.showCapturerSettings();
 	}
 
-	@Action(enabledProperty=PLAYING_DISABLED)
+	@Action(enabledProperty = PLAYING_DISABLED)
 	public void showCameraSettings() {
 		frontMostCapturer.showCameraSettings();
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void nextSnapshot() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
@@ -267,7 +268,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void previousSnapshot() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
@@ -276,7 +277,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@SuppressWarnings("unchecked")
-	@Action(enabledProperty=PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYING_ENABLED)
 	public void makeSnapshot() {
 		int newPosition = 0;
 		int duration = 0;
@@ -354,12 +355,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(name = "Start Camera")
 	public void startCapturer() {
-		String defaultCapturerName = getAppSettings().getDefaultCapturerName();
-		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this, defaultCapturerName);
+		String capturerName = getAppSettings().getCapturerName();
+		String captureEncoderName = getAppSettings().getCaptureEncoderName();
+		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this, capturerName, captureEncoderName);
 		if (capturer != null) {
 			// save chosen name only if this is the first chosen capturer
 			if (capturers.isEmpty()) {
-				getAppSettings().setDefaultCapturerName(capturer.getVideoImpl().getTitle());
+				getAppSettings().setCapturerName(capturer.getVideoImpl().getTitle());
 			}
 			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
 			capturers.add(capturer);
@@ -541,14 +543,23 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
 			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
 			Long timeRecorded = (Long) newValue;
-			//only update status info if it is the fronmost capturer
+			// only update status info if it is the fronmost capturer
 			if (frontMostCapturer == capturer) {
 				updateTimeStamps(timeRecorded, 0);
+			}
+		} else if (evt.getPropertyName().equals(VideoCapturer.CAPTURE_ENCODER_NAME)) {
+			// save capture encoder name for the given videoCapturer?
+		} else if (evt.getPropertyName().equals(VideoComponent.DISPOSED)) {
+			// remove vide component from its list
+			if (evt.getSource() instanceof VideoCapturer) {
+				capturers.remove(evt.getSource());
+			} else if (evt.getSource() instanceof VideoPlayer) {
+				players.remove(evt.getSource());
 			}
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
 			VideoPlayer player = (VideoPlayer) evt.getSource();
-			//only update status info for the frontmost player
+			// only update status info for the frontmost player
 			if (frontMostPlayer == player) {
 				if (position == 0) {
 					getLogger().debug("playback position set to 0");
@@ -609,12 +620,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void capturersToFront() {
-		//		if (!(frontMostComponent instanceof VideoCapturer)) {
 		// TODO flickering??
 		for (VideoCapturer capturer : capturers) {
 			capturer.toFront();
 		}
-		//		}
 	}
 
 	public VideoFileManager getVideoFileManager() {
@@ -635,8 +644,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private class WindowStateChangeListener extends AppWindowWrapperListener {
 
+		//TODO this can be coded better.. can lead to memory leaks..
 		private VideoComponent enclosingWrapper;
-		//TODO this can be coded better I guess!!.. can lead to memory leaks..
+		
 		public WindowStateChangeListener(VideoComponent enclosingWrapper) {
 			this.enclosingWrapper = enclosingWrapper;
 		}

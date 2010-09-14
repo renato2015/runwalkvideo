@@ -39,16 +39,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;
-
-	/**
-	 * Constructor for fullscreen mode.
-	 * 
-	 * @param device the {@link GraphicsDevice} on which the {@link Frame} will be displayed
-	 */
-	public DSJComponent(GraphicsDevice device) { }
-
-	public DSJComponent() { }
-
+	
 	public T getFiltergraph() {
 		return filtergraph;
 	}
@@ -99,12 +90,18 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		DSFilterInfo filterinfo = DSFilterInfo.filterInfoForName(name);
 		if (getFiltergraph() != null) {
 			DSFilter[] installedFilters = getFiltergraph().listFilters();
+			// stop filtergraph to add filters
+			getFiltergraph().stop();
 			DSFilter filter = getFiltergraph().addFilterToGraph(filterinfo);
 			filter.connectDownstream(filter.getPin(0,0), installedFilters[1].getPin(1, 0), true);
 			filter.dumpConnections();
 			getLogger().debug("Inserting filter before " + installedFilters[1].getName() + " after " + installedFilters[3].getName());
 			getFiltergraph().insertFilter(installedFilters[1], installedFilters[3], filterinfo);
 			filter.showPropertiesDialog();
+			// wiring has changed, notify graph
+			getFiltergraph().graphChanged();
+			// start playing again
+			getFiltergraph().play();
 		}
 	}
 

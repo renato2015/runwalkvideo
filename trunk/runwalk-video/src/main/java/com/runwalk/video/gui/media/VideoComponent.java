@@ -12,6 +12,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.InternalFrameListener;
 
@@ -43,6 +44,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
 	public static final String STATE = "state";
 	public static final String MONITOR_ID = "monitorId";
+	public static final String DISPOSED = "disposed";
 
 	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 	private Recording recording;
@@ -100,7 +102,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	//TODO review code!
 	protected void reAttachAppWindowWrapperListeners() {
 		if (isFullscreen() && getFullscreenFrame() != null) {
-			for(AppWindowWrapperListener appWindowWrapperListener : appWindowWrapperListeners) {
+			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
 				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
 				if (!listeners.contains(appWindowWrapperListener)) {
 					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
@@ -108,7 +110,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			}
 		}
 		if (!isFullscreen() && getInternalFrame() != null) {
-			for(AppWindowWrapperListener appWindowWrapperListener : appWindowWrapperListeners) {
+			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
 				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
 				if (!listeners.contains(appWindowWrapperListener)) {
 					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
@@ -138,7 +140,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
-		return appWindowWrapperListeners;
+		return Lists.newArrayList(appWindowWrapperListeners);
 	}
 
 	public Recording getRecording() {
@@ -247,10 +249,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		setComponentTitle(getTitle());
 	}
 
-	@org.jdesktop.application.Action(enabledProperty=FULL_SCREEN_ENABLED, block=BlockingScope.APPLICATION)
+	@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
 	public void toggleFullscreen() {
 		// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
 		monitorId = monitorId != null && monitorId == 0 ? null : 0;
+		SwingUtilities.isEventDispatchThread();
 		showComponent(monitorId);
 	}
 
@@ -279,7 +282,14 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getState() == State.IDLE;
 	}
 
+	/**
+	 * Make this instance eligible for garbage collection.
+	 */
 	public void dispose() {
+		// fire event before removing listeners
+		firePropertyChange(DISPOSED, false, true);
+		// remove window from the menu bar
+		getApplication().removeComponent(this);
 		// remove window listeners on the windows to make them eligible for garbage collection
 		for (AppWindowWrapperListener listener : getAppWindowWrapperListeners()) {
 			removeAppWindowWrapperListener(listener);
@@ -300,8 +310,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 
 	public abstract IVideoComponent getVideoImpl();
 	
-//	public abstract void setVideoImpl(IVideoComponent videoImpl);
-
 	public void toFront() {
 		if (isFullscreen()) {
 			getFullscreenFrame().toFront();

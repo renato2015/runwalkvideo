@@ -25,10 +25,10 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	private int deletedDirectories;
 	private int filesMoved;
 
-	public OrganiseVideoFilesTask(Component parentFrame, EventList<Analysis> analysisList, 
+	public OrganiseVideoFilesTask(Component parentComponent, EventList<Analysis> analysisList, 
 			VideoFileManager videoFileManager, VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
 		super("organiseVideoFiles");
-		this.parentComponent = parentFrame;
+		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
 		this.videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 		this.analysisList = analysisList;
@@ -90,7 +90,8 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 		if( directory.exists() ) {
 			File[] files = directory.listFiles();
 			for(int i=0; i<files.length; i++) {
-				if(files[i].isDirectory()) {
+				// don't delete invisible directories
+				if(files[i].isDirectory() && !files[i].getName().startsWith(".")) {
 					deleteEmptyDirectories(directoryCount, files[i]);
 				} 
 			}

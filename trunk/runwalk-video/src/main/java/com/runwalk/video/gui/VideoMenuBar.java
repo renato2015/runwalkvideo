@@ -143,7 +143,6 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 
 			});
 			JMenu menu = new JMenu(appComponent.getTitle());
-
 			checkedItem = new JCheckBoxMenuItem(getAction("showWindow"));
 			checkedItem.setSelected(component.isVisible());
 			windowBoxMap.put(appComponent, checkedItem);
@@ -182,11 +181,21 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 	public void removeWindow(AppWindowWrapper appComponent) {
 		JCheckBoxMenuItem boxItem = windowBoxMap.get(appComponent);
 		if (boxItem != null) {
-			windowMenu.remove(boxItem);
+			for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
+				Component menuComponent = windowMenu.getMenuComponent(i);
+				if (menuComponent instanceof JMenuItem ) {
+					JMenuItem menuItem = (JMenuItem) menuComponent;
+					if (menuItem.getText().equals(appComponent.getTitle())) {
+						windowMenu.remove(menuItem);
+					}
+				}
+			}
 			windowBoxMap.remove(appComponent);
 			for (AppWindowWrapperListener appWindowWrapperListener : appComponent.getAppWindowWrapperListeners()) {
 				appComponent.removeAppWindowWrapperListener(appWindowWrapperListener);
 			}
+			windowMenu.updateUI();
+			windowMenu.revalidate();
 		}
 	}
 
