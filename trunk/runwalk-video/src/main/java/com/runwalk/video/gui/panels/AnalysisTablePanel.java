@@ -184,9 +184,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			getItemList().remove(selectedAnalysis);
 			getClientTablePanel().getSelectedItem().removeAnalysis(selectedAnalysis);
 			// delete the video files
-			for (Recording recording : selectedAnalysis.getRecordings()) {
-				getVideoFileManager().deleteVideoFile(recording);
-			}
+			getVideoFileManager().deleteVideoFiles(selectedAnalysis);
 			setSelectedItem(lastSelectedRowIndex - 1);
 			getDaoService().getDao(Analysis.class).delete(selectedAnalysis);
 		} finally {

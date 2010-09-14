@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import javax.swing.Timer;
 
+import org.jdesktop.application.Action;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -205,9 +206,11 @@ public class VideoPlayer extends VideoComponent {
 		this.playerImpl = playerImpl;
 	}
 	
+	@Action
 	@Override
 	public void dispose() {
 		super.dispose();
+		playerCount--;
 		setVideoImpl(null);
 	}
 

@@ -9,6 +9,7 @@ import org.jdesktop.application.AbstractBean;
 
 import com.google.common.collect.Maps;
 import com.runwalk.video.entities.Analysis;
+import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.util.AppSettings;
@@ -146,6 +147,7 @@ public class VideoFileManager extends AbstractBean {
 	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
 		if (videoFolderRetrievalStrategy instanceof DateVideoFolderRetrievalStrategy) {
 			DateVideoFolderRetrievalStrategy newStrategy = (DateVideoFolderRetrievalStrategy) videoFolderRetrievalStrategy;
+			// TODO this method should be incorporated in the interface somehow, so we won't need to cast anything
 			getAppSettings().setVideoFolderFormatString(newStrategy.getDateFormatString());
 		}
 		this.videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
@@ -177,15 +179,27 @@ public class VideoFileManager extends AbstractBean {
 	}
 
 	/**
-	 * Delete a video file associated with a recording. If there are both compressed and uncompressed versions, then
-	 * the compressed will only be removed.
+	 * Delete a video file associated with a recording. 
+	 * If there are both compressed and uncompressed versions, then the compressed will only be removed.
 	 * 
-	 * @param recording The recording to remove the videofile for
+	 * @param recording The recording to remove the video file for
 	 */
-	public void deleteVideoFile(Recording recording) {
+	private void deleteVideoFile(Recording recording) {
 		File videoFile = getVideoFile(recording);
 		if (videoFile != null && !videoFile.delete()) {
 			Logger.getLogger(VideoFileManager.class).warn(videoFile.getAbsolutePath() + " could not be deleted.");
+		}
+	}
+	
+	public void deleteVideoFiles(Analysis analysis) {
+		for(Recording recording : analysis.getRecordings()) {
+			deleteVideoFile(recording);
+		}
+	}
+	
+	public void deleteVideoFiles(Client client) {
+		for (Analysis analysis : client.getAnalyses()) {
+			deleteVideoFiles(analysis);
 		}
 	}
 

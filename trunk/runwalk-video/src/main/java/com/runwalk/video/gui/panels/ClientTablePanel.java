@@ -191,9 +191,12 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION)	return;
 		int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 		Client selectedClient = getSelectedItem();
+		// delete all video files for the selected client
+		getVideoFileManager().deleteVideoFiles(selectedClient);
 		getItemList().remove(selectedClient);
+		// deleting a  should cascade to all its contained entities
 		getDaoManager().getDao(Client.class).delete(selectedClient);
-		//select previous record..
+		// select previous record
 		setSelectedItem(lastSelectedRowIndex - 1);
 		setSaveNeeded(true);
 	}

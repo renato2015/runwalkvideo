@@ -29,14 +29,13 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.runwalk.video.gui.AppDialog;
 
 @SuppressWarnings("serial")
 public class CameraDialog extends AppDialog {
 
 	// class properties
-	public static final String SELECTED_CAPTURE_DEVICE = "selectedCaptureDevice";
+	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";
 
 	// class actions
 	public static final String INITIALIZE_CAPTURER_ACTION = "initializeCapturer";
@@ -48,7 +47,7 @@ public class CameraDialog extends AppDialog {
 
 	private JComboBox capturerComboBox;
 
-	private String selectedCapturer;
+	private String selectedCapturerName;
 	
 	private final String defaultCapturerName;
 
@@ -121,8 +120,8 @@ public class CameraDialog extends AppDialog {
 
 			public void itemStateChanged(ItemEvent e) {
 				JComboBox source = (JComboBox) e.getSource();
-				String captureDevice = source.getSelectedItem().toString();
-				setSelectedCapturer(captureDevice);
+				String capturerName = source.getSelectedItem().toString();
+				setSelectedCapturerName(capturerName);
 			}
 
 		});
@@ -145,12 +144,12 @@ public class CameraDialog extends AppDialog {
 		}
 	}
 
-	public void setSelectedCapturer(String selectedCapturer) {
-		firePropertyChange(SELECTED_CAPTURE_DEVICE, this.selectedCapturer, this.selectedCapturer = selectedCapturer);
+	public void setSelectedCapturerName(String selectedCapturerName) {
+		firePropertyChange(SELECTED_CAPTURER_NAME, this.selectedCapturerName, this.selectedCapturerName = selectedCapturerName);
 	}
 
-	public String getSelectedCapturer() {
-		return selectedCapturer;
+	public String getSelectedCapturerName() {
+		return selectedCapturerName;
 	}
 	
 	public void dismissDialog() {
@@ -180,36 +179,28 @@ public class CameraDialog extends AppDialog {
 	@Action
 	public boolean refreshCapturers() {
 		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-		List<String> captureDevices = VideoCapturerFactory.getInstance().getCapturers();
-		// check if there was a previously selected item (dialog was already open)
-		for(String captureDevice : Lists.newArrayList(captureDevices)) {
-			// remove any running capturers from the list, except when it was started by the dialog itself
-			if (!captureDevice.equals(getSelectedCapturer()) && 
-					VideoCapturerFactory.getInstance().isActiveCapturer(captureDevice)) {
-				captureDevices.remove(captureDevice);
-			}
-		}
-		// return if no capturers found
-		if (captureDevices.isEmpty()) {
+		List<String> capturerNames = VideoCapturerFactory.getInstance().getCapturerNames();
+		// return if no capturers available
+		if (capturerNames.isEmpty()) {
 			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorMessage"));
 			dismissDialog();
 			return false;
 		}
-		String[] captureDevicesArray = Iterables.toArray(captureDevices, String.class);
+		String[] captureDevicesArray = Iterables.toArray(capturerNames, String.class);
 		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
 		String defaultCapturerName = capturerComboBox.getSelectedItem().toString();
 		// retain the previous selection if there was one. Otherwise use the default selected capturer name
-		if (selectedCapturer == null && this.defaultCapturerName != null && 
-				captureDevices.contains(this.defaultCapturerName)) {
+		if (selectedCapturerName == null && this.defaultCapturerName != null && 
+				capturerNames.contains(this.defaultCapturerName)) {
 			defaultCapturerName = this.defaultCapturerName;
-		} else if (selectedCapturer != null) {
-			defaultCapturerName = selectedCapturer;
+		} else if (selectedCapturerName != null) {
+			defaultCapturerName = selectedCapturerName;
 		}
 		// set the selected item on the combobox
 		capturerComboBox.setSelectedItem(defaultCapturerName);
 		// make another call to the setter here to make sure the selected capturer will be started
-		setSelectedCapturer(defaultCapturerName);
+		setSelectedCapturerName(defaultCapturerName);
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

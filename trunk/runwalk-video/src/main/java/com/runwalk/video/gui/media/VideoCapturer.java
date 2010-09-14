@@ -17,7 +17,9 @@ import com.runwalk.video.entities.RecordingStatus;
 
 public class VideoCapturer extends VideoComponent {
 
-	protected static final String TIME_RECORDING = "timeRecorded";
+	public static final String TIME_RECORDING = "timeRecorded";
+
+	public static final String CAPTURE_ENCODER_NAME = "captureEncoderName";
 
 	/**
 	 * Keeps track of the total number of capturer instances
@@ -25,7 +27,7 @@ public class VideoCapturer extends VideoComponent {
 	private static int capturerCount = 0;
 	
 	private long timeStarted, timeRecorded;
-
+	
 	private IVideoCapturer videoImpl;
 
 	VideoCapturer(PropertyChangeListener listener) {
@@ -48,19 +50,19 @@ public class VideoCapturer extends VideoComponent {
 
 	@Action
 	public void setCaptureEncoder() {
-		List<String> captureEncoders = getVideoImpl().getCaptureEncoders();
-		String selectedEncoder =  (String) JOptionPane.showInputDialog(
+		List<String> captureEncoderNames = getVideoImpl().getCaptureEncoderNames();
+		String captureEncoderName =  (String) JOptionPane.showInputDialog(
 				null,
 				"Kies een video encoder: ",
 				"Video encoder wijzigen..",
 				JOptionPane.PLAIN_MESSAGE,
 				null,
-				Iterables.toArray(captureEncoders, String.class),
-				getVideoImpl().getSelectedCaptureEncoderName());
-		if (selectedEncoder != null) {
-			int selectedIndex = captureEncoders.indexOf(selectedEncoder);
-			getVideoImpl().setSelectedCaptureEncoderIndex(selectedIndex);
-			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getVideoImpl().getSelectedCaptureEncoderName());
+				Iterables.toArray(captureEncoderNames, String.class),
+				getVideoImpl().getCaptureEncoderName());
+		if (captureEncoderName != null) {
+			firePropertyChange(CAPTURE_ENCODER_NAME, getVideoImpl().getCaptureEncoderName(), captureEncoderName);
+			getVideoImpl().setCaptureEncoderName(captureEncoderName);
+			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getVideoImpl().getCaptureEncoderName());
 		}
 	}
 
@@ -72,9 +74,11 @@ public class VideoCapturer extends VideoComponent {
 		this.videoImpl = videoImpl;
 	}
 
+	@Action
 	@Override
 	public void dispose() {
 		super.dispose();
+		capturerCount++;
 		setVideoImpl(null);
 	}
 
@@ -83,14 +87,10 @@ public class VideoCapturer extends VideoComponent {
 			throw new IllegalArgumentException("No valid file or recording specified");
 		} 
 		setRecording(recording);
-		
-		getApplication().getStatusPanel().setIndeterminate(true);
 		timeStarted = System.currentTimeMillis();
-		
 		getVideoImpl().startRecording(videoFile);
-		recording.setRecordingStatus(RecordingStatus.RECORDING);
 		getLogger().debug("Recording to file " + videoFile.getAbsolutePath() + "");
-
+		recording.setRecordingStatus(RecordingStatus.RECORDING);
 		getTimer().restart();
 		setState(State.RECORDING);
 	}

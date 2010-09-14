@@ -16,8 +16,8 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		super(RunwalkVideoApp.getApplication(), name);
 		logger = Logger.getLogger(getClass());
 	}
-    
-    protected void errorMessage(String formatResourceKey, Object... args) { 
+
+	protected void errorMessage(String formatResourceKey, Object... args) { 
     	ResourceMap resourceMap = getResourceMap();
     	if (resourceMap != null) {
     		firePropertyChange(ERROR_MESSAGE, getMessage(), getResourceString(formatResourceKey, args));

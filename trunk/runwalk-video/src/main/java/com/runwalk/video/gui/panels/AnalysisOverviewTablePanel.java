@@ -118,7 +118,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> compress() {
 		setCompressionEnabled(false);
-		String transcoder = getAppSettings().getTranscoder();
+		String transcoder = getAppSettings().getTranscoderName();
 		return new CompressTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
 	}
 

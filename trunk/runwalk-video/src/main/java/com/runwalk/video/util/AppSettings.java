@@ -140,12 +140,16 @@ public class AppSettings implements Serializable {
 		return videoDir;
 	}
 
-	public void setDefaultCapturerName(String defaultCapturerName) {
-		getSettings().defaultCapturerName = defaultCapturerName;	
+	public void setCapturerName(String capturerName) {
+		getSettings().capturerName = capturerName;	
 	}
 
-	public String getDefaultCapturerName() {
-		return getSettings().defaultCapturerName;
+	/**
+	 * Returns the first chosen capturer of the last program instance.
+	 * @return The save capturer name
+	 */
+	public String getCapturerName() {
+		return getSettings().capturerName;
 	}
 
 	/**
@@ -205,19 +209,27 @@ public class AppSettings implements Serializable {
 	}
 
 	public void setSavedVolume(float savedVolume) {
-		settings.savedVolume = savedVolume;
+		getSettings().savedVolume = savedVolume;
 	}
 
 	public float getPlayRate() {
-		return settings.playRate;
+		return getSettings().playRate;
 	}
 
 	public void setPlayRate(float rateIndex) {
-		settings.playRate = rateIndex;
+		getSettings().playRate = rateIndex;
 	}
 
-	public String getTranscoder() {
-		return getSettings().selectedTranscoderName;
+	public String getTranscoderName() {
+		return getSettings().transcoderName;
+	}
+	
+	public String getCaptureEncoderName() {
+		return getSettings().captureEncoderName;
+	}
+	
+	public void setCaptureEncoderName(String captureEncoderName) {
+		getSettings().captureEncoderName = captureEncoderName;
 	}
 	
 	public String getLogFileUploadUrl() {
@@ -252,7 +264,7 @@ public class AppSettings implements Serializable {
 		 * The last selected capturer on startup.
 		 */
 		@XmlElement
-		private String defaultCapturerName;
+		private String capturerName;
 
 		@XmlElement
 		private float playRate;
@@ -261,7 +273,10 @@ public class AppSettings implements Serializable {
 		private float savedVolume;
 
 		@XmlElement
-		private String selectedTranscoderName = "XviD MPEG-4 Codec";
+		private String transcoderName = "XviD MPEG-4 Codec";
+		
+		@XmlElement
+		private String captureEncoderName = "none";
 		
 		@XmlElement
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";

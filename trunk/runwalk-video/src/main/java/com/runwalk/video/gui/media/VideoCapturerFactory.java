@@ -19,18 +19,17 @@ public abstract class VideoCapturerFactory {
 	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be very expensive.
 	 * 
 	 * @param capturerName The name or id of the newly selected capture device
+	 * @param captureEncoderName The name of the default capture encoder, null if none
 	 * @return A video implementation that is ready to start running
 	 */
-	public abstract IVideoCapturer initializeCapturer(String capturerName);
+	public abstract IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName);
 
 	/**
 	 * This method should return a list with all <b>uninitialized</b> capturer names.
 	 * 
 	 * @return The {@link List} with available capturers
 	 */
-	public abstract List<String> getCapturers();
-
-	public abstract boolean isActiveCapturer(String capturerName);
+	public abstract List<String> getCapturerNames();
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -53,25 +52,27 @@ public abstract class VideoCapturerFactory {
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
 	 * @param listener a PropertyChangeListener to notify when internal properties change
+	 * @param defaultCapturerName The name of the last chosen capturer
+	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
-	 * 
 	 */
-	public VideoCapturer createCapturer(final PropertyChangeListener listener, String defaultCapturer) {
+	public VideoCapturer createCapturer(final PropertyChangeListener listener, 
+			String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer capturer = new VideoCapturer(listener);
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturer.getComponentId(), defaultCapturer);
+		CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturer.getComponentId(), defaultCapturerName);
 		dialog.setLocationRelativeTo(null);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURE_DEVICE)) {
+				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURER_NAME)) {
 					// user changed capture device selection, dispose only if there was something running
 					if (capturer.getVideoImpl() != null) {
 						capturer.getVideoImpl().dispose();
 					}
 					// initialize the selected capturer
-					String selectedCapturer = evt.getNewValue().toString();
-					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturer);
+					String selectedCapturerName = evt.getNewValue().toString();
+					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
 					capturer.setVideoImpl(capturerImpl);
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
 					// user clicked a monitor button, set it on the capturer
@@ -111,15 +112,13 @@ public abstract class VideoCapturerFactory {
 	 */
 	public static class DummyVideoCapturerFactory extends VideoCapturerFactory {
 
-		public IVideoCapturer initializeCapturer(String capturerName) {
+		public IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 			return null;
 		}
 
-		public List<String> getCapturers() {
+		public List<String> getCapturerNames() {
 			return Lists.newArrayList("none");
 		}
-
-		public void disposeCapturer(IVideoCapturer capturerImpl) {	}
 
 		public boolean isActiveCapturer(String capturerName) {
 			return false;

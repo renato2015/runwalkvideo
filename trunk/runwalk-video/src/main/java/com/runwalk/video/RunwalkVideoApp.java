@@ -163,6 +163,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 	}
+	
+	public void removeComponent(AppWindowWrapper appComponent) {
+		getMenuBar().removeWindow(appComponent);
+	}
 
 	public void hideComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent == null ? null : appComponent.getHolder();

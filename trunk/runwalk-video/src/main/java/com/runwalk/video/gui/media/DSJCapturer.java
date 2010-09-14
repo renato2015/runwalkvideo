@@ -8,9 +8,9 @@ import org.jdesktop.application.utils.PlatformType;
 import com.google.common.collect.Lists;
 
 import de.humatic.dsj.DSCapture;
-import de.humatic.dsj.DSCapture.CaptureDevice;
+import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilterInfo;
-import de.humatic.dsj.DSFiltergraph;
+import de.humatic.dsj.DSJException;
 
 /**
  * This class is a concrete implementation for the DirectShow for Java (dsj) libary, 
@@ -20,52 +20,48 @@ import de.humatic.dsj.DSFiltergraph;
  */
 public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
-	public final static DSFilterInfo[] VIDEO_ENCODERS = {
-		DSFilterInfo.doNotRender(), 
-		DSFilterInfo.filterInfoForProfile("RunwalkVideoApp"),
-		DSFilterInfo.filterInfoForName("XviD MPEG-4 Codec")
-	};
-
-	private DSFilterInfo captureEncoder = VIDEO_ENCODERS[0];
-
-	private DSFilterInfo filterInfo;
+	private DSFilterInfo captureEncoder;
 
 	private String capturerName;
 
 	private boolean running;
-
+	
 	DSJCapturer(String capturerName) {
+		this(capturerName, null);
+	}
+	
+	DSJCapturer(String capturerName, String captureEncoderName) {
 		this.capturerName = capturerName;
-		filterInfo = DSFilterInfo.filterInfoForName(capturerName);
+		DSFilterInfo filterInfo = DSFilterInfo.filterInfoForName(capturerName);
 		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
-		setRunning(false);
+		// capture encoder is resolved here
+		setCaptureEncoderName(captureEncoderName);
+		// filter info for this capturer will change after intialization, if needed, get it from the active capture device
+		stopCapturer();
 	}
 
 	/** {@inheritDoc} */
 	public void startCapturer() {
+		// fire a graph changed so all settings made to the filtergraph will be applied
+		getFiltergraph().graphChanged();
+		getFiltergraph().setPreview();
 		getFiltergraph().play();
-		// clear filterInfo as it may have changed due to the filtergraph setup
-		filterInfo = getFiltergraph().getActiveVideoDevice().getFilterInfo();
 		getFiltergraph().lockAspectRatio(true);
 		setRunning(true);
+		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 	}
-
-	/**
-	 * Return the {@link CaptureDevice} for the current {@link DSFiltergraph} if there is one.
-	 * 
-	 * @return The active {@link CaptureDevice}
-	 */
-	protected CaptureDevice getCaptureDevice() {
-		return getFiltergraph() != null ? getFiltergraph().getActiveVideoDevice() : null;
-	}
-
-	private DSFilterInfo getCaptureEncoder() {
-		return captureEncoder;
+	
+	/** {@inheritDoc} */
+	public void stopCapturer() {
+		// stop the filtergraph so we can configure or rewire as needed
+		getFiltergraph().stop();
+		setRunning(false);
+		getLogger().debug("Filtergraph for " + getTitle() + " stopped");
 	}
 
 	public void startRecording(File destFile) {
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
-		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(),	DSFilterInfo.doNotRender(),	true);
+		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(), DSFilterInfo.doNotRender(),	true);
 		getLogger().debug("Video encoder for " + getTitle() + " set to " + getCaptureEncoder().getName());
 		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter());
 		getFiltergraph().record();
@@ -101,15 +97,9 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	public void togglePreview() {
 		if (isRunning()) {
-			getFiltergraph().stop();
-			setRunning(false);
-			getLogger().debug("Filtergraph for " + getTitle() + " paused");
+			stopRecording();
 		} else {
-			getFiltergraph().setPreview();
-			getFiltergraph().graphChanged();
-			getFiltergraph().play();
-			setRunning(true);
-			getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
+			startCapturer();
 		}
 	}
 
@@ -120,26 +110,40 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void showCameraSettings() {
 		getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_CAPTURE);
 	}
-
-	public void setSelectedCaptureEncoderIndex(int index) {
-		captureEncoder = VIDEO_ENCODERS[index];
+	
+	private DSFilterInfo getCaptureEncoder() {
+		return captureEncoder;
 	}
 
-	public String getSelectedCaptureEncoderName() {
+	public void setCaptureEncoderName(String name) {
+		if (name == null || "none".equals(name)) {
+			captureEncoder = DSFilterInfo.doNotRender();
+		} else {
+			try {
+				captureEncoder = DSFilterInfo.filterInfoForName(name);
+			} catch (DSJException exc) {
+				getLogger().error("Failed to resolve encoder with name " + name, exc);
+				captureEncoder = DSFilterInfo.doNotRender();
+			}
+		}
+	}
+
+	public String getCaptureEncoderName() {
 		return captureEncoder.getName();
 	}
 
-	public List<String> getCaptureEncoders() {
+	public List<String> getCaptureEncoderNames() {
 		List<String> result = Lists.newArrayList();
-		for (DSFilterInfo videoEncoder : VIDEO_ENCODERS) {
-			result.add(videoEncoder.getName());
+		DSFilterInfo[] encoders = DSEnvironment.getEncoders()[0];
+		for (DSFilterInfo encoderInfo : encoders) {
+			result.add(encoderInfo.getName());
 		}
 		return result;
 	}
 
 	/**
-	 * This method should return the name of the capturer, 
-	 * which was originally provided by {@link VideoCapturerFactory#initializeCapturer(String)}.
+	 * This method should return the name of the capturer which was originally 
+	 * provided by {@link VideoCapturerFactory#initializeCapturer(String, String)}.
 	 */
 	public String getTitle() {
 		return capturerName;
