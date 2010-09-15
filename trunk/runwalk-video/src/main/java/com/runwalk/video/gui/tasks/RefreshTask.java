@@ -100,13 +100,18 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return success;
 	}
 	
-	private void refreshVideoFiles(List<Analysis> analysisList) {
+	private void refreshVideoFiles(EventList<Analysis> analysisList) {
 		// some not so beautiful way to refresh the cache
 		message("loadingVideoFilesMessage");
 		int filesMissing = 0, progress = 0;
-		for (Analysis analysis : analysisList) {
-			filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
-			setProgress(++progress, 0, analysisList.size());
+		analysisList.getReadWriteLock().readLock().lock();
+		try {
+			for (Analysis analysis : analysisList) {
+				filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
+				setProgress(++progress, 0, analysisList.size());
+			}
+		} finally {
+			analysisList.getReadWriteLock().readLock().unlock();
 		}
 		// check whether compressing should be enabled
 		RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);

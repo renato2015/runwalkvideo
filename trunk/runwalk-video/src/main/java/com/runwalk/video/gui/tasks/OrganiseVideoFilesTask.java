@@ -82,7 +82,6 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	/**
 	 * Recursively delete all empty directories found in a given directory.
 	 *
-	 * @param directoryCount Current count of deleted directories
 	 * @param directory The directory to delete empty directories in
 	 * @return The total number of deleted directories
 	 */

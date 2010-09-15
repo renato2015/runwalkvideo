@@ -524,10 +524,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void disposeVideoComponents() {
-		for (VideoCapturer capturer : capturers) {
+		for (VideoCapturer capturer : Lists.newArrayList(capturers)) {
 			capturer.dispose();
 		}
-		for (VideoPlayer player : players) {
+		for (VideoPlayer player : Lists.newArrayList(players)) {
 			player.dispose();
 		}
 	}
