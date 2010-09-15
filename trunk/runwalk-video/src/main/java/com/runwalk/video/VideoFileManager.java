@@ -44,11 +44,11 @@ public class VideoFileManager extends AbstractBean {
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
 	}
-
-	public File getVideoFile(Recording recording) {
+	
+	private File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		File videoFile = recordingFileMap.get(recording);
 		if (videoFile == null || !canReadAndExists(videoFile))  {
-			File compressedVideoFile = getCompressedVideoFile(recording);
+			File compressedVideoFile = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
 			File uncompressedVideoFile = getUncompressedVideoFile(recording);
 			if (canReadAndExists(compressedVideoFile)) {
 				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
@@ -71,6 +71,10 @@ public class VideoFileManager extends AbstractBean {
 			recordingFileMap.put(recording, videoFile);
 		}
 		return videoFile;
+	}
+
+	public File getVideoFile(Recording recording) {
+		return getVideoFile(getVideoFolderRetrievalStrategy(), recording);
 	}
 
 	/**
@@ -114,8 +118,12 @@ public class VideoFileManager extends AbstractBean {
 	}
 	
 	public File refreshCache(Recording recording) {
+		return refreshCache(getVideoFolderRetrievalStrategy(), recording);
+	}
+	
+	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		recordingFileMap.remove(recording);
-		return getVideoFile(recording);
+		return getVideoFile(videoFolderRetrievalStrategy, recording);
 	}
 
 	public boolean canReadAndExists(File videoFile) {
@@ -126,10 +134,14 @@ public class VideoFileManager extends AbstractBean {
 		File videoFile = getVideoFile(recording);
 		return canReadAndExists(videoFile);
 	}
-
-	public File getCompressedVideoFile(Recording recording) {
-		File parentFolder = getVideoFolderRetrievalStrategy().getVideoFolder(getAppSettings().getVideoDir(), recording);
+	
+	public File getCompressedVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording)  {
+		File parentFolder = videoFolderRetrievalStrategy.getVideoFolder(getAppSettings().getVideoDir(), recording);
 		return new File(parentFolder, recording.getVideoFileName());
+	}
+	
+	public File getCompressedVideoFile(Recording recording) {
+		return getCompressedVideoFile(getVideoFolderRetrievalStrategy(), recording);
 	}
 
 	public File getUncompressedVideoFile(Recording recording) {

@@ -22,8 +22,7 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	private final VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 	private final EventList<Analysis> analysisList;
 	private final Component parentComponent;
-	private int deletedDirectories;
-	private int filesMoved;
+	private int deletedDirectories = 0, filesMoved = 0;
 
 	public OrganiseVideoFilesTask(Component parentComponent, EventList<Analysis> analysisList, 
 			VideoFileManager videoFileManager, VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
@@ -37,7 +36,6 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	protected Void doInBackground() throws Exception {
 		message("startMessage");
 		File videoDir = getVideoFileManager().getVideoDir();
-		filesMoved = 0;
 		getAnalysisList().getReadWriteLock().readLock().lock();
 		try {
 			int progress = 0;
@@ -47,28 +45,29 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 					// check whether a compressed video file exists for the given recording
 					if (compressedVideoFile.exists()) {
 						File newFolder = getVideoFolderRetrievalStrategy().getVideoFolder(videoDir, recording);
-						if (newFolder.equals(compressedVideoFile.getParentFile())) {
+						if (!newFolder.equals(compressedVideoFile.getParentFile())) {
 							// copy the file to the new folder and create the directory if needed, maintaining file creation dates
 							try {
-								getLogger().debug("Moving video file " + recording.getVideoFileName() + " to " + newFolder);
+								getLogger().debug("Moving video file " + 
+										recording.getVideoFileName() + " to " + newFolder);
 								FileUtils.moveFileToDirectory(compressedVideoFile, newFolder, true);
 								filesMoved++;
 							} catch (IOException e) {
 								Logger.getLogger(VideoFileManager.class).error(e);
 							}
 						}
-						// refresh cached file
-						getVideoFileManager().refreshCache(recording);
+						// refresh cache entry
+						getVideoFileManager().refreshCache(getVideoFolderRetrievalStrategy(), recording);
 					}
 				}
 				setProgress(++progress, 0, getAnalysisList().size());
 			}
+			getVideoFileManager().setVideoFolderRetrievalStrategy(getVideoFolderRetrievalStrategy());
 		} finally {
 			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
-		getVideoFileManager().setVideoFolderRetrievalStrategy(videoFolderRetrievalStrategy);
 		// delete empty directories after moving files to new folder structure
-		deletedDirectories = deleteEmptyDirectories(0, getVideoFileManager().getVideoDir());
+		deletedDirectories = deleteEmptyDirectories(getVideoFileManager().getVideoDir());
 		message("endMessage");
 		return null;
 	}
@@ -87,17 +86,17 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	 * @param directory The directory to delete empty directories in
 	 * @return The total number of deleted directories
 	 */
-	private int deleteEmptyDirectories(int directoryCount, File directory) {
+	private int deleteEmptyDirectories(File directory) {
 		if( directory.exists() ) {
 			File[] files = directory.listFiles();
-			for(int i=0; i<files.length; i++) {
+			for(int i = 0; i < files.length; i++) {
 				// don't delete invisible directories
 				if(files[i].isDirectory() && !files[i].getName().startsWith(".")) {
-					deleteEmptyDirectories(directoryCount, files[i]);
+					deleteEmptyDirectories(files[i]);
 				} 
 			}
 		}
-		return directory.delete() ? directoryCount++ : directoryCount;
+		return directory.delete() ? deletedDirectories++ : deletedDirectories;
 	}
 
 	@Override

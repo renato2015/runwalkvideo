@@ -54,29 +54,27 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 		} finally {
 			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
-		boolean success = deleteFiles(filesToDelete);
+		fileCount = filesToDelete.size();
+		filesDeleted = deleteFiles(filesToDelete);
 		message("endMessage");
-		return success;
+		return fileCount == filesDeleted;
 	}
 	
-	private boolean deleteFiles(List<File> filesToDelete) {
-		fileCount = filesToDelete.size();
-		boolean success = fileCount >= 0;
-		if (fileCount > 0) {
+	private int deleteFiles(List<File> filesToDelete) {
+		int filesDeleted = 0;
+		if (!filesToDelete.isEmpty()) {
 			int chosenOption = JOptionPane.showConfirmDialog(getParentComponent(), 
-					getResourceString("filesFoundMessage", fileCount), 
+					getResourceString("filesFoundMessage", filesToDelete.size()), 
 					getResourceString("startMessage"), JOptionPane.OK_CANCEL_OPTION);
 			if (chosenOption == JOptionPane.OK_OPTION) {
 				for (File file : filesToDelete) {
 					if (file.delete()) {
 						filesDeleted++;
-					} else {
-						success = false;
-					}
+					} 
 				}
 			}
 		}
-		return success;
+		return filesDeleted;
 	}
 
 	@Override

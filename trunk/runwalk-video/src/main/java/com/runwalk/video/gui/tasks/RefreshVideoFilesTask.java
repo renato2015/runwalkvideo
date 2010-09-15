@@ -1,40 +1,40 @@
 package com.runwalk.video.gui.tasks;
 
-import java.util.List;
+import ca.odell.glazedlists.EventList;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 
 public class RefreshVideoFilesTask extends AbstractTask<Void, Void> {
 
+	private final EventList<Analysis> analysisList;
 	private final VideoFileManager videoFileManager;
-	private final DaoService daoService;
 
-	public RefreshVideoFilesTask(VideoFileManager videoFileManager, DaoService daoService) {
+	public RefreshVideoFilesTask(VideoFileManager videoFileManager, EventList<Analysis> analysisList) {
 		super("refreshVideoFiles");
 		this.videoFileManager = videoFileManager;
-		this.daoService = daoService;
+		this.analysisList = analysisList;
 	}
 
 	protected Void doInBackground() throws Exception {
+		// some not so beautiful way to refresh the cache
 		message("startMessage");
-		// get all analyses from the db (not using derived list to enable multiple threads to work simultaneously)
-		List<Analysis> analysisList = getDaoService().getDao(Analysis.class).getAll();
-		int filesMissing = 0;
-		for (Analysis analysis : analysisList) {
-			filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
-			setProgress(analysisList.indexOf(analysis) + 1, 0, analysisList.size());
+		getAnalysisList().getReadWriteLock().readLock().lock();
+		try {
+			int progress = 0;
+			for (Analysis analysis : getAnalysisList()) {
+				getVideoFileManager().refreshCache(analysis);
+				setProgress(++progress, 0, getAnalysisList().size());
+			}
+		} finally {
+			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
-		// check whether compressing should be enabled
-		RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
-		message("endMessage", filesMissing);
+		message("endMessage");
 		return null;
 	}
 	
-	public DaoService getDaoService() {
-		return daoService;
+	public EventList<Analysis> getAnalysisList() {
+		return analysisList;
 	}
 
 	public VideoFileManager getVideoFileManager() {
