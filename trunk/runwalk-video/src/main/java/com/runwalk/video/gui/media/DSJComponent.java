@@ -107,7 +107,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public void dispose() {
 		if (getFiltergraph() != null) {
-			getFiltergraph().stop();
 			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
 			if (fullscreenFrame != null) {
 				fullscreenFrame.dispose();
