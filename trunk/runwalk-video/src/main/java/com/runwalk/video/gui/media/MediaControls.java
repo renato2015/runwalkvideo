@@ -543,8 +543,20 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				// remove vide component from its list
 				if (evt.getSource() instanceof VideoCapturer) {
 					capturers.remove(evt.getSource());
+					if (evt.getSource() == frontMostCapturer) {
+						frontMostCapturer = null;
+						if (frontMostComponent == evt.getSource()) {
+							frontMostComponent = null;
+						}
+					}
 				} else if (evt.getSource() instanceof VideoPlayer) {
 					players.remove(evt.getSource());
+					if (evt.getSource() == frontMostPlayer) {
+						frontMostPlayer = null;
+						if (frontMostComponent == evt.getSource()) {
+							frontMostComponent = null;
+						}
+					}
 				}
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
