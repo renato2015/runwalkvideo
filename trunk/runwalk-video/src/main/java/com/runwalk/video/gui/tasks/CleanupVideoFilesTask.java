@@ -36,6 +36,7 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 		List<File> filesToDelete = Lists.newArrayList();
 		getAnalysisList().getReadWriteLock().readLock().lock();
 		try {
+			int progress = 0;
 			for(Analysis analysis : getAnalysisList()) {
 				for(Recording recording : analysis.getRecordings()) {
 					File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
@@ -48,11 +49,17 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 						}
 					}
 				}
-				setProgress(getAnalysisList().indexOf(analysis), 0, getAnalysisList().size());
+				setProgress(++progress, 0, getAnalysisList().size());
 			}
 		} finally {
 			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
+		boolean success = deleteFiles(filesToDelete);
+		message("endMessage");
+		return success;
+	}
+	
+	private boolean deleteFiles(List<File> filesToDelete) {
 		fileCount = filesToDelete.size();
 		boolean success = fileCount >= 0;
 		if (fileCount > 0) {
@@ -69,12 +76,11 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 				}
 			}
 		}
-		message("endMessage");
 		return success;
 	}
 
 	@Override
-	protected void finished() {
+	protected void succeeded(Boolean result) {
 		try {
 			String dialogMsg = getResourceString("finishedMessage", filesDeleted); 
 			String dialogTitle = getResourceString("endMessage");

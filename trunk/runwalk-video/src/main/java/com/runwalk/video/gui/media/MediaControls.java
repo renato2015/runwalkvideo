@@ -94,8 +94,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
 
 			@Override
-			@SuppressWarnings("unchecked")
-			public void sourceChanged(Binding binding, PropertyStateEvent event) {
+			public void sourceChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
 			}
 
@@ -353,7 +352,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return fullScreenEnabled;
 	}
 
-	@Action(name = "Start Camera")
+	@Action
 	public void startCapturer() {
 		String capturerName = getAppSettings().getCapturerName();
 		String captureEncoderName = getAppSettings().getCaptureEncoderName();
@@ -536,10 +535,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object newValue = evt.getNewValue();
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
-			State state = (State) evt.getNewValue();
+			State state = (State) newValue;
 			boolean enabled = state == VideoComponent.State.IDLE && evt.getSource() == frontMostComponent;
 			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
 			playButton.setSelected(state == State.PLAYING);
+			if (state == State.DISPOSED) {
+				// remove vide component from its list
+				if (evt.getSource() instanceof VideoCapturer) {
+					capturers.remove(evt.getSource());
+				} else if (evt.getSource() instanceof VideoPlayer) {
+					players.remove(evt.getSource());
+				}
+			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
 			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
 			Long timeRecorded = (Long) newValue;
@@ -548,14 +555,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				updateTimeStamps(timeRecorded, 0);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.CAPTURE_ENCODER_NAME)) {
-			// save capture encoder name for the given videoCapturer?
-		} else if (evt.getPropertyName().equals(VideoComponent.DISPOSED)) {
-			// remove vide component from its list
-			if (evt.getSource() instanceof VideoCapturer) {
-				capturers.remove(evt.getSource());
-			} else if (evt.getSource() instanceof VideoPlayer) {
-				players.remove(evt.getSource());
-			}
+			// save capture encoder name for the given videoCapturer?	
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
 			VideoPlayer player = (VideoPlayer) evt.getSource();

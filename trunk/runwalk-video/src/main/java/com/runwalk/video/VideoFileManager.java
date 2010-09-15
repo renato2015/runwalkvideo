@@ -97,10 +97,20 @@ public class VideoFileManager extends AbstractBean {
 		}
 	}
 	
-	public void refreshCache(Analysis analysis) {
+	/**
+	 * This method will iterate over the {@link Recording}s of the given {@link Analysis} and 
+	 * clear it's cache entries. The method will return the number of missing video files when done refreshing.
+	 * 
+	 * @param analysis The analysis for which the recording cache should be refreshed
+	 * @return The number of missing video files
+	 */
+	public int refreshCache(Analysis analysis) {
+		int filesMissing = 0;
 		for (Recording recording : analysis.getRecordings()) {
-			refreshCache(recording);
+			File videoFile = refreshCache(recording);
+			filesMissing = videoFile == null ? filesMissing + 1 : filesMissing;
 		}
+		return filesMissing;
 	}
 	
 	public File refreshCache(Recording recording) {

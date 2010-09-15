@@ -31,8 +31,7 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		else if(column == 1) return "Gekozen schoen";
 		else if(column == 2) return "Aantal keyframes";
 		else if(column == 3) return "Aantal opnames";
-		else if(column == 4) return "Duur video";
-		else if(column == 5) return "Open video";
+		else if(column == 4) return "Open video";
 		throw new IllegalStateException();
 	}
 

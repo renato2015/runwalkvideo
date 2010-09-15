@@ -124,7 +124,6 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 
 	@Override
 	protected void cancelled() {
-		super.cancelled();
 		if (exporter != null) {
 			exporter.getFiltergraph().cancelExport();
 			exporter.dispose();
