@@ -26,7 +26,6 @@ import ca.odell.glazedlists.matchers.Matcher;
 import com.runwalk.video.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.VideoFolderRetrievalStrategy;
-import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -51,13 +50,11 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private final VideoFileManager videoFileManager;
 	private final AppSettings appSettings;
-	private final DaoService daoService;
 
-	public AnalysisOverviewTablePanel(AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
+	public AnalysisOverviewTablePanel(AppSettings appSettings, VideoFileManager videoFileManager) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
-		this.daoService = daoService;
 
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -83,7 +80,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		File chosenDir = getAppSettings().getUncompressedVideoDir();
 		File result = selectDirectory(chosenDir);
 		getAppSettings().setUncompressedVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getDaoService());
+		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -91,7 +88,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		File chosenDir = getAppSettings().getVideoDir();
 		File result = selectDirectory(chosenDir);
 		getAppSettings().setVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getDaoService());
+		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
 	}
 
 	private File selectDirectory(File chosenDir) {
@@ -171,10 +168,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	private EventList<Analysis> getAnalysisList() { 
 		return analysisList;
 	}
+	
+	private void setAnalysisList(EventList<Analysis> analysisList) {
+		this.analysisList = analysisList;
+	}
 
 	@Override
 	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
-		analysisList = eventList;
+		setAnalysisList(eventList);
 		return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
 
 			public boolean matches(Analysis item) {
@@ -212,8 +213,5 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public AppSettings getAppSettings() {
 		return appSettings;
 	}
-	
-	public DaoService getDaoService() {
-		return daoService;
-	}
+
 }

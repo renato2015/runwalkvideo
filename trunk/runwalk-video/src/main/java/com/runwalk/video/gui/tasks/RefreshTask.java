@@ -34,6 +34,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
 	private final VideoFileManager videoFileManager;
+	private CompositeList<Analysis> analysesOverview;
 
 	public RefreshTask(VideoFileManager videoFileManager, DaoService daoService) {
 		super("refresh");
@@ -47,16 +48,14 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			message("startMessage");
 			// get all clients from the db
 			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
-			final EventList<Client> clientList = GlazedLists.threadSafeList(GlazedLists.eventList(allClients));
-			// get all analyses from the db (not using derived list to enable multiple threads to work simultaneously)
-			List<Analysis> analysisList = getDaoService().getDao(Analysis.class).getAll();
+			final EventList<Client> clientList = GlazedLists.eventList(allClients);
 			// get all cities from the db
 			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
 			// get all articles from the db
 			List<Article> allArticles = getDaoService().getDao(Article.class).getAll();
 			final EventList<Article> articleList = GlazedLists.eventList(allArticles);
-			SwingUtilities.invokeLater(new Runnable() {
+			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
 					RunwalkVideoApp.getApplication().getClientInfoPanel().setItemList(cityList);
@@ -84,7 +83,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 					});
 					// get analysis overview tablepanel and inject data
-					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
+					analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
 					analysesOverview.addMemberList(selectedClientAnalyses);
 					analysesOverview.addMemberList(deselectedClientAnalyses);
 					// create the overview with unfinished analyses
@@ -93,7 +92,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				}
 
 			});
-			refreshVideoFiles(analysisList);
+			refreshVideoFiles(analysesOverview);
 		} catch(Exception ignore) {
 			getLogger().error(Level.SEVERE, ignore);
 			success = false;
@@ -104,10 +103,10 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 	private void refreshVideoFiles(List<Analysis> analysisList) {
 		// some not so beautiful way to refresh the cache
 		message("loadingVideoFilesMessage");
-		int filesMissing = 0;
+		int filesMissing = 0, progress = 0;
 		for (Analysis analysis : analysisList) {
 			filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
-			setProgress(analysisList.indexOf(analysis) + 1, 0, analysisList.size());
+			setProgress(++progress, 0, analysisList.size());
 		}
 		// check whether compressing should be enabled
 		RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
