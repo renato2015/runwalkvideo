@@ -51,7 +51,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 	 * Connector of changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public void propertyChange(PropertyChangeEvent event) {
 			Object eventSource = event.getSource();
 			if (event.getSource() instanceof Recording) {
@@ -64,6 +64,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 				Recording lastRecording = Iterables.getLast(analysis.getRecordings());
 				lastRecording.addPropertyChangeListener(propertyChangeListener);
 			}
+			// TODO revise this
 			((ObservableElementList) list).elementChanged(eventSource);
 		}
 	}
