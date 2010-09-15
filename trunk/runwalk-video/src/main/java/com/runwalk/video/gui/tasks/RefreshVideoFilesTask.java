@@ -1,39 +1,40 @@
 package com.runwalk.video.gui.tasks;
 
-import ca.odell.glazedlists.EventList;
+import java.util.List;
 
+import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 
 public class RefreshVideoFilesTask extends AbstractTask<Void, Void> {
 
-	private final EventList<Analysis> analysisList;
 	private final VideoFileManager videoFileManager;
+	private final DaoService daoService;
 
-	public RefreshVideoFilesTask(VideoFileManager videoFileManager, EventList<Analysis> analysisList) {
+	public RefreshVideoFilesTask(VideoFileManager videoFileManager, DaoService daoService) {
 		super("refreshVideoFiles");
 		this.videoFileManager = videoFileManager;
-		this.analysisList = analysisList;
+		this.daoService = daoService;
 	}
 
 	protected Void doInBackground() throws Exception {
-		// some not so beautiful way to refresh the cache
 		message("startMessage");
-		getAnalysisList().getReadWriteLock().readLock().lock();
-		try {
-			for (Analysis analysis : getAnalysisList()) {
-				getVideoFileManager().refreshCache(analysis);
-				setProgress(getAnalysisList().indexOf(analysis), 0, getAnalysisList().size());
-			}
-		} finally {
-			getAnalysisList().getReadWriteLock().readLock().unlock();
+		// get all analyses from the db (not using derived list to enable multiple threads to work simultaneously)
+		List<Analysis> analysisList = getDaoService().getDao(Analysis.class).getAll();
+		int filesMissing = 0;
+		for (Analysis analysis : analysisList) {
+			filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
+			setProgress(analysisList.indexOf(analysis) + 1, 0, analysisList.size());
 		}
-		message("endMessage");
+		// check whether compressing should be enabled
+		RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
+		message("endMessage", filesMissing);
 		return null;
 	}
 	
-	public EventList<Analysis> getAnalysisList() {
-		return analysisList;
+	public DaoService getDaoService() {
+		return daoService;
 	}
 
 	public VideoFileManager getVideoFileManager() {

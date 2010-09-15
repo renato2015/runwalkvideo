@@ -16,6 +16,7 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.Task.BlockingScope;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -25,6 +26,7 @@ import ca.odell.glazedlists.matchers.Matcher;
 import com.runwalk.video.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.VideoFolderRetrievalStrategy;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -49,11 +51,13 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private final VideoFileManager videoFileManager;
 	private final AppSettings appSettings;
+	private final DaoService daoService;
 
-	public AnalysisOverviewTablePanel(AppSettings appSettings, VideoFileManager videoFileManager) {
+	public AnalysisOverviewTablePanel(AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
+		this.daoService = daoService;
 
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -68,36 +72,36 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		add(getSecondButton());
 	}
 
-	@Action
+	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> cleanup() {
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		return new CleanupVideoFilesTask(parentWindow, getAnalysisList(), getVideoFileManager());
 	}
 
-	@Action
+	@Action(block = BlockingScope.APPLICATION)
 	public Task<Void, Void> selectUncompressedVideoDir() {
 		File chosenDir = getAppSettings().getUncompressedVideoDir();
 		File result = selectDirectory(chosenDir);
 		getAppSettings().setUncompressedVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+		return new RefreshVideoFilesTask(getVideoFileManager(), getDaoService());
 	}
-	
-	@Action
+
+	@Action(block = BlockingScope.APPLICATION)
 	public Task<Void,Void> selectVideoDir() {
 		File chosenDir = getAppSettings().getVideoDir();
 		File result = selectDirectory(chosenDir);
 		getAppSettings().setVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+		return new RefreshVideoFilesTask(getVideoFileManager(), getDaoService());
 	}
-	
+
 	private File selectDirectory(File chosenDir) {
 		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = chooser.showDialog(null, "Selecteer");
-	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    	return chooser.getSelectedFile();
-	    }
-	    return chosenDir;
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			return chooser.getSelectedFile();
+		}
+		return chosenDir;
 	}
 
 	@Action( block = Task.BlockingScope.APPLICATION)
@@ -128,14 +132,19 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	public void setCompressionEnabled(boolean compressionEnabled) {
 		if (compressionEnabled) {
-			for(Analysis analysis : getItemList()) {
-				for (Recording recording : analysis.getRecordings()) {
-					File videoFile = getVideoFileManager().getVideoFile(recording);
-					if (recording.isCompressable() && getVideoFileManager().canReadAndExists(videoFile)) {
-						firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = true);
-						return;
+			getItemList().getReadWriteLock().readLock().lock();
+			try {
+				for(Analysis analysis : getItemList()) {
+					for (Recording recording : analysis.getRecordings()) {
+						File videoFile = getVideoFileManager().getVideoFile(recording);
+						if (recording.isCompressable() && getVideoFileManager().canReadAndExists(videoFile)) {
+							firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = true);
+							return;
+						}
 					}
 				}
+			} finally {
+				getItemList().getReadWriteLock().readLock().unlock();
 			}
 		} else {
 			firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = false);
@@ -202,5 +211,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	public AppSettings getAppSettings() {
 		return appSettings;
+	}
+	
+	public DaoService getDaoService() {
+		return daoService;
 	}
 }

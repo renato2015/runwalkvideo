@@ -46,7 +46,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().graphChanged();
 		getFiltergraph().setPreview();
 		getFiltergraph().play();
-		getFiltergraph().lockAspectRatio(true);
+//		getFiltergraph().lockAspectRatio(true);
 		setRunning(true);
 		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 	}
@@ -97,7 +97,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	public void togglePreview() {
 		if (isRunning()) {
-			stopRecording();
+			stopCapturer();
 		} else {
 			startCapturer();
 		}

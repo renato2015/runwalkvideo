@@ -12,7 +12,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.InternalFrameListener;
 
@@ -253,17 +252,15 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public void toggleFullscreen() {
 		// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
 		monitorId = monitorId != null && monitorId == 0 ? null : 0;
-		SwingUtilities.isEventDispatchThread();
 		showComponent(monitorId);
 	}
 
 	protected void setState(State state) {
 		firePropertyChange(STATE, this.state, this.state = state);
 		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
-		boolean isIdle = state == State.IDLE;
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		setFullScreenEnabled(isIdle && graphicsDevices.length > 1);
+		setFullScreenEnabled(isIdle() && graphicsDevices.length > 1);
 	}
 
 	public State getState() {
@@ -287,7 +284,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	 */
 	public void dispose() {
 		// fire event before removing listeners
-		firePropertyChange(DISPOSED, false, true);
+		setState(State.DISPOSED);
 		// remove window from the menu bar
 		getApplication().removeComponent(this);
 		// remove window listeners on the windows to make them eligible for garbage collection
@@ -367,7 +364,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public enum State {
-		PLAYING, RECORDING, IDLE
+		PLAYING, RECORDING, IDLE, DISPOSED
 	}
 
 }

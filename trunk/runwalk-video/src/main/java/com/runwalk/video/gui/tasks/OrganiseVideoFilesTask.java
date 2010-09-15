@@ -40,7 +40,8 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 		filesMoved = 0;
 		getAnalysisList().getReadWriteLock().readLock().lock();
 		try {
-			for (Analysis analysis : analysisList) {
+			int progress = 0;
+			for (Analysis analysis : getAnalysisList()) {
 				for (Recording recording : analysis.getRecordings()) {
 					File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
 					// check whether a compressed video file exists for the given recording
@@ -60,7 +61,7 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 						getVideoFileManager().refreshCache(recording);
 					}
 				}
-				setProgress(getAnalysisList().indexOf(analysis), 0, getAnalysisList().size() - 1);
+				setProgress(++progress, 0, getAnalysisList().size());
 			}
 		} finally {
 			getAnalysisList().getReadWriteLock().readLock().unlock();

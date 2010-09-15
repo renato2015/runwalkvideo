@@ -89,7 +89,7 @@ public class VideoCapturer extends VideoComponent {
 		setRecording(recording);
 		timeStarted = System.currentTimeMillis();
 		getVideoImpl().startRecording(videoFile);
-		getLogger().debug("Recording to file " + videoFile.getAbsolutePath() + "");
+		getLogger().debug("Recording to file " + videoFile.getAbsolutePath());
 		recording.setRecordingStatus(RecordingStatus.RECORDING);
 		getTimer().restart();
 		setState(State.RECORDING);
