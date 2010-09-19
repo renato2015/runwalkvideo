@@ -13,7 +13,6 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
@@ -33,12 +32,9 @@ import com.runwalk.video.gui.panels.ClientTablePanel;
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
-	private final VideoFileManager videoFileManager;
-	private CompositeList<Analysis> analysesOverview;
 
-	public RefreshTask(VideoFileManager videoFileManager, DaoService daoService) {
+	public RefreshTask(DaoService daoService) {
 		super("refresh");
-		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
 	}
 
@@ -83,7 +79,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 					});
 					// get analysis overview tablepanel and inject data
-					analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
+					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
 					analysesOverview.addMemberList(selectedClientAnalyses);
 					analysesOverview.addMemberList(deselectedClientAnalyses);
 					// create the overview with unfinished analyses
@@ -92,34 +88,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				}
 
 			});
-			refreshVideoFiles(analysesOverview);
-		} catch(Exception ignore) {
-			getLogger().error(Level.SEVERE, ignore);
+			message("endMessage");
+		} catch(Exception exc) {
+			getLogger().error(Level.SEVERE, exc);
 			success = false;
 		}
 		return success;
-	}
-	
-	private void refreshVideoFiles(EventList<Analysis> analysisList) {
-		// some not so beautiful way to refresh the cache
-		message("loadingVideoFilesMessage");
-		int filesMissing = 0, progress = 0;
-		analysisList.getReadWriteLock().readLock().lock();
-		try {
-			for (Analysis analysis : analysisList) {
-				filesMissing = filesMissing + getVideoFileManager().refreshCache(analysis);
-				setProgress(++progress, 0, analysisList.size());
-			}
-		} finally {
-			analysisList.getReadWriteLock().readLock().unlock();
-		}
-		// check whether compressing should be enabled
-		RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
-		message("endMessage", filesMissing);
-	}
-
-	private VideoFileManager getVideoFileManager() {
-		return videoFileManager;
 	}
 
 	private DaoService getDaoService() {

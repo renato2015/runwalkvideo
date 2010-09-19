@@ -12,7 +12,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.FileAppender;
@@ -21,7 +23,9 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
+import com.runwalk.video.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.VideoFolderRetrievalStrategy;
 
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {
@@ -98,6 +102,7 @@ public class AppSettings implements Serializable {
 		try {
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, FILE_ENCODING);
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
 			fos = appContext.getLocalStorage().openOutputFile(settingsFile.getName());
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
@@ -236,12 +241,16 @@ public class AppSettings implements Serializable {
 		return getSettings().logFileUploadUrl;
 	}
 	
-	public String getVideoFolderFormatString() {
-		return getSettings().videoFolderFormatString;
+	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
+		if (getSettings().videoFolderRetrievalStrategy == null) {
+			getSettings().videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
+		}
+		return getSettings().videoFolderRetrievalStrategy;
 	}
+
 	
-	public void setVideoFolderFormatString(String videoFolderFormatString) {
-		getSettings().videoFolderFormatString = videoFolderFormatString;
+	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
+		getSettings().videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
 	
 	public String getVlcPath() {
@@ -253,38 +262,34 @@ public class AppSettings implements Serializable {
 	}
 
 	@XmlRootElement
+	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
-		@XmlElement
+
 		private String videoDir = "D:\\Video's";
 
-		@XmlElement
 		private String uncompressedVideoDir;
 
 		/**
 		 * The last selected capturer on startup.
 		 */
-		@XmlElement
 		private String capturerName;
 
-		@XmlElement
 		private float playRate;
 
-		@XmlElement
 		private float savedVolume;
 
-		@XmlElement
 		private String transcoderName = "XviD MPEG-4 Codec";
 		
-		@XmlElement
 		private String captureEncoderName = "none";
 		
-		@XmlElement
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
-		@XmlElement
-		private String videoFolderFormatString;
+		/** 
+		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
+		 */
+		@XmlElementRef
+		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 		
-		@XmlElement
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
  
 	}

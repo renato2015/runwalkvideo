@@ -23,11 +23,6 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
     		firePropertyChange(ERROR_MESSAGE, getMessage(), getResourceString(formatResourceKey, args));
     	}
     }
-
-	@Override
-	protected void finished() {
-		RunwalkVideoApp.getApplication().getStatusPanel().getProgressBar().updateUI();
-	}
 	
 	protected String getResourceString(String string, Object... args) {
 		ResourceMap resourceMap = getResourceMap();

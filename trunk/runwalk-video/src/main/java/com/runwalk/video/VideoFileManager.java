@@ -13,7 +13,6 @@ import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.util.AppSettings;
-import com.runwalk.video.util.AppSettings.Settings;
 
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
@@ -33,13 +32,6 @@ public class VideoFileManager extends AbstractBean {
 	private Map<Recording, File> recordingFileMap = Maps.newHashMap();
 
 	private final AppSettings appSettings;
-
-	/** 
-	 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
-	 * 
-	 * @see Settings#videoFolderFormatString
-	 */
-	private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
@@ -112,7 +104,7 @@ public class VideoFileManager extends AbstractBean {
 		int filesMissing = 0;
 		for (Recording recording : analysis.getRecordings()) {
 			File videoFile = refreshCache(recording);
-			filesMissing = videoFile == null ? filesMissing + 1 : filesMissing;
+			filesMissing = videoFile == null ? ++filesMissing : filesMissing;
 		}
 		return filesMissing;
 	}
@@ -153,26 +145,11 @@ public class VideoFileManager extends AbstractBean {
 	}
 
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
-		// get the stored format string from the application settings file
-		String formatString = getAppSettings().getVideoFolderFormatString();
-		if (videoFolderRetrievalStrategy == null) {
-			if (formatString == null) {
-				// use the default folder retrieval strategy if there is no format string set
-				videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
-			} else {
-				videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy(formatString);
-			}
-		}
-		return videoFolderRetrievalStrategy;
+		return getAppSettings().getVideoFolderRetrievalStrategy();
 	}
 
 	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
-		if (videoFolderRetrievalStrategy instanceof DateVideoFolderRetrievalStrategy) {
-			DateVideoFolderRetrievalStrategy newStrategy = (DateVideoFolderRetrievalStrategy) videoFolderRetrievalStrategy;
-			// TODO this method should be incorporated in the interface somehow, so we won't need to cast anything
-			getAppSettings().setVideoFolderFormatString(newStrategy.getDateFormatString());
-		}
-		this.videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
+		getAppSettings().setVideoFolderRetrievalStrategy(videoFolderRetrievalStrategy);
 	}
 
 	/**
@@ -201,8 +178,8 @@ public class VideoFileManager extends AbstractBean {
 	}
 
 	/**
-	 * Delete a video file associated with a recording. 
-	 * If there are both compressed and uncompressed versions, then the compressed will only be removed.
+	 * Delete the video file from the disk for the given {@link Recording}. If there are both 
+	 * compressed and uncompressed versions, then the only the compressed one will be removed.
 	 * 
 	 * @param recording The recording to remove the video file for
 	 */

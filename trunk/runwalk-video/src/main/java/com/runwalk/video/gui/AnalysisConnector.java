@@ -51,21 +51,19 @@ public class AnalysisConnector implements Connector<Analysis> {
 	 * Connector of changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings("unchecked")
 		public void propertyChange(PropertyChangeEvent event) {
-			Object eventSource = event.getSource();
+			Analysis analysis = null;
 			if (event.getSource() instanceof Recording) {
-				Analysis analysis = ((Recording) eventSource).getAnalysis();
+				analysis = ((Recording) event.getSource()).getAnalysis();
 				analysis.getClient().setDirty(true);
-				eventSource = analysis;
 			} else if (event.getPropertyName().equals(Analysis.RECORDING_COUNT)) {
-				Analysis analysis = (Analysis) eventSource;
+				analysis = (Analysis) event.getSource();
 				// a recording was added, listen for changes..
 				Recording lastRecording = Iterables.getLast(analysis.getRecordings());
 				lastRecording.addPropertyChangeListener(propertyChangeListener);
 			}
-			// TODO revise this
-			((ObservableElementList) list).elementChanged(eventSource);
+			((ObservableElementList<Analysis>) list).elementChanged(analysis);
 		}
 	}
 

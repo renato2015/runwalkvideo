@@ -56,9 +56,9 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 								Logger.getLogger(VideoFileManager.class).error(e);
 							}
 						}
-						// refresh cache entry
-						getVideoFileManager().refreshCache(getVideoFolderRetrievalStrategy(), recording);
 					}
+					// refresh video file cache using new strategy
+					getVideoFileManager().refreshCache(getVideoFolderRetrievalStrategy(), recording);
 				}
 				setProgress(++progress, 0, getAnalysisList().size());
 			}
@@ -79,23 +79,30 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 				getResourceString("startMessage"), JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	private int deleteEmptyDirectories(File directory) {
+		return deleteEmptyDirectories(0, directory);
+	}
+	
 	/**
 	 * Recursively delete all empty directories found in a given directory.
+	 * Invisible directories and subdirectories will be ignored.
 	 *
 	 * @param directory The directory to delete empty directories in
+	 * @param foldersDeleted The number of currently deleted folders, should be 0 on invocation
 	 * @return The total number of deleted directories
 	 */
-	private int deleteEmptyDirectories(File directory) {
+	private int deleteEmptyDirectories(int foldersDeleted, File directory) {
 		if( directory.exists() ) {
 			File[] files = directory.listFiles();
 			for(int i = 0; i < files.length; i++) {
 				// don't delete invisible directories
-				if(files[i].isDirectory() && !files[i].getName().startsWith(".")) {
-					deleteEmptyDirectories(files[i]);
+				if (files[i].isDirectory() && files[i].getName().charAt(0) != '.') {
+					foldersDeleted = deleteEmptyDirectories(foldersDeleted, files[i]);
 				} 
 			}
 		}
-		return directory.delete() ? deletedDirectories++ : deletedDirectories;
+		// we need a pre increment here, so the variable will be incremented before it is returned
+		return directory.delete() ? ++foldersDeleted : foldersDeleted;
 	}
 
 	@Override

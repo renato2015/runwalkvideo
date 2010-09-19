@@ -154,9 +154,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			return;
 		}
 		getItemList().getReadWriteLock().writeLock().lock();
-		Analysis analysis = new Analysis(selectedClient);
-		getDaoService().getDao(Analysis.class).persist(analysis);
 		try {
+			Analysis analysis = new Analysis(selectedClient);
+			getDaoService().getDao(Analysis.class).persist(analysis);
 			selectedClient.addAnalysis(analysis);
 			setSelectedItem(analysis);
 		} finally {

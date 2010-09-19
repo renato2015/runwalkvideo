@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.panels;
 
 import java.awt.Component;
-import java.lang.reflect.InvocationTargetException;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -21,7 +20,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -29,6 +27,7 @@ import javax.swing.text.DefaultFormatterFactory;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.beansbinding.AbstractBindingListener;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
@@ -38,7 +37,6 @@ import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.Validator;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -80,7 +78,7 @@ public class ClientInfoPanel extends AppPanel {
 	private final BindingListener changeListener = new AbstractBindingListener() {
 
 		@Override
-		public void targetChanged(Binding binding, PropertyStateEvent event) {
+		public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 			ClientTablePanel tablePanel = (ClientTablePanel) binding.getSourceObject();
 			Client selectedItem2 = tablePanel.getSelectedItem();
 			if (selectedItem2 != null) {
@@ -117,7 +115,7 @@ public class ClientInfoPanel extends AppPanel {
 				return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 			}
 
-		};
+		}
 
 		JLabel nameLabel = new JLabel();
 		nameLabel.setFont(AppSettings.MAIN_FONT);
@@ -174,12 +172,12 @@ public class ClientInfoPanel extends AppPanel {
 		taxField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.taxNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, TEXT);
-		valueBinding.setValidator(new Validator () {
+		valueBinding.setValidator(new Validator<String> () {
 
-			public Validator.Result validate(Object arg) {
+			public Validator<String>.Result validate(String arg) {
 				String regexPattern = "[0-9]{9}";
 				Pattern pattern = Pattern.compile(regexPattern);
-				Matcher matcher = pattern.matcher(arg.toString());
+				Matcher matcher = pattern.matcher(arg);
 				if(!matcher.matches()){
 					return new Result(null, "Btwnr. moet 9 cijfers bevatten");
 				}

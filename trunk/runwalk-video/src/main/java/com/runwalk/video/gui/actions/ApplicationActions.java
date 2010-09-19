@@ -1,23 +1,18 @@
 package com.runwalk.video.gui.actions;
 
 import java.awt.Toolkit;
-import java.io.File;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 
-import com.runwalk.video.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.VideoFolderRetrievalStrategy;
-import com.runwalk.video.gui.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.util.AppSettings;
 
@@ -51,23 +46,25 @@ public class ApplicationActions extends AbstractBean {
 		setUndoEnabled(undo.canUndo());
 	}
 
-	@Action(enabledProperty=UNDO_ENABLED)
+	@Action(enabledProperty = UNDO_ENABLED)
 	public void undo() {
 		try {
 			undo.undo();
 		}
 		catch( CannotUndoException ex) {
+			Logger.getLogger(ApplicationActions.class).error(ex);
 			Toolkit.getDefaultToolkit().beep();
 		}
 		updateUndoActions();
 	}
 
-	@Action(enabledProperty=REDO_ENABLED)
+	@Action(enabledProperty = REDO_ENABLED)
 	public void redo() {
 		try {
 			undo.redo();
 		}
 		catch( CannotUndoException ex) {
+			Logger.getLogger(ApplicationActions.class).error(ex);
 			Toolkit.getDefaultToolkit().beep();
 		}
 		updateUndoActions();

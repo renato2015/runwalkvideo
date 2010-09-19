@@ -21,7 +21,7 @@ import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
-public class CompressTask extends AbstractTask<Boolean, Void> implements PropertyChangeListener { 
+public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implements PropertyChangeListener { 
 	private int errorCount = 0;
 	private int conversionCounter, conversionCount;
 	private double part;
@@ -33,8 +33,8 @@ public class CompressTask extends AbstractTask<Boolean, Void> implements Propert
 	/** volatile flag so changes can be seen directly by all threads */
 	private volatile boolean finished = false;
 
-	public CompressTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
-		super("compress");
+	public CompressVideoFilesTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
+		super("compressVideoFiles");
 		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
 		this.recordings = recordings;
 		this.videoFileManager = videoFileManager;

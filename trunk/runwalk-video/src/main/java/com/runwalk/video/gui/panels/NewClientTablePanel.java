@@ -488,7 +488,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 				result.setText(city.getCode() + " " + city.getName());
 				return result;
 			}
-		};
+		}
 
 		class CityInfoEditor extends BasicComboBoxEditor {
 
@@ -538,7 +538,7 @@ public class NewClientTablePanel extends AbstractTablePanel<Client> {
 				}
 				return resultList != null && resultList.size() > 0 ? resultList.get(0) : selectedCity;
 			}
-		};
+		}
 
 		locationField.setEditor(new CityInfoEditor(locationField.getEditor(), City.class, "getName"));
 		locationField.setRenderer(new CityInfoRenderer());

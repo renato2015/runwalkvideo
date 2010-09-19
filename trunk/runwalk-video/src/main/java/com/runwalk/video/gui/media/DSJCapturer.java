@@ -78,7 +78,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 					}
 				}
 			}
-		});
+		}, "FrameDropInfoThread");
 		thread.start();
 	}
 

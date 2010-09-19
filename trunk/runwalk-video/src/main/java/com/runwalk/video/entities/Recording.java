@@ -1,5 +1,6 @@
 package com.runwalk.video.entities;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -45,9 +47,6 @@ public class Recording extends SerializableEntity<Recording> {
 	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
 	@JoinColumn(name="analysisid", nullable=false)
 	private Analysis analysis;
-
-	@Column(name="oldfilename")
-	private String oldFileName;
 
 	@Column(name = "newfilename")
 	private String videoFileName;
@@ -141,18 +140,20 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	/**
-	 * This method should set the right status code according to the available recordings on the disk.
+	 * This method should set the right {@link RecordingStatus} constant for this {@link Recording} 
+	 * according to the{@link File} returned by {@link VideoFileManager#getVideoFile(Recording)}.
 	 * The status code will not be persisted to the database if it is found to be erroneous, because
-	 * the videofiles are always local to an application's file system.
+	 * the video files are always local to an application's file system.
 	 * 
-	 * @param status The status to be applied
+	 * @param recordingStatus The status to be applied
+	 * @see VideoFileManager#getVideoFile(Recording)
 	 */
-	public void setRecordingStatus(RecordingStatus status) {
-//		boolean wasRecorded = isRecorded();
-		firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = status);
-//		firePropertyChange(RECORDED, wasRecorded, isRecorded());
+	public void setRecordingStatus(RecordingStatus recordingStatus) {
+		boolean wasRecorded = isRecorded();
+		firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
+		firePropertyChange(RECORDED, wasRecorded, isRecorded());
 		// don't change the statuscode if it is erroneous.
-		if (!status.isErroneous()) {
+		if (!recordingStatus.isErroneous()) {
 			this.statusCode = recordingStatus.getCode();
 		}
 	}

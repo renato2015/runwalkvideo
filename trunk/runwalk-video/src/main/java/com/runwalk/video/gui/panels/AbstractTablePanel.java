@@ -241,8 +241,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 
 			button = (JButton)value;
 
-			buttonEvent =
-				(MouseEvent)SwingUtilities.convertMouseEvent(getTable(), e, button);
+			buttonEvent = SwingUtilities.convertMouseEvent(getTable(), e, button);
 			button.dispatchEvent(buttonEvent);
 			// This is necessary so that when a button is pressed and released
 			// it gets rendered properly.  Otherwise, the button may still appear

@@ -17,9 +17,12 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.matchers.Matcher;
 
@@ -31,7 +34,7 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.CleanupVideoFilesTask;
-import com.runwalk.video.gui.tasks.CompressTask;
+import com.runwalk.video.gui.tasks.CompressVideoFilesTask;
 import com.runwalk.video.gui.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.gui.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.util.AppSettings;
@@ -46,7 +49,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
-	private EventList<Analysis> analysisList;
+	private EventList<Analysis> analysisList = GlazedLists.eventListOf();
 
 	private final VideoFileManager videoFileManager;
 	private final AppSettings appSettings;
@@ -61,52 +64,40 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow");
 
-		JButton cleanupButton = new JButton(getAction("cleanup"));
+		JButton cleanupButton = new JButton(getAction("cleanupVideoFiles"));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
 		add(cleanupButton);
-		setSecondButton(new JButton(getAction("compress")));
+		setSecondButton(new JButton(getAction("compressVideoFiles")));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton());
 	}
+	
+	@Action(block = BlockingScope.APPLICATION)
+	public Task<Boolean, Void> refreshVideoFiles() {
+		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Boolean> event) {
+				setCompressionEnabled(event.getValue());
+			}
+			
+		});
+		return refreshVideoFilesTask;
+	}
 
 	@Action(block = BlockingScope.APPLICATION)
-	public Task<Boolean, Void> cleanup() {
+	public Task<Boolean, Void> cleanupVideoFiles() {
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		return new CleanupVideoFilesTask(parentWindow, getAnalysisList(), getVideoFileManager());
 	}
-
-	@Action(block = BlockingScope.APPLICATION)
-	public Task<Void, Void> selectUncompressedVideoDir() {
-		File chosenDir = getAppSettings().getUncompressedVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setUncompressedVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
-	}
-
-	@Action(block = BlockingScope.APPLICATION)
-	public Task<Void,Void> selectVideoDir() {
-		File chosenDir = getAppSettings().getVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setVideoDir(result);
-		return new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
-	}
-
-	private File selectDirectory(File chosenDir) {
-		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = chooser.showDialog(null, "Selecteer");
-		if(returnVal == JFileChooser.APPROVE_OPTION) {
-			return chooser.getSelectedFile();
-		}
-		return chosenDir;
-	}
-
-	@Action( block = Task.BlockingScope.APPLICATION)
+	
+	@Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Void, Void> organiseVideoFiles() {
 		Object formatString = JOptionPane.showInputDialog(SwingUtilities.windowForComponent(this), 
 				"Geef hier een folder structuur op door '/' als separator te gebruiken", 
 				"Organiseer bestanden", JOptionPane.QUESTION_MESSAGE, 
-				null, null, getAppSettings().getVideoFolderFormatString());
+				null, null, getVideoFileManager().getVideoFolderRetrievalStrategy().getDisplayString());
 		if (formatString != null) {
 			// create a new retrieval strategy using the specified format string
 			VideoFolderRetrievalStrategy newStrategy = new DateVideoFolderRetrievalStrategy(formatString.toString());
@@ -117,10 +108,36 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
-	public Task<Boolean, Void> compress() {
+	public Task<Boolean, Void> compressVideoFiles() {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
-		return new CompressTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
+		return new CompressVideoFilesTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
+	}
+
+	@Action(block = BlockingScope.APPLICATION)
+	public Task<Boolean, Void> selectUncompressedVideoDir() {
+		File chosenDir = getAppSettings().getUncompressedVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setUncompressedVideoDir(result);
+		return refreshVideoFiles();
+	}
+
+	@Action(block = BlockingScope.APPLICATION)
+	public Task<Boolean,Void> selectVideoDir() {
+		File chosenDir = getAppSettings().getVideoDir();
+		File result = selectDirectory(chosenDir);
+		getAppSettings().setVideoDir(result);
+		return refreshVideoFiles();
+	}
+	
+	private File selectDirectory(File chosenDir) {
+		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = chooser.showDialog(null, "Selecteer");
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			return chooser.getSelectedFile();
+		}
+		return chosenDir;
 	}
 
 	public boolean isCompressionEnabled() {
@@ -128,24 +145,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void setCompressionEnabled(boolean compressionEnabled) {
-		if (compressionEnabled) {
-			getItemList().getReadWriteLock().readLock().lock();
-			try {
-				for(Analysis analysis : getItemList()) {
-					for (Recording recording : analysis.getRecordings()) {
-						File videoFile = getVideoFileManager().getVideoFile(recording);
-						if (recording.isCompressable() && getVideoFileManager().canReadAndExists(videoFile)) {
-							firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = true);
-							return;
-						}
-					}
-				}
-			} finally {
-				getItemList().getReadWriteLock().readLock().unlock();
-			}
-		} else {
-			firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = false);
-		}
+		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled);
 	}
 
 	/**

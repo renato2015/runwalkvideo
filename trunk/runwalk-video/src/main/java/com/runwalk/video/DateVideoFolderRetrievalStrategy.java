@@ -4,18 +4,26 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import com.runwalk.video.entities.Recording;
 
 /**
- * Retrieves a video file's parent folder by parsing the analysis' creation date using a given format string.
+ * Retrieves a video file's parent folder by parsing the analysis' creation date using a given date format string.
  * 
  * @author Jeroen Peelaerts
  */
-public class DateVideoFolderRetrievalStrategy implements VideoFolderRetrievalStrategy {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+public class DateVideoFolderRetrievalStrategy extends MarshallableVideoFolderRetrievalStrategy {
 
 	private final static String FOLDER_SEPARATOR = "/";
 	
-	private final String dateFormatString;
+	private String dateFormatString;
+	
+	protected DateVideoFolderRetrievalStrategy() {	}
 	
 	public DateVideoFolderRetrievalStrategy(String dateFormatString) {
 		this.dateFormatString = dateFormatString;
@@ -35,6 +43,10 @@ public class DateVideoFolderRetrievalStrategy implements VideoFolderRetrievalStr
 
 	public String getDateFormatString() {
 		return dateFormatString;
+	}
+
+	public String getDisplayString() {
+		return getDateFormatString();
 	}
 	
 }

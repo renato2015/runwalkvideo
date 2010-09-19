@@ -21,6 +21,8 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
 
 import com.runwalk.video.dao.DaoService;
@@ -39,6 +41,7 @@ import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.panels.ClientInfoPanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 import com.runwalk.video.gui.panels.StatusPanel;
+import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
@@ -57,13 +60,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
 	private AppInternalFrame clientMainView;
-
 	private VideoMenuBar menuBar;
-
 	private ApplicationActions applicationActions;
-
 	private JScrollableDesktopPane pane;
-
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
 
@@ -136,14 +135,42 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// show the main frame, all its session settings from the last time will be restored
 		show(getMainFrame());
 	}
+	
+	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
+	public Task<Boolean, Void> refresh() {
+		RefreshTask refreshTask = new RefreshTask(getDaoService());
+		refreshTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
+
+			@Override
+			public void finished(TaskEvent<Void> event) {
+				// refresh video file cache, this task should not be launched until the database data is refreshed
+				executeAction(getAnalysisOverviewTablePanel().getApplicationActionMap(), "refreshVideoFiles");
+			}
+			
+		});
+		return refreshTask;
+	}
 
 	/** {@inheritDoc} */
 	@Override
 	protected void ready() {
 		// load data from the db using the bsaf task mechanism
-		Action refreshAction = clientTablePanel.getApplicationActionMap().get("refresh");
-		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "refresh");
-		refreshAction.actionPerformed (actionEvent);
+		executeAction(getContext().getActionMap(), "refresh");
+	}
+	
+	/**
+	 * This method will look for an {@link Action} specified with the given key in the given {@link ActionMap} 
+	 * and invoke it's {@link Action#actionPerformed(ActionEvent)} method to mimic a user interaction.
+	 * 
+	 * @param actionMap The {@link ActionMap} containing the {@link Action} to be executed
+	 * @param actionKey The key of the {@link Action} to be executed
+	 */
+	private void executeAction(ActionMap actionMap, String actionKey) {
+		Action action = actionMap.get(actionKey);
+		if (action != null) {
+			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
+			action.actionPerformed(actionEvent);
+		}
 	}
 
 	public void createOrShowComponent(AppWindowWrapper appComponent) {
@@ -163,7 +190,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 	}
-	
+
 	public void removeComponent(AppWindowWrapper appComponent) {
 		getMenuBar().removeWindow(appComponent);
 	}
@@ -184,16 +211,13 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	protected void shutdown() {
 		super.shutdown();
 		getMediaControls().disposeVideoComponents();
-		Action uploadLogFilesAction = getApplicationActionMap().get("uploadLogFiles");
-		ActionEvent actionEvent = new ActionEvent (getMainFrame(), ActionEvent.ACTION_PERFORMED, "uploadLogFiles");
-		uploadLogFilesAction.actionPerformed (actionEvent);
+		executeAction(getApplicationActionMap(), "uploadLogFiles");
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
 					"Wijzingen bewaren..", JOptionPane.OK_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
-				Task<?, Void> saveTask = getClientTablePanel().save();
-				getContext().getTaskService().execute(saveTask);
+				executeAction(getClientTablePanel().getApplicationActionMap(), "save");
 			}
 		}
 		AppSettings.getInstance().saveSettings();
@@ -203,7 +227,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		}
 		getDaoService().shutdown();
 	}
-	
+
 	private AppInternalFrame createMainView() {
 		AppInternalFrame result = new AppInternalFrame("Klanten en analyses", true);
 		ResourceMap resourceMap = getContext().getResourceMap();
@@ -265,7 +289,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-	
+
 	private DaoService getDaoService() {
 		return daoService;
 	}
@@ -277,7 +301,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private boolean isSaveNeeded() {
 		return getClientTablePanel().isSaveNeeded();
 	}
-	
+
 	private UndoableEditListener createUndoableEditListener() {
 		return getApplicationActions().getUndoableEditListener();
 	}

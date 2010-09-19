@@ -60,9 +60,8 @@ public class CameraDialog extends AppDialog {
 	private boolean cancelled = false;
 
 	/**
-	 * Create a dialog that allows the user start a capture device. A {@link IVideoCapturer} implementation must be passed
-	 * which it will use to query for the available capture devices. Selection notification will be done by firing {@link PropertyChangeEvent}s 
-	 * to registered listeners. 
+	 * Create a dialog that allows the user start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
+	 * to registered listeners.
 	 * 
 	 * @param parent The parent {@link Frame} whose focusing behavior will be inherited
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
@@ -171,7 +170,7 @@ public class CameraDialog extends AppDialog {
 	public boolean isCancelled() {
 		return cancelled;
 	}
-
+	
 	/**
 	 * This method refreshes the list with connected capture devices 
 	 * and displaying devices. The layout of this dialog will be changed accordingly.
@@ -186,6 +185,19 @@ public class CameraDialog extends AppDialog {
 			dismissDialog();
 			return false;
 		}
+		// add the capturers to the gui
+		addCapturers(capturerNames);
+		// add some extra gui elements depending on the number of connected monitors
+		addMonitors();
+		return true;
+	}
+	
+	/**
+	 * Add the available capturers to the {@link Dialog}.
+	 * 
+	 * @param capturerNames The names of the available capturers
+	 */
+	private void addCapturers(List<String> capturerNames) {
 		String[] captureDevicesArray = Iterables.toArray(capturerNames, String.class);
 		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
@@ -201,6 +213,12 @@ public class CameraDialog extends AppDialog {
 		capturerComboBox.setSelectedItem(defaultCapturerName);
 		// make another call to the setter here to make sure the selected capturer will be started
 		setSelectedCapturerName(defaultCapturerName);
+	}
+	
+	/**
+	 * Add extra monitor selection buttons, only if there are more than 2 connected.  
+	 */
+	public void addMonitors() {
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
@@ -241,7 +259,6 @@ public class CameraDialog extends AppDialog {
 			screenLabel.setVisible(true);
 			buttonPanel.setVisible(true);
 		}
-		return true;
 	}
 
 }
