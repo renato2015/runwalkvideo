@@ -74,7 +74,7 @@ public class VideoCapturer extends VideoComponent {
 		this.videoImpl = videoImpl;
 	}
 
-	@Action
+	@Action(enabledProperty = IDLE)
 	@Override
 	public void dispose() {
 		super.dispose();

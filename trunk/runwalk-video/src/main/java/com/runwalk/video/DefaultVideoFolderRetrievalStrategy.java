@@ -2,6 +2,8 @@ package com.runwalk.video;
 
 import java.io.File;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import com.runwalk.video.entities.Recording;
 
 /**
@@ -9,10 +11,15 @@ import com.runwalk.video.entities.Recording;
  * 
  * @author Jeroen Peelaerts
  */
-public class DefaultVideoFolderRetrievalStrategy implements VideoFolderRetrievalStrategy {
+@XmlRootElement
+public class DefaultVideoFolderRetrievalStrategy extends MarshallableVideoFolderRetrievalStrategy {
 
 	public File getVideoFolder(File parentFolder, Recording recording) {
 		return parentFolder;
+	}
+
+	public String getDisplayString() {
+		return "/";
 	}
 
 }

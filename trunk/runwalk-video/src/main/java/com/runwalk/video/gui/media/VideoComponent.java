@@ -256,7 +256,9 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	protected void setState(State state) {
+		boolean wasIdle = isIdle();
 		firePropertyChange(STATE, this.state, this.state = state);
+		firePropertyChange(IDLE, wasIdle, isIdle());
 		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();

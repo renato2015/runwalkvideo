@@ -55,7 +55,7 @@ public class VideoPlayer extends VideoComponent {
 
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
-					firePropertyChange(POSITION, position, position = getPosition());
+					firePropertyChange(POSITION, position, position = getVideoImpl().getPosition());
 				}
 			}
 		});
@@ -68,6 +68,7 @@ public class VideoPlayer extends VideoComponent {
 			showComponent();
 		}
 		setComponentTitle(getTitle());
+		setPosition(0);
 	}
 	
 	public void pause() {
@@ -86,7 +87,7 @@ public class VideoPlayer extends VideoComponent {
 		setState(State.IDLE);
 		getTimer().stop();
 		// set position to 0 here and for player this instance and its 'native' implementation
-		position = 0;
+		setPosition(0);
 		getVideoImpl().stop();
 	}
 
@@ -94,14 +95,14 @@ public class VideoPlayer extends VideoComponent {
 	 * Set the current playback position of the player. If the position is greater than the duration of the
 	 * currently loaded video, then it will be set to 0.
 	 * 
-	 * @param pos The playback position
+	 * @param position The playback position
 	 */
-	public void setPosition(int pos) {
-		if (pos >= getDuration()) {
-			pos = 0;
+	public void setPosition(int position) {
+		if (position >= getDuration()) {
+			position = 0;
 		}
-		getVideoImpl().setPosition(pos);
-		firePropertyChange(POSITION, this.position, this.position = pos);
+		getVideoImpl().setPosition(position);
+		firePropertyChange(POSITION, this.position, this.position = position);
 	}
 
 	public float slower() {
@@ -180,7 +181,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public boolean mute() {
-		boolean muted =  getVideoImpl().getVolume() > 0;
+		boolean muted = getVideoImpl().getVolume() > 0;
 		if (muted) {
 			volume = getVideoImpl().getVolume();
 			getVideoImpl().setVolume(0f);
@@ -195,7 +196,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public int getPosition() {
-		return getVideoImpl().getPosition();
+		return position;
 	}
 
 	public IVideoPlayer getVideoImpl() {
@@ -206,7 +207,7 @@ public class VideoPlayer extends VideoComponent {
 		this.playerImpl = playerImpl;
 	}
 	
-	@Action
+	@Action(enabledProperty = IDLE)
 	@Override
 	public void dispose() {
 		super.dispose();

@@ -31,7 +31,6 @@ import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.DateTableCellRenderer;
-import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
@@ -47,12 +46,12 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private final TextComponentMatcherEditor<Client> matcherEditor;
 
 	private final VideoFileManager videoFileManager;
-	private final DaoService daoManager;
+	private final DaoService daoService;
 
 	public ClientTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
 		super(new MigLayout("nogrid, fill"));
 		this.videoFileManager = videoFileManager;
-		this.daoManager = daoManager;
+		this.daoService = daoManager;
 
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
@@ -129,9 +128,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return matcherEditor;
 	}
 
-	@Action(enabledProperty=SAVE_NEEDED)
+	@Action(enabledProperty = SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
-		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(Client.class, getItemList(), getDaoManager());
+		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(Client.class, getItemList(), getDaoService());
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -173,7 +172,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public void addClient() {
 		clearSearchField();
 		Client client = new Client();
-		getDaoManager().getDao(Client.class).persist(client);
+		getDaoService().getDao(Client.class).persist(client);
 		getItemList().add(client);
 		setSelectedItem(client);
 		getApplication().getClientInfoPanel().requestFocus();
@@ -195,7 +194,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getVideoFileManager().deleteVideoFiles(selectedClient);
 		getItemList().remove(selectedClient);
 		// deleting a  should cascade to all its contained entities
-		getDaoManager().getDao(Client.class).delete(selectedClient);
+		getDaoService().getDao(Client.class).delete(selectedClient);
 		// select previous record
 		setSelectedItem(lastSelectedRowIndex - 1);
 		setSaveNeeded(true);
@@ -203,15 +202,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	private void clearSearchField() {
 		searchField.setText("");
-	}
-
-	/**
-	 * This calls the implementation of the {@link #update()} method in a created {@link Task}.
-	 * @return the created task
-	 */
-	@Action(block=Task.BlockingScope.APPLICATION)
-	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(getVideoFileManager(), getDaoManager());
 	}
 
 	public TableFormat<Client> getTableFormat() {
@@ -222,8 +212,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return videoFileManager;
 	}
 
-	public DaoService getDaoManager() {
-		return daoManager;
+	public DaoService getDaoService() {
+		return daoService;
 	}
 
 	public class ClientTableFormat implements TableFormat<Client> {
@@ -236,7 +226,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			if(column == 0)      return "ID";
 			else if(column == 1) return "Naam";
 			else if(column == 2) return "Voornaam";
-			else if(column == 3) return "Datum laatste analyze";
+			else if(column == 3) return "Datum laatste analyse";
 			throw new IllegalStateException();
 		}
 
