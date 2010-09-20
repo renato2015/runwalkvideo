@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
+import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSMovie;
 
@@ -53,10 +54,11 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
 		setFiltergraph(new DSMovie(path, flags, listener));
+		// set playrate to 0 to make sure the filtergraph wont start running
+		pause();
 		if (customFramerateEnabled) {
 			getFiltergraph().setMasterFrameRate(framerate);
 		}
-		getFiltergraph().lockAspectRatio(true);
 		getFiltergraph().setRecueOnStop(true);
 	}
 
@@ -83,13 +85,19 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		return getFiltergraph().getDuration();
 	}
 
+	/**
+	 * Pausing a video is best accomplished by setting {@link DSFiltergraph#setRate(float)} to 0. 
+	 * The {@link DSFiltergraph#pause()} command has a different meaning in DirectShow terminology.
+	 */
 	public void pause() {
-		getFiltergraph().pause();
+		getFiltergraph().setRate(0);
 	}
 	
+	/**
+	 * Stopping a video is best accomplished by invoking {@link #pause()} and setting the playback position to 0.
+	 */
 	public void stop() {
-		// it seems to be more appropriate to pause the filtergraph instead of stopping it
-		getFiltergraph().pause();
+		pause();
 		setPosition(0);
 	}
 
@@ -107,7 +115,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
-		getFiltergraph().play();
 		getFiltergraph().setRate(rate);
 	}
 

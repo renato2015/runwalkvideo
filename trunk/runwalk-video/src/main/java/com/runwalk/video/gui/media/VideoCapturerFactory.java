@@ -51,7 +51,7 @@ public abstract class VideoCapturerFactory {
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
-	 * @param listener a PropertyChangeListener to notify when internal properties change
+	 * @param listener a PropertyChangeListener to notify about selection changes
 	 * @param defaultCapturerName The name of the last chosen capturer
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found

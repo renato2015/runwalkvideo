@@ -160,7 +160,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	
 	/**
 	 * This method will look for an {@link Action} specified with the given key in the given {@link ActionMap} 
-	 * and invoke it's {@link Action#actionPerformed(ActionEvent)} method to mimic a user interaction.
+	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method.
 	 * 
 	 * @param actionMap The {@link ActionMap} containing the {@link Action} to be executed
 	 * @param actionKey The key of the {@link Action} to be executed
