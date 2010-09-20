@@ -55,7 +55,7 @@ public class VideoPlayer extends VideoComponent {
 
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
-					firePropertyChange(POSITION, position, position = getVideoImpl().getPosition());
+					firePropertyChange(POSITION, position, position = getPosition());
 				}
 			}
 		});
@@ -196,7 +196,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public int getPosition() {
-		return position;
+		return getVideoImpl().getPosition();
 	}
 
 	public IVideoPlayer getVideoImpl() {

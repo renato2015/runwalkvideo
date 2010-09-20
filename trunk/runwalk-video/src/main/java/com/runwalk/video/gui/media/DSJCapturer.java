@@ -46,7 +46,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getFiltergraph().graphChanged();
 		getFiltergraph().setPreview();
 		getFiltergraph().play();
-//		getFiltergraph().lockAspectRatio(true);
 		setRunning(true);
 		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 	}
@@ -61,7 +60,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	public void startRecording(File destFile) {
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
-		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(), DSFilterInfo.doNotRender(),	true);
+		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(), DSFilterInfo.doNotRender(), true);
 		getLogger().debug("Video encoder for " + getTitle() + " set to " + getCaptureEncoder().getName());
 		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter());
 		getFiltergraph().record();

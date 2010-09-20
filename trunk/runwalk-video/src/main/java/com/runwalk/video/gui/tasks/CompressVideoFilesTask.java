@@ -125,6 +125,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	@Override
 	protected void cancelled() {
 		if (exporter != null) {
+			exporter.pause();
 			exporter.getFiltergraph().cancelExport();
 			exporter.dispose();
 		}

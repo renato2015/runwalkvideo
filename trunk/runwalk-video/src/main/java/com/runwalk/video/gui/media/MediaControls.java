@@ -52,11 +52,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
-	public static final String PLAYING_ENABLED = "playingEnabled";
-	private static final String PLAYING_DISABLED = "playingDisabled";
+	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
+	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
 
 	private Boolean selectedRecordingRecordable = false;
-	private boolean recordingEnabled, playingEnabled, stopEnabled, playingDisabled, fullScreenEnabled;
+	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, fullScreenEnabled;
 
 	private JLabel time;
 	private JSlider scroll;
@@ -85,7 +85,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
-		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYING_ENABLED);
+		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYER_CONTROLS_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
 		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recorded}");
@@ -188,14 +188,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void stop() {
 		if (isRecording()) {
 			stopRecording();
-			setRecordingEnabled(false);
 		} else {
 			stopPlaying();
 		}
 		setStopEnabled(false);
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED )
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED )
 	public void togglePlay() {
 		for (VideoPlayer player : players) {
 			if (player.isPlaying()) {
@@ -209,28 +208,28 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void increaseVolume() {
 		for (VideoPlayer player : players) {
 			player.increaseVolume();
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void decreaseVolume() {
 		for (VideoPlayer player : players) {
 			player.decreaseVolume();
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void mute() {
 		for (VideoPlayer player : players) {
 			player.mute();
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void slower() {
 		for (VideoPlayer player : players) {
 			if (!player.isPlaying()) {
@@ -239,12 +238,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				float playRate = player.slower();
 				// save play rate to settings
 				getAppSettings().setPlayRate(playRate);
-				getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
+				getApplication().showMessage("Afspelen aan " + player.getPlayRate() + "x gestart.");
 			} 
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void faster() {
 		for (VideoPlayer player : players) {
 			if (!player.isPlaying()) {
@@ -259,17 +258,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	//TODO this action should not be available when there is no capturer open
-	@Action(enabledProperty = PLAYING_DISABLED)
+	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
 	public void showCaptureSettings() {
 		frontMostCapturer.showCapturerSettings();
 	}
 
-	@Action(enabledProperty = PLAYING_DISABLED)
+	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
 	public void showCameraSettings() {
 		frontMostCapturer.showCameraSettings();
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void nextSnapshot() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
@@ -277,7 +276,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void previousSnapshot() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
@@ -286,7 +285,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@SuppressWarnings("unchecked")
-	@Action(enabledProperty = PLAYING_ENABLED)
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void makeSnapshot() {
 		int newPosition = 0;
 		int duration = 0;
@@ -313,10 +312,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	/**
-	 * This property is changed two different conditions:
+	 * This property is changed under two different conditions:
 	 * 
 	 * <ul>
-	 * <li>When an {@link Analysis} is selected in the table then we have to perform a check on the activity of the capture graph here, too</li>
+	 * <li>When an {@link Analysis} is selected in the table then we have to perform a check on the activity of the capture graph here</li>
 	 * <li>When the capture graph is activated by making it the frontmost window</li>
 	 * </ul>
 	 * 
@@ -332,7 +331,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			recordingEnabled &= player.isIdle();
 		}
 		if (recordingEnabled && !this.recordingEnabled) {
-			setPlayingEnabled(false);
+			setPlayerControlsEnabled(false);
 			capturersToFront();
 		}
 		firePropertyChange(RECORDING_ENABLED, this.recordingEnabled, this.recordingEnabled = recordingEnabled);
@@ -342,12 +341,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return recordingEnabled;
 	}
 
-	public boolean isPlayingEnabled() {
-		return playingEnabled;
+	public boolean getPlayerControlsEnabled() {
+		return playerControlsEnabled;
 	}
 
-	public boolean isPlayingDisabled() {
-		return !isPlayingEnabled();
+	public boolean getCapturerControlsEnabled() {
+		return capturerControlsEnabled;
 	}
 
 	public void setStopEnabled(boolean stopEnabled) {
@@ -605,6 +604,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private void enableVideoComponentControls(VideoComponent component, boolean enable) {
 		//a player or capturer is requesting the focus.. this will only be given if the frontmost component is idle
 		if (frontMostComponent == null || enable && frontMostComponent.isIdle() || component == null) {
+			frontMostComponent = component;
 			StringBuilder title = new StringBuilder(getName());
 			if (component != null) {
 				title.append(" > ").append(component.getTitle());
@@ -612,12 +612,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					frontMostCapturer = (VideoCapturer) component;
 					clearStatusInfo();
 					setRecordingEnabled(true);
-					setPlayingEnabled(false);
+					setPlayerControlsEnabled(false);
 					setStopEnabled(false);
 				} else {
 					frontMostPlayer = (VideoPlayer) component;
 					setRecordingEnabled(false);
-					setPlayingEnabled(true);
+					setPlayerControlsEnabled(true);
 					setStopEnabled(frontMostPlayer.getPosition() > 0);
 					setStatusInfo(frontMostPlayer.getRecording(), frontMostPlayer.getPosition(), frontMostPlayer.getDuration());
 					title.append(" > " ).append(frontMostPlayer.getRecording().getVideoFileName());
@@ -627,21 +627,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				clearStatusInfo();
 				setRecording(false);
 				setStopEnabled(false);
-				setPlayingEnabled(false);
+				setPlayerControlsEnabled(false);
 			}
 			setTitle(title.toString());
-			frontMostComponent = component;
 		}
 	}
 
-	//	private boolean isFrontmostVideoComponent(VideoComponent component) {
-	//		return frontmostComponent != null && frontmostComponent.equals(component);
-	//	}
-
-	public void setPlayingEnabled(boolean playingEnabled) {
-		firePropertyChange(PLAYING_ENABLED, this.playingEnabled, this.playingEnabled = playingEnabled);
-		// TODO should add some extra boolean here to check whether a capturer is open
-		firePropertyChange(PLAYING_DISABLED, this.playingDisabled, this.playingDisabled = !playingEnabled);
+	public void setPlayerControlsEnabled(boolean playerControlsEnabled) {
+		firePropertyChange(PLAYER_CONTROLS_ENABLED, this.playerControlsEnabled, this.playerControlsEnabled = playerControlsEnabled);
+		// enabled capturer controls according to state of player controls
+		boolean isFrontmostCapturer = frontMostComponent instanceof VideoCapturer;
+		firePropertyChange(CAPTURER_CONTROLS_ENABLED, this.capturerControlsEnabled, this.capturerControlsEnabled = !playerControlsEnabled && isFrontmostCapturer);
 	}
 
 	public void capturersToFront() {
