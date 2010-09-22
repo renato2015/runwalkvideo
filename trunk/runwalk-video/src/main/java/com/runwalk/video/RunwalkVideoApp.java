@@ -137,6 +137,11 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		show(getMainFrame());
 	}
 	
+	@org.jdesktop.application.Action
+	public void saveSettings() {
+		AppSettings.getInstance().saveSettings();
+	}
+	
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
 		RefreshTask refreshTask = new RefreshTask(getDaoService());
@@ -211,8 +216,9 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@Override 
 	protected void shutdown() {
 		super.shutdown();
+		AppSettings.getInstance().saveSettings();
 		getMediaControls().disposeVideoComponents();
-		executeAction(getApplicationActionMap(), "uploadLogFiles");
+//		executeAction(getApplicationActionMap(), "uploadLogFiles");
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
@@ -221,7 +227,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 				executeAction(getClientTablePanel().getApplicationActionMap(), "save");
 			}
 		}
-		AppSettings.getInstance().saveSettings();
 		getContext().getTaskService().shutdown();
 		while(!getContext().getTaskService().isTerminated()) {
 			Thread.yield();

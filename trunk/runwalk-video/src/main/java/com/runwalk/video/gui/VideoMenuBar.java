@@ -59,6 +59,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 		fileMenu.add(refreshMenuItem);
 		JMenuItem saveMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
+		JMenuItem saveSettingsMenuItem = new JMenuItem( getContext().getActionMap().get("saveSettings"));
+		fileMenu.add(saveSettingsMenuItem);
 
 		fileMenu.add(new JSeparator());
 		JMenuItem selectVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectVideoDir"));

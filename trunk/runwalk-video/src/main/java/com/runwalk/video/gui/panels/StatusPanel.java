@@ -81,23 +81,19 @@ public class StatusPanel extends AppPanel {
 						busyIconTimer.start();
 					}
 					progressBar.setIndeterminate(true);
-				}
-				else if ("done".equals(propertyName)) {
+				} else if ("done".equals(propertyName)) {
 					busyIconTimer.stop();
 					statusAnimationLabel.setIcon(idleIcon);
 					progressBar.setIndeterminate(false);
 					progressBar.setValue(0);
-				}
-				else if ("message".equals(propertyName)) {
+				} else if ("message".equals(propertyName)) {
 					final String text = (String) evt.getNewValue();
 					showMessage(text == null ? "" : text);
 					messageTimer.restart();
-				}
-				else if ("errorMessage".equals(propertyName)) {
+				} else if ("errorMessage".equals(propertyName)) {
 					final String text = (String) evt.getNewValue();
 					showErrorMessage(text == null ? "" : text);
-				}
-				else if ("progress".equals(propertyName)) {
+				} else if ("progress".equals(propertyName)) {
 					final int value = (Integer) evt.getNewValue();
 					progressBar.setIndeterminate(false);
 					progressBar.setValue(value);

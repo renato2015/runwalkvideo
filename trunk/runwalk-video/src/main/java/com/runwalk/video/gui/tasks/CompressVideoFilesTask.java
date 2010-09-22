@@ -30,7 +30,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	private final List<Recording> recordings;
 	private final DSFilterInfo transcoder;
 	private final VideoFileManager videoFileManager;
-	/** volatile flag so changes can be seen directly by all threads */
+	/** volatile so changes to this field can be seen directly by all threads */
 	private volatile boolean finished = false;
 
 	public CompressVideoFilesTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
