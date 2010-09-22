@@ -29,14 +29,14 @@ import ca.odell.glazedlists.matchers.Matcher;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.filemanagement.DateVideoFolderRetrievalStrategy;
-import com.runwalk.video.filemanagement.VideoFileManager;
-import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.gui.tasks.CompressVideoFilesTask;
 import com.runwalk.video.gui.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.gui.tasks.RefreshVideoFilesTask;
+import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
+import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -170,14 +170,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 	
 	/**
-	 * This setter will make a copy of all the given {@link EventList}, decoupling it from the main GUI list pipeline, 
-	 * so it won't block repainting. The copied {@link EventList} is primarily meant to be used by background {@link Task}s.
+	 * This setter will make a copy of the given {@link EventList}, which is primarily meant to be used by background {@link Task}s.
 	 *
 	 * @param analysisList The list with analyses
 	 */
 	private void setAnalysisList(EventList<Analysis> analysisList) {
-		this.analysisList = GlazedLists.eventList(analysisList);
-		GlazedLists.syncEventListToList(analysisList, this.analysisList);
+		this.analysisList = analysisList;
+//		this.analysisList = GlazedLists.eventList(analysisList);
+//		GlazedLists.syncEventListToList(analysisList, this.analysisList);
 	}
 
 	@Override

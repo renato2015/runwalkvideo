@@ -80,9 +80,9 @@ public class ClientInfoPanel extends AppPanel {
 		@Override
 		public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 			ClientTablePanel tablePanel = (ClientTablePanel) binding.getSourceObject();
-			Client selectedItem2 = tablePanel.getSelectedItem();
-			if (selectedItem2 != null) {
-				selectedItem2.setDirty(true);
+			Client selectedItem = tablePanel.getSelectedItem();
+			if (selectedItem != null) {
+				selectedItem.setDirty(true);
 				tablePanel.setSaveNeeded(true);
 			}
 		}
@@ -91,7 +91,6 @@ public class ClientInfoPanel extends AppPanel {
 
 	private final ClientTablePanel clientTablePanel;
 
-	@SuppressWarnings("unchecked")
 	public ClientInfoPanel(final ClientTablePanel clientTablePanel, UndoableEditListener undoListener) {
 		this.clientTablePanel = clientTablePanel;
 		// set layout constraints

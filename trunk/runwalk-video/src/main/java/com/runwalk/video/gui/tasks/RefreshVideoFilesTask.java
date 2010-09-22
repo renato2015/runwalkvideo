@@ -1,12 +1,13 @@
 package com.runwalk.video.gui.tasks;
 
+import java.awt.Robot;
 import java.io.File;
 
 import ca.odell.glazedlists.EventList;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.VideoFileManager;
+import com.runwalk.video.io.VideoFileManager;
 
 public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 
@@ -23,14 +24,22 @@ public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 		message("startMessage");
 		int progress = 0, filesMissing = 0;
 		boolean compressable = false;
-		for (Analysis analysis : getAnalysisList()) {
-			for (Recording recording  : analysis.getRecordings()) {
-				File videoFile = getVideoFileManager().refreshCache(recording);
-				compressable |= recording.isCompressable();
-				filesMissing = videoFile == null ? ++filesMissing : filesMissing;
+		getAnalysisList().getReadWriteLock().readLock().lock();
+		try {
+			for (Analysis analysis : getAnalysisList()) {
+				for (Recording recording  : analysis.getRecordings()) {
+					File videoFile = getVideoFileManager().refreshCache(recording);
+					compressable |= recording.isCompressable();
+					filesMissing = videoFile == null ? ++filesMissing : filesMissing;
+				}
+				setProgress(++progress, 0, getAnalysisList().size() + 1);
 			}
-			setProgress(++progress, 0, getAnalysisList().size());
+		} finally {
+			getAnalysisList().getReadWriteLock().readLock().unlock();
 		}
+		message("waitForIdleMessage");
+		new Robot().waitForIdle();
+		setProgress(100);
 		message("endMessage", filesMissing);
 		return compressable;
 	}

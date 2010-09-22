@@ -15,11 +15,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.runwalk.video.filemanagement.VideoFileManager;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -62,22 +61,13 @@ public class Recording extends SerializableEntity<Recording> {
 	private List<Keyframe> keyframes;
 
 	/**
-	 * Transient field containing the actual status code. The value of this code is copied back
-	 * to the persistent field at {@link PreUpdate} time.
+	 * Transient field containing the actual status code. The value of this code is initialized at {@link PostLoad} time.
 	 */
 	@Transient
 	private RecordingStatus recordingStatus;
 
 	protected Recording() { }
 
-	/**
-	 *  1. Vanaf het moment dat je de filename hebt, zou je ook een link moeten hebben naar een Movie object.
-	 *  2. statuscode is eigenlijk ook een veld van Movie object..
-	 *  3. alle calls gerelateerd naar toestand van het bestand zou je naar de Recording entity moeten sturen (delegeren)
-	 *  
-	 *  TODO _Alle_ spaties in de bestandsnaam zouden naar een _ moeten geconverteerd worden.
-	 *  
-	 */
 	public Recording(Analysis analysis) {
 		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.DATE_FORMATTER);
 		Client client = analysis.getClient();
@@ -85,8 +75,10 @@ public class Recording extends SerializableEntity<Recording> {
 		for (Analysis an : client.getAnalyses()) {
 			totalRecordings += an.getRecordingCount();
 		}
-		String prefix = totalRecordings == 0 ? "" : totalRecordings +  "_";
-		this.videoFileName = prefix + client.getName() + "_" + client.getFirstname() + "_" + date + Recording.VIDEO_CONTAINER_FORMAT;
+		String prefix = totalRecordings == 0 ? "" : totalRecordings + "_";
+		StringBuilder fileNameBuilder = new StringBuilder(prefix).append(client.getName()).append("_")
+		.append(client.getFirstname()).append("_").append(date).append(Recording.VIDEO_CONTAINER_FORMAT);
+		this.videoFileName = fileNameBuilder.toString().replaceAll(" ", "_");
 		this.analysis = analysis;
 	}
 
@@ -108,7 +100,7 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	public void addKeyframe(Keyframe keyframe) {
 		keyframes.add(keyframe);
-		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount()-1, getKeyframeCount());
+		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount() - 1, getKeyframeCount());
 	}
 
 	public void sortKeyframes() {
@@ -141,7 +133,7 @@ public class Recording extends SerializableEntity<Recording> {
 
 	/**
 	 * This method should set the right {@link RecordingStatus} constant for this {@link Recording} 
-	 * according to the{@link File} returned by {@link VideoFileManager#getVideoFile(Recording)}.
+	 * according to the {@link File} returned by {@link VideoFileManager#getVideoFile(Recording)}.
 	 * The status code will not be persisted to the database if it is found to be erroneous, because
 	 * the video files are always local to an application's file system.
 	 * 
@@ -149,13 +141,17 @@ public class Recording extends SerializableEntity<Recording> {
 	 * @see VideoFileManager#getVideoFile(Recording)
 	 */
 	public void setRecordingStatus(RecordingStatus recordingStatus) {
-		boolean wasRecorded = isRecorded();
-		firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
-		firePropertyChange(RECORDED, wasRecorded, isRecorded());
-		// don't change the statuscode if it is erroneous.
-		if (!recordingStatus.isErroneous()) {
-			this.statusCode = recordingStatus.getCode();
+//		boolean wasRecorded = isRecorded();
+		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE) {
+			firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
+			if (!recordingStatus.isErroneous()) {
+				// don't change the statuscode if it is erroneous.
+				this.statusCode = recordingStatus.getCode();
+			}
+		} else {
+			this.recordingStatus = recordingStatus;
 		}
+//		firePropertyChange(RECORDED, wasRecorded, isRecorded());
 	}
 	
 	public String getVideoFileName() {
@@ -165,6 +161,7 @@ public class Recording extends SerializableEntity<Recording> {
 	public boolean isCompressable() {
 		return getRecordingStatus() != RecordingStatus.COMPRESSED && 
 		getRecordingStatus() != RecordingStatus.FILE_NOT_ACCESSIBLE &&
+		getRecordingStatus() != RecordingStatus.READY && 
 //		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
 		getRecordingStatus() != RecordingStatus.DSJ_ERROR;
 	}

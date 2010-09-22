@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.DateVideoFolderRetrievalStrategy;
+import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 
 public class DateVideoFolderRetrievalTestCase extends TestCase {
 	

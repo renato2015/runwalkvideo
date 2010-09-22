@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.VideoFileManager;
+import com.runwalk.video.io.VideoFileManager;
 
 public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 

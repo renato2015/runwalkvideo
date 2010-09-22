@@ -10,6 +10,7 @@ import ca.odell.glazedlists.ObservableElementList.Connector;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 
 public class AnalysisConnector implements Connector<Analysis> {
 
@@ -47,22 +48,29 @@ public class AnalysisConnector implements Connector<Analysis> {
 	}
 
 	/**
-	 * The PropertyChangeListener which notifies the {@link ObservableElementList} within this
-	 * Connector of changes to list elements.
+	 * This inner class notifies the {@link ObservableElementList} about changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
 		@SuppressWarnings("unchecked")
 		public void propertyChange(PropertyChangeEvent event) {
 			Analysis analysis = null;
+			boolean dirty = true;
 			if (event.getSource() instanceof Recording) {
 				analysis = ((Recording) event.getSource()).getAnalysis();
-				analysis.getClient().setDirty(true);
-			} else if (event.getPropertyName().equals(Analysis.RECORDING_COUNT)) {
+				if (event.getPropertyName().equals(Recording.RECORDING_STATUS)) {
+					RecordingStatus newState = (RecordingStatus) event.getNewValue();
+					// events that set a recording's state to an erroneous state should not make it too dirty
+					dirty = !newState.isErroneous();
+				}
+			} else {
 				analysis = (Analysis) event.getSource();
-				// a recording was added, listen for changes..
-				Recording lastRecording = Iterables.getLast(analysis.getRecordings());
-				lastRecording.addPropertyChangeListener(propertyChangeListener);
+				if (event.getPropertyName().equals(Analysis.RECORDING_COUNT)) {
+					// a recording was added, listen for changes..
+					Recording lastRecording = Iterables.getLast(analysis.getRecordings());
+					lastRecording.addPropertyChangeListener(propertyChangeListener);
+				}
 			}
+			analysis.getClient().setDirty(dirty);
 			((ObservableElementList<Analysis>) list).elementChanged(analysis);
 		}
 	}

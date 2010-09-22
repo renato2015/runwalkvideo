@@ -68,7 +68,14 @@ public abstract class VideoCapturerFactory {
 				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURER_NAME)) {
 					// user changed capture device selection, dispose only if there was something running
 					if (capturer.getVideoImpl() != null) {
-						capturer.getVideoImpl().dispose();
+						// dispose capturer from a different thread
+						new Thread(new Runnable() {
+
+							public void run() {
+								capturer.getVideoImpl().dispose();
+							}
+							
+						}).start();
 					}
 					// initialize the selected capturer
 					String selectedCapturerName = evt.getNewValue().toString();
