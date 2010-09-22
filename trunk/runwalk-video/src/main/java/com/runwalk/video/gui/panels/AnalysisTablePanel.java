@@ -37,8 +37,8 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.DateTableCellRenderer;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 

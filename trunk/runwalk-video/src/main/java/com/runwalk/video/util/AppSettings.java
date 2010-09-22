@@ -23,8 +23,8 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.filemanagement.DefaultVideoFolderRetrievalStrategy;
-import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
+import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
+import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {

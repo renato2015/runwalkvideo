@@ -38,11 +38,11 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 

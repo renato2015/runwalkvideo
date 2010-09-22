@@ -39,7 +39,7 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 		// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
 		result = getDaoService().getDao(getTypeParameter()).merge(dirtyItems);
 		// dirty flag should be set back to false by a task listener
-		message("endMessage");
+		message("endMessage", result.size());
 		return result;
 	}
 

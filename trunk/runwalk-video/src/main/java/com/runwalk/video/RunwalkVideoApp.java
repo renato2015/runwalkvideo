@@ -29,7 +29,6 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.AnalysisOverviewTableFormat;
 import com.runwalk.video.gui.AnalysisTableFormat;
 import com.runwalk.video.gui.AppInternalFrame;
@@ -43,6 +42,7 @@ import com.runwalk.video.gui.panels.ClientInfoPanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 import com.runwalk.video.gui.panels.StatusPanel;
 import com.runwalk.video.gui.tasks.RefreshTask;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
@@ -216,7 +216,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@Override 
 	protected void shutdown() {
 		super.shutdown();
-		AppSettings.getInstance().saveSettings();
+		saveSettings();
 		getMediaControls().disposeVideoComponents();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
 		if (isSaveNeeded()) {

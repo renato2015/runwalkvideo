@@ -29,9 +29,9 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.SaveTask;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 

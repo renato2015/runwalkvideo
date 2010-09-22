@@ -11,8 +11,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.filemanagement.VideoFileManager;
-import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
+import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 
 public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 
