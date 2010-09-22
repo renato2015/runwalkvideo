@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 
 import junit.framework.TestCase;
 
-import com.runwalk.video.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.filemanagement.DateVideoFolderRetrievalStrategy;
 
 public class DateVideoFolderRetrievalTestCase extends TestCase {
 	

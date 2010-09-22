@@ -29,6 +29,7 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.AnalysisOverviewTableFormat;
 import com.runwalk.video.gui.AnalysisTableFormat;
 import com.runwalk.video.gui.AppInternalFrame;

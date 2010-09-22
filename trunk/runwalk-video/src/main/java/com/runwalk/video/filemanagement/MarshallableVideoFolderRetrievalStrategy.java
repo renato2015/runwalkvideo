@@ -1,4 +1,4 @@
-package com.runwalk.video;
+package com.runwalk.video.filemanagement;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlAdapter;

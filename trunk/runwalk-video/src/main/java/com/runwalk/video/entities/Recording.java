@@ -19,7 +19,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.runwalk.video.VideoFileManager;
+import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")

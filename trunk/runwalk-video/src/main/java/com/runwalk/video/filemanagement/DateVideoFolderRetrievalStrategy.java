@@ -1,4 +1,4 @@
-package com.runwalk.video;
+package com.runwalk.video.filemanagement;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

@@ -11,10 +11,10 @@ import org.apache.log4j.Logger;
 
 import ca.odell.glazedlists.EventList;
 
-import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.VideoFolderRetrievalStrategy;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.filemanagement.VideoFileManager;
+import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
 
 public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 
