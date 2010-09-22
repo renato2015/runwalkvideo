@@ -9,9 +9,9 @@ import javax.swing.JOptionPane;
 import ca.odell.glazedlists.EventList;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.filemanagement.VideoFileManager;
 
 public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 

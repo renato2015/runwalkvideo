@@ -10,9 +10,9 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 
-import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
+import com.runwalk.video.filemanagement.VideoFileManager;
 import com.runwalk.video.gui.media.DSJPlayer;
 import com.runwalk.video.util.AppUtil;
 

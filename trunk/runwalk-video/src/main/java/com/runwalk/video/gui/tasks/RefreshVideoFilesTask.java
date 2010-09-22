@@ -4,9 +4,9 @@ import java.io.File;
 
 import ca.odell.glazedlists.EventList;
 
-import com.runwalk.video.VideoFileManager;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.filemanagement.VideoFileManager;
 
 public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 

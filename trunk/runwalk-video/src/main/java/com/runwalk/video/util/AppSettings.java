@@ -23,9 +23,9 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
-import com.runwalk.video.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.VideoFolderRetrievalStrategy;
+import com.runwalk.video.filemanagement.DefaultVideoFolderRetrievalStrategy;
+import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
 
 @SuppressWarnings("serial")
 public class AppSettings implements Serializable {

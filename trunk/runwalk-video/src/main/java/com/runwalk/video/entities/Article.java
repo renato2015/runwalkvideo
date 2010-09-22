@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @SuppressWarnings("serial")
 @Table(schema="testdb", name = "articles")
 @NamedQueries(value={
-		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar"),
+		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar")
 })
 public class Article implements Serializable {
 	@Id

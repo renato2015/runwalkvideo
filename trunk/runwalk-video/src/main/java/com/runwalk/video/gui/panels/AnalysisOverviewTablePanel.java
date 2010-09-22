@@ -26,12 +26,12 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.matchers.Matcher;
 
-import com.runwalk.video.DateVideoFolderRetrievalStrategy;
-import com.runwalk.video.VideoFileManager;
-import com.runwalk.video.VideoFolderRetrievalStrategy;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
+import com.runwalk.video.filemanagement.DateVideoFolderRetrievalStrategy;
+import com.runwalk.video.filemanagement.VideoFileManager;
+import com.runwalk.video.filemanagement.VideoFolderRetrievalStrategy;
 import com.runwalk.video.gui.DateTableCellRenderer;
 import com.runwalk.video.gui.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.gui.tasks.CompressVideoFilesTask;
