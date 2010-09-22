@@ -20,27 +20,21 @@ public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 	}
 
 	protected Boolean doInBackground() throws Exception {
-		// some not so beautiful way to refresh the cache
 		message("startMessage");
-		getAnalysisList().getReadWriteLock().readLock().lock();
 		int progress = 0, filesMissing = 0;
 		boolean compressable = false;
-		try {
-			for (Analysis analysis : getAnalysisList()) {
-				for (Recording recording  : analysis.getRecordings()) {
-					File videoFile = getVideoFileManager().refreshCache(recording);
-					compressable |= recording.isCompressable();
-					filesMissing = videoFile == null ? ++filesMissing : filesMissing;
-				}
-				setProgress(++progress, 0, getAnalysisList().size());
+		for (Analysis analysis : getAnalysisList()) {
+			for (Recording recording  : analysis.getRecordings()) {
+				File videoFile = getVideoFileManager().refreshCache(recording);
+				compressable |= recording.isCompressable();
+				filesMissing = videoFile == null ? ++filesMissing : filesMissing;
 			}
-		} finally {
-			getAnalysisList().getReadWriteLock().readLock().unlock();
+			setProgress(++progress, 0, getAnalysisList().size());
 		}
 		message("endMessage", filesMissing);
 		return compressable;
 	}
-	
+
 	public EventList<Analysis> getAnalysisList() {
 		return analysisList;
 	}

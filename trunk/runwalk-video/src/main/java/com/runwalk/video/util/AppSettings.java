@@ -3,7 +3,6 @@ package com.runwalk.video.util;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.logging.Level;
@@ -97,28 +96,17 @@ public class AppSettings implements Serializable {
 	}
 
 	public void saveSettings() {
-		OutputStream fos = null;
 		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
 		try {
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, FILE_ENCODING);
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
-			fos = appContext.getLocalStorage().openOutputFile(settingsFile.getName());
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
-			marshaller.marshal(settings, fos);
+			marshaller.marshal(settings, settingsFile);
 		} catch (Exception exc) {
 			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, exc);
-		} finally {
-			if (fos != null) {
-				try {
-					fos.flush();
-					fos.close();
-				} catch (IOException exc) {
-					logger.error("Exception thrown while flushing or closing outputstream for file " + SETTINGS_XML, exc);
-				}
-			}
-		}
+		} 
 	}
 
 	public Settings getSettings() {

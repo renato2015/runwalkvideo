@@ -89,7 +89,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> cleanupVideoFiles() {
 		Window parentWindow = SwingUtilities.windowForComponent(this);
-		return new CleanupVideoFilesTask(parentWindow, getAnalysisList(), getVideoFileManager());
+		return new CleanupVideoFilesTask(parentWindow, getVideoFileManager());
 	}
 	
 	@Action(block = Task.BlockingScope.APPLICATION)
@@ -102,7 +102,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			// create a new retrieval strategy using the specified format string
 			VideoFolderRetrievalStrategy newStrategy = new DateVideoFolderRetrievalStrategy(formatString.toString());
 			Window parentComponent = SwingUtilities.windowForComponent(this);
-			return new OrganiseVideoFilesTask(parentComponent, getAnalysisList(), getVideoFileManager(), newStrategy);
+			return new OrganiseVideoFilesTask(parentComponent, getVideoFileManager(), newStrategy);
 		}
 		return null;
 	}
@@ -169,8 +169,15 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		return analysisList;
 	}
 	
+	/**
+	 * This setter will make a copy of all the given {@link EventList}, decoupling it from the main GUI list pipeline, 
+	 * so it won't block repainting. The copied {@link EventList} is primarily meant to be used by background {@link Task}s.
+	 *
+	 * @param analysisList The list with analyses
+	 */
 	private void setAnalysisList(EventList<Analysis> analysisList) {
-		this.analysisList = analysisList;
+		this.analysisList = GlazedLists.eventList(analysisList);
+		GlazedLists.syncEventListToList(analysisList, this.analysisList);
 	}
 
 	@Override

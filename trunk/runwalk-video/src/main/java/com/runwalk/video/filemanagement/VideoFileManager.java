@@ -3,10 +3,12 @@ package com.runwalk.video.filemanagement;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -63,6 +65,18 @@ public class VideoFileManager extends AbstractBean {
 			recordingFileMap.put(recording, videoFile);
 		}
 		return videoFile;
+	}
+	
+	/**
+	 * Returns an {@link ImmutableSet} containing all the currently cached {@link Recording}s .
+	 * Best practice is to assign this {@link Set} to a local variable directly, as calls to this method can 
+	 * become expensive as the cached {@link #recordingFileMap} size grows larger.
+	 * 
+	 * @return The immutable set
+	 */
+	public Set<Recording> getCachedRecordings() {
+		ImmutableSet.Builder<Recording> setBuilder = ImmutableSet.builder();
+		return setBuilder.addAll(recordingFileMap.keySet()).build();
 	}
 
 	public File getVideoFile(Recording recording) {

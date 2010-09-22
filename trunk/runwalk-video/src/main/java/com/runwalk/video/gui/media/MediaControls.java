@@ -413,15 +413,21 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	private void stopRecording() {
+		boolean filesRecorded = false;
 		for (VideoCapturer capturer : capturers) {
 			capturer.stopRecording();
-			getApplication().showMessage("Opnemen van " + capturer.getRecording().getVideoFileName() + " voltooid.");
+			File recordedFile = getVideoFileManager().getVideoFile(capturer.getRecording());
+			filesRecorded = filesRecorded |= recordedFile != null;
+			if (!filesRecorded) {
+				getLogger().error("Check file consistency for " + recordedFile.getAbsolutePath()) ;
+			}
+			getApplication().showMessage("Opnemen van " + recordedFile.getName() + " voltooid.");
 		}
 		setRecording(false);
 		// set this manually as such a specific propertyChangeEvent won't be fired
 		selectedRecordingRecordable = false;
 		getApplication().getStatusPanel().setIndeterminate(false);
-		getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(true);
+		getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(filesRecorded);
 	}
 
 	private void stopPlaying() {
