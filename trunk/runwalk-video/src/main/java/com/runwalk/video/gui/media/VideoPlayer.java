@@ -3,7 +3,6 @@ package com.runwalk.video.gui.media;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.TreeSet;
 
@@ -31,7 +30,7 @@ public class VideoPlayer extends VideoComponent {
 	
 	private IVideoPlayer playerImpl;
 	
-	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, String path, float playRate) throws FileNotFoundException {
+	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, String path, float playRate) {
 		playerCount++;
 		// check if the play rate is supported by the video player, if not then use the lowest one
 		if (!PLAY_RATES.contains(playRate)) {
@@ -47,7 +46,7 @@ public class VideoPlayer extends VideoComponent {
 		return new VideoPlayer(listener, recording, path, result);
 	}
 	
-	private VideoPlayer(PropertyChangeListener listener, Recording recording, String path, IVideoPlayer playerImpl) throws FileNotFoundException {
+	private VideoPlayer(PropertyChangeListener listener, Recording recording, String path, IVideoPlayer playerImpl) {
 		super(listener, playerCount);
 		this.playerImpl = playerImpl;
 		setTimer(new Timer(25, null));
@@ -62,7 +61,7 @@ public class VideoPlayer extends VideoComponent {
 		loadVideo(recording, path);
 	}
 
-	public void loadVideo(Recording recording, String path) throws FileNotFoundException {
+	public void loadVideo(Recording recording, String path) {
 		setRecording(recording);
 		if (getVideoImpl().loadVideo(path)) {
 			showComponent();

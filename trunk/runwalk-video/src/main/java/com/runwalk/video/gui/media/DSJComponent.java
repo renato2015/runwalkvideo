@@ -61,7 +61,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	protected Logger getLogger() {
-		return Logger.getLogger(DSJComponent.class);
+		return Logger.getLogger(getClass());
 	}
 
 	@Action
