@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -459,18 +458,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					recordingCount++;
 					// show players that have new loaded files
 					getApplication().createOrShowComponent(player);
-				} catch (FileNotFoundException e) {
+					player.toFront();
+				} catch (Exception e) {
 					JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this),
-							"Het bestand dat u probeerde te openen kon niet worden gevonden",
-							"Fout bij openen filmpje",
+							"De opname die u probeerde te openen kon niet worden gevonden",
+							"Fout bij openen opname",
 							JOptionPane.ERROR_MESSAGE);
 					getLogger().error(e);
 				}
-				player.toFront();
 			}
 		}
 		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
-		// hide players that don't show any opened files
+		// hide players that don't show any opened files, eventually draw black overlay later on
 		for (int i = recordingCount; i < players.size(); i++) {
 			getApplication().hideComponent(players.get(i));
 		}

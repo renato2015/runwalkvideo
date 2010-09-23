@@ -4,7 +4,6 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import de.humatic.dsj.DSFiltergraph;
@@ -41,7 +40,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 			}
 		} catch(DSJException e) {
 			rebuilt = true;
-			Logger.getLogger(DSJPlayer.class).error("Movie initialization failed.", e);
+			getLogger().error("Recording initialization failed.", e);
 			dispose();
 			initFiltergraph(path, flags, listener);
 		} 
@@ -49,7 +48,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	}
 	
 	private void initFiltergraph(String path, int flags, PropertyChangeListener listener) {
-		Logger.getLogger(DSJPlayer.class).debug("Movie path opened: " + path);
+		getLogger().debug("Recording opened from: " + path);
 		if (customFramerateEnabled) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
