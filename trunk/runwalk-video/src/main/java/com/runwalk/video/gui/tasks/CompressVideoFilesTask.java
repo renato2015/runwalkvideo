@@ -65,7 +65,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 
 	@Override
 	protected Boolean doInBackground() {
-		message(getResourceString("startMessage"));
+		message("startMessage");
 		conversionCount = recordings.size();
 		part = 100 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
@@ -86,7 +86,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 					exporter.loadVideo(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				}
 				setProgress((int) (conversionCounter * part));
-				message("progressMessage",  conversionCounter + 1, conversionCount);
+				message("progressMessage", conversionCounter + 1, conversionCount);
 				int result = exporter.getFiltergraph().export(destinationFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
 				if (result < 0) {
 					//reconnect failed.. exception will be thrown here in future versions..
@@ -104,7 +104,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 				statusCode = RecordingStatus.COMPRESSED;
 			} catch(Throwable thr) {
 				statusCode = RecordingStatus.DSJ_ERROR;
-				getLogger().error(statusCode + ": Compression error for file " + sourceFile.getAbsolutePath(), thr);
+				getLogger().error("Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
 				if (exporter != null) {
@@ -118,7 +118,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 		if (exporter != null) {
 			exporter.dispose();
 		}
-		message(getResourceString("endMessage"));
+		message("endMessage");
 		return (errorCount == 0);
 	}
 
@@ -150,8 +150,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 			errorMessage("endErrorMessage", errorCount);
 		} finally {
 			String formattedDate = AppUtil.formatDate(new Date(), AppUtil.DATE_FORMATTER);
-			String syncMsg = getResourceString("lastSyncMessage", formattedDate); 
-			setMessage(syncMsg);
+			message("lastSyncMessage", formattedDate);
 		}
 	}
 
