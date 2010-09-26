@@ -61,6 +61,8 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 						filesDeleted++;
 					} 
 				}
+			} else {
+				filesDeleted = -1;
 			}
 		}
 		return filesDeleted;
@@ -78,7 +80,7 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 			} else if (get()) {
 				JOptionPane.showMessageDialog(getParentComponent(),
 						dialogMsg, dialogTitle, JOptionPane.PLAIN_MESSAGE);
-			} else {
+			} else if (filesDeleted != -1) {
 				JOptionPane.showMessageDialog(getParentComponent(),
 						dialogMsg + getResourceString("endErrorMessage", fileCount - filesDeleted),
 						dialogTitle, JOptionPane.WARNING_MESSAGE); 
