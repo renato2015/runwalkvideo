@@ -217,7 +217,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	protected void shutdown() {
 		super.shutdown();
 		saveSettings();
-		getMediaControls().disposeVideoComponents();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
