@@ -6,6 +6,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 
+import org.eclipse.persistence.config.CascadePolicy;
+import org.eclipse.persistence.config.QueryHints;
+
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.entities.Client;
 
@@ -25,9 +28,9 @@ public class JpaClientDao extends JpaDao<Client> {
 	public List<Client> getAll() {
 		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
 		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ")
-		.setHint("eclipselink.left-join-fetch", "c.analyses.recordings")
-		.setHint("toplink.refresh", "true")
-		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
+		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
+		.setHint(QueryHints.REFRESH, "true")
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
 		return query.getResultList();
 	}
 	

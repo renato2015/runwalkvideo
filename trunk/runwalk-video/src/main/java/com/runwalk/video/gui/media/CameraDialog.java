@@ -60,7 +60,7 @@ public class CameraDialog extends AppDialog {
 	private boolean cancelled = false;
 
 	/**
-	 * Create a dialog that allows the user start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
+	 * Create a dialog that allows the user to start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
 	 * to registered listeners.
 	 * 
 	 * @param parent The parent {@link Frame} whose focusing behavior will be inherited

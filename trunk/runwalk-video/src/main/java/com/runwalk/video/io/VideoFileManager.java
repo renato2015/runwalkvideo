@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -176,7 +178,7 @@ public class VideoFileManager extends AbstractBean {
 	public static long getDuration(File videoFile)  {
 		long duration = 0;
 		try {
-			if (videoFile.exists()) {
+			if (videoFile.exists() && AppHelper.getPlatform() == PlatformType.WINDOWS) {
 				duration = DSJUtils.getBasicFileStats(videoFile.getAbsolutePath())[0];
 			}
 		} catch(DSJException e) {

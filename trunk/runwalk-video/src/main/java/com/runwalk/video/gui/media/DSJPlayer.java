@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
@@ -86,7 +87,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	/**
 	 * Pausing a video is best accomplished by setting {@link DSFiltergraph#setRate(float)} to 0. 
-	 * The {@link DSFiltergraph#pause()} command has a different meaning in DirectShow terminology.
+	 * The {@link DSFiltergraph#pause()} command has a different purpose in DirectShow terminology.
 	 */
 	public void pause() {
 		getFiltergraph().setRate(0);

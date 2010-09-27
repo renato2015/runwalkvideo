@@ -3,13 +3,11 @@ package com.runwalk.video.gui.media;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URI;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -42,15 +40,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	public JMCPlayer(float rate) {
 		this.mp = new MediaProvider();
 		setPlayRate(rate);
-		ac = mp.getControl(AudioControl.class);
-		vrc = mp.getControl(VideoRenderControl.class);
-		vrc.addVideoRendererListener(this);
-		videoPanel = new VideoPanel();
-		frame = new JFrame();
-		frame.setPreferredSize(new Dimension(786, 584));
-		frame.setTitle("JMC player");
-		frame.add(videoPanel);
-		frame.pack();
 	}
 	
 	public boolean loadFile(File videoFile) {
@@ -60,7 +49,18 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	public boolean loadVideo(String path) {
 		boolean rebuilt = false;
 		try {
-			mp.setSource(new URI(path));
+			mp.setSource(new File(path).toURI());
+			if (vrc == null) {
+				ac = mp.getControl(AudioControl.class);
+				vrc = mp.getControl(VideoRenderControl.class);
+				vrc.addVideoRendererListener(this);
+				videoPanel = new JPanel();
+				frame = new JFrame();
+				frame.setPreferredSize(new Dimension(786, 584));
+				frame.setTitle("JMC player");
+				frame.add(videoPanel);
+				frame.pack();
+			}
 		} catch (Exception e) {
 			Logger.getLogger(JMCPlayer.class).error(e);
 			rebuilt = true;
@@ -171,16 +171,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 
 	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
 		//FIXME not supported yet??
-		
-	}
-
-	private class VideoPanel extends JPanel {
-
-		@Override
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			//draw onto these graphics??
-		}
 		
 	}
 

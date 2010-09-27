@@ -33,6 +33,7 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 
 import com.google.common.collect.Lists;
+import com.runwalk.video.blob.Blob;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
@@ -104,8 +105,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				super.synced(binding);
 				System.out.println("binding synced");
 			}
-			
-			
+
+
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
@@ -308,6 +309,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getSlider().updateUI();
 		String formattedDate = AppUtil.formatDate(new Date(newPosition), AppUtil.EXTENDED_DURATION_FORMATTER);
 		getApplication().showMessage("Snapshot genomen op " + formattedDate); 
+	}
+
+	private Blob biggestBlob;
+
+	public boolean newBlobDetectedEvent (Blob blob) {
+		// return true to keep blob, false to discard
+		if (biggestBlob == null || blob.h > biggestBlob.h) {
+			biggestBlob = blob;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -537,16 +549,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return result;
 	}
 
-	public void disposeVideoComponents() {
-		// create new lists to iterate over as the dispose() method will remove them from their lists
-		for (VideoCapturer capturer : Lists.newArrayList(capturers)) {
-			capturer.dispose();
-		}
-		for (VideoPlayer player : Lists.newArrayList(players)) {
-			player.dispose();
-		}
-	}
-
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object newValue = evt.getNewValue();
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
@@ -672,7 +674,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 		//TODO this can be coded better.. can lead to memory leaks..
 		private VideoComponent enclosingWrapper;
-		
+
 		public WindowStateChangeListener(VideoComponent enclosingWrapper) {
 			this.enclosingWrapper = enclosingWrapper;
 		}
@@ -689,14 +691,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 
-/*		public void appWindowDeactivated(AWTEvent e) {
+		/*		public void appWindowDeactivated(AWTEvent e) {
 			enableVideoComponentControls(null, false);
 		}
 
 		public void appWindowClosed(AWTEvent e) {
 			enableVideoComponentControls(null, false);
 		}
-*/
+		 */
 	}
 
 }

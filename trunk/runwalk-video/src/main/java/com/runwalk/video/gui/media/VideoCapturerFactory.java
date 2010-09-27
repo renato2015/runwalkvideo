@@ -97,10 +97,13 @@ public abstract class VideoCapturerFactory {
 			// show the dialog on screen
 			RunwalkVideoApp.getApplication().show(dialog);
 			if (!dialog.isCancelled()) {
-				// prepare the capturer for showing live video
-				capturer.getVideoImpl().startCapturer();
-				// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
-				capturer.showComponent();
+				// implementation can be null here if returned by the dummy factory
+				if (capturer.getVideoImpl() != null) {
+					// prepare the capturer for showing live video
+					capturer.getVideoImpl().startCapturer();
+					// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
+					capturer.showComponent();
+				}
 			} else {
 				// dispose chosen capturer if canceled
 				capturer.dispose();
