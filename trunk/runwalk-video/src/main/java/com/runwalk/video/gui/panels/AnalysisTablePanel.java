@@ -15,14 +15,17 @@ import javax.swing.event.UndoableEditListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task.BlockingScope;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ObservableElementList;
@@ -38,6 +41,8 @@ import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.DateTableCellRenderer;
+import com.runwalk.video.gui.tasks.DeleteTask;
+import com.runwalk.video.gui.tasks.PersistTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
@@ -141,8 +146,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		comments.setText("");
 	}
 
-	@Action(enabledProperty = CLIENT_SELECTED)
-	public void addAnalysis() {
+	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
+	public PersistTask<Analysis> addAnalysis() {
 		//insert a new analysis record
 		final Client selectedClient = getClientTablePanel().getSelectedItem();
 		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
@@ -151,47 +156,65 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
 					getResourceMap().getString("addAnalysis.Action.text"), 
 					JOptionPane.ERROR_MESSAGE);
-			return;
+			return null;
 		}
-		getItemList().getReadWriteLock().writeLock().lock();
-		try {
-			Analysis analysis = new Analysis(selectedClient);
-			getDaoService().getDao(Analysis.class).persist(analysis);
-			selectedClient.addAnalysis(analysis);
-			setSelectedItem(analysis);
-		} finally {
-			getItemList().getReadWriteLock().writeLock().unlock();
-		}
+		Analysis analysis = new Analysis(selectedClient);
+		PersistTask<Analysis> result = new PersistTask<Analysis>(getDaoService(), Analysis.class, analysis);
+		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Analysis> event) {
+				Analysis result = event.getValue();
+				selectedClient.addAnalysis(result);
+				setSelectedItem(result);
+			}
+
+			@Override
+			public void failed(TaskEvent<Throwable> event) {
+				// TODO handle failure
+				getLogger().error(event.getValue());
+			}
+
+		});
+		return result;
 	}
 
 	private ClientTablePanel getClientTablePanel() {
 		return clientTablePanel;
 	}
 
-	@Action(enabledProperty = ROW_SELECTED)
-	public void deleteAnalysis() {		
+	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
+	public DeleteTask<Analysis> deleteAnalysis() {		
 		int n = JOptionPane.showConfirmDialog(
 				SwingUtilities.windowForComponent(this),
 				getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
 				getResourceMap().getString("deleteAnalysis.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.CANCEL_OPTION ||n == JOptionPane.CLOSED_OPTION) return;
-		getItemList().getReadWriteLock().writeLock().lock();
-		try {
-			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-			Analysis selectedAnalysis = getSelectedItem();
-			getItemList().remove(selectedAnalysis);
-			getClientTablePanel().getSelectedItem().removeAnalysis(selectedAnalysis);
-			// delete the video files
-			getVideoFileManager().deleteVideoFiles(selectedAnalysis);
-			setSelectedItem(lastSelectedRowIndex - 1);
-			getDaoService().getDao(Analysis.class).delete(selectedAnalysis);
-		} finally {
-			getItemList().getReadWriteLock().writeLock().unlock();
-			//TODO handle failed delete?
-		}
-		//TODO kan je deze properties niet binden?? eventueel met een listener.. 
+		if (n == JOptionPane.CANCEL_OPTION ||n == JOptionPane.CLOSED_OPTION) return null;
+		final Analysis selectedItem = getSelectedItem();
+		DeleteTask<Analysis> result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, selectedItem);
+		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Analysis> event) {
+				Analysis analysis = event.getValue();
+				int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+				getItemList().remove(analysis);
+				getClientTablePanel().getSelectedItem().removeAnalysis(analysis);
+				// delete the video files
+				getVideoFileManager().deleteVideoFiles(analysis);
+				setSelectedItem(lastSelectedRowIndex - 1);
+			}
+
+			@Override
+			public void failed(TaskEvent<Throwable> event) {
+				// TODO handle failure
+				getLogger().error(event.getValue());
+			}
+
+		});
+		return result;
 	}
 
 	@Action(enabledProperty = SELECTED_ITEM_RECORDED)
@@ -202,7 +225,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			File videoFile = getVideoFileManager().getVideoFile(lastRecording);
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 				String[] commands = new String[] {"cmd.exe", "/c", "explorer /select," + videoFile.getAbsolutePath()};
-//				String[] commands = new String[] {vlcPath, videoFile.getAbsolutePath(), " --rate=" + playRate};
+				//String[] commands = new String[] {vlcPath, videoFile.getAbsolutePath(), " --rate=" + playRate};
 				Runtime.getRuntime().exec(commands);
 			}
 			// TODO show the video file on different platforms?
