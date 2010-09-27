@@ -18,6 +18,7 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 
@@ -30,6 +31,8 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.DateTableCellRenderer;
+import com.runwalk.video.gui.tasks.DeleteTask;
+import com.runwalk.video.gui.tasks.PersistTask;
 import com.runwalk.video.gui.tasks.SaveTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
@@ -161,43 +164,70 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 
 	public boolean isSaveNeeded() {
-		return saveNeeded ;
+		return saveNeeded;
 	}
 
 	public void setSaveNeeded(boolean saveNeeded) {
 		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
 	}
 
-	@Action
-	public void addClient() {
+	@Action(block = BlockingScope.ACTION)
+	public PersistTask<Client> addClient() {
 		clearSearchField();
-		Client client = new Client();
-		getDaoService().getDao(Client.class).persist(client);
-		getItemList().add(client);
-		setSelectedItem(client);
-		getApplication().getClientInfoPanel().requestFocus();
-		setSaveNeeded(true);
+		PersistTask<Client> result = new PersistTask<Client>(getDaoService(), Client.class, new Client());
+		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+			
+			@Override
+			public void succeeded(TaskEvent<Client> event) {
+				Client client = event.getValue();
+				getItemList().add(client);
+				setSelectedItem(client);
+				getApplication().getClientInfoPanel().requestFocus();
+				setSaveNeeded(true);
+			}
+
+			@Override
+			public void failed(TaskEvent<Throwable> event) {
+				// TODO handle failure
+				getLogger().error(event.getValue());
+			}
+
+		});
+		return result;
 	}
 
-	@Action(enabledProperty = ROW_SELECTED)
-	public void deleteClient() {
+	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
+	public DeleteTask<Client> deleteClient() {
 		int n = JOptionPane.showConfirmDialog(
 				SwingUtilities.windowForComponent(this),
 				getResourceMap().getString("deleteClient.confirmDialog.text"),
 				getResourceMap().getString("deleteClient.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION)	return;
-		int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-		Client selectedClient = getSelectedItem();
-		// delete all video files for the selected client
-		getVideoFileManager().deleteVideoFiles(selectedClient);
-		getItemList().remove(selectedClient);
-		// deleting a  should cascade to all its contained entities
-		getDaoService().getDao(Client.class).delete(selectedClient);
-		// select previous record
-		setSelectedItem(lastSelectedRowIndex - 1);
-		setSaveNeeded(true);
+		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
+		DeleteTask<Client> result = new DeleteTask<Client>(getDaoService(), Client.class, getSelectedItem());
+		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Client> event) {
+				int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+				Client selectedClient = getSelectedItem();
+				// delete all video files for the selected client
+				getVideoFileManager().deleteVideoFiles(selectedClient);
+				getItemList().remove(selectedClient);
+				// select previous record
+				setSelectedItem(lastSelectedRowIndex - 1);
+				setSaveNeeded(true);
+			}
+
+			@Override
+			public void failed(TaskEvent<Throwable> event) {
+				//TODO handle failure
+				getLogger().error(event.getValue());
+			}
+			
+		});
+		return result;
 	}
 
 	private void clearSearchField() {
