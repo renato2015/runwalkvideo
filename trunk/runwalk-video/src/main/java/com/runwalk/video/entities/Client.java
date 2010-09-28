@@ -29,6 +29,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Table(schema = "testdb", name = "clients")
 public class Client extends SerializableEntity<Client> {
+	
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	
 	/**
@@ -48,7 +49,7 @@ public class Client extends SerializableEntity<Client> {
 	private Long id;
 	@Column(name = NAME)
 	private String name;
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	@Embedded
