@@ -148,7 +148,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<Analysis> addAnalysis() {
-		//insert a new analysis record
+		// insert a new analysis record
 		final Client selectedClient = getClientTablePanel().getSelectedItem();
 		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
 			JOptionPane.showMessageDialog(
@@ -171,8 +171,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				// TODO handle failure
-				getLogger().error(event.getValue());
+				showErrorDialog(getResourceMap().getString("persist.errorMessage"), event.getValue());
 			}
 
 		});
@@ -209,8 +208,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				// TODO handle failure
-				getLogger().error(event.getValue());
+				showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
 			}
 
 		});
