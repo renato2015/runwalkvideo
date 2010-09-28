@@ -133,7 +133,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	@Action(enabledProperty = SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
-		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(Client.class, getItemList(), getDaoService());
+		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getDaoService(), Client.class, getItemList());
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -152,11 +152,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				JOptionPane.showMessageDialog(
-						SwingUtilities.windowForComponent(ClientTablePanel.this), 
-						event.getValue().getMessage(), 
-						getResourceMap().getString("save.errorMessage"), 
-						JOptionPane.ERROR_MESSAGE);
+				showErrorDialog(getResourceMap().getString("save.errorMessage"), event.getValue());
 			}
 
 		});
@@ -188,8 +184,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				// TODO handle failure
-				getLogger().error(event.getValue());
+				showErrorDialog(getResourceMap().getString("persist.errorMessage"), event.getValue());
 			}
 
 		});
@@ -222,8 +217,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void failed(TaskEvent<Throwable> event) {
-				//TODO handle failure
-				getLogger().error(event.getValue());
+				showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
 			}
 			
 		});

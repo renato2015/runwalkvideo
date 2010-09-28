@@ -202,6 +202,14 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
+	
+	protected void showErrorDialog(String title, Throwable throwable) {
+		JOptionPane.showMessageDialog(
+				SwingUtilities.windowForComponent(this), 
+				throwable.getMessage(), 
+				title, 
+				JOptionPane.ERROR_MESSAGE);
+	}
 
 	protected class CustomJTableRenderer implements TableCellRenderer {
 		private TableCellRenderer __defaultRenderer;

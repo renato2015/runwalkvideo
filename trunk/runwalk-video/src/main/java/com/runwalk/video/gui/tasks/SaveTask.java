@@ -18,7 +18,7 @@ public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List
 
 	private final Class<T> theClass;
 
-	public SaveTask(Class<T> theClass, EventList<T> itemList, DaoService daoService) {
+	public SaveTask(DaoService daoService, Class<T> theClass, EventList<T> itemList) {
 		super("save");
 		this.itemList = GlazedLists.eventList(itemList);
 		this.daoService = daoService;
