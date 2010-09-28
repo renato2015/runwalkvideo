@@ -2,12 +2,12 @@ package com.runwalk.video.gui.media;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.List;
 
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
-import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
 
 public abstract class VideoCapturerFactory {
@@ -127,7 +127,7 @@ public abstract class VideoCapturerFactory {
 		}
 
 		public List<String> getCapturerNames() {
-			return Lists.newArrayList("none");
+			return Collections.emptyList();
 		}
 
 		public boolean isActiveCapturer(String capturerName) {

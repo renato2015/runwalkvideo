@@ -107,7 +107,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 				getLogger().error("Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
-				if (exporter != null) {
+				if (exporter != null && exporter.getFiltergraph().getActive()) {
 					exporter.getFiltergraph().stop();
 				}
 				recording.setRecordingStatus(statusCode);

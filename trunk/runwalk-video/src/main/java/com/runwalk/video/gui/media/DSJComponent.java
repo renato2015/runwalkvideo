@@ -4,11 +4,12 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
+import javax.xml.ws.Action;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.Action;
 
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
@@ -25,6 +26,11 @@ import de.humatic.dsj.rc.RendererControls;
  */
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
 	
+	private static final String DSJ_UNLOCK_NAME = "dsj.unlockName";
+	private static final String DSJ_CODE3 = "dsj.code3";
+	private static final String DSJ_CODE2 = "dsj.code2";
+	private static final String DSJ_CODE1 = "dsj.code1";
+
 	/**
 	 * D3D9 renderer uses newer DirectX API and less CPU than the former when it can work on a capable GPU.
 	 * On the other hand, overlays can only be drawn using DD7's {@link RendererControls}.
@@ -35,7 +41,16 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	static {
 		// initialize and unlock dsj dll at class loading time
 		DSEnvironment.setDebugLevel(4);
-		DSEnvironment.unlockDLL("jeroen.peelaerts@vaph.be", 610280, 1777185, 0);
+		// get dsj unlock code from resource bundle, processed by maven at compile time
+		String packageName = DSJComponent.class.getPackage().getName();
+		String className = DSJComponent.class.getSimpleName();
+		// get class resource bundle using the bsaf naming convention
+		ResourceBundle bundle = ResourceBundle.getBundle(packageName + ".resources." + className);
+		String unlockName = bundle.getString(DSJ_UNLOCK_NAME);
+		Long code1 = Long.parseLong(bundle.getString(DSJ_CODE1));
+		Long code2 = Long.parseLong(bundle.getString(DSJ_CODE2));
+		Long code3= Long.parseLong(bundle.getString(DSJ_CODE3));
+		DSEnvironment.unlockDLL(unlockName, code1, code2, code3);
 	}
 	
 	private T filtergraph;
@@ -46,8 +61,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return filtergraph;
 	}
 
-	public void setFiltergraph(T graph) {
-		this.filtergraph = graph;
+	public void setFiltergraph(T filtergraph) {
+		this.filtergraph = filtergraph;
 	}
 
 	public boolean getRejectPauseFilter() {
