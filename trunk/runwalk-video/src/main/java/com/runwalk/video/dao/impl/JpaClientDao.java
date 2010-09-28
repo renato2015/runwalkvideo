@@ -29,8 +29,9 @@ public class JpaClientDao extends JpaDao<Client> {
 		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
 		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ")
 		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
-		.setHint(QueryHints.REFRESH, "true")
-		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
+		.setHint(QueryHints.REFRESH, "true");
+		// the cascadeparts hint will make startup much slower, but in the mean time changed applied to the db are propagated directly
+//		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
 		return query.getResultList();
 	}
 	
