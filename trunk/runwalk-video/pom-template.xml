@@ -194,7 +194,7 @@
 						</goals>
 						<configuration>
 							<artifactItems>
-								<!-- TODO dsj artifact should only be extracted on windows.. otherwise use jmc?? -->
+								<!-- TODO dsj artifact should only be extracted on windows.. otherwise use jmc -->
 								<artifactItem>
 									<groupId>de.humatic</groupId>
 									<artifactId>dsj-nativelib</artifactId>
@@ -384,12 +384,21 @@
 			<url>http://repo1.maven.org/maven2/</url>
 		</repository>
 		<repository>
+			<id>ibiblio-repo</id>
+			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
+		</repository>
+		<repository>
+			<id>jboss</id>
+			<url>http://repository.jboss.org/maven2/</url>
+		</repository>
+		<repository>
 			<id>eclipseLink-repo</id>
 			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo
 			</url>
 		</repository>
+		<!-- you should host your own maven repository and host those dependencies that have are not redistributable by licensing -->
 		<repository>
-			<id>runwalk-repo</id>
+			<id>your-maven-repo</id>
 			<url>${project.url}/maven2</url>
 		</repository>
 		<repository>
@@ -477,7 +486,7 @@
 	</profiles>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dsj.version>0.8.6</dsj.version>
+		<dsj.version>0.8.61</dsj.version>
 		<!-- Keystore generation properties -->
 		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>
 		<keystore.dnameO>Runwalk Herentals</keystore.dnameO>
@@ -504,5 +513,10 @@
 		<!-- JPA properties -->
 		<jpa.persistenceProvider>org.eclipse.persistence.jpa.PersistenceProvider</jpa.persistenceProvider>
 		<jpa.persistenceUnitName>runwalk-video</jpa.persistenceUnitName>
+		<!-- dsj unlock codes -->
+		<dsj.unlockName>yourUnlockName</dsj.unlockName>
+		<dsj.code1>code1</dsj.code1>
+		<dsj.code2>code2</dsj.code2>
+		<dsj.code3>code3</dsj.code3>
 	</properties>
 </project>

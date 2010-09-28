@@ -22,6 +22,8 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -33,7 +35,6 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.blob.Blob;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
@@ -42,6 +43,7 @@ import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
+import com.runwalk.video.gui.tasks.RecordTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
@@ -74,7 +76,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 
-	private boolean recording;
+	private RecordTask recordTask = null;
 
 	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super("Media controls", false);
@@ -186,12 +188,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	@Action(enabledProperty = STOP_ENABLED)
 	public void stop() {
+		setStopEnabled(false);
 		if (isRecording()) {
 			stopRecording();
 		} else {
 			stopPlaying();
 		}
-		setStopEnabled(false);
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED )
@@ -311,16 +313,16 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getApplication().showMessage("Snapshot genomen op " + formattedDate); 
 	}
 
-	private Blob biggestBlob;
-
-	public boolean newBlobDetectedEvent (Blob blob) {
-		// return true to keep blob, false to discard
-		if (biggestBlob == null || blob.h > biggestBlob.h) {
-			biggestBlob = blob;
-			return true;
-		}
-		return false;
-	}
+//	private Blob biggestBlob;
+//
+//	public boolean newBlobDetectedEvent (Blob blob) {
+//		// return true to keep blob, false to discard
+//		if (biggestBlob == null || blob.h > biggestBlob.h) {
+//			biggestBlob = blob;
+//			return true;
+//		}
+//		return false;
+//	}
 
 	/**
 	 * This property is changed under two different conditions:
@@ -390,55 +392,46 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@Action(enabledProperty = RECORDING_ENABLED)
-	public void record() {
+	public RecordTask record() {
 		Analysis analysis = getAnalysisTablePanel().getSelectedItem();
+		RecordTask result = null;
 		if (analysis != null) {
-			boolean isRecording = false;
-			for (VideoCapturer capturer : capturers) {
-				Recording recording = new Recording(analysis);
-				// persist recording first, then add it to the analysis
-				getDaoService().getDao(Recording.class).persist(recording);
-				analysis.addRecording(recording);
-				File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
-				capturer.startRecording(recording, videoFile);
-				isRecording = true;
-			}
-			if (isRecording) {
-				getApplication().getStatusPanel().setIndeterminate(true);
-				//TODO zoek uit wat er met die selectedProperty mogelijk is
-				setRecordingEnabled(false);
-				setStopEnabled(true);
-				setRecording(true);
-				getApplication().showMessage("Opname voor " + analysis.getClient().getName() + " " + 
-						analysis.getClient().getFirstname() + " gestart..");
-			}
-		}
-	}
+			result = new RecordTask(getVideoFileManager(), getDaoService(), capturers, analysis);
+			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
-	private void setRecording(boolean b) {
-		recording = b;
+				@Override
+				public void doInBackground(TaskEvent<Void> event) {
+					setRecordingEnabled(false);
+					setStopEnabled(true);
+				}
+
+				@Override
+				public void succeeded(TaskEvent<Boolean> event) {
+					//TODO coupling!
+					getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(event.getValue());
+				}
+
+				@Override
+				public void finished(TaskEvent<Void> event) {
+					// set this manually as such a specific propertyChangeEvent won't be fired
+//					selectedRecordingRecordable = false;
+					setRecordingEnabled(false);
+				}
+				
+			});
+		}
+		return recordTask = result;
 	}
 
 	private boolean isRecording() {
-		return recording;
+		return recordTask != null && recordTask.isStarted();
 	}
 
 	private void stopRecording() {
-		boolean filesRecorded = false;
-		for (VideoCapturer capturer : capturers) {
-			capturer.stopRecording();
-			File recordedFile = getVideoFileManager().getVideoFile(capturer.getRecording());
-			filesRecorded = filesRecorded |= recordedFile != null;
-			if (!filesRecorded) {
-				getLogger().error("Check file consistency for " + recordedFile.getAbsolutePath()) ;
-			}
-			getApplication().showMessage("Opnemen van " + recordedFile.getName() + " voltooid.");
+		synchronized(recordTask) {
+			recordTask.setRecording(false);
+			recordTask.notifyAll();
 		}
-		setRecording(false);
-		// set this manually as such a specific propertyChangeEvent won't be fired
-		selectedRecordingRecordable = false;
-		getApplication().getStatusPanel().setIndeterminate(false);
-		getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(filesRecorded);
 	}
 
 	private void stopPlaying() {
@@ -590,7 +583,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			VideoPlayer player = (VideoPlayer) evt.getSource();
 			// only update status info for the frontmost player
 			if (frontMostPlayer == player) {
-				if (position == 0) {
+				if (position == 0 && player.isPlaying()) {
 					getLogger().debug("playback position set to 0");
 					stop();
 				}
@@ -632,7 +625,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isFullScreenEnabled());	
 			} else {
 				clearStatusInfo();
-				setRecording(false);
+//				setRecording(false);
+				//FIXME why this here??
 				setStopEnabled(false);
 				setPlayerControlsEnabled(false);
 			}

@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Color;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
@@ -18,7 +17,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	private float framerate;
 
 	private float rate;
-
+	
 	public DSJPlayer(float rate) {
 		this.rate = rate;
 	}
@@ -50,13 +49,13 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	private void initFiltergraph(String path, int flags, PropertyChangeListener listener) {
 		getLogger().debug("Recording opened from: " + path);
-		if (customFramerateEnabled) {
+		if (isCustomFramerateEnabled()) {
 			flags = flags | DSMovie.INIT_EDITABLE;
 		}
 		setFiltergraph(new DSMovie(path, flags, listener));
 		// set playrate to 0 to make sure the filtergraph wont start running
 		pause();
-		if (customFramerateEnabled) {
+		if (isCustomFramerateEnabled()) {
 			getFiltergraph().setMasterFrameRate(framerate);
 		}
 		getFiltergraph().setRecueOnStop(true);
@@ -66,7 +65,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	public void setCustomFramerate() {
 		try {
 			if (getFiltergraph() != null && getFiltergraph().getActive()) {
-				customFramerateEnabled = true;
+				setCustomFramerateEnabled(true);
 				String prefferredRate = JOptionPane.showInputDialog(null, 
 						"Geef een framerate in..", "Set framerate op capture device", JOptionPane.PLAIN_MESSAGE);
 				framerate = Float.parseFloat(prefferredRate);
@@ -115,6 +114,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
+		getFiltergraph().play();
 		getFiltergraph().setRate(rate);
 	}
 
@@ -128,6 +128,14 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setVolume(float volume) {
 		getFiltergraph().setVolume(volume);
+	}
+	
+	public boolean isCustomFramerateEnabled() {
+		return customFramerateEnabled;
+	}
+
+	public void setCustomFramerateEnabled(boolean customFramerateEnabled) {
+		this.customFramerateEnabled = customFramerateEnabled;
 	}
 
 	public String getTitle() {
