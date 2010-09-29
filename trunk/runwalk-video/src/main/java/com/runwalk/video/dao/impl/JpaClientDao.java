@@ -6,7 +6,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 
-import org.eclipse.persistence.config.CascadePolicy;
 import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.Dao;
@@ -27,11 +26,11 @@ public class JpaClientDao extends JpaDao<Client> {
 	@SuppressWarnings("unchecked")
 	public List<Client> getAll() {
 		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
-		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ")
+		Query query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e ")
 		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
+		// the cascadeparts hint will make startup much slower, refreshing all cascaded entities
+//		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts)
 		.setHint(QueryHints.REFRESH, "true");
-		// the cascadeparts hint will make startup much slower, but in the mean time changed applied to the db are propagated directly
-//		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
 		return query.getResultList();
 	}
 	

@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.tasks;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -32,12 +33,15 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	private final VideoFileManager videoFileManager;
 	/** volatile so changes to this field can be seen directly by all threads */
 	private volatile boolean finished = false;
+	private final Component parentComponent;
 
-	public CompressVideoFilesTask(VideoFileManager videoFileManager, List<Recording> recordings, String transcoder) {
+	public CompressVideoFilesTask(Component parentComponent, VideoFileManager videoFileManager, 
+			List<Recording> recordings, String transcoder) {
 		super("compressVideoFiles");
-		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
-		this.recordings = recordings;
+		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
+		this.recordings = recordings;
+		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
 		setUserCanCancel(true);
 	}
 
@@ -79,7 +83,6 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 				if (!parentFolder.exists()) {
 					FileUtils.forceMkdir(parentFolder);
 				}
-				recording.setRecordingStatus(RecordingStatus.READY);
 				if (exporter == null) {
 					exporter = new DSJPlayer(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 				} else {
@@ -141,9 +144,10 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 			String dlogMessage = getResourceString("finishedMessage", conversionCount);
 			String dlogTitle = getResourceString("endMessage");
 			if (get()) {
-				JOptionPane.showMessageDialog(null, dlogMessage, dlogTitle, JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(getParentComponent(), dlogMessage, 
+						dlogTitle, JOptionPane.PLAIN_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(null, dlogMessage + 
+				JOptionPane.showMessageDialog(getParentComponent(), dlogMessage + 
 						getResourceString("errorMessage", errorCount), dlogTitle, JOptionPane.WARNING_MESSAGE); 					
 			}
 		} catch (Exception e) {
@@ -157,6 +161,9 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
 	}
-	
+
+	public Component getParentComponent() {
+		return parentComponent;
+	}
 
 }
