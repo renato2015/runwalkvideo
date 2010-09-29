@@ -28,7 +28,7 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 	}
 
 	public String getColumnName(int column) {
-		if(column == 0)      return "";
+		if(column == 0)      return "#";
 		else if(column == 1) return "Tijdstip analyse";
 		else if(column == 2) return "Naam klant";
 		else if(column == 3) return "Aantal keyframes";
@@ -46,9 +46,9 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 			recording = Iterables.getLast(analysis.getRecordings());
 		}
 		switch(column) {
-		case 0: return recordingNotNull && recording.isCompressed() ? null : null;
+		case 0: return recordingNotNull ? analysis.getRecordings().size() : null;
 		case 1: return analysis.getCreationDate();
-		case 2: return analysis.getClient().getName() + " " + analysis.getClient().getFirstname();
+		case 2: return analysis.getClient().toString();
 		case 3: return recordingNotNull ? recording.getKeyframeCount() : 0;
 		case 4: return recordingNotNull ? recording.getDuration() : 0L;
 		case 5: {
@@ -76,4 +76,5 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 	private MediaControls getMediaControls() {
 		return mediaControls;
 	}
+
 }

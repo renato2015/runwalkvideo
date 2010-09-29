@@ -22,9 +22,9 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
-import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -43,6 +43,7 @@ import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
+import com.runwalk.video.gui.tasks.MakeSnapshotTask;
 import com.runwalk.video.gui.tasks.RecordTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
@@ -286,43 +287,37 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void makeSnapshot() {
-		int newPosition = 0;
-		int duration = 0;
-		for (VideoPlayer player : players) {
-			player.pauseIfPlaying();
-			int position = player.getKeyframePosition();
-			if (frontMostPlayer == player) {
-				newPosition = position;
-				duration = player.getDuration();
+	public MakeSnapshotTask makeSnapshot() {
+		MakeSnapshotTask result = new MakeSnapshotTask(getDaoService(), frontMostPlayer, players);
+		result.addTaskListener(new TaskListener.Adapter<Keyframe, Void>() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void succeeded(TaskEvent<Keyframe> event) {
+				Keyframe result = event.getValue();
+				// set the slider's position to that of the frontmost player's newly created Keyframe
+				Integer keyframePosition = result.getPosition();
+				int sliderPosition = getSliderPosition(keyframePosition);
+				getSlider().getLabelTable().put(sliderPosition, new JLabel("*"));
+				setStatusInfo(keyframePosition, frontMostPlayer.getDuration());
+				getSlider().updateUI();
 			}
-			// create a new Keyframe for the player's current recording
-			Recording recording = player.getRecording();
-			Keyframe snapshot = new Keyframe(recording, position);
-			getDaoService().getDao(Keyframe.class).persist(snapshot);
-			recording.addKeyframe(snapshot);
-		}
-		// set the slider's position to that of the frontmost player's newly created Keyframe
-		int sliderPosition = getSliderPosition(newPosition);
-		getSlider().getLabelTable().put(sliderPosition, new JLabel("*"));
-		setStatusInfo(newPosition, duration);
-		getSlider().updateUI();
-		String formattedDate = AppUtil.formatDate(new Date(newPosition), AppUtil.EXTENDED_DURATION_FORMATTER);
-		getApplication().showMessage("Snapshot genomen op " + formattedDate); 
+
+		});
+		return result;
 	}
 
-//	private Blob biggestBlob;
-//
-//	public boolean newBlobDetectedEvent (Blob blob) {
-//		// return true to keep blob, false to discard
-//		if (biggestBlob == null || blob.h > biggestBlob.h) {
-//			biggestBlob = blob;
-//			return true;
-//		}
-//		return false;
-//	}
+	//	private Blob biggestBlob;
+	//
+	//	public boolean newBlobDetectedEvent (Blob blob) {
+	//		// return true to keep blob, false to discard
+	//		if (biggestBlob == null || blob.h > biggestBlob.h) {
+	//			biggestBlob = blob;
+	//			return true;
+	//		}
+	//		return false;
+	//	}
 
 	/**
 	 * This property is changed under two different conditions:
@@ -396,14 +391,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		Analysis analysis = getAnalysisTablePanel().getSelectedItem();
 		RecordTask result = null;
 		if (analysis != null) {
+			setRecordingEnabled(false);
+			setStopEnabled(true);
 			result = new RecordTask(getVideoFileManager(), getDaoService(), capturers, analysis);
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-
-				@Override
-				public void doInBackground(TaskEvent<Void> event) {
-					setRecordingEnabled(false);
-					setStopEnabled(true);
-				}
 
 				@Override
 				public void succeeded(TaskEvent<Boolean> event) {
@@ -414,10 +405,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				@Override
 				public void finished(TaskEvent<Void> event) {
 					// set this manually as such a specific propertyChangeEvent won't be fired
-//					selectedRecordingRecordable = false;
+					// selectedRecordingRecordable = false;
 					setRecordingEnabled(false);
 				}
-				
+
 			});
 		}
 		return recordTask = result;
@@ -625,7 +616,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isFullScreenEnabled());	
 			} else {
 				clearStatusInfo();
-//				setRecording(false);
+				//				setRecording(false);
 				//FIXME why this here??
 				setStopEnabled(false);
 				setPlayerControlsEnabled(false);

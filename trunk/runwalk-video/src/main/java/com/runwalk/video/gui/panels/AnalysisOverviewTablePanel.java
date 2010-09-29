@@ -94,7 +94,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	
 	@Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Void, Void> organiseVideoFiles() {
-		Object formatString = JOptionPane.showInputDialog(SwingUtilities.windowForComponent(this), 
+		Object formatString = JOptionPane.showInputDialog(
+				SwingUtilities.windowForComponent(this), 
 				"Geef hier een folder structuur op door '/' als separator te gebruiken", 
 				"Organiseer bestanden", JOptionPane.QUESTION_MESSAGE, 
 				null, null, getVideoFileManager().getVideoFolderRetrievalStrategy().getDisplayString());
@@ -111,7 +112,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public Task<Boolean, Void> compressVideoFiles() {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
-		return new CompressVideoFilesTask(getVideoFileManager(), getCompressableRecordings(), transcoder);
+		Window parentComponent = SwingUtilities.windowForComponent(this);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
+				getCompressableRecordings(), transcoder);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -149,18 +152,24 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	/**
-	 * Returns a {@link java.awt.List} of }link Recording}s that are in the {@link RecordingStatus#UNCOMPRESSED} state.
+	 * Returns a {@link java.awt.List} of {@link Recording}s that are in the {@link RecordingStatus#UNCOMPRESSED} state.
 	 * 
 	 * @return The list
 	 */
 	private List<Recording> getCompressableRecordings() {
 		List<Recording> list = new ArrayList<Recording>();
-		for (Analysis analysis : getItemList()) {
-			for (Recording recording : analysis.getRecordings()) {
-				if (recording.isUncompressed() && getVideoFileManager().canReadAndExists(recording)) {
-					list.add(recording);
+		getItemList().getReadWriteLock().readLock().lock();
+		try {
+			for (Analysis analysis : getItemList()) {
+				for (Recording recording : analysis.getRecordings()) {
+					File file = getVideoFileManager().getUncompressedVideoFile(recording);
+					if (recording.isUncompressed() && file.exists()) {
+						list.add(recording);
+					}
 				}
 			}
+		} finally {
+			getItemList().getReadWriteLock().readLock().unlock();
 		}
 		return list;
 	}
