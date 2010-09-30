@@ -3,7 +3,7 @@
 	<groupId>com.runwalk</groupId>
 	<artifactId>runwalk-video</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>runwalk-video</name>
 	<url>http://www.runwalk.be</url>
 	<description>Beheer van klanten en loopanalyses</description>
