@@ -10,7 +10,9 @@
 	<description>Beheer van klanten en loopanalyses</description>
 	<inceptionYear>2008</inceptionYear>
 	<scm>
-		<url>scm:svn:http://code.google.com/p/runwalkvideo/</url>
+	    <connection>scm:svn:http://code.google.com/p/runwalkvideo/</connection>
+	    <developerConnection>scm:svn:http://code.google.com/p/runwalkvideo/</developerConnection>
+		<url>http://code.google.com/p/runwalkvideo/</url>
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>

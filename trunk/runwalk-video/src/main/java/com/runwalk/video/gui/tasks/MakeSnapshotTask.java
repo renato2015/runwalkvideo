@@ -40,6 +40,7 @@ public class MakeSnapshotTask extends AbstractTask<Keyframe, Void> {
 			final Recording recording = videoPlayer.getRecording();
 			Keyframe keyframe = new Keyframe(recording, position);
 			getDaoService().getDao(Keyframe.class).persist(keyframe);
+			recording.addKeyframe(keyframe);
 			if (getFrontmostPlayer() == videoPlayer) {
 				result = keyframe;
 			}
