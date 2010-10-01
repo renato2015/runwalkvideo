@@ -53,7 +53,7 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
     		button.setFont(AppSettings.MAIN_FONT);
     		button.addMouseListener(new MouseAdapter() {
     			public void mouseClicked(MouseEvent e) {
-					getMediaControls().playRecordings(analysis);
+					getMediaControls().openRecordings(analysis);
     			}
     		});
     		button.setEnabled(analysis.isRecorded());

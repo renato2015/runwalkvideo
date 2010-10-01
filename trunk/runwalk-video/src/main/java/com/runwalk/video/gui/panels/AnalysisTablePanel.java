@@ -165,8 +165,13 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			@Override
 			public void succeeded(TaskEvent<Analysis> event) {
 				Analysis result = event.getValue();
-				selectedClient.addAnalysis(result);
-				setSelectedItem(result);
+				getItemList().getReadWriteLock().writeLock().lock();
+				try {
+					selectedClient.addAnalysis(result);
+					setSelectedItem(result);
+				} finally {
+					getItemList().getReadWriteLock().writeLock().unlock();
+				}
 			}
 
 			@Override
@@ -184,34 +189,40 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public DeleteTask<Analysis> deleteAnalysis() {		
+		DeleteTask<Analysis> result = null;
 		int n = JOptionPane.showConfirmDialog(
 				SwingUtilities.windowForComponent(this),
 				getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
 				getResourceMap().getString("deleteAnalysis.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.CANCEL_OPTION ||n == JOptionPane.CLOSED_OPTION) return null;
-		final Analysis selectedItem = getSelectedItem();
-		DeleteTask<Analysis> result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, selectedItem);
-		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
+		if (n == JOptionPane.OK_OPTION) {
+			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, getSelectedItem());
+			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
-			@Override
-			public void succeeded(TaskEvent<Analysis> event) {
-				Analysis analysis = event.getValue();
-				int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-				getItemList().remove(analysis);
-				getClientTablePanel().getSelectedItem().removeAnalysis(analysis);
-				// delete the video files
-				getVideoFileManager().deleteVideoFiles(analysis);
-				setSelectedItem(lastSelectedRowIndex - 1);
-			}
+				@Override
+				public void succeeded(TaskEvent<Analysis> event) {
+					Analysis analysis = event.getValue();
+					getItemList().getReadWriteLock().writeLock().lock();
+					try {
+						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+						getItemList().remove(analysis);
+						getClientTablePanel().getSelectedItem().removeAnalysis(analysis);
+						// delete the video files
+						setSelectedItem(lastSelectedRowIndex - 1);
+						getVideoFileManager().deleteVideoFiles(analysis);
+					} finally {
+						getItemList().getReadWriteLock().writeLock().unlock();
+					}
+				}
 
-			@Override
-			public void failed(TaskEvent<Throwable> event) {
-				showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
-			}
+				@Override
+				public void failed(TaskEvent<Throwable> event) {
+					showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
+				}
 
-		});
+			});
+		}
 		return result;
 	}
 

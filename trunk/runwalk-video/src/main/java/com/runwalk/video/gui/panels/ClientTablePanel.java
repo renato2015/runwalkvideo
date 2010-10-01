@@ -170,7 +170,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(block = BlockingScope.ACTION)
 	public PersistTask<Client> addClient() {
 		clearSearchField();
-		PersistTask<Client> result = new PersistTask<Client>(getDaoService(), Client.class, new Client());
+		Client client = new Client();
+		PersistTask<Client> result = new PersistTask<Client>(getDaoService(), Client.class, client);
 		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
 			
 			@Override
@@ -206,10 +207,10 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			@Override
 			public void succeeded(TaskEvent<Client> event) {
 				int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-				Client selectedClient = getSelectedItem();
+				Client client = event.getValue();
 				// delete all video files for the selected client
-				getVideoFileManager().deleteVideoFiles(selectedClient);
-				getItemList().remove(selectedClient);
+				getVideoFileManager().deleteVideoFiles(client);
+				getItemList().remove(client);
 				// select previous record
 				setSelectedItem(lastSelectedRowIndex - 1);
 				setSaveNeeded(true);
