@@ -433,7 +433,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		getApplication().showMessage("Afspelen gestopt.");
 	}
 
-	public void playRecordings(final Analysis analysis) {
+	public void openRecordings(final Analysis analysis) {
 		int recordingCount = 0;
 		for (Recording recording : analysis.getRecordings()) {
 			if (recording.isRecorded()) {
