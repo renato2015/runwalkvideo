@@ -18,9 +18,9 @@ public class AppUtil {
 	public static final SimpleDateFormat DURATION_FORMATTER = new SimpleDateFormat("mm:ss");
 	public static final SimpleDateFormat EXTENDED_DURATION_FORMATTER = new SimpleDateFormat("mm:ss.SSS");
 	//date formats
-	public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd-MM-yy");
+	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("dd-MM-yy");
+	public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy");
 	public static final SimpleDateFormat EXTENDED_DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH'h'mm'm'ss");
 
 	private AppUtil() { }
 	

@@ -1,8 +1,10 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
@@ -152,4 +154,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		}
 	}
 
+	public BufferedImage getImage() {
+		return getFiltergraph().getImage();
+	}
+
+	public void setOverlayImage(BufferedImage image, Color alphaColor) {
+		int width = image == null ? getFiltergraph().getWidth() : image.getWidth();
+		int height = image == null ? getFiltergraph().getHeight() : image.getHeight();
+		int[] rectangle = new int[] {0, 0, width, height};
+		getFiltergraph().getRendererControls().setOverlayImage(image, rectangle, alphaColor, 1f);
+	}
+	
 }

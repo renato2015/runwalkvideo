@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -172,6 +173,18 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
 		//FIXME not supported yet??
 		
+	}
+
+	public void setOverlayImage(BufferedImage image, Color alphaColor) {
+		// TODO Auto-generated method stub
+	}
+
+	public void clearOverlay() {
+		// TODO Auto-generated method stub
+	}
+
+	public BufferedImage getImage() {
+		return bufferedImage;
 	}
 
 }

@@ -40,8 +40,8 @@ public class CameraDialog extends AppDialog {
 	// class actions
 	public static final String INITIALIZE_CAPTURER_ACTION = "initializeCapturer";
 	public static final String REFRESH_CAPTURER_ACTION = "refreshCapturers";
-	private static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCameraSettings";
-	private static final String SHOW_CAPTURER_DEVICE_SETINGS_ACTION = "showCapturerSettings";
+	public static final String SHOW_CAMERA_SETTINGS_ACTION = "showCameraSettings";
+	public static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCapturerSettings";
 	private static final String DISMISS_DIALOG_ACTION = "dismissDialog";
 	private static final String EXIT_ACTION = "exit";
 
@@ -109,8 +109,8 @@ public class CameraDialog extends AppDialog {
 		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURER_ACTION)); // NOI18N
 		add(refreshButton, "align right");
 		// add some extra actions to configure the capture device
-		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap, true);
-		addAction(SHOW_CAPTURER_DEVICE_SETINGS_ACTION, actionMap);
+		addAction(SHOW_CAMERA_SETTINGS_ACTION, actionMap, true);
+		addAction(SHOW_CAPTURER_SETTINGS_ACTION, actionMap);
 		JButton okButton = new JButton(getAction(DISMISS_DIALOG_ACTION));
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);

@@ -1,10 +1,12 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
@@ -210,6 +212,14 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 
 	public boolean isFullscreen() {
 		return fullscreen;
+	}
+	
+	public BufferedImage getImage() {
+		return getVideoImpl().getImage();
+	}
+	
+	public void setOverlayImage(BufferedImage image, Color alphaColor) {
+		getVideoImpl().setOverlayImage(image, alphaColor);
 	}
 	
 	protected void showComponent() {

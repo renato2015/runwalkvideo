@@ -1,9 +1,11 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -43,7 +45,8 @@ import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
-import com.runwalk.video.gui.tasks.MakeSnapshotTask;
+import com.runwalk.video.gui.tasks.CreateKeyframeTask;
+import com.runwalk.video.gui.tasks.CreateOverlayImageTask;
 import com.runwalk.video.gui.tasks.RecordTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
@@ -52,6 +55,17 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
 
+	private static final String MUTE_ACTION = "mute";
+	private static final String FULL_SCREEN_ACTION = "fullScreen";
+	private static final String INCREASE_VOLUME_ACTION = "increaseVolume";
+	private static final String DECREASE_VOLUME_ACTION = "decreaseVolume";
+	private static final String CREATE_KEYFRAME_ACTION = "createKeyframe";
+	private static final String NEXT_KEYFRAME_ACTION = "nextKeyframe";
+	private static final String FASTER_ACTION = "faster";
+	private static final String TOGGLE_PLAY_ACTION = "togglePlay";
+	private static final String STOP_ACTION = "stop";
+	private static final String RECORD_ACTION = "record";
+	private static final String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
 	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
@@ -139,22 +153,22 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		add(getSlider(), "wrap, grow, gapbottom 10");
 
 		//add control buttons
-		createJButton("previousSnapshot"); 
+		createJButton(PREVIOUS_KEYFRAME_ACTION); 
 		createJButton("slower"); 
-		createJButton("record");
+		createJButton(RECORD_ACTION);
 
-		createJButton("stop"); 
-		playButton = createJToggleButton("togglePlay", "togglePlay.Action.pressedIcon"); 
+		createJButton(STOP_ACTION); 
+		playButton = createJToggleButton(TOGGLE_PLAY_ACTION, "togglePlay.Action.pressedIcon"); 
 		playButton.setRolloverEnabled(false);
-		createJButton("faster"); 
-		createJButton("nextSnapshot"); 
-		createJButton("makeSnapshot"); 
-		createJButton("decreaseVolume"); 
-		createJButton("increaseVolume"); 
-		createJToggleButton("mute", "mute.Action.pressedIcon"); 
-		createJButton("showCaptureSettings"); 
-		createJButton("showCameraSettings"); 
-		createJButton("fullScreen"); 
+		createJButton(FASTER_ACTION); 
+		createJButton(NEXT_KEYFRAME_ACTION); 
+		createJButton(CREATE_KEYFRAME_ACTION); 
+		createJButton(DECREASE_VOLUME_ACTION); 
+		createJButton(INCREASE_VOLUME_ACTION); 
+		createJToggleButton(MUTE_ACTION, "mute.Action.pressedIcon"); 
+		createJButton(CameraDialog.SHOW_CAPTURER_SETTINGS_ACTION); 
+		createJButton(CameraDialog.SHOW_CAMERA_SETTINGS_ACTION); 
+		createJButton(FULL_SCREEN_ACTION); 
 
 		time = new JLabel();
 		clearStatusInfo();
@@ -262,7 +276,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	//TODO this action should not be available when there is no capturer open
 	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
-	public void showCaptureSettings() {
+	public void showCapturerSettings() {
 		frontMostCapturer.showCapturerSettings();
 	}
 
@@ -272,24 +286,24 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void nextSnapshot() {
+	public void nextKeyframe() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
-			player.nextSnapshot();
+			player.nextKeyframe();
 		}
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void previousSnapshot() {
+	public void previousKeyframe() {
 		for (VideoPlayer player : players) {
 			player.pauseIfPlaying();
-			player.previousSnapshot();
+			player.previousKeyframe();
 		}
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public MakeSnapshotTask makeSnapshot() {
-		MakeSnapshotTask result = new MakeSnapshotTask(getDaoService(), frontMostPlayer, players);
+	public CreateKeyframeTask createKeyframe() {
+		CreateKeyframeTask result = new CreateKeyframeTask(getDaoService(), frontMostPlayer, players);
 		result.addTaskListener(new TaskListener.Adapter<Keyframe, Void>() {
 
 			@SuppressWarnings("unchecked")
@@ -308,16 +322,26 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return result;
 	}
 
-	//	private Blob biggestBlob;
-	//
-	//	public boolean newBlobDetectedEvent (Blob blob) {
-	//		// return true to keep blob, false to discard
-	//		if (biggestBlob == null || blob.h > biggestBlob.h) {
-	//			biggestBlob = blob;
-	//			return true;
-	//		}
-	//		return false;
-	//	}
+	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
+	public CreateOverlayImageTask createOverlayImage() {
+		CreateOverlayImageTask result = null;
+		if (frontMostPlayer != null) {
+			final VideoPlayer selectedPlayer = frontMostPlayer;
+			selectedPlayer.pauseIfPlaying();
+			BufferedImage inputImage = selectedPlayer.getImage();
+			result = new CreateOverlayImageTask(inputImage);
+			result.addTaskListener(new TaskListener.Adapter<BufferedImage, Void>() {
+				
+				@Override
+				public void succeeded(TaskEvent<BufferedImage> event) {
+					BufferedImage image = event.getValue();
+					selectedPlayer.setOverlayImage(image, Color.black);
+				}
+				
+			});
+		}
+		return result;
+	}
 
 	/**
 	 * This property is changed under two different conditions:
