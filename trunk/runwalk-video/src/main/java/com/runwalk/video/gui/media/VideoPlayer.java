@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -78,12 +79,16 @@ public class VideoPlayer extends VideoComponent {
 	
 	public void play() {
 		setState(State.PLAYING);
+		// clear all previously drawn overlays
+		getVideoImpl().setOverlayImage(null, Color.white);
 		getVideoImpl().play();
 		getTimer().restart();
 	}
 
 	public void stop() {
 		setState(State.IDLE);
+		// clear all previously drawn overlays
+		getVideoImpl().setOverlayImage(null, Color.white);
 		getTimer().stop();
 		// set position to 0 here and for player this instance and its 'native' implementation
 		setPosition(0);
@@ -138,7 +143,7 @@ public class VideoPlayer extends VideoComponent {
 		}
 	}
 
-	public void nextSnapshot() {
+	public void nextKeyframe() {
 		getRecording().sortKeyframes();
 		for (Keyframe frame : getRecording().getKeyframes()) {
 			if (frame.getPosition() > getPosition()) {
@@ -149,7 +154,7 @@ public class VideoPlayer extends VideoComponent {
 		}
 	}
 
-	public void previousSnapshot() {
+	public void previousKeyframe() {
 		getRecording().sortKeyframes();
 		for (int i = getRecording().getKeyframeCount()-1; i >= 0; i--) {
 			Keyframe frame = getRecording().getKeyframes().get(i);
@@ -170,7 +175,7 @@ public class VideoPlayer extends VideoComponent {
 		getLogger().debug("Final position: " + position);
 		return position;
 	}
-
+	
 	public void increaseVolume() {
 		getVideoImpl().setVolume(1.25f * getVideoImpl().getVolume());
 	}

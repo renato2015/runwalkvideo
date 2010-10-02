@@ -11,7 +11,7 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.media.VideoPlayer;
 import com.runwalk.video.util.AppUtil;
 
-public class MakeSnapshotTask extends AbstractTask<Keyframe, Void> {
+public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 
 	private final VideoPlayer frontMostPlayer;
 	private final List<VideoPlayer> videoPlayers;
@@ -23,8 +23,8 @@ public class MakeSnapshotTask extends AbstractTask<Keyframe, Void> {
 	 * 
 	 * @author Jeroen Peelaerts
 	 */
-	public MakeSnapshotTask(DaoService daoService, VideoPlayer frontMostPlayer, List<VideoPlayer> videoPlayers) {
-		super("makeSnapshot");
+	public CreateKeyframeTask(DaoService daoService, VideoPlayer frontMostPlayer, List<VideoPlayer> videoPlayers) {
+		super("createKeyframe");
 		this.daoService = daoService;
 		this.videoPlayers = videoPlayers;
 		this.frontMostPlayer = frontMostPlayer;

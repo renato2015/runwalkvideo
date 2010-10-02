@@ -69,7 +69,7 @@ public class Recording extends SerializableEntity<Recording> {
 	protected Recording() { }
 
 	public Recording(Analysis analysis) {
-		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.DATE_FORMATTER);
+		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.FILENAME_DATE_FORMATTER);
 		Client client = analysis.getClient();
 		int totalRecordings = 0;
 		for (Analysis an : client.getAnalyses()) {
