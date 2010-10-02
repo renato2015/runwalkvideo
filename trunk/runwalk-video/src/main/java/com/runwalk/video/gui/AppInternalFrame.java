@@ -5,7 +5,6 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
@@ -55,10 +54,6 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
 		appWindowWrapperListeners.remove(listener);
 		removeInternalFrameListener(listener);
-	}
-	
-	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
-		return Collections.unmodifiableList(appWindowWrapperListeners);
 	}
 
 	public Action getAction(String name) {

@@ -113,17 +113,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			@Override
 			public void sourceChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
-				System.out.println("source for binding changed");
+				getLogger().debug("source for binding changed");
 			}
-
-			@Override
-			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
-				// TODO Auto-generated method stub
-				super.synced(binding);
-				System.out.println("binding synced");
-			}
-
-
 
 		});
 		enabledBinding.setSourceUnreadableValue(false);
@@ -274,7 +265,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 	}
 
-	//TODO this action should not be available when there is no capturer open
 	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
 	public void showCapturerSettings() {
 		frontMostCapturer.showCapturerSettings();
@@ -489,9 +479,15 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			}
 		}
 		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
-		// hide players that don't show any opened files, eventually draw black overlay later on
+		// hide players that don't show any opened files
 		for (int i = recordingCount; i < players.size(); i++) {
-			getApplication().hideComponent(players.get(i));
+			VideoPlayer videoPlayer = players.get(i);
+			//TODO test whether this works
+			BufferedImage currentImage = videoPlayer.getImage();
+			int width = currentImage.getWidth();
+			int height = currentImage.getHeight();
+			final BufferedImage newOverlay = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR); 
+			videoPlayer.setOverlayImage(newOverlay, Color.black);
 		}
 		setSliderPosition(0);
 	}

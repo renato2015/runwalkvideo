@@ -13,7 +13,6 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JInternalFrame;
 import javax.swing.Timer;
 import javax.swing.event.InternalFrameListener;
 
@@ -164,7 +163,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getVideoImpl().getFullscreenFrame();
 	}
 
-	public JInternalFrame getInternalFrame() {
+	public AppInternalFrame getInternalFrame() {
 		return internalFrame;
 	}
 
@@ -242,14 +241,14 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// go fullscreen if the selected monitor is not the primary one (index 0)
 		boolean fullscreen = monitorId > 0;
-		if (monitorId > 0) {
-			getApplication().hideComponent(internalFrame);
+		if (fullscreen) {
+			getApplication().hideComponent(getInternalFrame());
 			getVideoImpl().setFullScreen(graphicsDevice, true);
 		} else {
 			getVideoImpl().setFullScreen(graphicsDevice, false);
-			if (internalFrame == null) {
+			if (getInternalFrame() == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
-				internalFrame.add(getVideoImpl().getComponent());
+				getInternalFrame().add(getVideoImpl().getComponent());
 			}
 		}
 		firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
@@ -308,7 +307,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 			removePropertyChangeListener(listener);
 		}
 		if (getVideoImpl() != null) {			
+			// dispose on the video implemenation will dispose resources for the full screen frame
 			getVideoImpl().dispose();
+			if (getInternalFrame() != null) {
+				getInternalFrame().dispose();
+			}
 		}
 		setRecording(null);
 	}

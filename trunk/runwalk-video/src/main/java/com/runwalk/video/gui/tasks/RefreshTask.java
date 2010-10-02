@@ -2,6 +2,7 @@ package com.runwalk.video.gui.tasks;
 
 import java.awt.Robot;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
@@ -91,7 +92,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			});
 			message("waitForIdleMessage");
 			new Robot().waitForIdle();
-			message("endMessage");
+			message("endMessage", getExecutionDuration(TimeUnit.SECONDS));
 		} catch(Exception exc) {
 			getLogger().error(Level.SEVERE, exc);
 			success = false;

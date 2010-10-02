@@ -6,8 +6,8 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeListener;
 import java.util.EventListener;
-import java.util.List;
 
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;
@@ -23,6 +23,8 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  */
 public interface AppWindowWrapper extends AppComponent {
 	
+	public void dispose();
+	
 	public Container getHolder();
 	
 	public String getTitle();
@@ -31,8 +33,10 @@ public interface AppWindowWrapper extends AppComponent {
 	
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener);
 	
-	public List<AppWindowWrapperListener> getAppWindowWrapperListeners();
-
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+	
+	public void removePropertyChangeListener(PropertyChangeListener listener);
+	
 	/**
 	 * This class is a universal event listener for {@link JInternalFrame} and {@link Window} components. 
 	 * It delegates calls to their listener interfaces to a corresponding handling method, which can be overridden.

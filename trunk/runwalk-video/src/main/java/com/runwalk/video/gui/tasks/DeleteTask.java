@@ -1,5 +1,7 @@
 package com.runwalk.video.gui.tasks;
 
+import java.util.concurrent.TimeUnit;
+
 import com.runwalk.video.dao.DaoService;
 
 public class DeleteTask<T> extends AbstractTask<T, Void> {
@@ -20,7 +22,7 @@ public class DeleteTask<T> extends AbstractTask<T, Void> {
 	protected T doInBackground() {
 		message("startMessage");
 		getDaoService().getDao(getItemClass()).delete(getItem());
-		message("endMessage");
+		message("endMessage", getExecutionDuration(TimeUnit.MILLISECONDS));
 		return getItem();
 	}
 	

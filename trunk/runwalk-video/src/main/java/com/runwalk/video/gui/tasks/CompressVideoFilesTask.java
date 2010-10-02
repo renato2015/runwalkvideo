@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
@@ -121,7 +122,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 		if (exporter != null) {
 			exporter.dispose();
 		}
-		message("endMessage");
+		message("endMessage", getExecutionDuration(TimeUnit.SECONDS));
 		return (errorCount == 0);
 	}
 
@@ -142,7 +143,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	protected void finished() {
 		try {
 			String dlogMessage = getResourceString("finishedMessage", conversionCount);
-			String dlogTitle = getResourceString("endMessage");
+			String dlogTitle = getResourceString("endMessage", getExecutionDuration(TimeUnit.SECONDS));
 			if (get()) {
 				JOptionPane.showMessageDialog(getParentComponent(), dlogMessage, 
 						dlogTitle, JOptionPane.PLAIN_MESSAGE);
@@ -152,9 +153,6 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 			}
 		} catch (Exception e) {
 			errorMessage("endErrorMessage", errorCount);
-		} finally {
-			String formattedDate = AppUtil.formatDate(new Date(), AppUtil.DATE_FORMATTER);
-			message("lastSyncMessage", formattedDate);
 		}
 	}
 
