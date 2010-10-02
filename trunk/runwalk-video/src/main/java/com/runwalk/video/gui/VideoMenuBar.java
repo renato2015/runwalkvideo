@@ -193,9 +193,6 @@ public class VideoMenuBar extends JMenuBar implements AppComponent {
 				}
 			}
 			windowBoxMap.remove(appComponent);
-			for (AppWindowWrapperListener appWindowWrapperListener : appComponent.getAppWindowWrapperListeners()) {
-				appComponent.removeAppWindowWrapperListener(appWindowWrapperListener);
-			}
 			windowMenu.updateUI();
 			windowMenu.revalidate();
 		}

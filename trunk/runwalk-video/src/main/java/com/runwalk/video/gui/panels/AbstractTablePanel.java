@@ -80,10 +80,11 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 		return selectedItem;
 	}
 
-	public void setSelectedItem(T item) {
-		int rowIndex = getItemList().indexOf(item);
+	public void setSelectedItem(T selectedItem) {
+		int rowIndex = getItemList().indexOf(selectedItem);
 		if (rowIndex > -1) {
-			getEventSelectionModel().getTogglingSelected().add(item);
+			firePropertyChange(SELECTED_ITEM, this.selectedItem, selectedItem);
+			getEventSelectionModel().getTogglingSelected().add(selectedItem);
 			getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
 		}
 	}

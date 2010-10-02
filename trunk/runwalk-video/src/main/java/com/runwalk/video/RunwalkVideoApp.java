@@ -63,7 +63,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private AppInternalFrame clientMainView;
 	private VideoMenuBar menuBar;
 	private ApplicationActions applicationActions;
-	private JScrollableDesktopPane pane;
+	private JScrollableDesktopPane scrollableDesktopPane;
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
 
@@ -114,8 +114,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 				AppSettings.getInstance(), getVideoFileManager(), getDaoService());
 		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
 		// create main desktop scrollpane
-		pane = new JScrollableDesktopPane();
-		getMainFrame().add(pane);
+		scrollableDesktopPane = new JScrollableDesktopPane();
+		getMainFrame().add(getScrollableDesktopPane());
 		// create menu bar
 		menuBar = new VideoMenuBar();
 		// create mediaplayer controls
@@ -137,6 +137,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		show(getMainFrame());
 	}
 	
+	public JScrollableDesktopPane getScrollableDesktopPane() {
+		return scrollableDesktopPane;
+	}
+
 	@org.jdesktop.application.Action
 	public void saveSettings() {
 		AppSettings.getInstance().saveSettings();
@@ -187,10 +191,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
 				if (new Dimension(0,0).equals(baseInternalFrame.getSize())) {
 					baseInternalFrame.pack();
-					pane.add(baseInternalFrame);
+					getScrollableDesktopPane().add(baseInternalFrame);
 					getMenuBar().addWindow(appComponent);	
 				}
-				pane.enableAssociatedComponents(baseInternalFrame, true);
+				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, true);
 			}  else {
 				getMenuBar().addWindow(appComponent);	
 			}
@@ -206,7 +210,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		if (container != null) {
 			if (container instanceof BaseInternalFrame) {
 				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
-				pane.enableAssociatedComponents(baseInternalFrame, false);
+				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, false);
 			}
 			container.setVisible(false);
 		}
