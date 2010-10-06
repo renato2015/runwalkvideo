@@ -18,6 +18,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
@@ -47,6 +48,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Client.Gender;
+import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.EnumButtonGroup;
 import com.runwalk.video.util.AppSettings;
 
@@ -57,7 +59,7 @@ import com.runwalk.video.util.AppSettings;
  *
  */
 @SuppressWarnings("serial")
-public class ClientInfoPanel extends AppPanel {
+public class ClientInfoPanel extends JPanel implements AppComponent {
 
 	private final static BeanProperty<JComponent, Boolean> ENABLED = BeanProperty.create("enabled");
 	private final static ELProperty<ClientTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");
@@ -163,7 +165,7 @@ public class ClientInfoPanel extends AppPanel {
 
 		JLabel taxLabel = new JLabel();
 		taxLabel.setFont(AppSettings.MAIN_FONT);
-		taxLabel.setText(getResourceMap().getString("btwLabel.text"));
+		taxLabel.setText(getResourceMap().getString("taxNoLabel.text"));
 		add(taxLabel, "split");
 
 		JTextField taxField = new JTextField();

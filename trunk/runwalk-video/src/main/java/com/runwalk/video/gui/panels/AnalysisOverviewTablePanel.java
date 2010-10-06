@@ -142,7 +142,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		return chosenDir;
 	}
-
+	
 	public boolean isCompressionEnabled() {
 		return compressionEnabled;
 	}

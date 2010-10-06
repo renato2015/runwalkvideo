@@ -38,7 +38,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 * On the other hand, overlays can only be drawn using DD7's {@link RendererControls}.
 	 * All filtergraphs are initialized in the paused state.
 	 */
-	protected static final int FLAGS = DSFiltergraph.DD7 | DSFiltergraph.INIT_PAUSED;
+	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
 
 	static {
 		// initialize and unlock dsj dll at class loading time
@@ -126,10 +126,12 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public void dispose() {
 		if (getFiltergraph() != null) {
-//			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
-//			if (fullscreenFrame != null) {
-//				fullscreenFrame.dispose();
-//			}
+			// full screen frame needs to disposed on rebuilding..
+			// TODO review this code.. is this DSJComponent's responsability?
+			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
+			if (fullscreenFrame != null) {
+				fullscreenFrame.dispose();
+			}
 			getFiltergraph().dispose();
 		}
 	}

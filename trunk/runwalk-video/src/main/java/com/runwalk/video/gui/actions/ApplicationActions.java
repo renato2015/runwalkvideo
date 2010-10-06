@@ -10,11 +10,6 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Task;
-
-import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.tasks.UploadLogFilesTask;
-import com.runwalk.video.util.AppSettings;
 
 public class ApplicationActions extends AbstractBean {
 	private static final String REDO_ENABLED = "redoEnabled";
@@ -23,12 +18,6 @@ public class ApplicationActions extends AbstractBean {
 	private boolean undoEnabled;
 	private boolean redoEnabled;
 	
-	private final AppSettings appSettings;
-
-	public ApplicationActions(AppSettings appSettings) {
-		this.appSettings = appSettings;
-	}
-
 	private class MyUndoableEditListener implements UndoableEditListener {
 		public void undoableEditHappened(UndoableEditEvent e) {
 			undo.addEdit(e.getEdit());
@@ -90,18 +79,4 @@ public class ApplicationActions extends AbstractBean {
 		this.firePropertyChange(REDO_ENABLED, this.redoEnabled, this.redoEnabled = redoEnabled);
 	}
 	
-	@Action
-	public Task<Void, Void> uploadLogFiles() {
-		return new UploadLogFilesTask(getAppSettings().getLogFile(), getAppSettings().getLogFileUploadUrl());
-	}
-	
-	public AppSettings getAppSettings() {
-		return appSettings;
-	}
-	
-	@Action
-	public void exit() {
-		RunwalkVideoApp.getApplication().exit();
-	}
-
 }

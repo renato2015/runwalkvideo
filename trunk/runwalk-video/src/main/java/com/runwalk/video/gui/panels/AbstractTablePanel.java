@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
@@ -18,8 +19,8 @@ import javax.swing.table.TableColumnModel;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ListSelection;
 import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
+import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
@@ -30,10 +31,11 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends AppPanel {
+public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends JPanel implements AppComponent {
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
@@ -83,7 +85,6 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	public void setSelectedItem(T selectedItem) {
 		int rowIndex = getItemList().indexOf(selectedItem);
 		if (rowIndex > -1) {
-			firePropertyChange(SELECTED_ITEM, this.selectedItem, selectedItem);
 			getEventSelectionModel().getTogglingSelected().add(selectedItem);
 			getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
 		}
@@ -154,6 +155,8 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 					if (changeType == ListEvent.DELETE) {
 						if (listChanges.getOldValue() != ListEvent.UNKNOWN_VALUE) {
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+//							T oldValue = listChanges.getOldValue();
+//							firePropertyChange(SELECTED_ITEM, oldValue, getSelectedItem());
 						}
 					} else if (changeType == ListEvent.INSERT) {
 						EventList<T> sourceList = listChanges.getSourceList();

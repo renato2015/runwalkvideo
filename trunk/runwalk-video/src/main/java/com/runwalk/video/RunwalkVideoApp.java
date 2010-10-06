@@ -42,6 +42,7 @@ import com.runwalk.video.gui.panels.ClientInfoPanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 import com.runwalk.video.gui.panels.StatusPanel;
 import com.runwalk.video.gui.tasks.RefreshTask;
+import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
@@ -67,6 +68,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
 
+	public static final String EXIT_ACTION = "exitApplication";
+
 	/**
 	 * A convenient static getter for the application instance.
 	 * @return the instance of RunwalkVideoApp
@@ -77,14 +80,25 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	/*
 	 * Main method launching the application. 
-	 * After loggin has been set up, the application will launch using the swing application framework (SAF).
+	 * After logging has been set up, the application will launch using the swing application framework (SAF).
 	 */
 	public static void main(String[] args) {
 		AppSettings.configureLog4j();
 		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
+	
+	/*
+	 * Application lifecycle methods
+	 */
 
+	/** {@inheritDoc} */
+	@Override
+	protected void ready() {
+		// load data from the db using the BSAF task mechanism
+		executeAction(getContext().getActionMap(), "refresh");
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	protected void initialize(String[] args) {
@@ -106,7 +120,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 */
 	protected void startup() {
 		// create common application actions class
-		applicationActions = new ApplicationActions(AppSettings.getInstance());
+		applicationActions = new ApplicationActions();
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
@@ -119,7 +133,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// create menu bar
 		menuBar = new VideoMenuBar();
 		// create mediaplayer controls
-		mediaControls = new MediaControls(getAnalysisTablePanel(), AppSettings.getInstance(), getVideoFileManager(), getDaoService());
+		mediaControls = new MediaControls(AppSettings.getInstance(), getVideoFileManager(), 
+			getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
@@ -137,85 +152,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		show(getMainFrame());
 	}
 	
-	public JScrollableDesktopPane getScrollableDesktopPane() {
-		return scrollableDesktopPane;
-	}
-
-	@org.jdesktop.application.Action
-	public void saveSettings() {
-		AppSettings.getInstance().saveSettings();
-	}
-	
-	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
-	public Task<Boolean, Void> refresh() {
-		RefreshTask refreshTask = new RefreshTask(getDaoService());
-		refreshTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-
-			@Override
-			public void finished(TaskEvent<Void> event) {
-				// refresh video file cache, this task should not be launched until the database data is refreshed
-				executeAction(getAnalysisOverviewTablePanel().getApplicationActionMap(), "refreshVideoFiles");
-			}
-			
-		});
-		return refreshTask;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	protected void ready() {
-		// load data from the db using the bsaf task mechanism
-		executeAction(getContext().getActionMap(), "refresh");
-	}
-	
-	/**
-	 * This method will look for an {@link Action} specified with the given key in the given {@link ActionMap} 
-	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method.
-	 * 
-	 * @param actionMap The {@link ActionMap} containing the {@link Action} to be executed
-	 * @param actionKey The key of the {@link Action} to be executed
-	 */
-	private void executeAction(ActionMap actionMap, String actionKey) {
-		Action action = actionMap.get(actionKey);
-		if (action != null) {
-			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
-			action.actionPerformed(actionEvent);
-		}
-	}
-
-	public void createOrShowComponent(AppWindowWrapper appComponent) {
-		Container container = appComponent == null ? null : appComponent.getHolder();
-		if (container != null) {
-			container.setVisible(true);
-			if (container instanceof BaseInternalFrame) {
-				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
-				if (new Dimension(0,0).equals(baseInternalFrame.getSize())) {
-					baseInternalFrame.pack();
-					getScrollableDesktopPane().add(baseInternalFrame);
-					getMenuBar().addWindow(appComponent);	
-				}
-				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, true);
-			}  else {
-				getMenuBar().addWindow(appComponent);	
-			}
-		}
-	}
-
-	public void removeComponent(AppWindowWrapper appComponent) {
-		getMenuBar().removeWindow(appComponent);
-	}
-
-	public void hideComponent(AppWindowWrapper appComponent) {
-		Container container = appComponent == null ? null : appComponent.getHolder();
-		if (container != null) {
-			if (container instanceof BaseInternalFrame) {
-				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
-				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, false);
-			}
-			container.setVisible(false);
-		}
-	}
-
 	/** {@inheritDoc} */
 	@Override 
 	protected void shutdown() {
@@ -235,6 +171,64 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			Thread.yield();
 		}
 		getDaoService().shutdown();
+	}
+	
+	/*
+	 * Global application actions
+	 */
+
+	@org.jdesktop.application.Action
+	public void saveSettings() {
+		AppSettings.getInstance().saveSettings();
+	}
+	
+	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
+	public Task<Boolean, Void> refresh() {
+		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+		refreshTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
+
+			@Override
+			public void finished(TaskEvent<Void> event) {
+				// refresh video file cache, this task should not be launched until the database data is refreshed
+				executeAction(getAnalysisOverviewTablePanel().getApplicationActionMap(), "refreshVideoFiles");
+			}
+			
+		});
+		return refreshTask;
+	}
+	
+	@org.jdesktop.application.Action
+	public Task<Void, Void> uploadLogFiles() {
+		AppSettings appSettings = AppSettings.getInstance();
+		return new UploadLogFilesTask(appSettings.getLogFile(), appSettings.getLogFileUploadUrl());
+	}
+	
+	@org.jdesktop.application.Action
+	public void exitApplication() {
+		exit();
+	}
+	
+	/*
+	 * GUI methods
+	 */
+
+	public void createOrShowComponent(AppWindowWrapper appComponent) {
+		Container container = appComponent == null ? null : appComponent.getHolder();
+		if (container != null) {
+			container.setVisible(true);
+			if (container instanceof BaseInternalFrame) {
+				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
+				if (new Dimension(0,0).equals(baseInternalFrame.getSize())) {
+					baseInternalFrame.pack();
+					getScrollableDesktopPane().add(baseInternalFrame);
+					getMenuBar().addWindow(appComponent);	
+				}
+				baseInternalFrame.getAssociatedButton().setEnabled(true);
+//				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, true);
+			}  else {
+				getMenuBar().addWindow(appComponent);	
+			}
+		}
 	}
 
 	private AppInternalFrame createMainView() {
@@ -256,7 +250,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	}
 
 	/*
-	 * Getters & Setters for the main objects in this program
+	 * Getters and Setters for the main objects in this application
 	 */
 
 	public ApplicationActions getApplicationActions() {
@@ -269,6 +263,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 
 	public VideoMenuBar getMenuBar() {
 		return menuBar;
+	}
+	
+	public JScrollableDesktopPane getScrollableDesktopPane() {
+		return scrollableDesktopPane;
 	}
 
 	public ClientTablePanel getClientTablePanel() {
@@ -306,6 +304,21 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	/*
 	 * Convenience methods
 	 */
+	
+	/**
+	 * This method will look for an {@link Action} specified with the given key in the given {@link ActionMap} 
+	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method.
+	 * 
+	 * @param actionMap The {@link ActionMap} containing the {@link Action} to be executed
+	 * @param actionKey The key of the {@link Action} to be executed
+	 */
+	private void executeAction(ActionMap actionMap, String actionKey) {
+		Action action = actionMap.get(actionKey);
+		if (action != null) {
+			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
+			action.actionPerformed(actionEvent);
+		}
+	}
 
 	private boolean isSaveNeeded() {
 		return getClientTablePanel().isSaveNeeded();
