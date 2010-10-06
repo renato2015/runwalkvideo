@@ -1,10 +1,11 @@
 package com.runwalk.video.entities;
 
 import java.io.Serializable;
-import org.jdesktop.application.AbstractBean;
+
+import com.runwalk.video.gui.PropertyChangeSupport;
 
 @SuppressWarnings("serial")
-public abstract class SerializableEntity<T> extends AbstractBean implements Comparable<T>, Serializable {
+public abstract class SerializableEntity<T> implements Comparable<T>, Serializable, PropertyChangeSupport {
 
 	private boolean dirty;
 

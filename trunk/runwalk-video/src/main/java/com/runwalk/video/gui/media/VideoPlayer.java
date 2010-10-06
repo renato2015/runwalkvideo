@@ -3,7 +3,6 @@ package com.runwalk.video.gui.media;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.TreeSet;
 
@@ -31,7 +30,11 @@ public class VideoPlayer extends VideoComponent {
 	
 	private IVideoPlayer playerImpl;
 	
-	public static VideoPlayer createInstance(PropertyChangeListener listener, Recording recording, String path, float playRate) {
+	public static VideoPlayer createInstance(String path, float playRate) {
+		return createInstance(null, path, playRate);
+	}
+
+	public static VideoPlayer createInstance(Recording recording, String path, float playRate) {
 		playerCount++;
 		// check if the play rate is supported by the video player, if not then use the lowest one
 		if (!PLAY_RATES.contains(playRate)) {
@@ -44,11 +47,11 @@ public class VideoPlayer extends VideoComponent {
 		} else {
 			result = new JMCPlayer(playRate);
 		}
-		return new VideoPlayer(listener, recording, path, result);
+		return new VideoPlayer(recording, path, result);
 	}
 	
-	private VideoPlayer(PropertyChangeListener listener, Recording recording, String path, IVideoPlayer playerImpl) {
-		super(listener, playerCount);
+	private VideoPlayer(Recording recording, String path, IVideoPlayer playerImpl) {
+		super(playerCount);
 		this.playerImpl = playerImpl;
 		setTimer(new Timer(25, null));
 		getTimer().addActionListener(new ActionListener() {

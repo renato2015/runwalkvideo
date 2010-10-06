@@ -34,10 +34,17 @@ import com.runwalk.video.gui.panels.ClientTablePanel;
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
+	private final ClientTablePanel clientTablePanel;
+	private final AnalysisTablePanel analysisTablePanel;
+	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
 
-	public RefreshTask(DaoService daoService) {
+	public RefreshTask(DaoService daoService, ClientTablePanel clientTablePanel, 
+			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		super("refresh");
 		this.daoService = daoService;
+		this.clientTablePanel = clientTablePanel;
+		this.analysisTablePanel = analysisTablePanel;
+		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
 	}
 
 	protected Boolean doInBackground() {
@@ -58,9 +65,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				public void run() {
 					RunwalkVideoApp.getApplication().getClientInfoPanel().setItemList(cityList);
 					// get client table panel and inject data
-					ClientTablePanel clientTablePanel = RunwalkVideoApp.getApplication().getClientTablePanel();
-					clientTablePanel.setItemList(clientList, Client.class);
-					final EventList<Client> selectedClients = clientTablePanel.getEventSelectionModel().getSelected();
+					getClientTablePanel().setItemList(clientList, Client.class);
+					final EventList<Client> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
 					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
 
 						public List<Analysis> getChildren(Client parent) {
@@ -69,10 +75,9 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 					});
 					// get analysis tablepanel and inject data
-					AnalysisTablePanel analysisTablePanel = RunwalkVideoApp.getApplication().getAnalysisTablePanel();
-					analysisTablePanel.setArticleList(articleList);
-					analysisTablePanel.setItemList(selectedClientAnalyses, new AnalysisConnector());
-					final EventList<Client> deselectedClients = clientTablePanel.getEventSelectionModel().getDeselected();
+					getAnalysisTablePanel().setArticleList(articleList);
+					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
+					final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
 					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, new CollectionList.Model<Client, Analysis>() {
 
 						public List<Analysis> getChildren(Client parent) {
@@ -85,8 +90,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					analysesOverview.addMemberList(selectedClientAnalyses);
 					analysesOverview.addMemberList(deselectedClientAnalyses);
 					// create the overview with unfinished analyses
-					AnalysisOverviewTablePanel analysisOverviewTablePanel = RunwalkVideoApp.getApplication().getAnalysisOverviewTablePanel();
-					analysisOverviewTablePanel.setItemList(analysesOverview, new AnalysisConnector());
+					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());
 				}
 
 			});
@@ -102,6 +106,18 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private DaoService getDaoService() {
 		return daoService;
+	}
+	
+	private ClientTablePanel getClientTablePanel() {
+		return clientTablePanel;
+	}
+
+	private AnalysisTablePanel getAnalysisTablePanel() {
+		return analysisTablePanel;
+	}
+
+	private AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
+		return analysisOverviewTablePanel;
 	}
 
 }

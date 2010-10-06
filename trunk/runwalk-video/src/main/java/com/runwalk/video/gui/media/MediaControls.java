@@ -3,6 +3,7 @@ package com.runwalk.video.gui.media;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -44,6 +45,7 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
+import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.tasks.CreateKeyframeTask;
 import com.runwalk.video.gui.tasks.CreateOverlayImageTask;
@@ -87,18 +89,21 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private final AppSettings appSettings;
 	private final AnalysisTablePanel analysisTablePanel;
+	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
 
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 
 	private RecordTask recordTask = null;
 
-	public MediaControls(AnalysisTablePanel analysisTablePanel, AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
+	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService, 
+			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		super("Media controls", false);
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
 		this.appSettings = appSettings;
 		this.analysisTablePanel = analysisTablePanel;
+		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
 
 		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
@@ -387,15 +392,17 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void startCapturer() {
 		String capturerName = getAppSettings().getCapturerName();
 		String captureEncoderName = getAppSettings().getCaptureEncoderName();
-		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(this, capturerName, captureEncoderName);
+		// if there is no actionEvent specified, then this call was made at startup time
+		Window parentWindow = SwingUtilities.windowForComponent(this);
+		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(parentWindow, capturerName, captureEncoderName);
 		if (capturer != null) {
+			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer
 			if (capturers.isEmpty()) {
 				getAppSettings().setCapturerName(capturer.getVideoImpl().getTitle());
 			}
 			capturer.addAppWindowWrapperListener(new WindowStateChangeListener(capturer));
 			capturers.add(capturer);
-			getApplication().createOrShowComponent(capturer);
 			capturersToFront();
 		}
 	}
@@ -412,8 +419,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 				@Override
 				public void succeeded(TaskEvent<Boolean> event) {
-					//TODO coupling!
-					getApplication().getAnalysisOverviewTablePanel().setCompressionEnabled(event.getValue());
+					getAnalysisOverviewTablePanel().setCompressionEnabled(event.getValue());
 				}
 
 				@Override
@@ -461,13 +467,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 						setSliderLabels(recording);
 					} else {
 						float playRate = getAppSettings().getPlayRate();
-						player = VideoPlayer.createInstance(this, recording, videoFile.getAbsolutePath(), playRate);
+						player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+						player.addPropertyChangeListener(this);
 						player.addAppWindowWrapperListener(new WindowStateChangeListener(player));
 						players.add(player);
 					} 
 					recordingCount++;
-					// show players that have new loaded files
-					getApplication().createOrShowComponent(player);
 					player.toFront();
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this),
@@ -479,15 +484,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			}
 		}
 		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
-		// hide players that don't show any opened files
+		// show black overlay for players that don't show any opened files
 		for (int i = recordingCount; i < players.size(); i++) {
 			VideoPlayer videoPlayer = players.get(i);
-			//TODO test whether this works
-			BufferedImage currentImage = videoPlayer.getImage();
-			int width = currentImage.getWidth();
-			int height = currentImage.getHeight();
-			final BufferedImage newOverlay = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR); 
-			videoPlayer.setOverlayImage(newOverlay, Color.black);
+			videoPlayer.setBlackOverlayImage();
 		}
 		setSliderPosition(0);
 	}
@@ -556,29 +556,34 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object newValue = evt.getNewValue();
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
+			VideoComponent component = (VideoComponent) evt.getSource();
 			State state = (State) newValue;
-			boolean enabled = state == VideoComponent.State.IDLE && evt.getSource() == frontMostComponent;
+			boolean enabled = state == VideoComponent.State.IDLE && component == frontMostComponent;
 			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
 			playButton.setSelected(state == State.PLAYING);
 			if (state == State.DISPOSED) {
-				// remove vide component from its list
-				if (evt.getSource() instanceof VideoCapturer) {
-					capturers.remove(evt.getSource());
-					if (evt.getSource() == frontMostCapturer) {
+				// remove video component from its list
+				if (component instanceof VideoCapturer) {
+					capturers.remove(component);
+					if (component == frontMostCapturer) {
 						frontMostCapturer = null;
-						if (frontMostComponent == evt.getSource()) {
+						if (frontMostComponent == component) {
 							enableVideoComponentControls(null, true);
+						} else {
+							// try to enable recording again, if no capturer is active, it will be disabled
+							setRecordingEnabled(true);
 						}
 					}
-				} else if (evt.getSource() instanceof VideoPlayer) {
-					players.remove(evt.getSource());
-					if (evt.getSource() == frontMostPlayer) {
+				} else if (component instanceof VideoPlayer) {
+					players.remove(component);
+					if (component == frontMostPlayer) {
 						frontMostPlayer = null;
-						if (frontMostComponent == evt.getSource()) {
+						if (frontMostComponent == component) {
 							enableVideoComponentControls(null, true);
 						}
 					}
 				}
+				component.removePropertyChangeListener(this);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
 			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
@@ -636,8 +641,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isFullScreenEnabled());	
 			} else {
 				clearStatusInfo();
-				//				setRecording(false);
-				//FIXME why this here??
 				setStopEnabled(false);
 				setPlayerControlsEnabled(false);
 			}
@@ -673,6 +676,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public AnalysisTablePanel getAnalysisTablePanel() {
 		return analysisTablePanel;
+	}
+
+	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
+		return analysisOverviewTablePanel;
 	}
 
 	private class WindowStateChangeListener extends AppWindowWrapperListener {

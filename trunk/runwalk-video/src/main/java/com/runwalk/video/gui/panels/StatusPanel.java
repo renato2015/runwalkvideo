@@ -8,6 +8,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -17,10 +18,11 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.log4j.Level;
 import org.jdesktop.application.TaskMonitor;
 
+import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public class StatusPanel extends AppPanel {
+public class StatusPanel extends JPanel implements AppComponent {
 	
 	private int busyIconIndex = 0;
 	private final Icon[] busyIcons = new Icon[15];

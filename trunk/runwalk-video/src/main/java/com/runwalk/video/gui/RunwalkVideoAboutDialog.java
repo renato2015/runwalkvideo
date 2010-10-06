@@ -7,6 +7,7 @@ package com.runwalk.video.gui;
 import java.awt.Frame;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 
 import net.miginfocom.swing.MigLayout;
@@ -14,7 +15,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 
 @SuppressWarnings("serial")
-public class RunwalkVideoAboutDialog extends AppDialog {
+public class RunwalkVideoAboutDialog extends JDialog implements AppComponent {
 
     private JButton closeButton;
 	

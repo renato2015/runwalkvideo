@@ -2,9 +2,9 @@ package com.runwalk.video.gui.media;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -27,12 +27,14 @@ import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.SingleFrameApplication;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.gui.AppDialog;
+import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.gui.AppComponent;
 
 @SuppressWarnings("serial")
-public class CameraDialog extends AppDialog {
+public class CameraDialog extends JDialog implements AppComponent {
 
 	// class properties
 	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";
@@ -43,8 +45,7 @@ public class CameraDialog extends AppDialog {
 	public static final String SHOW_CAMERA_SETTINGS_ACTION = "showCameraSettings";
 	public static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCapturerSettings";
 	private static final String DISMISS_DIALOG_ACTION = "dismissDialog";
-	private static final String EXIT_ACTION = "exit";
-
+	
 	private JComboBox capturerComboBox;
 
 	private String selectedCapturerName;
@@ -61,28 +62,31 @@ public class CameraDialog extends AppDialog {
 
 	/**
 	 * Create a dialog that allows the user to start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
-	 * to registered listeners.
+	 * to registered listeners. Note that the enableExitAction should only be enabled when there is no gui on screen yet. Otherwise one should call
+	 * {@link SingleFrameApplication#exit()} to 'gracefully' shutdown.
 	 * 
-	 * @param parent The parent {@link Frame} whose focusing behavior will be inherited
+	 * @param parent The parent {@link Window} whose focusing behavior will be inherited. If null, then the exit action will be available in the {@link Dialog}
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
 	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
+	 * @param enableExitAction If this is <code>true</code> then the user will have the ability to close the application from this dialog
 	 * @param defaultCapturer The name of the default selected capturer
 	 */
-	public CameraDialog(Frame parent, ActionMap actionMap, int capturerId, String defaultCapturerName) {
-		super(parent, true);
+	public CameraDialog(Window parent, ActionMap actionMap, int capturerId, String defaultCapturerName) {
+		super(parent);
+		setModal(true);
 		this.capturerId = capturerId;
 		this.defaultCapturerName = defaultCapturerName;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
-		final boolean isReady = getApplication().isReady();
+		final boolean enableExitAction = parent == null;
 		addWindowListener(new WindowAdapter() {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				if (isReady) {
-					dismissDialog();
-				} else {
+				if (enableExitAction) {
 					Runtime.getRuntime().exit(0);
+				} else {
+					dismissDialog();
 				}
 			}
 
@@ -101,9 +105,9 @@ public class CameraDialog extends AppDialog {
 		buttonPanel.setVisible(false);
 		add(buttonPanel, "wrap, grow, hidemode 3");
 
-		if (!isReady) {
-			javax.swing.Action cancelAction = getApplication().getApplicationActionMap().get(EXIT_ACTION);
-			JButton cancelButton = new JButton(cancelAction); // NOI18N
+		if (enableExitAction) {
+			javax.swing.Action exitAction = getContext().getActionMap().get(RunwalkVideoApp.EXIT_ACTION);
+			JButton cancelButton = new JButton(exitAction); // NOI18N
 			add(cancelButton, "grow");
 		}
 		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURER_ACTION)); // NOI18N
@@ -181,7 +185,8 @@ public class CameraDialog extends AppDialog {
 		List<String> capturerNames = VideoCapturerFactory.getInstance().getCapturerNames();
 		// return if no capturers available
 		if (capturerNames.isEmpty()) {
-			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorMessage"));
+			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorDialog.message"), 
+					getResourceMap().getString("refreshCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
 			dismissDialog();
 			return false;
 		}

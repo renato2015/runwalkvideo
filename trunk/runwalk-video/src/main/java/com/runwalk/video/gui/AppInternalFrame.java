@@ -5,30 +5,20 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 
-import org.apache.log4j.Logger;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
-import com.google.common.collect.Lists;
-import com.runwalk.video.RunwalkVideoApp;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
- * An abstract class that can be ineherited to create an in application frame.
+ * An abstract class that can be inherited to create an in application frame.
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
 public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrapper {
-
-	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 
 	/**
 	 * Create a new JInternalFrame.
@@ -47,41 +37,15 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	}
 	
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		appWindowWrapperListeners.add(listener);
 		addInternalFrameListener(listener);
 	}
 
 	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		appWindowWrapperListeners.remove(listener);
 		removeInternalFrameListener(listener);
-	}
-
-	public Action getAction(String name) {
-		return getApplicationActionMap().get(name);
-	}
-
-	public RunwalkVideoApp getApplication() {
-		return RunwalkVideoApp.getApplication();
 	}
 
 	public BaseInternalFrame getHolder() {
 		return this;
-	}
-
-	public ApplicationContext getContext() {
-		return getApplication().getContext();
-	}
-
-	public Logger getLogger() {
-		return Logger.getLogger(getClass());
-	}
-
-	public ResourceMap getResourceMap() {
-		return getContext().getResourceMap(getClass(), AppInternalFrame.class);
-	}
-	
-	public ActionMap getApplicationActionMap() {
-		return getContext().getActionMap(AppInternalFrame.class, this);
 	}
 
 	public static class InternalFrameState extends WindowState {

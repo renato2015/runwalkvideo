@@ -30,7 +30,7 @@ public class CreateOverlayImageTask extends AbstractTask<BufferedImage, Void> {
 	/*
 	 * TODO The doInBackground method could be further abstracted by creating interface 
 	 * methods that hide all these image processing operations so this task isn't coupled  
-	 * to any specific library implementation
+	 * to any specific library implementation anymore
 	 * 
 	 * (non-Javadoc)
 	 */

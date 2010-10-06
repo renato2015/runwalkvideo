@@ -2,7 +2,6 @@ package com.runwalk.video.gui.media;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
@@ -29,12 +28,12 @@ public class VideoCapturer extends VideoComponent {
 	private long timeStarted, timeRecorded;
 	
 	private IVideoCapturer videoImpl;
-
-	VideoCapturer(PropertyChangeListener listener) {
-		super(listener, ++capturerCount);
+	
+	VideoCapturer() {
+		super(++capturerCount);
 		setTimer(new Timer(1000, null));
 		getTimer().addActionListener(new ActionListener() {
-
+			
 			public void actionPerformed(ActionEvent e) {
 				long currentTime = System.currentTimeMillis();
 				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = currentTime - timeStarted);

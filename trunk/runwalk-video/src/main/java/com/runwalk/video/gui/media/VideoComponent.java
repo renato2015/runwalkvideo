@@ -7,24 +7,18 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Timer;
 import javax.swing.event.InternalFrameListener;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task.BlockingScope;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
@@ -39,7 +33,7 @@ import com.runwalk.video.util.AppUtil;
  */
 public abstract class VideoComponent extends AbstractBean implements AppWindowWrapper {
 
-	public static final String FULLSCREEN = "fullscreen";
+	public static final String FULL_SCREEN = "fullscreen";
 	public static final String IDLE = "idle";
 	public static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
 	public static final String STATE = "state";
@@ -50,17 +44,17 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	private Recording recording;
 	private AppInternalFrame internalFrame;
 	private Timer timer;
-	private boolean fullscreen = false;
+	private boolean fullScreen = false;
 	private ActionMap actionMap;
 	private State state;
 	private Integer monitorId;
 	private boolean fullScreenEnabled;
-	
+
 	/**
 	 * This variable is used to determine the default monitor on which this component will be shown.
 	 */
 	private final int componentId;
-	
+
 	/**
 	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
 	 * The resulting number will be used for showing a {@link VideoCapturer} or {@link VideoPlayer} instance, 
@@ -93,30 +87,9 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return result;
 	}
 
-	public VideoComponent(PropertyChangeListener listener, int componentId) {
+	protected VideoComponent(int componentId) {
 		this.componentId = componentId;
-		addPropertyChangeListener(listener);
 		setState(State.IDLE);
-	}
-
-	//TODO review code!
-	protected void reAttachAppWindowWrapperListeners() {
-		if (isFullscreen() && getFullscreenFrame() != null) {
-			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
-				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
-				if (!listeners.contains(appWindowWrapperListener)) {
-					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
-				}
-			}
-		}
-		if (!isFullscreen() && getInternalFrame() != null) {
-			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
-				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
-				if (!listeners.contains(appWindowWrapperListener)) {
-					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
-				}
-			}
-		}
 	}
 
 	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
@@ -210,21 +183,31 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public boolean isFullscreen() {
-		return fullscreen;
+		return fullScreen;
 	}
-	
+
 	public BufferedImage getImage() {
 		return getVideoImpl().getImage();
 	}
-	
+
+	public void setBlackOverlayImage() {
+		BufferedImage currentImage = getImage();
+		if (currentImage != null) {
+			int width = currentImage.getWidth();
+			int height = currentImage.getHeight();
+			final BufferedImage newOverlay = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR); 
+			setOverlayImage(newOverlay, Color.black);
+		}
+	}
+
 	public void setOverlayImage(BufferedImage image, Color alphaColor) {
 		getVideoImpl().setOverlayImage(image, alphaColor);
 	}
-	
+
 	protected void showComponent() {
 		showComponent(null);
 	}
-	
+
 	protected void showComponent(Integer monitorId) {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
@@ -240,20 +223,34 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		}
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// go fullscreen if the selected monitor is not the primary one (index 0)
-		boolean fullscreen = monitorId > 0;
-		if (fullscreen) {
-			getApplication().hideComponent(getInternalFrame());
+		boolean fullScreen = monitorId > 0;
+		if (fullScreen) {
 			getVideoImpl().setFullScreen(graphicsDevice, true);
+			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
+				// attach listeners
+				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
+				if (!listeners.contains(appWindowWrapperListener)) {
+					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
+				}
+			}
 		} else {
 			getVideoImpl().setFullScreen(graphicsDevice, false);
 			if (getInternalFrame() == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				getInternalFrame().add(getVideoImpl().getComponent());
 			}
+			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
+				// attach listeners
+				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
+				if (!listeners.contains(appWindowWrapperListener)) {
+					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
+				}
+			}
 		}
-		firePropertyChange(FULLSCREEN, this.fullscreen, this.fullscreen = fullscreen);
+		firePropertyChange(FULL_SCREEN, this.fullScreen, fullScreen);
+		// wait to set the full screen flag here, so listeners can access the old container by calling getHolder()
+		this.fullScreen = fullScreen;
 		getApplication().createOrShowComponent(this);
-		reAttachAppWindowWrapperListeners();
 		setComponentTitle(getTitle());
 	}
 
@@ -277,11 +274,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public State getState() {
 		return state;
 	}
-	
+
 	public void setFullScreenEnabled(boolean fullScreenEnabled) {
 		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
 	}
-	
+
 	public boolean isFullScreenEnabled() {
 		return fullScreenEnabled;
 	}
@@ -296,18 +293,13 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public void dispose() {
 		// fire event before removing listeners
 		setState(State.DISPOSED);
-		// remove window from the menu bar
-		getApplication().removeComponent(this);
 		// remove window listeners on the windows to make them eligible for garbage collection
 		for (AppWindowWrapperListener listener : getAppWindowWrapperListeners()) {
 			removeAppWindowWrapperListener(listener);
 		}
-		// remove property change listeners to make this instance eligible for garbage collection
-		for (PropertyChangeListener listener : getPropertyChangeListeners()) {
-			removePropertyChangeListener(listener);
-		}
+		// no propertyChangeListener anymore here??
 		if (getVideoImpl() != null) {			
-			// dispose on the video implemenation will dispose resources for the full screen frame
+			// dispose on the video implementation will dispose resources for the full screen frame
 			getVideoImpl().dispose();
 			if (getInternalFrame() != null) {
 				getInternalFrame().dispose();
@@ -321,7 +313,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public abstract IVideoComponent getVideoImpl();
-	
+
 	public void toFront() {
 		if (isFullscreen()) {
 			getFullscreenFrame().toFront();
@@ -332,26 +324,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 
 	public boolean isActive() {
 		return getHolder().isVisible() && getVideoImpl().isActive();
-	}
-
-	public Action getAction(String name) {
-		return getApplicationActionMap().get(name);
-	}
-
-	public RunwalkVideoApp getApplication() {
-		return RunwalkVideoApp.getApplication();
-	}
-
-	public ApplicationContext getContext() {
-		return getApplication().getContext();
-	}
-
-	protected Logger getLogger() {
-		return Logger.getLogger(getClass());
-	}
-
-	public ResourceMap getResourceMap() {
-		return getContext().getResourceMap(getClass(), VideoComponent.class);
 	}
 
 	/**
@@ -369,7 +341,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		}
 		return actionMap;
 	}
-	
+
 	private Class<?> getActionSuperClass(Class<?> theClass) {
 		List<Class<?>> interfaces = Arrays.asList(theClass.getInterfaces());
 		if (!interfaces.contains(IVideoComponent.class)) {

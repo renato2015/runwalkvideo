@@ -1,5 +1,6 @@
 package com.runwalk.video.gui.media;
 
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
@@ -7,8 +8,6 @@ import java.util.List;
 
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
-
-import com.runwalk.video.RunwalkVideoApp;
 
 public abstract class VideoCapturerFactory {
 
@@ -51,16 +50,16 @@ public abstract class VideoCapturerFactory {
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
-	 * @param listener a PropertyChangeListener to notify about selection changes
+	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link CameraDialog}
 	 * @param defaultCapturerName The name of the last chosen capturer
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
 	 */
-	public VideoCapturer createCapturer(final PropertyChangeListener listener, 
-			String defaultCapturerName, final String defaultCaptureEncoderName) {
-		final VideoCapturer capturer = new VideoCapturer(listener);
+	public VideoCapturer createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
+		final VideoCapturer capturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(null, capturer.getApplicationActionMap(), capturer.getComponentId(), defaultCapturerName);
+		CameraDialog dialog = new CameraDialog(parentComponent, capturer.getApplicationActionMap(), 
+				capturer.getComponentId(), defaultCapturerName);
 		dialog.setLocationRelativeTo(null);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 
@@ -95,7 +94,8 @@ public abstract class VideoCapturerFactory {
 		// populate dialog with capture devices and look for connected monitors
 		if (dialog.refreshCapturers()) {
 			// show the dialog on screen
-			RunwalkVideoApp.getApplication().show(dialog);
+//			RunwalkVideoApp.getApplication().show(dialog);
+			dialog.setVisible(true);
 			if (!dialog.isCancelled()) {
 				// implementation can be null here if returned by the dummy factory
 				if (capturer.getVideoImpl() != null) {
