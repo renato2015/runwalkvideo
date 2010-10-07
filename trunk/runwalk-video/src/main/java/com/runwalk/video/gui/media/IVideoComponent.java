@@ -2,6 +2,7 @@ package com.runwalk.video.gui.media;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
@@ -33,6 +34,8 @@ public interface IVideoComponent {
 	public void dispose();
 
 	public boolean isActive();
+	
+	public Dimension getDimension();
 
 	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b);
 	
