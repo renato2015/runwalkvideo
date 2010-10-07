@@ -4,6 +4,7 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -326,13 +327,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			BufferedImage inputImage = selectedPlayer.getImage();
 			result = new CreateOverlayImageTask(inputImage);
 			result.addTaskListener(new TaskListener.Adapter<BufferedImage, Void>() {
-				
+
 				@Override
 				public void succeeded(TaskEvent<BufferedImage> event) {
 					BufferedImage image = event.getValue();
 					selectedPlayer.setOverlayImage(image, Color.black);
 				}
-				
+
 			});
 		}
 		return result;
@@ -386,6 +387,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public boolean isFullScreenEnabled() {
 		return fullScreenEnabled;
+	}
+
+	public void setFullScreenEnabled(boolean fullScreenEnabled) {
+		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled );
 	}
 
 	@Action
@@ -558,8 +563,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
 			VideoComponent component = (VideoComponent) evt.getSource();
 			State state = (State) newValue;
-			boolean enabled = state == VideoComponent.State.IDLE && component == frontMostComponent;
-			firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = enabled );
+			boolean enabled = state == VideoComponent.State.IDLE && component == frontMostComponent && component.getHolder().isVisible();
+			setFullScreenEnabled(enabled);
 			playButton.setSelected(state == State.PLAYING);
 			if (state == State.DISPOSED) {
 				// remove video component from its list
@@ -567,20 +572,13 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					capturers.remove(component);
 					if (component == frontMostCapturer) {
 						frontMostCapturer = null;
-						if (frontMostComponent == component) {
-							enableVideoComponentControls(null, true);
-						} else {
-							// try to enable recording again, if no capturer is active, it will be disabled
-							setRecordingEnabled(true);
-						}
+						enableVideoComponentControls(component, false);
 					}
 				} else if (component instanceof VideoPlayer) {
 					players.remove(component);
 					if (component == frontMostPlayer) {
 						frontMostPlayer = null;
-						if (frontMostComponent == component) {
-							enableVideoComponentControls(null, true);
-						}
+						enableVideoComponentControls(component, false);
 					}
 				}
 				component.removePropertyChangeListener(this);
@@ -593,7 +591,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				updateTimeStamps(timeRecorded, 0);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.CAPTURE_ENCODER_NAME)) {
-			// save capture encoder name for the given videoCapturer?	
+			// TODO save capture encoder name for the given videoCapturer?	
 		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
 			Integer position = (Integer) newValue;
 			VideoPlayer player = (VideoPlayer) evt.getSource();
@@ -615,7 +613,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 * request will be ignored. All controls will be disabled when null is passed as the component argument.
 	 * 
 	 * @param component The videoComponent to enable
-	 * @param enable The enabled state
+	 * @param enable TODO
 	 */
 	private void enableVideoComponentControls(VideoComponent component, boolean enable) {
 		//a player or capturer is requesting the focus.. this will only be given if the frontmost component is idle
@@ -638,13 +636,20 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					setStatusInfo(frontMostPlayer.getRecording(), frontMostPlayer.getPosition(), frontMostPlayer.getDuration());
 					title.append(" > " ).append(frontMostPlayer.getRecording().getVideoFileName());
 				}
-				firePropertyChange(FULL_SCREEN_ENABLED, fullScreenEnabled, fullScreenEnabled = component.isFullScreenEnabled());	
-			} else {
-				clearStatusInfo();
-				setStopEnabled(false);
-				setPlayerControlsEnabled(false);
-			}
-			setTitle(title.toString());
+				setFullScreenEnabled(component.isFullScreenEnabled());
+				setTitle(title.toString());
+			} 
+		} else if (!enable && frontMostComponent == component) {
+			frontMostComponent = null;
+			clearStatusInfo();
+			setStopEnabled(false);
+			setPlayerControlsEnabled(false);
+			setFullScreenEnabled(false);
+			setRecordingEnabled(false);
+			setTitle(getName());
+		} else {
+			// try to enable recording again, if no capturer is active, it will be disabled
+			setRecordingEnabled(true);
 		}
 	}
 
@@ -695,22 +700,26 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			return enclosingWrapper;
 		}
 
+		@Override
 		public void appWindowGainedFocus(AWTEvent e) {
 			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 
+		@Override
 		public void appWindowActivated(AWTEvent e) {
 			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 
-		/*		public void appWindowDeactivated(AWTEvent e) {
-			enableVideoComponentControls(null, false);
+		@Override
+		public void componentShown(ComponentEvent e) {
+			enableVideoComponentControls(getEnclosingWrapper(), true);
 		}
 
-		public void appWindowClosed(AWTEvent e) {
-			enableVideoComponentControls(null, false);
+		@Override
+		public void componentHidden(ComponentEvent e) {
+			enableVideoComponentControls(getEnclosingWrapper(), false);
 		}
-		 */
+
 	}
 
 }

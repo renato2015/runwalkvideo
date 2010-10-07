@@ -54,8 +54,10 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 		case 5: {
 			String result = "<geen>";
 			RecordingStatus recordingStatus = recording.getRecordingStatus();
-			String resourceKey = recordingStatus.getResourceKey();
-			result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
+			if (recordingStatus != null) {
+				String resourceKey = recordingStatus.getResourceKey();
+				result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
+			}
 			return result;
 		}
 		case 6: {

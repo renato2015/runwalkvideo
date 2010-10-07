@@ -47,7 +47,7 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 						FileUtils.moveFileToDirectory(compressedVideoFile, newFolder, true);
 						filesMoved++;
 					} catch (IOException e) {
-						Logger.getLogger(VideoFileManager.class).error(e);
+						getLogger().error(e);
 					}
 				}
 			}

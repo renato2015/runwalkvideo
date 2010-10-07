@@ -16,7 +16,7 @@ import com.runwalk.video.gui.AppComponent;
  */
 public aspect AppComponentAspect {
 	
-	declare parents: com.runwalk.video.gui.*AppComponent+ implements AppComponent;
+	declare parents: com.runwalk.video.*AppComponent+ implements AppComponent;
 	
 	public javax.swing.Action AppComponent.getAction(String name) {
 		return getApplicationActionMap().get(name);

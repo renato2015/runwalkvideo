@@ -67,11 +67,11 @@ public class CreateOverlayImageTask extends AbstractTask<BufferedImage, Void> {
 			if (biggestBlob == null || blob.h > biggestBlob.h) {
 				biggestBlob = blob;
 			}
-			int x = (int) (blob.xMin * width);
-			int y = (int) (blob.yMin * height);
-			int blobWidth = (int) (blob.w * width);
-			int blobHeigth = (int) (blob.h * height);
-			// TODO enable this to display all blobs
+//			int x = (int) (blob.xMin * width);
+//			int y = (int) (blob.yMin * height);
+//			int blobWidth = (int) (blob.w * width);
+//			int blobHeigth = (int) (blob.h * height);
+//			// TODO enable this to display all blobs
 //			newOverlay.getGraphics().drawRect(x, y, blobWidth, blobHeigth);
 		}
 
