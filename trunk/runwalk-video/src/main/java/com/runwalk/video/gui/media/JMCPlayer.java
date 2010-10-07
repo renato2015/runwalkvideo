@@ -187,4 +187,10 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return bufferedImage;
 	}
 
+	@Override
+	public Dimension getDimension() {
+		
+		return new Dimension(getImage().getWidth(), getImage().getHeight());
+	}
+
 }

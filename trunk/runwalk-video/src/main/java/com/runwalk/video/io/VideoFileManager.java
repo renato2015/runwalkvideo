@@ -33,6 +33,8 @@ import de.humatic.dsj.DSJUtils;
  */
 public class VideoFileManager extends AbstractBean {
 
+	private static final Logger LOGGER = Logger.getLogger(VideoFileManager.class);
+
 	private Map<Recording, File> recordingFileMap = Maps.newHashMap();
 
 	private final AppSettings appSettings;
@@ -61,7 +63,7 @@ public class VideoFileManager extends AbstractBean {
 				recording.setRecordingStatus(RecordingStatus.READY);
 				videoFile = uncompressedVideoFile;
 			} else {
-				Logger.getLogger(VideoFileManager.class).warn("No videofile found for recording with filename " + recording.getVideoFileName());
+				LOGGER.warn("No videofile found for recording with filename " + recording.getVideoFileName());
 				recording.setRecordingStatus(RecordingStatus.NON_EXISTANT_FILE);
 			} 
 			recordingFileMap.put(recording, videoFile);
@@ -96,7 +98,7 @@ public class VideoFileManager extends AbstractBean {
 		if (recording.getDuration() == 0) {
 			long duration = getDuration(videoFile);
 			recording.setDuration(duration);
-			Logger.getLogger(VideoFileManager.class).warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
+			LOGGER.warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
 		}
 	}
 
@@ -183,7 +185,7 @@ public class VideoFileManager extends AbstractBean {
 			}
 		} catch(DSJException e) {
 			String hresultToHexString = DSJException.hresultToHexString(e.getErrorCode());
-			Logger.getLogger(VideoFileManager.class).error("Failed to read meta info from for file " + 
+			LOGGER.error("Failed to read meta info from for file " + 
 					videoFile.getAbsolutePath() + " (hex code: 0x" + hresultToHexString + ")", e);
 		}
 		return duration;
@@ -202,7 +204,7 @@ public class VideoFileManager extends AbstractBean {
 	private void deleteVideoFile(Recording recording) {
 		File videoFile = getVideoFile(recording);
 		if (videoFile != null && !videoFile.delete()) {
-			Logger.getLogger(VideoFileManager.class).warn(videoFile.getAbsolutePath() + " could not be deleted.");
+			LOGGER.warn(videoFile.getAbsolutePath() + " could not be deleted.");
 		}
 	}
 	

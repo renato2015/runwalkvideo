@@ -18,10 +18,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultEditorKit;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -225,30 +222,6 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		if (checkBox != null) {
 			checkBox.setSelected(appComponent.getHolder().isVisible());
 		}
-	}
-
-	public javax.swing.Action getAction(String name) {
-		return getApplicationActionMap().get(name);
-	}
-
-	public RunwalkVideoApp getApplication() {
-		return RunwalkVideoApp.getApplication();
-	}
-
-	public ApplicationContext getContext() {
-		return getApplication().getContext();
-	}
-
-	public Logger getLogger() {
-		return Logger.getLogger(getClass());
-	}
-
-	public ResourceMap getResourceMap() {
-		return getContext().getResourceMap(getClass(), VideoMenuBar.class);
-	}
-
-	public ActionMap getApplicationActionMap() {
-		return getContext().getActionMap(VideoMenuBar.class, this);
 	}
 
 	public String getTitle() {

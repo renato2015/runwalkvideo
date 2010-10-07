@@ -230,7 +230,7 @@ public class CameraDialog extends JDialog implements AppComponent {
 		// let user choose on which screen to show the capturer, only if more than one is connected
 		if (graphicsDevices.length > 2) {
 			buttonPanel.removeAll();
-			JLabel screenLabel = new JLabel("Kies een scherm ");
+			JLabel screenLabel = new JLabel(getResourceMap().getString("screenLabel.text"));
 			buttonPanel.add(screenLabel, "wrap, grow, span");
 			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();

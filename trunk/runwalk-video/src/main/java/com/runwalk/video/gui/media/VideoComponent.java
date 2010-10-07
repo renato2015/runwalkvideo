@@ -2,6 +2,7 @@ package com.runwalk.video.gui.media;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -49,6 +50,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	private State state;
 	private Integer monitorId;
 	private boolean fullScreenEnabled;
+	private boolean hasOverlay;
 
 	/**
 	 * This variable is used to determine the default monitor on which this component will be shown.
@@ -96,9 +98,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		appWindowWrapperListeners.add(listener);
 		if (getFullscreenFrame() != null) {
 			getFullscreenFrame().addWindowListener(listener);
+			getFullscreenFrame().addComponentListener(listener);
 		}
 		if (getInternalFrame() != null) {
 			getInternalFrame().addInternalFrameListener(listener);
+			getInternalFrame().addComponentListener(listener);
 		}
 	}
 
@@ -106,9 +110,11 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		appWindowWrapperListeners.remove(listener);
 		if (getFullscreenFrame() != null) {
 			getFullscreenFrame().removeWindowListener(listener);
+			getFullscreenFrame().removeComponentListener(listener);
 		}
 		if (getInternalFrame() != null) {
 			getInternalFrame().removeInternalFrameListener(listener);
+			getInternalFrame().removeComponentListener(listener);
 		}
 	}
 
@@ -191,17 +197,24 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	}
 
 	public void setBlackOverlayImage() {
-		BufferedImage currentImage = getImage();
-		if (currentImage != null) {
-			int width = currentImage.getWidth();
-			int height = currentImage.getHeight();
-			final BufferedImage newOverlay = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR); 
-			setOverlayImage(newOverlay, Color.black);
+		Dimension dimension = getVideoImpl().getDimension();
+		if (dimension != null) {
+			final BufferedImage newOverlay = new BufferedImage(dimension.width, dimension.height, BufferedImage.TYPE_4BYTE_ABGR); 
+			setOverlayImage(newOverlay, Color.white);
 		}
 	}
 
 	public void setOverlayImage(BufferedImage image, Color alphaColor) {
 		getVideoImpl().setOverlayImage(image, alphaColor);
+		setHasOverlay(true);
+	}
+
+	private void setHasOverlay(boolean hasOverlay) {
+		this.hasOverlay = hasOverlay;
+	}
+	
+	public boolean getHasOverlay() {
+		return hasOverlay;
 	}
 
 	protected void showComponent() {
@@ -231,6 +244,7 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
 				if (!listeners.contains(appWindowWrapperListener)) {
 					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
+					getFullscreenFrame().addComponentListener(appWindowWrapperListener);
 				}
 			}
 		} else {
@@ -244,11 +258,12 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
 				if (!listeners.contains(appWindowWrapperListener)) {
 					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
+					getInternalFrame().addComponentListener(appWindowWrapperListener);
 				}
 			}
 		}
 		firePropertyChange(FULL_SCREEN, this.fullScreen, fullScreen);
-		// wait to set the full screen flag here, so listeners can access the old container by calling getHolder()
+		// wait to set the full screen field until here, so listeners can access the old container by calling getHolder()
 		this.fullScreen = fullScreen;
 		getApplication().createOrShowComponent(this);
 		setComponentTitle(getTitle());
@@ -287,17 +302,14 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getState() == State.IDLE;
 	}
 
-	/**
-	 * Make this instance eligible for garbage collection.
-	 */
 	public void dispose() {
 		// fire event before removing listeners
 		setState(State.DISPOSED);
-		// remove window listeners on the windows to make them eligible for garbage collection
+		// remove window listeners on the windows
 		for (AppWindowWrapperListener listener : getAppWindowWrapperListeners()) {
 			removeAppWindowWrapperListener(listener);
 		}
-		// no propertyChangeListener anymore here??
+		// no propertyChangeListener left here??
 		if (getVideoImpl() != null) {			
 			// dispose on the video implementation will dispose resources for the full screen frame
 			getVideoImpl().dispose();

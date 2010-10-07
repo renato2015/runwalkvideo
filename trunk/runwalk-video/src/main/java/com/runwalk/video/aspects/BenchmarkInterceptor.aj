@@ -6,13 +6,11 @@ import org.apache.log4j.Logger;
 
 public aspect BenchmarkInterceptor {
 
-    pointcut taskEnded() : execution(* com.runwalk.video.gui.tasks.AbstractTask.doInBackground(..));
-    
-    after() returning : taskEnded() {
+    after() returning : execution(* com.runwalk.video.gui.tasks.AbstractTask.doInBackground()) {
     	Task<?, ?> task = (Task<?, ?>) thisJoinPoint.getTarget();
     	long ms = task.getExecutionDuration(TimeUnit.MILLISECONDS);
     	long s = task.getExecutionDuration(TimeUnit.SECONDS);
-    	String duration = ms > 10000 ? ms + "ms" : s + "s";
+    	String duration = ms > 10000 ? s + "s" : ms + "ms";
     	Logger.getLogger(BenchmarkInterceptor.class).debug(task.getClass().getSimpleName() + " finished in " + duration);
      }
 	

@@ -83,7 +83,7 @@ public class VideoPlayer extends VideoComponent {
 	public void play() {
 		setState(State.PLAYING);
 		// clear all previously drawn overlays
-		getVideoImpl().setOverlayImage(null, Color.white);
+		clearOverlayImage();
 		getVideoImpl().play();
 		getTimer().restart();
 	}
@@ -91,11 +91,17 @@ public class VideoPlayer extends VideoComponent {
 	public void stop() {
 		setState(State.IDLE);
 		// clear all previously drawn overlays
-		getVideoImpl().setOverlayImage(null, Color.white);
+		clearOverlayImage();
 		getTimer().stop();
 		// set position to 0 here and for player this instance and its 'native' implementation
 		setPosition(0);
 		getVideoImpl().stop();
+	}
+	
+	private void clearOverlayImage() {
+		if (getHasOverlay()) {
+			getVideoImpl().setOverlayImage(null, Color.white);
+		}
 	}
 
 	/**
