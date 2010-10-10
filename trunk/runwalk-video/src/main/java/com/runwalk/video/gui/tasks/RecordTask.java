@@ -13,12 +13,12 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
 	private final VideoFileManager videoFileManager;
-	private final List<VideoCapturer> capturers;
+	private final Iterable<VideoCapturer> capturers;
 	private final Analysis analysis;
 	private volatile boolean recording;
 
 	public RecordTask(VideoFileManager videoFileManager, DaoService daoService, 
-			List<VideoCapturer> capturers, Analysis analysis) {
+			Iterable<VideoCapturer> capturers, Analysis analysis) {
 		super("record");
 		this.daoService = daoService;
 		this.videoFileManager = videoFileManager;
@@ -72,7 +72,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 		return videoFileManager;
 	}
 
-	public List<VideoCapturer> getCapturers() {
+	public Iterable<VideoCapturer> getCapturers() {
 		return capturers;
 	}
 
