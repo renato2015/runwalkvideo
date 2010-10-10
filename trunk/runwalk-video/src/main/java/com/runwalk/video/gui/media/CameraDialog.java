@@ -92,7 +92,7 @@ public class CameraDialog extends JDialog implements AppComponent {
 
 		});
 		setLayout(new MigLayout("fill, nogrid"));
-		setTitle(getResourceMap().getString("captureDeviceDlg.title")); // NOI18N
+		setTitle(getResourceMap().getString("captureDeviceDialog.title")); // NOI18N
 		setResizable(false);
 
 		JLabel captureDeviceLabel = new JLabel(getResourceMap().getString("captureDeviceLabel.text")); // NOI18N

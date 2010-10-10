@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jdesktop.application.Task;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
@@ -14,7 +15,7 @@ import com.runwalk.video.util.AppUtil;
 public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 
 	private final VideoPlayer frontMostPlayer;
-	private final List<VideoPlayer> videoPlayers;
+	private final Iterable<VideoPlayer> videoPlayers;
 	private final DaoService daoService;
 
 	/**
@@ -23,7 +24,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 	 * 
 	 * @author Jeroen Peelaerts
 	 */
-	public CreateKeyframeTask(DaoService daoService, VideoPlayer frontMostPlayer, List<VideoPlayer> videoPlayers) {
+	public CreateKeyframeTask(DaoService daoService, VideoPlayer frontMostPlayer, Iterable<VideoPlayer> videoPlayers) {
 		super("createKeyframe");
 		this.daoService = daoService;
 		this.videoPlayers = videoPlayers;
@@ -31,7 +32,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 	}
 	
 	protected Keyframe doInBackground() throws Exception {
-		message("startMessage", getVideoPlayers().size());
+		message("startMessage", Iterables.size(getVideoPlayers()));
 		Keyframe result = null;
 		for (VideoPlayer videoPlayer : getVideoPlayers()) {
 			videoPlayer.pauseIfPlaying();
@@ -59,7 +60,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 		return frontMostPlayer;
 	}
 
-	public List<VideoPlayer> getVideoPlayers() {
+	public Iterable<VideoPlayer> getVideoPlayers() {
 		return videoPlayers;
 	}
 	
