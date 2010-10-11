@@ -39,7 +39,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 * On the other hand, overlays can only be drawn using DD7's {@link RendererControls}.
 	 * All filtergraphs are initialized in the paused state.
 	 */
-	protected static final int FLAGS = DSFiltergraph.DD7 | DSFiltergraph.INIT_PAUSED;
+	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
 
 	static {
 		// initialize and unlock dsj dll at class loading time
