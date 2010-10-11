@@ -635,7 +635,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			Iterable<? extends VideoComponent> components = getComponents(component.getClass());
 			if (Iterables.size(components) > 1) {
 				try {
-					VideoComponent newComponent = Iterables.find(getPlayers(), new Predicate<VideoComponent>() {
+					VideoComponent newComponent = Iterables.find(components, new Predicate<VideoComponent>() {
 
 						public boolean apply(VideoComponent input) {
 							return input != component && input.getHolder().isVisible();
@@ -684,13 +684,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return getFrontMostComponent(VideoPlayer.class);
 	}
 	
-	private <T> T getFrontMostComponent(Class<T> concreteClass) {
+	private <T extends VideoComponent> T getFrontMostComponent(Class<T> concreteClass) {
 		T result = null;
 		try {
 			result = concreteClass.cast(frontMostComponent);
 		} catch(ClassCastException e) {
 			getLogger().error(e);
-			result = null;
 		}
 		return result;
 	}
@@ -703,7 +702,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return getComponents(VideoPlayer.class);
 	}
 	
-	private <T> Iterable<T> getComponents(Class<T> filterClass) {
+	private <T extends VideoComponent> Iterable<T> getComponents(Class<T> filterClass) {
 		return Iterables.filter(videoComponents, filterClass);
 	}
 
