@@ -295,9 +295,9 @@
 	</build>
 	<dependencies>
 		<dependency>
-            <groupId>aspectj</groupId>
+            <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.5.4</version>
+            <version>1.6.9</version>
             <scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -374,7 +374,7 @@
 		<dependency>
 			<groupId>org.jdesktop.bsaf</groupId>
 			<artifactId>bsaf</artifactId>
-			<version>1.9RC5</version>
+			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tomtessier</groupId>
