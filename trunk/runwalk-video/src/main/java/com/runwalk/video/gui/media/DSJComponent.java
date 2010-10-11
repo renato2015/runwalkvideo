@@ -66,6 +66,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public void setFiltergraph(T filtergraph) {
 		this.filtergraph = filtergraph;
+		filtergraph.dumpGraph(true);
 	}
 
 	public boolean getRejectPauseFilter() {

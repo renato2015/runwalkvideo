@@ -341,9 +341,14 @@
 		</dependency>
 		<!-- Video libraries -->
 		<dependency>
-			<groupId>de.humatic</groupId>
+			<groupId>de.humatic.dsj</groupId>
 			<artifactId>dsj</artifactId>
 			<version>${dsj.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>imagej</groupId>
+			<artifactId>ij</artifactId>
+			<version>1.43</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.javafx.jmc</groupId>

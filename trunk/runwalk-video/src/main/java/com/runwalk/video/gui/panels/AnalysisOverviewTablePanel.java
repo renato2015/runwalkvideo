@@ -184,9 +184,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	 * @param analysisList The list with analyses
 	 */
 	private void setAnalysisList(EventList<Analysis> analysisList) {
-		this.analysisList = analysisList;
-//		this.analysisList = GlazedLists.eventList(analysisList);
-//		GlazedLists.syncEventListToList(analysisList, this.analysisList);
+//		this.analysisList = analysisList;
+		this.analysisList = GlazedLists.eventList(analysisList);
+		GlazedLists.syncEventListToList(analysisList, this.analysisList);
 	}
 
 	@Override
