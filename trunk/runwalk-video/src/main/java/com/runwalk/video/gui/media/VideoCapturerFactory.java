@@ -32,7 +32,7 @@ public abstract class VideoCapturerFactory {
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
-	 * @return The factory
+	 * @return The factory instance
 	 */
 	public static synchronized VideoCapturerFactory getInstance() {
 		if (factory == null) {
