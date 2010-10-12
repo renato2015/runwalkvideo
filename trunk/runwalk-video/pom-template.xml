@@ -40,28 +40,48 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<!-- Tell javac not to compile sources for ajc will do it -->
+					<excludes>
+						<exclude>**/*.*</exclude>
+					</excludes>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.plexus</groupId>
+						<artifactId>plexus-compiler-aspectj</artifactId>
+						<version>1.6</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.3</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal> <!-- use this goal to weave all your main classes -->
+							<goal>test-compile</goal> <!-- use this goal to weave all your test classes -->
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjtools</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
-			<plugin>
-	            <groupId>org.codehaus.mojo</groupId>
-	            <artifactId>aspectj-maven-plugin</artifactId>
-	            <version>1.3</version>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>compile</goal>
-	                    </goals>
-	                    <configuration>
-	                        <source>1.6</source>
-	                        <target>1.6</target>
-	                        <encoding>UTF-8</encoding>
-	                    </configuration>
-	                </execution>
-	            </executions>
-	        </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -298,7 +318,7 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <version>1.6.9</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

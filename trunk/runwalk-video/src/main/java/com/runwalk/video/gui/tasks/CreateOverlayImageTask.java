@@ -125,7 +125,7 @@ public class CreateOverlayImageTask extends AbstractTask<BufferedImage, Void> {
 		graphics.drawArc(secondPoint.x - 35, secondPoint.y - 35, 70, 70, 0,(int) angle);
 		// set a nice, big font on the graphics object
 		graphics.setFont(AppSettings.MAIN_FONT.deriveFont(25f).deriveFont(Font.BOLD));
-		graphics.drawString(AppUtil.round((float) angle, 2) + "°", secondPoint.x + 70, secondPoint.y - 5);
+		graphics.drawString(AppUtil.round((float) angle, 2) + "Â°", secondPoint.x + 70, secondPoint.y - 5);
 		message("endMessage", getExecutionDuration(TimeUnit.MILLISECONDS));
 		return newOverlay;
 	}
