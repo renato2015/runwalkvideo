@@ -49,13 +49,6 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.codehaus.plexus</groupId>
-						<artifactId>plexus-compiler-aspectj</artifactId>
-						<version>1.6</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -315,10 +308,9 @@
 	</build>
 	<dependencies>
 		<dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>1.6.9</version>
-            <scope>compile</scope>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -534,6 +526,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dsj.version>0.8.62</dsj.version>
+		<aspectj.version>1.6.9</aspectj.version>
 		<!-- Keystore generation properties -->
 		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>
 		<keystore.dnameO>Runwalk Herentals</keystore.dnameO>
