@@ -142,7 +142,7 @@ public class Recording extends SerializableEntity<Recording> {
 	 */
 	public void setRecordingStatus(RecordingStatus recordingStatus) {
 //		boolean wasRecorded = isRecorded();
-		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE) {
+		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE && this.recordingStatus != null) {
 			firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
 			if (!recordingStatus.isErroneous()) {
 				// don't change the statuscode if it is erroneous.
