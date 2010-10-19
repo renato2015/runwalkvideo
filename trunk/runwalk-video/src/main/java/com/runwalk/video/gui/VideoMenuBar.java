@@ -1,8 +1,10 @@
 package com.runwalk.video.gui;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -124,22 +126,12 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 			appComponent.addAppWindowWrapperListener(new AppWindowWrapperListener() {
 
 				@Override
-				public void windowClosed(WindowEvent e) {
+				public void componentShown(ComponentEvent e) {
 					setCheckboxSelection(appComponent);
 				}
 
 				@Override
-				public void windowOpened(WindowEvent e) {
-					setCheckboxSelection(appComponent);
-				}
-
-				@Override
-				public void internalFrameDeactivated(InternalFrameEvent e) {
-					setCheckboxSelection(appComponent);
-				}
-
-				@Override
-				public void internalFrameActivated(InternalFrameEvent e) {
+				public void componentHidden(ComponentEvent e) {
 					setCheckboxSelection(appComponent);
 				}
 
