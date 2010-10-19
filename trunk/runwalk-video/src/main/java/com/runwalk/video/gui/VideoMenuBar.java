@@ -1,11 +1,8 @@
 package com.runwalk.video.gui;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -17,7 +14,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultEditorKit;
 
 import org.jdesktop.application.Action;
@@ -25,7 +21,6 @@ import org.jdesktop.application.Action;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.AppWindowWrapper.AppWindowWrapperListener;
 import com.runwalk.video.gui.media.VideoComponent;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.util.ResourceInjector;
@@ -123,19 +118,6 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 
 	public void addWindow(final AppWindowWrapper appComponent) {
 		if (!windowBoxMap.containsKey(appComponent)) {
-			appComponent.addAppWindowWrapperListener(new AppWindowWrapperListener() {
-
-				@Override
-				public void componentShown(ComponentEvent e) {
-					setCheckboxSelection(appComponent);
-				}
-
-				@Override
-				public void componentHidden(ComponentEvent e) {
-					setCheckboxSelection(appComponent);
-				}
-
-			});
 			appComponent.addPropertyChangeListener(this);
 			JMenu menu = createMenu(appComponent);
 			//TODO add internal frame instance at the end of the menu and after a separator..
