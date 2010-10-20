@@ -1,17 +1,24 @@
 package com.runwalk.video.util;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.NoSuchElementException;
 
 import javax.swing.ActionMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.runwalk.video.gui.AppWindowWrapper;
 
 public class AppUtil {
 	//duration formats
@@ -93,5 +100,32 @@ public class AppUtil {
 		}
 		return result;
 	}
+	
+	/**
+	 * Find an {@link AppWindowWrapper} in a given {@link Collection} for 
+	 * which {@link AppWindowWrapper#getHolder()} equals {@link Component}.
+	 * 
+	 * @param <T> The concrete type of the {@link AppWindowWrapper}
+	 * @param windowWrappers The {@link Collection} to look in 
+	 * @param component The current visible {@link Component}
+	 * @return The found {@link AppWindowWrapper}
+	 * 
+	 * @see AppWindowWrapper#getHolder()
+	 */
+	public static <T extends AppWindowWrapper> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
+		try {
+			return Iterables.find(windowWrappers, new Predicate<T>() {
+
+				public boolean apply(T input) {
+					return input.getHolder().equals(component);
+				}
+
+			});
+		} catch(NoSuchElementException exc) {
+			// nothing found
+			return null;
+		}
+	}
+
 
 }

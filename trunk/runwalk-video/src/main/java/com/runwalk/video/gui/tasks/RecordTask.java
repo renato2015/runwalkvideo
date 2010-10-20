@@ -1,7 +1,6 @@
 package com.runwalk.video.gui.tasks;
 
 import java.io.File;
-import java.util.List;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;

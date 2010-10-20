@@ -1,28 +1,30 @@
 package com.runwalk.video.gui.media;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.event.WindowListener;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.ActionMap;
 import javax.swing.Timer;
-import javax.swing.event.InternalFrameListener;
 
 import org.apache.log4j.Level;
-import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Task.BlockingScope;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
+import com.runwalk.video.gui.PropertyChangeSupport;
 import com.runwalk.video.util.AppUtil;
 
 /**
@@ -32,7 +34,7 @@ import com.runwalk.video.util.AppUtil;
  * @author Jeroen Peelaerts
  *
  */
-public abstract class VideoComponent extends AbstractBean implements AppWindowWrapper {
+public abstract class VideoComponent implements PropertyChangeSupport, AppWindowWrapper {
 
 	public static final String FULL_SCREEN = "fullscreen";
 	public static final String IDLE = "idle";
@@ -41,7 +43,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	public static final String MONITOR_ID = "monitorId";
 	public static final String DISPOSED = "disposed";
 
-	private List<AppWindowWrapperListener> appWindowWrapperListeners = Lists.newArrayList();
 	private Recording recording;
 	private AppInternalFrame internalFrame;
 	private Timer timer;
@@ -56,6 +57,8 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	 * This variable is used to determine the default monitor on which this component will be shown.
 	 */
 	private final int componentId;
+	
+	private Set<ComponentListener> componentListeners = Sets.newHashSet();
 
 	/**
 	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
@@ -92,34 +95,6 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 	protected VideoComponent(int componentId) {
 		this.componentId = componentId;
 		setState(State.IDLE);
-	}
-
-	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		appWindowWrapperListeners.add(listener);
-		if (getFullscreenFrame() != null) {
-			getFullscreenFrame().addWindowListener(listener);
-			getFullscreenFrame().addComponentListener(listener);
-		}
-		if (getInternalFrame() != null) {
-			getInternalFrame().addInternalFrameListener(listener);
-			getInternalFrame().addComponentListener(listener);
-		}
-	}
-
-	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		appWindowWrapperListeners.remove(listener);
-		if (getFullscreenFrame() != null) {
-			getFullscreenFrame().removeWindowListener(listener);
-			getFullscreenFrame().removeComponentListener(listener);
-		}
-		if (getInternalFrame() != null) {
-			getInternalFrame().removeInternalFrameListener(listener);
-			getInternalFrame().removeComponentListener(listener);
-		}
-	}
-
-	public List<AppWindowWrapperListener> getAppWindowWrapperListeners() {
-		return Lists.newArrayList(appWindowWrapperListeners);
 	}
 
 	public Recording getRecording() {
@@ -239,34 +214,20 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		boolean fullScreen = monitorId > 0;
 		if (fullScreen) {
 			getVideoImpl().setFullScreen(graphicsDevice, true);
-			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
-				// attach listeners
-				List<WindowListener> listeners = Arrays.asList(getFullscreenFrame().getWindowListeners());
-				if (!listeners.contains(appWindowWrapperListener)) {
-					getFullscreenFrame().addWindowListener(appWindowWrapperListener);
-					getFullscreenFrame().addComponentListener(appWindowWrapperListener);
-				}
-			}
+			reAddComponentListeners(getFullscreenFrame());
 		} else {
 			getVideoImpl().setFullScreen(graphicsDevice, false);
 			if (getInternalFrame() == null) {
 				internalFrame = new AppInternalFrame(getTitle(), false);
 				getInternalFrame().add(getVideoImpl().getComponent());
-			}
-			for(AppWindowWrapperListener appWindowWrapperListener : getAppWindowWrapperListeners()) {
-				// attach listeners
-				List<InternalFrameListener> listeners = Arrays.asList(getInternalFrame().getInternalFrameListeners());
-				if (!listeners.contains(appWindowWrapperListener)) {
-					getInternalFrame().addInternalFrameListener(appWindowWrapperListener);
-					getInternalFrame().addComponentListener(appWindowWrapperListener);
-				}
+				reAddComponentListeners(getInternalFrame());
 			}
 		}
 		firePropertyChange(FULL_SCREEN, this.fullScreen, fullScreen);
 		// wait to set the full screen field until here, so listeners can access the old container by calling getHolder()
 		this.fullScreen = fullScreen;
-		getApplication().createOrShowComponent(this);
 		setComponentTitle(getTitle());
+		getApplication().createOrShowComponent(this);
 	}
 
 	@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
@@ -302,13 +263,53 @@ public abstract class VideoComponent extends AbstractBean implements AppWindowWr
 		return getState() == State.IDLE;
 	}
 
+	public ComponentListener[] getComponentListeners() {
+		return Iterables.toArray(componentListeners, ComponentListener.class);
+	}
+	
+	/**
+	 * This method will check whether the {@link ComponentListener}s are already installed on the given {@link Component}.
+	 * If not, then the {@link ComponentListener} will be added to the {@link Component} if it is not null.
+	 * 
+	 * @param component The {@link Component} to add listeners to
+	 */
+	private void reAddComponentListeners(Component component) {
+		List<ComponentListener> installedListeners = Arrays.asList(component.getComponentListeners());
+		for (ComponentListener l : getComponentListeners()) {
+			if (!installedListeners.contains(l)) {
+				maybeAddComponentListener(component, l);
+			}
+		}
+	}
+
+	public void addComponentListener(ComponentListener l) {
+		componentListeners.add(l);
+		maybeAddComponentListener(getInternalFrame(), l);
+		maybeAddComponentListener(getFullscreenFrame(), l);
+	}
+	
+	private void maybeAddComponentListener(Component comp, ComponentListener l) {
+		if (comp != null) {
+			comp.addComponentListener(l);
+		}
+	}
+
+	public void removeComponentListener(ComponentListener l) {
+		componentListeners.remove(l);
+		maybeRemoveComponentListener(getInternalFrame(), l);
+		maybeRemoveComponentListener(getFullscreenFrame(), l);
+	}
+	
+	private void maybeRemoveComponentListener(Component comp, ComponentListener l) {
+		if (comp != null) {
+			comp.addComponentListener(l);
+		}
+	}
+
 	public void dispose() {
 		// fire event before removing listeners
 		setState(State.DISPOSED);
-		// remove window listeners on the windows
-		for (AppWindowWrapperListener listener : getAppWindowWrapperListeners()) {
-			removeAppWindowWrapperListener(listener);
-		}
+		// no componentlisteners left here??
 		// no propertyChangeListener left here??
 		if (getVideoImpl() != null) {			
 			// dispose on the video implementation will dispose resources for the full screen frame

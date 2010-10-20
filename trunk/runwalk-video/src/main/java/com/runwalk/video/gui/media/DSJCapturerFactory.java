@@ -11,6 +11,8 @@ import de.humatic.dsj.DSFiltergraph;
 
 public class DSJCapturerFactory extends VideoCapturerFactory {
 
+	DSJCapturerFactory() { }
+	
 	/**
 	 * Find a {@link DSFiltergraph} that contains a filter with the specified name.
 	 * 

@@ -3,6 +3,8 @@ package com.runwalk.video.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -23,11 +25,12 @@ import com.google.common.collect.HashBiMap;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.media.VideoComponent;
 import com.runwalk.video.gui.media.VideoComponent.State;
+import com.runwalk.video.util.AppUtil;
 import com.runwalk.video.util.ResourceInjector;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 @SuppressWarnings("serial")
-public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChangeListener {
+public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChangeListener, ComponentListener {
 
 	private BiMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = HashBiMap.create();
 	private JMenu windowMenu;
@@ -117,7 +120,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 	}
 
 	public void addWindow(final AppWindowWrapper appComponent) {
-		if (!windowBoxMap.containsKey(appComponent)) {
+ 		if (!windowBoxMap.containsKey(appComponent)) {
+			appComponent.addComponentListener(this);
 			appComponent.addPropertyChangeListener(this);
 			JMenu menu = createMenu(appComponent);
 			//TODO add internal frame instance at the end of the menu and after a separator..
@@ -191,10 +195,11 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		}
 	}
 
-	private void setCheckboxSelection(AppWindowWrapper appComponent) {
+	private void setCheckboxSelection(Component component) {
+		AppWindowWrapper appComponent = AppUtil.getWindowWrapper(windowBoxMap.keySet(), component);
 		JCheckBoxMenuItem checkBox = windowBoxMap.get(appComponent);
 		if (checkBox != null) {
-			checkBox.setSelected(appComponent.getHolder().isVisible());
+			checkBox.setSelected(component.isVisible());
 		}
 	}
 
@@ -209,6 +214,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
 				AppWindowWrapper appComponent = (AppWindowWrapper) evt.getSource();
 				removeWindow(appComponent);
+				appComponent.removeComponentListener(this);
 				appComponent.removePropertyChangeListener(this);
 			}
 		} else if (VideoComponent.FULL_SCREEN.equals(evt.getPropertyName())) {
@@ -220,4 +226,17 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		}
 	}
 
+
+	public void componentShown(ComponentEvent e) {
+		setCheckboxSelection(e.getComponent());
+	}
+
+	public void componentHidden(ComponentEvent e) {
+		setCheckboxSelection(e.getComponent());
+	}
+	
+	public void componentResized(ComponentEvent e) { }
+	
+	public void componentMoved(ComponentEvent e) { }
+	
 }

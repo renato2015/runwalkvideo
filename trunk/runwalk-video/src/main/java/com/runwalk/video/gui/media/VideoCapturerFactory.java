@@ -13,6 +13,8 @@ public abstract class VideoCapturerFactory {
 
 	private static VideoCapturerFactory factory;
 
+	protected VideoCapturerFactory() { }
+	
 	/**
 	 * Initialize the capturer with the given name. Visible components should not be initialized until
 	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be very expensive.
@@ -74,7 +76,7 @@ public abstract class VideoCapturerFactory {
 								capturer.getVideoImpl().dispose();
 							}
 							
-						}).start();
+						}, capturer.getVideoImpl().getTitle() + " Disposer").start();
 					}
 					// initialize the selected capturer
 					String selectedCapturerName = evt.getNewValue().toString();

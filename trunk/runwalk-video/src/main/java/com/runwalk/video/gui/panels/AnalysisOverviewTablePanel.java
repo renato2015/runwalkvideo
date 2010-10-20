@@ -119,18 +119,26 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> selectUncompressedVideoDir() {
-		File chosenDir = getAppSettings().getUncompressedVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setUncompressedVideoDir(result);
-		return refreshVideoFiles();
+		Task<Boolean, Void> result = null;
+		File oldDir = getAppSettings().getUncompressedVideoDir();
+		File newDir = selectDirectory(oldDir);
+		if (!newDir.equals(oldDir)) {
+			getAppSettings().setUncompressedVideoDir(newDir);
+			result = refreshVideoFiles();
+		}
+		return result;
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean,Void> selectVideoDir() {
-		File chosenDir = getAppSettings().getVideoDir();
-		File result = selectDirectory(chosenDir);
-		getAppSettings().setVideoDir(result);
-		return refreshVideoFiles();
+		Task<Boolean, Void> result = null;
+		File oldDir = getAppSettings().getVideoDir();
+		File newDir = selectDirectory(oldDir);
+		if (!newDir.equals(oldDir)) {
+			getAppSettings().setVideoDir(newDir);
+			result = refreshVideoFiles();
+		}
+		return result;
 	}
 	
 	private File selectDirectory(File chosenDir) {
