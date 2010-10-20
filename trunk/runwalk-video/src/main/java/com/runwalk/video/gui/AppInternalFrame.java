@@ -35,14 +35,6 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
 	}
-	
-	public void addAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		addInternalFrameListener(listener);
-	}
-
-	public void removeAppWindowWrapperListener(AppWindowWrapperListener listener) {
-		removeInternalFrameListener(listener);
-	}
 
 	public BaseInternalFrame getHolder() {
 		return this;

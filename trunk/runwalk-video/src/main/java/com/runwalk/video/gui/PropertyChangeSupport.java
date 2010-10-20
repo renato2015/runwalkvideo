@@ -1,16 +1,11 @@
 package com.runwalk.video.gui;
 
+/**
+ * This interface serves as a marker interface. The aspectJ compiler will
+ * weave PropertyChangeSupport into the implementors' byte code at compile time.
+ * 
+ * @author Jeroen Peelaerts
+ */
 public interface PropertyChangeSupport{
-
-//    public void addPropertyChangeListener( PropertyChangeListener listener );
-//
-//    public void addPropertyChangeListener( String propertyName, PropertyChangeListener listener );
-//
-//    public void removePropertyChangeListener( String propertyName, PropertyChangeListener listener );
-//
-//    public void removePropertyChangeListener( PropertyChangeListener listener );
-//
-//    public void hasListeners( String propertyName );
-
-//    public void firePropertyChange( String property, String oldval, String newval );
+	
 }

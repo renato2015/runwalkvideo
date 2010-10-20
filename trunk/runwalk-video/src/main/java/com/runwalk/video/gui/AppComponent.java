@@ -3,7 +3,7 @@ package com.runwalk.video.gui;
 
 /**
  * This interface serves as a marker interface. The aspectJ compiler will
- * weave some common BSAF functionalities into their byte code at compile time.
+ * weave some common BSAF functionalities into their the implementors' byte code at compile time.
  * 
  * @author Jeroen Peelaerts
  */
