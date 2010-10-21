@@ -6,13 +6,14 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
-import javax.xml.ws.Action;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.application.Action;
+
+import com.runwalk.video.gui.PropertyChangeSupport;
 
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
@@ -27,12 +28,14 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport {
 	
 	private static final String DSJ_UNLOCK_NAME = "dsj.unlockName";
 	private static final String DSJ_CODE3 = "dsj.code3";
 	private static final String DSJ_CODE2 = "dsj.code2";
 	private static final String DSJ_CODE1 = "dsj.code1";
+
+	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
 	/**
 	 * D3D9 renderer uses newer DirectX API and less CPU than the former when it can work on a capable GPU.
@@ -73,10 +76,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return rejectPauseFilter;
 	}
 
-	//TODO dit zou een actie kunnen worden!! de waarde van die checkbox kan je uit een UI element halen.
 	public void setRejectPauseFilter(boolean rejectPauseFilter) {
-		this.rejectPauseFilter = rejectPauseFilter;
+		// a PCE will be fired to make the MenuItem respond to changes to this property
+		firePropertyChange(REJECT_PAUSE_FILTER, this.rejectPauseFilter, this.rejectPauseFilter = rejectPauseFilter);
 		getLogger().debug("Pause filter rejection for filtergraph " + getTitle() + " now set to " + rejectPauseFilter);
+	}
+	
+	@Action(selectedProperty = REJECT_PAUSE_FILTER)
+	public void toggleRejectPauseFilter() {
+		// this action will be shown as a JCheckBoxMenuItem in the menu bar
 	}
 
 	protected Logger getLogger() {
@@ -86,21 +94,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	@Action
 	public void viewFilterProperties() {
 		DSFilter[] filters = getFiltergraph().listFilters();
-		String[] filterInfo = new String[filters.length];
-		for(int i  = 0; i < filters.length; i++) {
-			filterInfo[i] = filters[i].getName();
-		}
-		String selectedString =  (String) JOptionPane.showInputDialog(
+		DSFilter selectedFilter =  (DSFilter) JOptionPane.showInputDialog(
 				null,
 				"Kies een filter:",
 				"Bekijk filter..",
 				JOptionPane.PLAIN_MESSAGE,
 				null,
-				filterInfo,
-				filterInfo[0]);
-		if (selectedString != null) {
-			int selectedIndex = Arrays.asList(filterInfo).indexOf(selectedString);
-			DSFilter selectedFilter = filters[selectedIndex];
+				filters,
+				filters[0]);
+		if (selectedFilter != null) {
 			selectedFilter.showPropertiesDialog();
 		}
 	}

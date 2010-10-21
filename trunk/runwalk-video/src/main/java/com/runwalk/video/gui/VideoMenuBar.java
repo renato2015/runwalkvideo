@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.ActionMap;
+import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
@@ -17,8 +18,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.text.DefaultEditorKit;
-
-import org.jdesktop.application.Action;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -58,11 +57,11 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		//		fileMenu.add(openVideoFileItem);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem refreshMenuItem = new JMenuItem( getContext().getActionMap().get("refresh"));
+		JMenuItem refreshMenuItem = new JMenuItem( getAction(RunwalkVideoApp.REFRESH_ACTION));
 		fileMenu.add(refreshMenuItem);
 		JMenuItem saveMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
-		JMenuItem saveSettingsMenuItem = new JMenuItem( getContext().getActionMap().get("saveSettings"));
+		JMenuItem saveSettingsMenuItem = new JMenuItem( getAction(RunwalkVideoApp.SAVE_SETTINGS_ACTION));
 		fileMenu.add(saveSettingsMenuItem);
 
 		fileMenu.add(new JSeparator());
@@ -76,7 +75,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		fileMenu.add(organiseVideoFiles);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem exitMenuItem = new JMenuItem( getContext().getActionMap().get(RunwalkVideoApp.EXIT_ACTION));
+		JMenuItem exitMenuItem = new JMenuItem( getAction(RunwalkVideoApp.EXIT_ACTION) );
 		fileMenu.add(exitMenuItem);
 		add(fileMenu);
 
@@ -103,14 +102,14 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 
 		JMenu helpMenu = new  JMenu(getResourceMap().getString("helpMenu.text"));
 		JMenuItem aboutMenuItem = new JMenuItem( getAction("about"));
-		JMenuItem uploadLogFiles = new JMenuItem( getContext().getActionMap().get("uploadLogFiles"));
+		JMenuItem uploadLogFiles = new JMenuItem( getAction(RunwalkVideoApp.UPLOAD_LOG_FILES_ACTION));
 		helpMenu.add(uploadLogFiles);
 		helpMenu.add(new JSeparator());
 		helpMenu.add(aboutMenuItem);
 		add(helpMenu);
 	}
 
-	@Action
+	@org.jdesktop.application.Action
 	public void about() {
 		if (aboutBox == null) {
 			aboutBox = new RunwalkVideoAboutDialog(getApplication().getMainFrame());
@@ -140,25 +139,37 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
 		checkedItem.setAccelerator(keyStroke);
 		result.add(checkedItem);
-
+		// add all actions from the appcomponent's actionmap to the menu
 		ActionMap actionMap = appComponent.getApplicationActionMap();
 		if (actionMap != null && actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
 			result.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
-				javax.swing.Action action = actionMap.get(key);
+				Action action = actionMap.get(key);
 				if (getContext().getActionMap().get(key) == null) {
-					JMenuItem item = new JMenuItem(action);
-					if (action.getValue(javax.swing.Action.NAME) == null) {
-						item.setText(action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString());
-					}
-					result.add(item);
+					result.add(createMenuItem(action));
 				}
 			}
 		}
 		return result;
 	}
+	
+	private JMenuItem createMenuItem(Action action) {
+		JMenuItem result = null;
+		Object commandKey = action.getValue(Action.ACTION_COMMAND_KEY);
+		if (commandKey != null && commandKey.toString().startsWith("toggle")) {
+			result = new JCheckBoxMenuItem(action);
+		} else {
+			result = new JMenuItem(action);
+		}
+		Object actionDescription = action.getValue(javax.swing.Action.NAME);
+		if (actionDescription == null) {
+			actionDescription = action.getValue(javax.swing.Action.SHORT_DESCRIPTION);
+		}
+		result.setText(actionDescription.toString());
+		return result;
+	}
 
-	@Action
+	@org.jdesktop.application.Action
 	public void showWindow(ActionEvent e) {
 		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
 		AppWindowWrapper component  = windowBoxMap.inverse().get(selectedItem);

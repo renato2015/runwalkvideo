@@ -8,7 +8,7 @@ import java.beans.PropertyChangeListener;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
- * This class will wrap a {@link BaseInternalFrame} or {@link Window} for use with the application's {@link VideoMenuBar}
+ * This class will wrap a {@link BaseInternalFrame} or a {@link Window} for use with the application windowing framework.
  * 
  * @author Jeroen Peelaerts
  *
