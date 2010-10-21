@@ -56,7 +56,8 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 			RecordingStatus recordingStatus = recording.getRecordingStatus();
 			if (recordingStatus != null) {
 				String resourceKey = recordingStatus.getResourceKey();
-				result = ResourceInjector.injectResources(resourceKey, RecordingStatus.class);
+				ResourceInjector resourceInjector = ResourceInjector.getInstance();
+				result = resourceInjector.injectResources(resourceKey, RecordingStatus.class);
 			}
 			return result;
 		}

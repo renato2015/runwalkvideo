@@ -2,8 +2,9 @@ package com.runwalk.video.gui;
 
 import java.awt.Container;
 import java.awt.Window;
-import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeListener;
+
+import org.jdesktop.application.Action;
 
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
@@ -15,6 +16,9 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  */
 public interface AppWindowWrapper extends AppComponent {
 	
+	public static final String TOGGLE_VISIBILITY_ACTION = "toggleVisibility";
+	public static final String VISIBLE = "visible";
+
 	/**
 	 * Make the implementor eligible for garbage collection.
 	 */
@@ -24,14 +28,15 @@ public interface AppWindowWrapper extends AppComponent {
 	
 	public String getTitle();
 	
+	public boolean isVisible();
+	
+	public void setVisible(boolean visible);
+	
+	@Action(selectedProperty = VISIBLE)
+	public void toggleVisibility();
+	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	
 	public void removePropertyChangeListener(PropertyChangeListener listener);
 	
-    public ComponentListener[] getComponentListeners();
-	
-    public void addComponentListener(ComponentListener l);
-    
-    public void removeComponentListener(ComponentListener l);
-    
 }

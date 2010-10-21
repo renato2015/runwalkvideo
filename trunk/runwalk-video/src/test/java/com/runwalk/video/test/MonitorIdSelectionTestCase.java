@@ -16,28 +16,28 @@ public class MonitorIdSelectionTestCase extends TestCase {
 	public void testScreenIdCalculation() throws Exception {
 		//test for one attached screen, default screen id should be 0 always
 		for (int i = 2; i < 10; i++) {
-			assertEquals(0, VideoComponent.getDefaultScreenId(1, i));
+			assertEquals(0, VideoComponent.getDefaultMonitorId(1, i));
 		}
 		
 		//test for two attached screens, default screenId should be 1 always
 		for (int i = 2; i < 10; i++) {
-			assertEquals(1, VideoComponent.getDefaultScreenId(2, i));
+			assertEquals(1, VideoComponent.getDefaultMonitorId(2, i));
 		}
 
 		//test for three attached screens, default screenId should alternate between 1 and 2
 		for (int i = 2; i < 10; i++) {
 			int expected = i % 2 == 0 ? 2 : 1;
-			assertEquals(expected, VideoComponent.getDefaultScreenId(3, i));
+			assertEquals(expected, VideoComponent.getDefaultMonitorId(3, i));
 		}
 		
 		//test for four attached screens, default screenId should alternate between 1, 2 and 3
-		assertEquals(1, VideoComponent.getDefaultScreenId(4, 1));
-		assertEquals(2, VideoComponent.getDefaultScreenId(4, 2));
-		assertEquals(3, VideoComponent.getDefaultScreenId(4, 3));
-		assertEquals(1, VideoComponent.getDefaultScreenId(4, 4));
-		assertEquals(2, VideoComponent.getDefaultScreenId(4, 5));
-		assertEquals(3, VideoComponent.getDefaultScreenId(4, 6));
-		assertEquals(1, VideoComponent.getDefaultScreenId(4, 7));
+		assertEquals(1, VideoComponent.getDefaultMonitorId(4, 1));
+		assertEquals(2, VideoComponent.getDefaultMonitorId(4, 2));
+		assertEquals(3, VideoComponent.getDefaultMonitorId(4, 3));
+		assertEquals(1, VideoComponent.getDefaultMonitorId(4, 4));
+		assertEquals(2, VideoComponent.getDefaultMonitorId(4, 5));
+		assertEquals(3, VideoComponent.getDefaultMonitorId(4, 6));
+		assertEquals(1, VideoComponent.getDefaultMonitorId(4, 7));
 		
 	}
 }

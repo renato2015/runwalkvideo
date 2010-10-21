@@ -6,6 +6,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
+import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 
 import org.jdesktop.application.session.PropertySupport;
@@ -19,6 +20,8 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  */
 @SuppressWarnings("serial")
 public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrapper {
+	
+	private boolean visible = true;
 
 	/**
 	 * Create a new JInternalFrame.
@@ -38,6 +41,18 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 
 	public BaseInternalFrame getHolder() {
 		return this;
+	}
+	
+	public void toggleVisibility() {
+	}
+	
+	public void setVisible(boolean visible) {
+		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		super.setVisible(visible);
+	}
+	
+	public ActionMap getApplicationActionMap() {
+		return getApplicationActionMap(AppWindowWrapper.class);
 	}
 
 	public static class InternalFrameState extends WindowState {
@@ -103,6 +118,6 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 		}
 
 	}
-
+	
 }
 
