@@ -99,7 +99,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 	
 	private void clearOverlayImage() {
-		if (getHasOverlay()) {
+		if (isOverlayed()) {
 			getVideoImpl().setOverlayImage(null, Color.white);
 		}
 	}

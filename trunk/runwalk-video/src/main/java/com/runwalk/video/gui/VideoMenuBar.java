@@ -1,15 +1,12 @@
 package com.runwalk.video.gui;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.ActionMap;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
@@ -17,21 +14,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.text.DefaultEditorKit;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.media.VideoComponent;
 import com.runwalk.video.gui.media.VideoComponent.State;
-import com.runwalk.video.util.AppUtil;
 import com.runwalk.video.util.ResourceInjector;
-import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 @SuppressWarnings("serial")
-public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChangeListener, ComponentListener {
+public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChangeListener {
 
-	private BiMap<AppWindowWrapper, JCheckBoxMenuItem> windowBoxMap = HashBiMap.create();
 	private JMenu windowMenu;
 	private JDialog aboutBox;
 
@@ -86,11 +77,13 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		JMenuItem redo = new JMenuItem( getApplication().getApplicationActionMap().get("redo"));
 		editMenu.add(redo);
 		editMenu.add(new JSeparator());
-		JMenuItem cut = new JMenuItem(ResourceInjector.injectResources(new DefaultEditorKit.CutAction(), "cut"));
+		ResourceInjector resourceInjector = ResourceInjector.getInstance();
+
+		JMenuItem cut = new JMenuItem(resourceInjector.injectResources(getAction("cut")));
 		editMenu.add(cut);
-		JMenuItem copy = new JMenuItem(ResourceInjector.injectResources(new DefaultEditorKit.CopyAction(), "copy"));
+		JMenuItem copy = new JMenuItem(resourceInjector.injectResources(getAction("copy")));
 		editMenu.add(copy);
-		JMenuItem paste = new JMenuItem(ResourceInjector.injectResources(new DefaultEditorKit.PasteAction(), "paste"));
+		JMenuItem paste = new JMenuItem(resourceInjector.injectResources(getAction("paste")));
 		editMenu.add(paste);
 		add(editMenu);
 
@@ -119,8 +112,7 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 	}
 
 	public void addWindow(final AppWindowWrapper appComponent) {
- 		if (!windowBoxMap.containsKey(appComponent)) {
-			appComponent.addComponentListener(this);
+		if (!checkWindowPresence(appComponent)) {
 			appComponent.addPropertyChangeListener(this);
 			JMenu menu = createMenu(appComponent);
 			//TODO add internal frame instance at the end of the menu and after a separator..
@@ -130,12 +122,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 
 	private JMenu createMenu(AppWindowWrapper appComponent) {
 		JMenu result = new JMenu(appComponent.getTitle());
-		JCheckBoxMenuItem checkedItem = new JCheckBoxMenuItem(getAction("showWindow"));
-		Component component = appComponent.getHolder();
-		checkedItem.setSelected(component.isVisible());
-		windowBoxMap.put(appComponent, checkedItem);
-		windowBoxMap.inverse().put(checkedItem, appComponent);
-		char shortcut = Character.forDigit(windowBoxMap.size(), 9);
+		Action visibilityAction = appComponent.getAction(AppWindowWrapper.TOGGLE_VISIBILITY_ACTION);
+		JCheckBoxMenuItem checkedItem = new JCheckBoxMenuItem(visibilityAction);
+		char shortcut = Character.forDigit(windowMenu.getMenuComponentCount(), 9);
 		KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
 		checkedItem.setAccelerator(keyStroke);
 		result.add(checkedItem);
@@ -145,14 +134,16 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 			result.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
 				Action action = actionMap.get(key);
-				if (getContext().getActionMap().get(key) == null) {
+				Object actionCommand = action.getValue(Action.ACTION_COMMAND_KEY);
+				if (getContext().getActionMap().get(key) == null && 
+						!AppWindowWrapper.TOGGLE_VISIBILITY_ACTION.equals(actionCommand)) {
 					result.add(createMenuItem(action));
 				}
 			}
 		}
 		return result;
 	}
-	
+
 	private JMenuItem createMenuItem(Action action) {
 		JMenuItem result = null;
 		Object commandKey = action.getValue(Action.ACTION_COMMAND_KEY);
@@ -169,49 +160,31 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 		return result;
 	}
 
-	@org.jdesktop.application.Action
-	public void showWindow(ActionEvent e) {
-		JCheckBoxMenuItem selectedItem = (JCheckBoxMenuItem) e.getSource();
-		AppWindowWrapper component  = windowBoxMap.inverse().get(selectedItem);
-		component.getHolder().setVisible(selectedItem.isSelected());
-	}
-
 	private void removeWindow(AppWindowWrapper appComponent) {
-		JCheckBoxMenuItem boxItem = windowBoxMap.get(appComponent);
-		if (boxItem != null) {
-			for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
-				Component menuComponent = windowMenu.getMenuComponent(i);
-				if (menuComponent instanceof JMenuItem ) {
-					JMenuItem menuItem = (JMenuItem) menuComponent;
-					if (menuItem.getText().equals(appComponent.getTitle())) {
-						windowMenu.remove(menuItem);
-					}
+		for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
+			Component menuComponent = windowMenu.getMenuComponent(i);
+			if (menuComponent instanceof JMenuItem ) {
+				JMenuItem menuItem = (JMenuItem) menuComponent;
+				if (menuItem.getText().equals(appComponent.getTitle())) {
+					windowMenu.remove(menuItem);
 				}
 			}
-			windowBoxMap.remove(appComponent);
-			windowMenu.updateUI();
-			windowMenu.revalidate();
 		}
+		windowMenu.updateUI();
+		windowMenu.revalidate();
 	}
 
-	private void hideWindow(AppWindowWrapper appComponent) {
-		Container container = appComponent == null ? null : appComponent.getHolder();
-		if (container != null) {
-			if (container instanceof BaseInternalFrame) {
-				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
-				baseInternalFrame.getAssociatedButton().setEnabled(false);
-//				baseInternalFrame.getAssociatedMenuButton().setEnabled(false);
+	private boolean checkWindowPresence(AppWindowWrapper appWindowWrapper) {
+		for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
+			Component menuComponent = windowMenu.getMenuComponent(i);
+			if (menuComponent instanceof JMenuItem ) {
+				JMenuItem menuItem = (JMenuItem) menuComponent;
+				if (menuItem.getText().equals(appWindowWrapper.getTitle())) {
+					return true;
+				}
 			}
-			container.setVisible(false);
 		}
-	}
-
-	private void setCheckboxSelection(Component component) {
-		AppWindowWrapper appComponent = AppUtil.getWindowWrapper(windowBoxMap.keySet(), component);
-		JCheckBoxMenuItem checkBox = windowBoxMap.get(appComponent);
-		if (checkBox != null) {
-			checkBox.setSelected(component.isVisible());
-		}
+		return false;
 	}
 
 	public String getTitle() {
@@ -225,29 +198,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
 				AppWindowWrapper appComponent = (AppWindowWrapper) evt.getSource();
 				removeWindow(appComponent);
-				appComponent.removeComponentListener(this);
 				appComponent.removePropertyChangeListener(this);
-			}
-		} else if (VideoComponent.FULL_SCREEN.equals(evt.getPropertyName())) {
-			Boolean fullScreen = (Boolean) evt.getNewValue();
-			if (fullScreen) {
-				AppWindowWrapper appComponent = (AppWindowWrapper) evt.getSource();
-				hideWindow(appComponent);
 			}
 		}
 	}
 
-
-	public void componentShown(ComponentEvent e) {
-		setCheckboxSelection(e.getComponent());
-	}
-
-	public void componentHidden(ComponentEvent e) {
-		setCheckboxSelection(e.getComponent());
-	}
-	
-	public void componentResized(ComponentEvent e) { }
-	
-	public void componentMoved(ComponentEvent e) { }
-	
 }

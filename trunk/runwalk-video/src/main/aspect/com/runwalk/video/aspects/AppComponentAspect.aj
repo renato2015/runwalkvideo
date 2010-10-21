@@ -42,4 +42,8 @@ public aspect AppComponentAspect {
 		return getContext().getActionMap(getClass(), this);
 	}
 	
+	public ActionMap AppComponent.getApplicationActionMap(Class<?> stopClass) {
+		return getContext().getActionMap(stopClass, this);
+	}
+	
 }

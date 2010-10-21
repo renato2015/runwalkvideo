@@ -1,29 +1,40 @@
 package com.runwalk.video.util;
 
+import javax.swing.Action;
+
 import org.jdesktop.application.ResourceMap;
 
-import com.runwalk.video.RunwalkVideoApp;
+import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.actions.ApplicationActions;
 
-@SuppressWarnings("serial")
-abstract public class ResourceInjector extends javax.swing.AbstractAction {
+public class ResourceInjector implements AppComponent {
 	
-	public static javax.swing.Action injectResources(javax.swing.Action action) {
-		return injectResources(action, action.getValue(NAME).toString());
+	private final static ResourceInjector INSTANCE = new ResourceInjector();
+	
+	private ResourceInjector() { }
+
+	public static ResourceInjector getInstance() {
+		return INSTANCE;
 	}
 	
-	public static javax.swing.Action injectResources(javax.swing.Action action, String name) {
-		ResourceMap map = RunwalkVideoApp.getApplication().getContext().getResourceMap(ApplicationActions.class);
-		action.putValue(NAME, map.getString(name + ".Action.text"));
-		action.putValue(SHORT_DESCRIPTION, map.getString(name + ".Action.description"));
-		action.putValue(MNEMONIC_KEY, map.getKeyCode(name + ".Action.mnemonic"));
-		action.putValue(ACCELERATOR_KEY, map.getKeyStroke(name + ".Action.accelerator"));
-		action.putValue(SMALL_ICON, map.getIcon(name + ".Action.icon"));
+	public javax.swing.Action injectResources(Action action) {
+		String actionName = action.getValue(Action.NAME).toString();
+		actionName = Character.toLowerCase(actionName.charAt(0)) + actionName.substring(1);
+		return injectResources(action, actionName, ApplicationActions.class);
+	}
+	
+	public javax.swing.Action injectResources(javax.swing.Action action, String name, Class<?> theClass) {
+		ResourceMap resourceMap = getContext().getResourceMap(theClass);
+		action.putValue(Action.NAME, resourceMap.getString(name + ".Action.text"));
+		action.putValue(Action.SHORT_DESCRIPTION, resourceMap.getString(name + ".Action.description"));
+		action.putValue(Action.MNEMONIC_KEY, resourceMap.getKeyCode(name + ".Action.mnemonic"));
+		action.putValue(Action.ACCELERATOR_KEY, resourceMap.getKeyStroke(name + ".Action.accelerator"));
+		action.putValue(Action.SMALL_ICON, resourceMap.getIcon(name + ".Action.icon"));
 		return action;
 	}
 	
-	public static String injectResources(String resourceName, Class<?> theClass) {
-		ResourceMap map = RunwalkVideoApp.getApplication().getContext().getResourceMap(theClass);
+	public String injectResources(String resourceName, Class<?> theClass) {
+		ResourceMap map = getContext().getResourceMap(theClass);
 		return map.getString(resourceName);
 	}
 

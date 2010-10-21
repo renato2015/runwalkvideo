@@ -235,7 +235,7 @@ public class CameraDialog extends JDialog implements AppComponent {
 			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();
 			// get the default monitor id for this capturer
-			int defaultMonitorId = VideoComponent.getDefaultScreenId(graphicsDevices.length, capturerId);
+			int defaultMonitorId = VideoComponent.getDefaultMonitorId(graphicsDevices.length, capturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);

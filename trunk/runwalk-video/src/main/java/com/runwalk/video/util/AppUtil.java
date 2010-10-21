@@ -89,12 +89,6 @@ public class AppUtil {
 	 * @return The map with both the first second map's keys
 	 */
 	public static ActionMap mergeActionMaps(ActionMap map1, ActionMap map2) {
-//		  ActionMap lastActionMap = map1;
-//		  while (lastActionMap.getParent() != null) {
-//              lastActionMap = lastActionMap.getParent();
-//          }
-//          lastActionMap.setParent(map2);
-		
 		ActionMap result = new ActionMap();
 		for (Object key : map1.allKeys()) {
 			result.put(key, map1.get(key));

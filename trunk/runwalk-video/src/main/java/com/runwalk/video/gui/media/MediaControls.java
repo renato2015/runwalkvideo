@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -31,6 +29,7 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
@@ -64,10 +63,10 @@ import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class MediaControls extends AppInternalFrame implements PropertyChangeListener, ComponentListener {
+public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
 
 	private static final String MUTE_ACTION = "mute";
-	private static final String FULL_SCREEN_ACTION = "fullScreen";
+	private static final String FULL_SCREEN_ACTION = "toggleFullScreen";
 	private static final String INCREASE_VOLUME_ACTION = "increaseVolume";
 	private static final String DECREASE_VOLUME_ACTION = "decreaseVolume";
 	private static final String CREATE_KEYFRAME_ACTION = "createKeyframe";
@@ -218,10 +217,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return button;
 	}
 
-	//TODO kan dit eventueel met een proxy action??
-	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
-	public void toggleFullScreen() { 
-		frontMostComponent.toggleFullScreen();
+	//TODO kan dit met een proxy action??
+	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
+	public Task<Void, Void> toggleFullScreen() { 
+		return frontMostComponent.toggleFullScreen();
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)
@@ -235,6 +234,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED )
+	
 	public void togglePlay() {
 		for (VideoPlayer player : getPlayers()) {
 			if (player.isPlaying()) {
@@ -428,7 +428,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(parentWindow, capturerName, captureEncoderName);
 		if (capturer != null) {
-			capturer.addComponentListener(this);
 			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer
 			if (getCapturers().isEmpty()) {
@@ -500,7 +499,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					} else {
 						float playRate = getAppSettings().getPlayRate();
 						player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
-						player.addComponentListener(this);
 						player.addPropertyChangeListener(this);
 						videoComponents.add(player);
 					} 
@@ -597,7 +595,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				videoComponents.remove(component);
 				disableVideoComponentControls(component);
 				component.removePropertyChangeListener(this);
-				component.removeComponentListener(this);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
 			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
@@ -619,22 +616,20 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				}
 				setStatusInfo(position, player.getDuration());
 			}
+		} else if (evt.getPropertyName().equals(VideoComponent.VISIBLE)) {
+			toggleVideoComponentControls((VideoComponent) evt.getSource(), (Boolean) evt.getNewValue());
 		}
 		//DSJ fires the following event for notifying that playing has stoppped..
 		//DSJUtils.getEventType(evt) == DSMovie.FRAME_NOTIFY
 	}
-
-	public void componentShown(ComponentEvent e) {
-		enableVideoComponentControls(e.getComponent());
+	
+	private void toggleVideoComponentControls(final VideoComponent videoComponent, boolean enable) {
+		if (enable) {
+			enableVideoComponentControls(videoComponent);
+		} else {
+			disableVideoComponentControls(videoComponent);
+		}
 	}
-
-	public void componentHidden(ComponentEvent e) {
-		disableVideoComponentControls(e.getComponent());
-	}
-
-	public void componentResized(ComponentEvent e) {}
-
-	public void componentMoved(ComponentEvent e) {}
 	
 	private void enableVideoComponentControls(final Component component) {
 		enableVideoComponentControls(AppUtil.getWindowWrapper(videoComponents, component));
@@ -672,10 +667,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			// try to enable recording again, if no capturer is active, it will be disabled
 			setRecordingEnabled(true);
 		}
-	}
-
-	private void disableVideoComponentControls(final Component component) {
-		disableVideoComponentControls(AppUtil.getWindowWrapper(videoComponents, component));
 	}
 
 	private void disableVideoComponentControls(final VideoComponent component) {
@@ -746,7 +737,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private <T extends VideoComponent> List<T> getComponents(Class<T> filterClass) {
 		ImmutableList.Builder<T> result = ImmutableList.builder();
-		for (VideoComponent videoComponent : videoComponents) {
+		for (AppWindowWrapper videoComponent : videoComponents) {
 			if (videoComponent.getClass() == filterClass) {
 				result.add(filterClass.cast(videoComponent));
 			}

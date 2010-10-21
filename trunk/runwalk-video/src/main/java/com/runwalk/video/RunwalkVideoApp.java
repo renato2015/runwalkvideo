@@ -17,6 +17,7 @@ import net.miginfocom.swing.MigLayout;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdesktop.application.ActionManager;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -215,7 +216,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	/*
 	 * GUI methods
 	 */
-
+	
 	public void createOrShowComponent(AppWindowWrapper appComponent) {
 		Container container = appComponent == null ? null : appComponent.getHolder();
 		if (container != null) {
@@ -227,8 +228,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 					getScrollableDesktopPane().add(baseInternalFrame);
 					getMenuBar().addWindow(appComponent);	
 				}
-				baseInternalFrame.getAssociatedButton().setEnabled(true);
-//				getScrollableDesktopPane().enableAssociatedComponents(baseInternalFrame, true);
 			}  else {
 				getMenuBar().addWindow(appComponent);	
 			}
@@ -318,10 +317,12 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 */
 	private void executeAction(ActionMap actionMap, String actionKey) {
 		Action action = actionMap.get(actionKey);
-		if (action != null) {
-			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
-			action.actionPerformed(actionEvent);
-		}
+		ActionManager.invokeAction(action, getMainFrame());
+//		if (action != null) {
+//			
+//			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
+//			action.actionPerformed(actionEvent);
+//		}
 	}
 
 	private boolean isSaveNeeded() {
