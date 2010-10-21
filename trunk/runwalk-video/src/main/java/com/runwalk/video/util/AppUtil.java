@@ -9,15 +9,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.NoSuchElementException;
+import java.util.Iterator;
 
 import javax.swing.ActionMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.runwalk.video.gui.AppWindowWrapper;
 
 public class AppUtil {
@@ -91,6 +89,12 @@ public class AppUtil {
 	 * @return The map with both the first second map's keys
 	 */
 	public static ActionMap mergeActionMaps(ActionMap map1, ActionMap map2) {
+//		  ActionMap lastActionMap = map1;
+//		  while (lastActionMap.getParent() != null) {
+//              lastActionMap = lastActionMap.getParent();
+//          }
+//          lastActionMap.setParent(map2);
+		
 		ActionMap result = new ActionMap();
 		for (Object key : map1.allKeys()) {
 			result.put(key, map1.get(key));
@@ -113,18 +117,15 @@ public class AppUtil {
 	 * @see AppWindowWrapper#getHolder()
 	 */
 	public static <T extends AppWindowWrapper> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
-		try {
-			return Iterables.find(windowWrappers, new Predicate<T>() {
-
-				public boolean apply(T input) {
-					return input.getHolder().equals(component);
-				}
-
-			});
-		} catch(NoSuchElementException exc) {
-			// nothing found
-			return null;
+		T result = null;
+		Iterator<T> iterator = windowWrappers.iterator();
+		while(iterator.hasNext() && result == null) {
+			T next = iterator.next();
+			if (next.getHolder() == component) {
+				result = next;
+			}
 		}
+		return result;
 	}
 
 

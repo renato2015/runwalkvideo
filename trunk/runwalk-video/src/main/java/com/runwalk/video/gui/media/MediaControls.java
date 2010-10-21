@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -43,6 +44,7 @@ import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.runwalk.video.dao.DaoService;
@@ -180,17 +182,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 			public void propertyChange(PropertyChangeEvent e) {
 				String property = e.getPropertyName();
-				Component comp = null;
+				Component component = null;
 				Window activeWindow = focusManager.getActiveWindow();
 				if (activeWindow != null) {
 					if (("focusedWindow".equals(property)) && !activeWindow.getName().equals("mainFrame")) {
-						comp = (Component) e.getNewValue();
+						component = (Component) e.getNewValue();
 					} else if ("focusOwner".equals(property)) {
-						comp = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
+						component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
+					}
+					if (component != null) {
+						enableVideoComponentControls(component);
 					}
 				}
-				VideoComponent videoComponent = AppUtil.getWindowWrapper(videoComponents, comp);
-				enableVideoComponentControls(videoComponent);
 			}
 
 		});
@@ -217,8 +220,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	//TODO kan dit eventueel met een proxy action??
 	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
-	public void fullScreen() { 
-		frontMostComponent.toggleFullscreen();
+	public void toggleFullScreen() { 
+		frontMostComponent.toggleFullScreen();
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)
@@ -428,7 +431,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			capturer.addComponentListener(this);
 			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer
-			if (Iterables.isEmpty(getCapturers())) {
+			if (getCapturers().isEmpty()) {
 				getAppSettings().setCapturerName(capturer.getVideoImpl().getTitle());
 			}
 			videoComponents.add(capturer);
@@ -489,8 +492,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				VideoPlayer player = null;
 				try {
 					File videoFile = getVideoFileManager().getVideoFile(recording);
-					if (recordingCount < Iterables.size(getPlayers())) {
-						player = Iterables.get(getPlayers(), recordingCount);
+					if (recordingCount < getPlayers().size()) {
+						player = getPlayers().get(recordingCount);;
 						player.loadVideo(recording, videoFile.getAbsolutePath());
 						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 						setSliderLabels(recording);
@@ -514,8 +517,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		}
 		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
 		// show black overlay for players that don't show any opened files
-		for (int i = recordingCount; i < Iterables.size(getPlayers()); i++) {
-			VideoPlayer videoPlayer = Iterables.get(getPlayers(), i);
+		for (int i = recordingCount; i < getPlayers().size(); i++) {
+			VideoPlayer videoPlayer = getPlayers().get(i);
 			videoPlayer.setBlackOverlayImage();
 		}
 		setSliderPosition(0);
@@ -587,7 +590,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		if (evt.getPropertyName().equals(VideoComponent.STATE)) {
 			VideoComponent component = (VideoComponent) evt.getSource();
 			State state = (State) newValue;
-			boolean enabled = state == VideoComponent.State.IDLE && component == frontMostComponent && component.getHolder().isVisible();
+			boolean enabled = state == VideoComponent.State.IDLE && component == frontMostComponent && component.isActive();
 			setFullScreenEnabled(enabled);
 			playButton.setSelected(state == State.PLAYING);
 			if (state == State.DISPOSED) {
@@ -622,18 +625,20 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	public void componentShown(ComponentEvent e) {
-		VideoComponent videoComponent = AppUtil.getWindowWrapper(videoComponents, e.getComponent());
-		enableVideoComponentControls(videoComponent);
+		enableVideoComponentControls(e.getComponent());
 	}
 
 	public void componentHidden(ComponentEvent e) {
-		VideoComponent videoComponent = AppUtil.getWindowWrapper(videoComponents, e.getComponent());
-		disableVideoComponentControls(videoComponent);
+		disableVideoComponentControls(e.getComponent());
 	}
 
 	public void componentResized(ComponentEvent e) {}
 
 	public void componentMoved(ComponentEvent e) {}
+	
+	private void enableVideoComponentControls(final Component component) {
+		enableVideoComponentControls(AppUtil.getWindowWrapper(videoComponents, component));
+	}
 
 	/**
 	 * Enabling a {@link VideoComponent}'s controls is only possible when the frontmost component is idle, otherwise the
@@ -644,7 +649,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 */
 	private void enableVideoComponentControls(final VideoComponent component) {
 		//a player or capturer is requesting the focus.. this will only be given if the frontmost component is idle
-		if (component != null && component.getHolder().isVisible() && (frontMostComponent == null || frontMostComponent.isIdle())) {
+		if (component != null && component.isActive() && 
+				(frontMostComponent == null || component.getClass() == frontMostComponent.getClass())) {
 			frontMostComponent = component;
 			StringBuilder title = new StringBuilder(getName());
 			title.append(" > ").append(component.getTitle());
@@ -666,6 +672,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			// try to enable recording again, if no capturer is active, it will be disabled
 			setRecordingEnabled(true);
 		}
+	}
+
+	private void disableVideoComponentControls(final Component component) {
+		disableVideoComponentControls(AppUtil.getWindowWrapper(videoComponents, component));
 	}
 
 	private void disableVideoComponentControls(final VideoComponent component) {
@@ -719,25 +729,29 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	private <T extends VideoComponent> T getFrontMostComponent(Class<T> concreteClass) {
-		T result = null;
 		try {
-			result = concreteClass.cast(frontMostComponent);
+			return concreteClass.cast(frontMostComponent);
 		} catch(ClassCastException e) {
-			getLogger().error(e);
+			return null;
 		}
-		return result;
 	}
 
-	private Iterable<VideoCapturer> getCapturers() {
+	private List<VideoCapturer> getCapturers() {
 		return getComponents(VideoCapturer.class);
 	}
 
-	private Iterable<VideoPlayer> getPlayers() {
+	private List<VideoPlayer> getPlayers() {
 		return getComponents(VideoPlayer.class);
 	}
 
-	private <T extends VideoComponent> Iterable<T> getComponents(Class<T> filterClass) {
-		return Iterables.filter(videoComponents, filterClass);
+	private <T extends VideoComponent> List<T> getComponents(Class<T> filterClass) {
+		ImmutableList.Builder<T> result = ImmutableList.builder();
+		for (VideoComponent videoComponent : videoComponents) {
+			if (videoComponent.getClass() == filterClass) {
+				result.add(filterClass.cast(videoComponent));
+			}
+		}
+		return result.build();
 	}
 
 	public VideoFileManager getVideoFileManager() {

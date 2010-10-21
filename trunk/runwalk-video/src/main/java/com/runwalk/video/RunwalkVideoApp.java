@@ -69,6 +69,10 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private DaoService daoService;
 
 	public static final String EXIT_ACTION = "exitApplication";
+	public static final String SAVE_SETTINGS_ACTION = "saveSettings";
+	public static final String REFRESH_ACTION = "refresh";
+	public static final String UPLOAD_LOG_FILES_ACTION = "uploadLogFiles";
+	
 
 	/**
 	 * A convenient static getter for the application instance.

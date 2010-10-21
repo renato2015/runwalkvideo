@@ -36,7 +36,7 @@ import com.runwalk.video.util.AppUtil;
  */
 public abstract class VideoComponent implements PropertyChangeSupport, AppWindowWrapper {
 
-	public static final String FULL_SCREEN = "fullscreen";
+	public static final String FULL_SCREEN = "fullScreen";
 	public static final String IDLE = "idle";
 	public static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
 	public static final String STATE = "state";
@@ -96,6 +96,8 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		this.componentId = componentId;
 		setState(State.IDLE);
 	}
+	
+	public abstract IVideoComponent getVideoImpl();
 
 	public Recording getRecording() {
 		return recording;
@@ -140,7 +142,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	 * @param title The title
 	 */
 	protected void setComponentTitle(String title) {
-		if (isFullscreen()) {
+		if (isFullScreen()) {
 			getFullscreenFrame().setTitle(title);
 			getFullscreenFrame().setName(title);
 		} else {
@@ -151,7 +153,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 
 	public Container getHolder() {
 		Container container = null;
-		if (isFullscreen()) {
+		if (isFullScreen()) {
 			container = getFullscreenFrame();
 		} else {
 			container = getInternalFrame();
@@ -163,8 +165,14 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		this.monitorId = monitorId;
 	}
 
-	public boolean isFullscreen() {
+	public boolean isFullScreen() {
 		return fullScreen;
+	}
+	
+	public void setFullScreen(boolean fullScreen) {
+		// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
+		monitorId = monitorId != null && monitorId == 0 ? null : 0;
+		showComponent(fullScreen, monitorId);
 	}
 
 	public BufferedImage getImage() {
@@ -193,25 +201,25 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	protected void showComponent() {
-		showComponent(null);
+		showComponent(true, null);
 	}
 
-	protected void showComponent(Integer monitorId) {
+	protected void showComponent(boolean fullScreen, Integer monitorId) {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		int defaultScreenId = getDefaultScreenId(graphicsDevices.length, getComponentId());
 		// check preconditions
 		if (monitorId != null && monitorId < graphicsDevices.length) {
-			// use monitor screen set by user
+			// use monitor set by user
 			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
 		} else {
-			// use default monitor screen, because it wasn't set or found to be invalid
+			// use default monitor, because it wasn't set or found to be invalid
 			monitorId = defaultScreenId;
 			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getTitle() + ".");
 		}
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// go fullscreen if the selected monitor is not the primary one (index 0)
-		boolean fullScreen = monitorId > 0;
+		fullScreen = fullScreen && monitorId > 0;
 		if (fullScreen) {
 			getVideoImpl().setFullScreen(graphicsDevice, true);
 			reAddComponentListeners(getFullscreenFrame());
@@ -231,10 +239,11 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.APPLICATION)
-	public void toggleFullscreen() {
+	public void toggleFullScreen() {
+		//TODO this action needs to be coupled with a selectedProperty, so we can see its selected state in the menus
 		// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
 		monitorId = monitorId != null && monitorId == 0 ? null : 0;
-		showComponent(monitorId);
+		showComponent(!isFullScreen(), monitorId);
 	}
 
 	protected void setState(State state) {
@@ -325,10 +334,8 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		return getVideoImpl().getTitle();
 	}
 
-	public abstract IVideoComponent getVideoImpl();
-
 	public void toFront() {
-		if (isFullscreen()) {
+		if (isFullScreen()) {
 			getFullscreenFrame().toFront();
 		} else {
 			getInternalFrame().toFront();
@@ -348,8 +355,8 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 			if (getVideoImpl() == null) {
 				return actionMap;
 			}
-			Class<?> videoComponentImplementor = getActionSuperClass(getVideoImpl().getClass());
-			ActionMap videoImplActionMap = getContext().getActionMap(videoComponentImplementor, getVideoImpl());
+			Class<?> videoComponentImpl = getActionSuperClass(getVideoImpl().getClass());
+			ActionMap videoImplActionMap = getContext().getActionMap(videoComponentImpl, getVideoImpl());
 			this.actionMap = AppUtil.mergeActionMaps(actionMap, videoImplActionMap);
 		}
 		return actionMap;
