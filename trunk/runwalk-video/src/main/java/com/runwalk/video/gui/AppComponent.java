@@ -1,12 +1,14 @@
 package com.runwalk.video.gui;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * This interface serves as a marker interface. The aspectJ compiler will
- * weave some common BSAF functionalities into their the implementors' byte code at compile time.
- * 
- * @author Jeroen Peelaerts
- */
-public interface AppComponent {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface AppComponent {
+	
+	Class<?> actionMapStopClass() default IAppComponent.class;
 	
 }

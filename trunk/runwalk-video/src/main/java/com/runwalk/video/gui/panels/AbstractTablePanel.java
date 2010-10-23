@@ -32,10 +32,13 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.gui.AppComponent;
+import com.runwalk.video.gui.IAppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends JPanel implements AppComponent {
+@AppComponent
+// TODO why do we need to implement the IAppComponent interface here beside the annotation?
+public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends JPanel implements IAppComponent {
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
@@ -50,7 +53,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extend
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
 
-	public AbstractTablePanel(LayoutManager mgr) {
+	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);

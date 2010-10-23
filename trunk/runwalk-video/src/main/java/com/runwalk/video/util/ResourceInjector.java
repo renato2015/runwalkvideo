@@ -7,7 +7,8 @@ import org.jdesktop.application.ResourceMap;
 import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.actions.ApplicationActions;
 
-public class ResourceInjector implements AppComponent {
+@AppComponent
+public class ResourceInjector {
 	
 	private final static ResourceInjector INSTANCE = new ResourceInjector();
 	
@@ -24,7 +25,7 @@ public class ResourceInjector implements AppComponent {
 	}
 	
 	public javax.swing.Action injectResources(javax.swing.Action action, String name, Class<?> theClass) {
-		ResourceMap resourceMap = getContext().getResourceMap(theClass);
+		ResourceMap resourceMap = getResourceMap(theClass);
 		action.putValue(Action.NAME, resourceMap.getString(name + ".Action.text"));
 		action.putValue(Action.SHORT_DESCRIPTION, resourceMap.getString(name + ".Action.description"));
 		action.putValue(Action.MNEMONIC_KEY, resourceMap.getKeyCode(name + ".Action.mnemonic"));
@@ -34,8 +35,7 @@ public class ResourceInjector implements AppComponent {
 	}
 	
 	public String injectResources(String resourceName, Class<?> theClass) {
-		ResourceMap map = getContext().getResourceMap(theClass);
-		return map.getString(resourceName);
+		return getResourceMap(theClass).getString(resourceName);
 	}
 
 }

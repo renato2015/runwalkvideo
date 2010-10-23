@@ -15,13 +15,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
+import org.jdesktop.application.ApplicationAction;
+
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.media.VideoComponent;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.util.ResourceInjector;
 
 @SuppressWarnings("serial")
-public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChangeListener {
+@AppComponent
+public class VideoMenuBar extends JMenuBar implements PropertyChangeListener {
 
 	private JMenu windowMenu;
 	private JDialog aboutBox;
@@ -134,9 +137,9 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 			result.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
 				Action action = actionMap.get(key);
-				Object actionCommand = action.getValue(Action.ACTION_COMMAND_KEY);
+				String actionName = action instanceof ApplicationAction ? ((ApplicationAction) action).getName() : null;
 				if (getContext().getActionMap().get(key) == null && 
-						!AppWindowWrapper.TOGGLE_VISIBILITY_ACTION.equals(actionCommand)) {
+						!AppWindowWrapper.TOGGLE_VISIBILITY_ACTION.equals(actionName)) {
 					result.add(createMenuItem(action));
 				}
 			}
@@ -146,8 +149,8 @@ public class VideoMenuBar extends JMenuBar implements AppComponent, PropertyChan
 
 	private JMenuItem createMenuItem(Action action) {
 		JMenuItem result = null;
-		Object commandKey = action.getValue(Action.ACTION_COMMAND_KEY);
-		if (commandKey != null && commandKey.toString().startsWith("toggle")) {
+		Object selectedKey = action.getValue(Action.SELECTED_KEY);
+		if (selectedKey != null) {
 			result = new JCheckBoxMenuItem(action);
 		} else {
 			result = new JMenuItem(action);

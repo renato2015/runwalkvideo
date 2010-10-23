@@ -22,7 +22,8 @@ import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
-public class StatusPanel extends JPanel implements AppComponent {
+@AppComponent
+public class StatusPanel extends JPanel {
 	
 	private int busyIconIndex = 0;
 	private final Icon[] busyIcons = new Icon[15];

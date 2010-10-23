@@ -22,6 +22,8 @@ public class VideoPlayer extends VideoComponent {
 
 	public static final String POSITION = "position";
 
+	private static final String MUTED = "muted";
+
 	private static int playerCount = 0;
 
 	private int position;
@@ -84,6 +86,7 @@ public class VideoPlayer extends VideoComponent {
 		setState(State.PLAYING);
 		// clear all previously drawn overlays
 		clearOverlayImage();
+		getVideoImpl().startRunning();
 		getVideoImpl().play();
 		getTimer().restart();
 	}
@@ -143,6 +146,7 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	private void setPlayRate(float rate) {
+		getVideoImpl().startRunning();
 		getVideoImpl().setPlayRate(rate);
 	}
 	
@@ -192,16 +196,23 @@ public class VideoPlayer extends VideoComponent {
 	public void decreaseVolume() {
 		getVideoImpl().setVolume( getVideoImpl().getVolume() / 1.25f);
 	}
+	
+	public void setMuted(boolean muted) {
+		firePropertyChange(MUTED, isMuted(), muted);
+	}
 
-	public boolean mute() {
-		boolean muted = getVideoImpl().getVolume() > 0;
-		if (muted) {
+	@Action(enabledProperty = MUTED)
+	public void mute() {
+		if (isMuted()) {
 			volume = getVideoImpl().getVolume();
 			getVideoImpl().setVolume(0f);
 		} else {
 			getVideoImpl().setVolume(volume);
 		}
-		return muted;
+	}
+	
+	public boolean isMuted() {
+		return getVideoImpl().getVolume() > 0;
 	}
 
 	public int getDuration() {
@@ -220,7 +231,6 @@ public class VideoPlayer extends VideoComponent {
 		this.playerImpl = playerImpl;
 	}
 	
-	@Action(enabledProperty = IDLE)
 	@Override
 	public void dispose() {
 		super.dispose();

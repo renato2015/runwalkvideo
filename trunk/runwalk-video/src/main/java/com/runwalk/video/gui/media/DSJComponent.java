@@ -63,6 +63,20 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	private boolean rejectPauseFilter = false;
 	
+	/** {@inheritDoc} */
+	public void startRunning() {
+		// fire a graph changed so all settings made to the filtergraph will be applied
+		getFiltergraph().play();
+		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
+	}
+	
+	/** {@inheritDoc} */
+	public void stopRunning() {
+		// stop the filtergraph so we can configure or rewire as needed
+		getFiltergraph().stop();
+		getLogger().debug("Filtergraph for " + getTitle() + " stopped");
+	}
+	
 	public T getFiltergraph() {
 		return filtergraph;
 	}
@@ -131,7 +145,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void dispose() {
 		if (getFiltergraph() != null) {
 			// full screen frame needs to disposed on rebuilding..
-			// TODO review this code.. is this DSJComponent's responsability?
+			// TODO review this code.. is this DSJComponent's responsibility?
 			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
 			if (fullscreenFrame != null) {
 				fullscreenFrame.dispose();

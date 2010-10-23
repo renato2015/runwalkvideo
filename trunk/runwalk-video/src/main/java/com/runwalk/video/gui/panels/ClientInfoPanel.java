@@ -59,7 +59,8 @@ import com.runwalk.video.util.AppSettings;
  *
  */
 @SuppressWarnings("serial")
-public class ClientInfoPanel extends JPanel implements AppComponent {
+@AppComponent
+public class ClientInfoPanel extends JPanel {
 
 	private final static BeanProperty<JComponent, Boolean> ENABLED = BeanProperty.create("enabled");
 	private final static ELProperty<ClientTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");
@@ -376,7 +377,7 @@ public class ClientInfoPanel extends JPanel implements AppComponent {
 				if (selectedCity != null && !value.equals(selectedCity.getCode())) {
 					matcherEditor.setFilterText(new String[] {value});
 				}
-				return filterList != null && filterList.size() > 0 ? filterList.get(0) : selectedCity;
+				return !filterList.isEmpty() ? filterList.get(0) : selectedCity;
 			}
 
 		});
@@ -417,7 +418,7 @@ public class ClientInfoPanel extends JPanel implements AppComponent {
 				if (selectedCity != null) {
 					matcherEditor.setFilterText(new String[] {value});
 				}
-				return filterList != null && !filterList.isEmpty() ? filterList.get(0) : selectedCity;
+				return !filterList.isEmpty() ? filterList.get(0) : selectedCity;
 			}
 
 		});

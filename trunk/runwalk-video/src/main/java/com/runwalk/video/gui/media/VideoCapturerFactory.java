@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -17,7 +18,7 @@ public abstract class VideoCapturerFactory {
 	
 	/**
 	 * Initialize the capturer with the given name. Visible components should not be initialized until
-	 * {@link IVideoCapturer#startCapturer()} is called, as calls to this method can not be very expensive.
+	 * {@link IVideoCapturer#startRunning()} is called, as calls to this method can not be very expensive.
 	 * 
 	 * @param capturerName The name or id of the newly selected capture device
 	 * @param captureEncoderName The name of the default capture encoder, null if none
@@ -80,8 +81,12 @@ public abstract class VideoCapturerFactory {
 					}
 					// initialize the selected capturer
 					String selectedCapturerName = evt.getNewValue().toString();
-					IVideoCapturer capturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
-					capturer.setVideoImpl(capturerImpl);
+					try {
+						IVideoCapturer capturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
+						capturer.setVideoImpl(capturerImpl);
+					} catch(RuntimeException e) {
+						Logger.getLogger(VideoCapturerFactory.class).error(e);
+					}
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
 					// user clicked a monitor button, set it on the capturer
 					int monitorId = Integer.parseInt(evt.getNewValue().toString());
@@ -102,7 +107,7 @@ public abstract class VideoCapturerFactory {
 				// implementation can be null here if returned by the dummy factory
 				if (capturer.getVideoImpl() != null) {
 					// prepare the capturer for showing live video
-					capturer.getVideoImpl().startCapturer();
+					capturer.getVideoImpl().startRunning();
 					// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
 					capturer.showComponent();
 				}

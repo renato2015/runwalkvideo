@@ -114,7 +114,6 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	
 	public void setPlayRate(float rate) {
 		this.rate = rate;
-		getFiltergraph().play();
 		getFiltergraph().setRate(rate);
 	}
 
