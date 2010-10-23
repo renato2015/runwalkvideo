@@ -1,6 +1,5 @@
 package com.runwalk.video.gui.media;
 
-import java.awt.Component;
 import java.io.File;
 import java.util.List;
 
@@ -38,22 +37,4 @@ public interface IVideoCapturer extends IVideoComponent {
 	 */
 	public List<String> getCaptureEncoderNames();
 
-	/**
-	 * This method simply invokes {@link #startCapturer()} if the capturer is stopped 
-	 * or {@link #stopCapturer()} if the capturer is started at invocation time.
-	 */
-	public void togglePreview();
-
-	/**
-	 * Start running and bring the capturer to a state in which the {@link Component} returned by {@link #getComponent()} 
-	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are initialized and showing live video.
-	 */
-	public abstract void startCapturer();
-
-	/**
-	 * Stop running and bring the capturer to a state in which video format settings can be applied. 
-	 * In most cases the capturer will have to stop previewing video in order to reconfigure properly.
-	 */
-	public abstract void stopCapturer();
-	
 }

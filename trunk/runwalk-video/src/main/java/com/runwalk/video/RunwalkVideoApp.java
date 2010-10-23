@@ -172,9 +172,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 			}
 		}
 		getContext().getTaskService().shutdown();
-		while(!getContext().getTaskService().isTerminated()) {
-			Thread.yield();
-		}
 		getDaoService().shutdown();
 	}
 	

@@ -34,7 +34,8 @@ import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.gui.AppComponent;
 
 @SuppressWarnings("serial")
-public class CameraDialog extends JDialog implements AppComponent {
+@AppComponent
+public class CameraDialog extends JDialog {
 
 	// class properties
 	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";

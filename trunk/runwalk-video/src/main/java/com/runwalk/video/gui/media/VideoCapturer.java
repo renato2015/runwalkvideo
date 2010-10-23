@@ -43,11 +43,6 @@ public class VideoCapturer extends VideoComponent {
 	}
 	
 	@Action
-	public void togglePreview() {
-		getVideoImpl().togglePreview();
-	}
-
-	@Action
 	public void setCaptureEncoder() {
 		List<String> captureEncoderNames = getVideoImpl().getCaptureEncoderNames();
 		String captureEncoderName =  (String) JOptionPane.showInputDialog(
@@ -73,7 +68,6 @@ public class VideoCapturer extends VideoComponent {
 		this.videoImpl = videoImpl;
 	}
 
-	@Action(enabledProperty = IDLE)
 	@Override
 	public void dispose() {
 		super.dispose();
@@ -97,7 +91,7 @@ public class VideoCapturer extends VideoComponent {
 	public void stopRecording() {
 		getTimer().stop();
 		getVideoImpl().stopRecording();
-		setState(State.IDLE);
+		setIdle(true);
 		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 	}
 

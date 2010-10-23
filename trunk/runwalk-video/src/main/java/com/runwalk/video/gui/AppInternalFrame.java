@@ -6,7 +6,6 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
-import javax.swing.ActionMap;
 import javax.swing.JInternalFrame;
 
 import org.jdesktop.application.session.PropertySupport;
@@ -44,15 +43,11 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	}
 	
 	public void toggleVisibility() {
+		super.setVisible(isVisible());
 	}
 	
 	public void setVisible(boolean visible) {
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
-		super.setVisible(visible);
-	}
-	
-	public ActionMap getApplicationActionMap() {
-		return getApplicationActionMap(AppWindowWrapper.class);
 	}
 
 	public static class InternalFrameState extends WindowState {

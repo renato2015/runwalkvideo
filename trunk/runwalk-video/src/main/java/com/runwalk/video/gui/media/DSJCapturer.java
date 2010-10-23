@@ -24,8 +24,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private String capturerName;
 
-	private boolean running;
-	
 	DSJCapturer(String capturerName) {
 		this(capturerName, null);
 	}
@@ -37,25 +35,14 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		// capture encoder is resolved here
 		setCaptureEncoderName(captureEncoderName);
 		// filter info for this capturer will change after intialization, if needed, get it from the active capture device
-		stopCapturer();
-	}
-
-	/** {@inheritDoc} */
-	public void startCapturer() {
-		// fire a graph changed so all settings made to the filtergraph will be applied
-		getFiltergraph().graphChanged();
-		getFiltergraph().setPreview();
-		getFiltergraph().play();
-		setRunning(true);
-		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
+		stopRunning();
 	}
 	
-	/** {@inheritDoc} */
-	public void stopCapturer() {
-		// stop the filtergraph so we can configure or rewire as needed
-		getFiltergraph().stop();
-		setRunning(false);
-		getLogger().debug("Filtergraph for " + getTitle() + " stopped");
+	@Override
+	public void startRunning() {
+		getFiltergraph().graphChanged();
+		getFiltergraph().setPreview();
+		super.startRunning();
 	}
 
 	public void startRecording(File destFile) {
@@ -84,22 +71,6 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void stopRecording() {
 		getFiltergraph().record();
 		getFiltergraph().setPreview();
-	}
-	
-	private boolean isRunning() {
-		return running;
-	}
-	
-	private void setRunning(boolean running) {
-		this.running = running;
-	}
-
-	public void togglePreview() {
-		if (isRunning()) {
-			stopCapturer();
-		} else {
-			startCapturer();
-		}
 	}
 
 	public void showCaptureSettings() {

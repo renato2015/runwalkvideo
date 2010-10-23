@@ -14,7 +14,8 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  *
  */
-public interface AppWindowWrapper extends AppComponent {
+@AppComponent(actionMapStopClass = AppWindowWrapper.class)
+public interface AppWindowWrapper {
 	
 	public static final String TOGGLE_VISIBILITY_ACTION = "toggleVisibility";
 	public static final String VISIBLE = "visible";

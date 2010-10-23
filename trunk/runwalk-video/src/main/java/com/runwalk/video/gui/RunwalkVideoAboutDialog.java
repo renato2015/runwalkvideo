@@ -15,7 +15,8 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 
 @SuppressWarnings("serial")
-public class RunwalkVideoAboutDialog extends JDialog implements AppComponent {
+@AppComponent
+public class RunwalkVideoAboutDialog extends JDialog {
 
     private JButton closeButton;
 	

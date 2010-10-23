@@ -43,6 +43,14 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		setPlayRate(rate);
 	}
 	
+	public void startRunning() {
+		
+	}
+
+	public void stopRunning() {
+
+	}
+	
 	public boolean loadFile(File videoFile) {
 		return loadVideo(videoFile.toURI().toString());
 	}
