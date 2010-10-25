@@ -44,6 +44,9 @@ import com.runwalk.video.util.AppUtil;
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
+	
+	public static final String SELECT_VIDEO_DIR_ACTION = "selectVideoDir";
+	public static final String SELECT_UNCOMPRESSED_VIDEO_DIR_ACTION = "selectUncompressedVideoDir";
 
 	private boolean compressionEnabled;
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
@@ -121,7 +124,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public Task<Boolean, Void> selectUncompressedVideoDir() {
 		Task<Boolean, Void> result = null;
 		File oldDir = getAppSettings().getUncompressedVideoDir();
-		File newDir = selectDirectory(oldDir);
+		javax.swing.Action action = getAction(SELECT_UNCOMPRESSED_VIDEO_DIR_ACTION);
+		String title = action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString();
+		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setUncompressedVideoDir(newDir);
 			result = refreshVideoFiles();
@@ -133,7 +138,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	public Task<Boolean,Void> selectVideoDir() {
 		Task<Boolean, Void> result = null;
 		File oldDir = getAppSettings().getVideoDir();
-		File newDir = selectDirectory(oldDir);
+		javax.swing.Action action = getAction(SELECT_VIDEO_DIR_ACTION);
+		String title = action.getValue(javax.swing.Action.SHORT_DESCRIPTION).toString();
+		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setVideoDir(newDir);
 			result = refreshVideoFiles();
@@ -141,10 +148,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		return result;
 	}
 	
-	private File selectDirectory(File chosenDir) {
+	private File selectDirectory(File chosenDir, String title) {
 		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnVal = chooser.showDialog(null, "Selecteer");
+		int returnVal = chooser.showDialog(null, title);
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
 			return chooser.getSelectedFile();
 		}
