@@ -2,6 +2,7 @@ package com.runwalk.video.util;
 
 import java.awt.Font;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
@@ -103,6 +104,9 @@ public class AppSettings implements Serializable {
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
+			if (!settingsFile.exists() && !settingsFile.createNewFile()) {
+				throw new FileNotFoundException("Settings file could not be created by code");
+			}
 			marshaller.marshal(settings, settingsFile);
 		} catch (Exception exc) {
 			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, exc);
