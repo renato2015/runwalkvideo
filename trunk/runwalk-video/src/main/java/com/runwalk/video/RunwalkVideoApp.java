@@ -314,12 +314,11 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 */
 	private void executeAction(ActionMap actionMap, String actionKey) {
 		Action action = actionMap.get(actionKey);
-		ActionManager.invokeAction(action, getMainFrame());
-//		if (action != null) {
-//			
-//			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
-//			action.actionPerformed(actionEvent);
-//		}
+//		ActionManager.invokeAction(action, getMainFrame());
+		if (action != null) {
+			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
+			action.actionPerformed(actionEvent);
+		}
 	}
 
 	private boolean isSaveNeeded() {
