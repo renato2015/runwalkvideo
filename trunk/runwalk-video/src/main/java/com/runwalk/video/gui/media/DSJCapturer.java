@@ -42,6 +42,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 	public void startRunning() {
 		getFiltergraph().graphChanged();
 		getFiltergraph().setPreview();
+		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 		super.startRunning();
 	}
 

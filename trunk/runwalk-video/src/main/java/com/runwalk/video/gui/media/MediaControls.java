@@ -76,6 +76,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private static final String STOP_ACTION = "stop";
 	private static final String RECORD_ACTION = "record";
 	private static final String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
+	public static final String STOP_ALL_VIDEO_COMPONENTS_ACTION = "stopAllVideoComponents";
+	
 	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
@@ -214,6 +216,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		add(button, "gap 0");
 		return button;
 	}
+	
+	@Action
+	public void stopAllVideoComponents() {
+		for (VideoComponent videoComponent : videoComponents) {
+			getLogger().debug("Stopping video for " + videoComponent.getTitle());
+			videoComponent.stopRunning();
+		}
+	}
 
 	//TODO kan dit met een proxy action??
 	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
@@ -234,7 +244,6 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED )
-	
 	public void togglePlay() {
 		for (VideoPlayer player : getPlayers()) {
 			if (player.isPlaying()) {

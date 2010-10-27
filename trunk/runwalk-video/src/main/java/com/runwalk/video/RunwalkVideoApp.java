@@ -163,6 +163,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		super.shutdown();
 		saveSettings();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
+		executeAction(getMediaControls().getApplicationActionMap(), MediaControls.STOP_ALL_VIDEO_COMPONENTS_ACTION);
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
