@@ -67,7 +67,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void startRunning() {
 		// fire a graph changed so all settings made to the filtergraph will be applied
 		getFiltergraph().play();
-		getLogger().debug("Filtergraph for " + getTitle() + " set to preview mode");
 	}
 	
 	/** {@inheritDoc} */

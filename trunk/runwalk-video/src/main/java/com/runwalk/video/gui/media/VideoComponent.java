@@ -368,6 +368,10 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		}
 	}
 	
+	public void stopRunning() {
+		getVideoImpl().stopRunning();
+	}
+	
 	@Action(enabledProperty = IDLE)
 	public void dispose() {
 		// fire event before removing listeners
