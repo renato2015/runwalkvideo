@@ -11,7 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ActionMap;
@@ -20,6 +20,7 @@ import javax.swing.Timer;
 
 import org.apache.log4j.Level;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.beansbinding.AbstractBindingListener;
@@ -30,15 +31,15 @@ import org.jdesktop.beansbinding.Binding.SyncFailure;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 
+import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.PropertyChangeSupport;
 import com.runwalk.video.gui.tasks.AbstractTask;
-import com.runwalk.video.util.AppUtil;
 
 /**
- * This abstraction allows you to make easy reuse of the vendor independent logic 
+ * This abstraction allows you to make easy reuse of the common video UI functionality  
  * used by the components that implement {@link IVideoPlayer} and {@link IVideoCapturer}.
  * 
  * @author Jeroen Peelaerts
@@ -108,7 +109,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	public abstract IVideoComponent getVideoImpl();
-	
+
 	/**
 	 * This method simply invokes {@link #startRunning()} if the video component is stopped 
 	 * or {@link #stopRunning()} if the component is running at invocation time.
@@ -246,11 +247,11 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		}
 		return monitorId;
 	}
-	
+
 	protected void showComponent() {
 		showComponent(true, null);
 	}
-	
+
 	protected void showComponent(boolean fullScreen, Integer monitorId) {
 		// get the graphicsdevice corresponding with the given monitor id
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -281,7 +282,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		setVisible(true);
 		getApplication().createOrShowComponent(this);
 	}
-	
+
 	private void createInternalFrame() {
 		internalFrame = new AppInternalFrame(getTitle(), false);
 		getInternalFrame().add(getVideoImpl().getComponent());
@@ -290,7 +291,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		ELProperty<AppWindowWrapper, Boolean> fullScreen = ELProperty.create("{!fullScreen}");
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, fullScreen, getInternalFrame(), enabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
-			
+
 			@Override
 			public void bindingBecameBound(Binding binding) {
 				// TODO Auto-generated method stub
@@ -308,7 +309,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 				// TODO Auto-generated method stub
 				super.synced(binding);
 			}
-			
+
 		});
 		enabledBinding.bind();
 	}
@@ -323,7 +324,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 				showComponent(isFullScreen(), monitorId);
 				return null;
 			}
-			
+
 		};
 
 	}
@@ -351,27 +352,27 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	public boolean isIdle() {
 		return getState() == State.IDLE;
 	}
-	
+
 	public void setIdle(boolean idle) {
 		boolean wasIdle = isIdle();
 		setState(idle ? State.IDLE : State.STOPPED);
 		firePropertyChange(IDLE, wasIdle, isIdle());
 	}
-	
+
 	public boolean isStopped() {
 		return getState() == State.STOPPED;
 	}
-	
+
 	private void maybeRemoveComponentListener(Component comp, ComponentListener l) {
 		if (comp != null) {
 			comp.addComponentListener(l);
 		}
 	}
-	
+
 	public void stopRunning() {
 		getVideoImpl().stopRunning();
 	}
-	
+
 	@Action(enabledProperty = IDLE)
 	public void dispose() {
 		// fire event before removing listeners
@@ -411,32 +412,99 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	 * Merge the {@link ActionMap} of the implementation with the one of this instance..
 	 */
 	public ActionMap getApplicationActionMap() {
-		if (actionMap == null) {
+		if (actionMap == null && getVideoImpl() != null) {
+			// get the action map of the abstractions
 			ActionMap actionMap = getContext().getActionMap(AppWindowWrapper.class, this);
-			if (getVideoImpl() == null) {
-				return actionMap;
+			ActionMap insertionReference = actionMap;
+			// get the action map of the implementations
+			Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), IVideoComponent.class);
+			ApplicationActionMap videoImplActionMap = getContext().getActionMap(firstImplementor, getVideoImpl());
+			// the lastImplementor is the class whose hierarchy will be searched for IVideoComponent implementors
+			Class<?> lastImplementor = getVideoImpl().getClass();
+			Class<?> abstractionClass = getClass();
+			// loop over all classes derived from VideoComponent
+			while (VideoComponent.class.isAssignableFrom(abstractionClass)) {
+				// get the next implementor for IVideoComponent in the hierarchy of startClass
+				lastImplementor = getLastImplementor(lastImplementor, IVideoComponent.class);
+				// this loop is necessary if there are more classes in the implementors hierarchy than in that of the abstraction
+				while(videoImplActionMap.getActionsClass() != lastImplementor) {
+					videoImplActionMap = (ApplicationActionMap) videoImplActionMap.getParent();
+				}
+				// now insert the found part of the implementation action map in the action map of the abstraction
+				ActionMap oldParent = insertionReference.getParent();
+				insertionReference.setParent(videoImplActionMap);
+				// save a reference to the parent of the implementation's action map
+				ApplicationActionMap tail = (ApplicationActionMap) videoImplActionMap.getParent();
+				videoImplActionMap.setParent(oldParent);
+				// set the implementation's action map to the parent of the action map that was inserted into the abstractions' action map
+				videoImplActionMap = tail;
+				// the next insertion point of the abstraction's action map will be it's parent before the insertion
+				insertionReference = oldParent;
+				lastImplementor = lastImplementor.getSuperclass();
+				abstractionClass = abstractionClass.getSuperclass();
 			}
-			Class<?> videoComponentImpl = getActionSuperClass(getVideoImpl().getClass());
-			ActionMap videoImplActionMap = getContext().getActionMap(videoComponentImpl, getVideoImpl());
-			this.actionMap = new WeakReference<ActionMap>(AppUtil.mergeActionMaps(actionMap, videoImplActionMap));
+			this.actionMap = new WeakReference<ActionMap>(actionMap);
 		}
-		return actionMap.get();
+		return actionMap != null ? actionMap.get() : getContext().getActionMap(this);
 	}
 
-	private Class<?> getActionSuperClass(Class<?> theClass) {
-		List<Class<?>> interfaces = Arrays.asList(theClass.getInterfaces());
-		if (!interfaces.contains(IVideoComponent.class)) {
-			return getActionSuperClass(theClass.getSuperclass());
+	/**
+	 * Search a class hierarchy from bottom to top and return the first {@link Class} that implements the given interface.
+	 * 
+	 * @param theClass The {@link Class} whose hierarchy will be searched
+	 * @param interf The interface
+	 * @return The first {@link Class} implementing the given interface
+	 */
+	private Class<?> getFirstImplementor(Class<?> theClass, Class<?> interf) {
+		List<Class<?>> allClasses = Lists.newArrayList();
+		while(theClass != null) {
+			allClasses.add(theClass);
+			theClass = theClass.getSuperclass();
 		}
-		return theClass;
+		Collections.reverse(allClasses);
+		for (Class<?> firstClass : allClasses) {
+			if (implementsInterface(firstClass, interf)) {
+				return firstClass;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Check whether a {@link Class} implements the given interface.
+	 * 
+	 * @param theClass The class
+	 * @param interf The interface
+	 * @return <code>true</code> if the {@link Class} implements the interface
+	 */
+	private boolean implementsInterface(Class<?> theClass, Class<?> interf) {
+		for (Class<?> implementedInterface : theClass.getInterfaces()) {
+			if (interf.isAssignableFrom(implementedInterface)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Search a class hierarchy from top to bottom and return the first {@link Class} that implements the given interface.
+	 * 
+	 * @param theClass The {@link Class} whose hierarchy will be searched
+	 * @param interf The interface
+	 * @return The first {@link Class} implementing the given interface
+	 */
+	private Class<?> getLastImplementor(Class<?> theClass, Class<?> interf) {
+		boolean recurse = !implementsInterface(theClass, interf);
+		// if no result here then recurse
+		return recurse ? getLastImplementor(theClass.getSuperclass(), interf) : theClass;
 	}
 
 	public void componentShown(ComponentEvent e) {
-		firePropertyChange(VISIBLE, this.visible, this.visible = e.getComponent().isVisible());
+		setVisible(e.getComponent().isVisible());
 	}
 
 	public void componentHidden(ComponentEvent e) {
-		firePropertyChange(VISIBLE, this.visible, this.visible = e.getComponent().isVisible());
+		setVisible(e.getComponent().isVisible());
 	}
 
 	public void componentResized(ComponentEvent e) { }
