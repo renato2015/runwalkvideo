@@ -11,8 +11,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.swing.ActionMap;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -80,23 +78,6 @@ public class AppUtil {
 	
 	public static String firstLettersToUpperCase(String s) {
 		return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1) : s;
-	}
-
-	/**
-	 * This method will merge all the keys in a new ActionMap
-	 * @param map1 The first map 
- 	 * @param map2 The second map
-	 * @return The map with both the first second map's keys
-	 */
-	public static ActionMap mergeActionMaps(ActionMap map1, ActionMap map2) {
-		ActionMap result = new ActionMap();
-		for (Object key : map1.allKeys()) {
-			result.put(key, map1.get(key));
-		}
-		for (Object key : map2.allKeys()) {
-			result.put(key, map2.get(key));
-		}
-		return result;
 	}
 	
 	/**

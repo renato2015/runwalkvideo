@@ -80,6 +80,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	
 	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
+	
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
