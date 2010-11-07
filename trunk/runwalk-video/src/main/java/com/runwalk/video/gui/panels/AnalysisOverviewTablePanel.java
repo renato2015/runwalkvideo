@@ -26,6 +26,7 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.matchers.Matcher;
 
+import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -83,6 +84,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			@Override
 			public void succeeded(TaskEvent<Boolean> event) {
 				setCompressionEnabled(event.getValue());
+				getApplication().executeAction(getApplicationActionMap(), RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION);
 			}
 			
 		});

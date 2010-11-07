@@ -17,7 +17,6 @@ import net.miginfocom.swing.MigLayout;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jdesktop.application.ActionManager;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -42,6 +41,7 @@ import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.panels.ClientInfoPanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
 import com.runwalk.video.gui.panels.StatusPanel;
+import com.runwalk.video.gui.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.io.VideoFileManager;
@@ -73,7 +73,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public static final String SAVE_SETTINGS_ACTION = "saveSettings";
 	public static final String REFRESH_ACTION = "refresh";
 	public static final String UPLOAD_LOG_FILES_ACTION = "uploadLogFiles";
-	
+	public static final String SAVE_ENTITIES_ACTION = "save";
+	public static final String CHECK_FREE_DISK_SPACE_ACTION = "checkFreeDiskSpace";
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -101,7 +102,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@Override
 	protected void ready() {
 		// load data from the db using the BSAF task mechanism
-		executeAction(getContext().getActionMap(), "refresh");
+		executeAction(getContext().getActionMap(), REFRESH_ACTION);
 	}
 	
 	/** {@inheritDoc} */
@@ -169,7 +170,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 					"Wilt u de gemaakte wijzigingen opslaan?", 
 					"Wijzingen bewaren..", JOptionPane.OK_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
-				executeAction(getClientTablePanel().getApplicationActionMap(), "save");
+				executeAction(getClientTablePanel().getApplicationActionMap(), SAVE_ENTITIES_ACTION);
 			}
 		}
 		getContext().getTaskService().shutdown();
@@ -179,10 +180,15 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	/*
 	 * Global application actions
 	 */
-
+	
 	@org.jdesktop.application.Action
 	public void saveSettings() {
 		AppSettings.getInstance().saveSettings();
+	}
+	
+	@org.jdesktop.application.Action
+	public Task<Long, Void> checkFreeDiskSpace() {
+		return new CheckFreeDiskSpaceTask(getMainFrame(), getVideoFileManager());
 	}
 	
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
@@ -313,7 +319,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	 * @param actionMap The {@link ActionMap} containing the {@link Action} to be executed
 	 * @param actionKey The key of the {@link Action} to be executed
 	 */
-	private void executeAction(ActionMap actionMap, String actionKey) {
+	public void executeAction(ActionMap actionMap, String actionKey) {
 		Action action = actionMap.get(actionKey);
 //		ActionManager.invokeAction(action, getMainFrame());
 		if (action != null) {
