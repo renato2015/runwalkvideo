@@ -658,14 +658,16 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 */
 	private void enableVideoComponentControls(final VideoComponent videoComponent) {
 		// a player or capturer is requesting the focus..
+		// FIXME needs some further review
 		boolean isActive = videoComponent != null && videoComponent.isActive();
-		boolean isIdle = isActive && (frontMostComponent == null || frontMostComponent.isIdle() || 
-		!frontMostComponent.isIdle() && videoComponent.getClass() == frontMostComponent.getClass());
-		if (isIdle) {
+		boolean isIdle = isActive && (frontMostComponent == null || frontMostComponent.isIdle());
+		boolean isWorkingAndSimilarComponent = frontMostComponent != null && !frontMostComponent.isIdle() && 
+		videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
+		if (isIdle || isWorkingAndSimilarComponent) {
 			frontMostComponent = videoComponent;
 			StringBuilder title = new StringBuilder(getName());
 			title.append(" > ").append(videoComponent.getTitle());
-			if (videoComponent instanceof VideoCapturer) {
+			if (isIdle && videoComponent instanceof VideoCapturer) {
 				clearStatusInfo();
 				setRecordingEnabled(true);
 				setPlayerControlsEnabled(false);

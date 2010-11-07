@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -31,7 +30,7 @@ import de.humatic.dsj.DSJUtils;
  * @author Jeroen Peelaerts
  *
  */
-public class VideoFileManager extends AbstractBean {
+public class VideoFileManager {
 
 	private static final Logger LOGGER = Logger.getLogger(VideoFileManager.class);
 

@@ -440,6 +440,7 @@ public class ClientInfoPanel extends JPanel {
 		return clientTablePanel;
 	}
 
+	@Override
 	public void requestFocus() {
 		firstnameField.requestFocus();
 	}

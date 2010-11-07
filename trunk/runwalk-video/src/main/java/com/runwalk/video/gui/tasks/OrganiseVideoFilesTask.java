@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;

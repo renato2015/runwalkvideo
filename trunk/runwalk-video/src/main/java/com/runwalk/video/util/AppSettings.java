@@ -92,8 +92,8 @@ public class AppSettings implements Serializable {
 		} finally {
 			settings = settings == null ? new Settings() : settings;
 		}
-		Logger.getLogger(getClass()).debug("Found videodir: " + getVideoDir().getAbsolutePath());
-		Logger.getLogger(getClass()).debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
+		logger.debug("Found videodir: " + getVideoDir().getAbsolutePath());
+		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
 	}
 
 	public void saveSettings() {
