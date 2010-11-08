@@ -468,7 +468,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				@Override
 				public void finished(TaskEvent<Void> event) {
 					// set this manually as such a specific propertyChangeEvent won't be fired
-					// selectedRecordingRecordable = false;
+					selectedRecordingRecordable = false;
 					setRecordingEnabled(false);
 				}
 
@@ -658,26 +658,28 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	 */
 	private void enableVideoComponentControls(final VideoComponent videoComponent) {
 		// a player or capturer is requesting the focus..
-		// FIXME needs some further review
 		boolean isActive = videoComponent != null && videoComponent.isActive();
 		boolean isIdle = isActive && (frontMostComponent == null || frontMostComponent.isIdle());
-		boolean isWorkingAndSimilarComponent = frontMostComponent != null && !frontMostComponent.isIdle() && 
+		// check whether the component is not idle and if it is of a similar class as the frontmost component
+		boolean isWorkingAndSimilar = frontMostComponent != null && !frontMostComponent.isIdle() && 
 		videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
-		if (isIdle || isWorkingAndSimilarComponent) {
+		if (isIdle || isWorkingAndSimilar) {
 			frontMostComponent = videoComponent;
 			StringBuilder title = new StringBuilder(getName());
 			title.append(" > ").append(videoComponent.getTitle());
-			if (isIdle && videoComponent instanceof VideoCapturer) {
-				clearStatusInfo();
-				setRecordingEnabled(true);
-				setPlayerControlsEnabled(false);
-				setStopEnabled(false);
-			} else {
-				setRecordingEnabled(false);
-				setPlayerControlsEnabled(true);
-				setStopEnabled(getFrontMostPlayer().getPosition() > 0);
-				setStatusInfo(getFrontMostPlayer().getRecording(), getFrontMostPlayer().getPosition(), getFrontMostPlayer().getDuration());
-				title.append(" > " ).append(getFrontMostPlayer().getRecording().getVideoFileName());
+			if (isIdle) {
+				if (videoComponent instanceof VideoCapturer) {
+					clearStatusInfo();
+					setRecordingEnabled(true);
+					setPlayerControlsEnabled(false);
+					setStopEnabled(false);
+				} else {
+					setRecordingEnabled(false);
+					setPlayerControlsEnabled(true);
+					setStopEnabled(getFrontMostPlayer().getPosition() > 0);
+					setStatusInfo(getFrontMostPlayer().getRecording(), getFrontMostPlayer().getPosition(), getFrontMostPlayer().getDuration());
+					title.append(" > " ).append(getFrontMostPlayer().getRecording().getVideoFileName());
+				}
 			}
 			setFullScreenEnabled(videoComponent.isFullScreenEnabled());
 			setTitle(title.toString());

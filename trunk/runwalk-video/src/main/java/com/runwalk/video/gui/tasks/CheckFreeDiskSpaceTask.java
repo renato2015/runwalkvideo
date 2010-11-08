@@ -39,8 +39,8 @@ public class CheckFreeDiskSpaceTask extends AbstractTask<Long, Void> {
 	@Override
 	protected void succeeded(Long result) {
 		if (result < MIN_FREE_SPACE) {
-			JOptionPane.showMessageDialog(getParentComponent(), getResourceString("title"), 
-					getResourceString("warningMessage"), JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(getParentComponent(), getResourceString("warningMessage", result),
+					getResourceString("title"), JOptionPane.WARNING_MESSAGE);
 		}
 	}
 

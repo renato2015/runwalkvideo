@@ -21,8 +21,6 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskEvent;
-import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
 
 import com.runwalk.video.dao.DaoService;
@@ -46,6 +44,7 @@ import com.runwalk.video.gui.tasks.RefreshTask;
 import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.util.TaskExecutor;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
@@ -75,6 +74,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	public static final String UPLOAD_LOG_FILES_ACTION = "uploadLogFiles";
 	public static final String SAVE_ENTITIES_ACTION = "save";
 	public static final String CHECK_FREE_DISK_SPACE_ACTION = "checkFreeDiskSpace";
+	public static final String REFRESH_VIDEO_FILES_ACTION = "refreshVideoFiles";
+
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -194,15 +195,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
 		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
-		refreshTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-
-			@Override
-			public void finished(TaskEvent<Void> event) {
-				// refresh video file cache, this task should not be launched until the database data is refreshed
-				executeAction(getAnalysisOverviewTablePanel().getApplicationActionMap(), "refreshVideoFiles");
-			}
-			
-		});
+		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION));
 		return refreshTask;
 	}
 	
