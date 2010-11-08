@@ -1,7 +1,5 @@
 package com.runwalk.video.gui;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -27,11 +25,12 @@ import com.google.common.base.Preconditions;
  * @author Peter Levart
  */
 @SuppressWarnings("serial")
-public class EnumButtonGroup<E extends Enum<E>> extends ButtonGroup
+public class EnumButtonGroup<E extends Enum<E>> extends ButtonGroup implements PropertyChangeSupport
 {
+    public static final Property<EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> SELECTED_ENUM_PROPERTY = BeanProperty.create("selectedEnum");
+	
     private Map<E, AbstractButton> enum2button;
     private Map<ButtonModel, E> buttonModel2enum = new HashMap<ButtonModel, E>();
-    private PropertyChangeSupport pcs;
     private Class<E> enumType;
 
     public EnumButtonGroup(Class<E> enumType)
@@ -110,57 +109,10 @@ public class EnumButtonGroup<E extends Enum<E>> extends ButtonGroup
         fireSelectedEnumPropertyChange(oldSelection, getSelection());
     }
 
-
-    private PropertyChangeSupport pcs()
-    {
-        if (pcs == null)
-            pcs = new PropertyChangeSupport(this);
-
-        return pcs;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener)
-    {
-        pcs().addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener)
-    {
-        pcs().removePropertyChangeListener(listener);
-    }
-
-    public PropertyChangeListener[] getPropertyChangeListeners()
-    {
-        return pcs().getPropertyChangeListeners();
-    }
-
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        pcs().addPropertyChangeListener(propertyName, listener);
-    }
-
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
-    {
-        pcs().removePropertyChangeListener(propertyName, listener);
-    }
-
-    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName)
-    {
-        return pcs().getPropertyChangeListeners(propertyName);
-    }
-
-    public boolean hasListeners(String propertyName)
-    {
-        return pcs().hasListeners(propertyName);
-    }
-
     private void fireSelectedEnumPropertyChange(ButtonModel oldSelection, ButtonModel newSelection)
     {
-        pcs().firePropertyChange("selectedEnum", buttonModel2enum.get(oldSelection), buttonModel2enum.get(newSelection));
+        firePropertyChange("selectedEnum", buttonModel2enum.get(oldSelection), buttonModel2enum.get(newSelection));
     }
-
-
-    public static final Property<EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> SELECTED_ENUM_PROPERTY = BeanProperty.create("selectedEnum");
     
     public E getSelectedEnum()
     {
