@@ -40,12 +40,15 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
+import com.runwalk.video.util.TaskExecutor;
 
 @SuppressWarnings("serial")
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 	
+	public static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
+	public static final String CLEANUP_VIDEO_FILES_ACTION = "cleanupVideoFiles";
 	public static final String SELECT_VIDEO_DIR_ACTION = "selectVideoDir";
 	public static final String SELECT_UNCOMPRESSED_VIDEO_DIR_ACTION = "selectUncompressedVideoDir";
 
@@ -68,10 +71,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow");
 
-		JButton cleanupButton = new JButton(getAction("cleanupVideoFiles"));
+		JButton cleanupButton = new JButton(getAction(CLEANUP_VIDEO_FILES_ACTION));
 		cleanupButton.setFont(AppSettings.MAIN_FONT);
 		add(cleanupButton);
-		setSecondButton(new JButton(getAction("compressVideoFiles")));
+		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton());
 	}
@@ -79,12 +82,12 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
 		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
+		refreshVideoFilesTask.addTaskListener(new TaskExecutor<Boolean, Void>(RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION));
 		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 			@Override
 			public void succeeded(TaskEvent<Boolean> event) {
 				setCompressionEnabled(event.getValue());
-				getApplication().executeAction(getApplicationActionMap(), RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION);
 			}
 			
 		});
