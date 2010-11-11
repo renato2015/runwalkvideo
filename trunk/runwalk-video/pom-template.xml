@@ -522,6 +522,23 @@
    				<codeBase>file:///${project.build.directory}/</codeBase>
    			</properties> 
 		</profile>
+		<profile>
+			<id>localMs</id>
+			<properties>
+				<!-- MsSql driver properties -->
+				<jdbc.url>jdbc:jtds:sqlserver://localhost:1433;DatabaseName=TouchDB</jdbc.url>
+				<jdbc.user>localUser</jdbc.user>
+				<jdbc.password>localPwd</jdbc.password>
+				<jdbc.driverClass>net.sourceforge.jtds.jdbc.Driver</jdbc.driverClass>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>net.sourceforge.jtds</groupId>
+					<artifactId>jtds</artifactId>
+					<version>1.2.4</version>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

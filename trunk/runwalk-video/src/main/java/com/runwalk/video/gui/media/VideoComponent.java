@@ -326,7 +326,6 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 			}
 
 		};
-
 	}
 
 	protected void setState(State state) {
