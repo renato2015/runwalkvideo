@@ -45,6 +45,7 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
@@ -55,6 +56,7 @@ import com.runwalk.video.gui.AppWindowWrapper;
 import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
+import com.runwalk.video.gui.tasks.AbstractTask;
 import com.runwalk.video.gui.tasks.CreateKeyframeTask;
 import com.runwalk.video.gui.tasks.CreateOverlayImageTask;
 import com.runwalk.video.gui.tasks.RecordTask;
@@ -77,10 +79,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private static final String RECORD_ACTION = "record";
 	private static final String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
 	public static final String STOP_ALL_VIDEO_COMPONENTS_ACTION = "stopAllVideoComponents";
-	
+
 	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
-	
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
@@ -219,11 +220,18 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 	
 	@Action
-	public void stopAllVideoComponents() {
-		for (VideoComponent videoComponent : videoComponents) {
-			getLogger().debug("Stopping video for " + videoComponent.getTitle());
-			videoComponent.stopRunning();
-		}
+	public Task<Void, Void> disposeAllVideoComponents() {
+		return new AbstractTask<Void, Void>("stopAllVideoComponents") {
+
+			protected Void doInBackground() throws Exception {
+				for (VideoComponent videoComponent : Lists.newArrayList(videoComponents)) {
+					getLogger().debug("Stopping video for " + videoComponent.getTitle());
+					videoComponent.dispose();
+				}
+				return null;
+			}
+
+		};
 	}
 
 	//TODO kan dit met een proxy action??
