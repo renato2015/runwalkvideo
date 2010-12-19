@@ -38,7 +38,7 @@ import com.runwalk.video.util.AppSettings;
 @SuppressWarnings("serial")
 @AppComponent
 // TODO why do we need to implement the IAppComponent interface here beside the annotation?
-public abstract class AbstractTablePanel<T extends SerializableEntity<T>> extends JPanel implements IAppComponent {
+public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>> extends JPanel implements IAppComponent {
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";

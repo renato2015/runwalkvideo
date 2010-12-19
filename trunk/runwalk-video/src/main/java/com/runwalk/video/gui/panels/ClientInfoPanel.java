@@ -47,7 +47,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.entities.Client.Gender;
+import com.runwalk.video.entities.Person.Gender;
 import com.runwalk.video.gui.AppComponent;
 import com.runwalk.video.gui.EnumButtonGroup;
 import com.runwalk.video.util.AppSettings;

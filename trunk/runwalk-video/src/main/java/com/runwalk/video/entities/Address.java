@@ -13,14 +13,14 @@ import org.jdesktop.application.AbstractBean;
 @SuppressWarnings("serial")
 public class Address extends AbstractBean implements Serializable {
 	
-	@Column(name = "address1")
+	@Column(name = "address_1")
 	private String address;
 	
 	@ManyToOne
-	@JoinColumn(name = "cityid")
+	@JoinColumn(name = "city_id")
 	private City city;
 	
-	@Column(name = "postalCode")
+	@Column(name = "zip")
 	private String postalcode;
 	
 	public String getAddress() {
