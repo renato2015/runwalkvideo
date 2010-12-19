@@ -147,7 +147,7 @@ public class ListRemovalTestCase extends TestCase {
 		
 	}
 	
-	public <T extends Comparable<T>> EventList<T> createList(EventList<T> itemList, Connector<T> itemConnector) { 
+	public <T extends Comparable<? super T>> EventList<T> createList(EventList<T> itemList, Connector<T> itemConnector) { 
 		EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
 		SortedList<T> sortedItems = SortedList.create(observedItems);
 		return sortedItems;

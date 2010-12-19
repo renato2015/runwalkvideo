@@ -2,14 +2,16 @@ package com.runwalk.video.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name = "city")
+@Table(schema="testdb", name = "phppos_cities")
 @NamedQueries(value={
 		@NamedQuery(name="findByZipCode", query="SELECT DISTINCT c from City c WHERE c.code = :zipCode ORDER BY c.code ASC"),
 		@NamedQuery(name="findByName", query="SELECT DISTINCT c from City c WHERE c.name = :name ORDER BY c.code ASC"),
@@ -17,15 +19,14 @@ import javax.persistence.Table;
 })
 public class City extends SerializableEntity<City> {
 	
-	@Id
-	@Column(name="id")
-	private Long id;
-
 	@Column(name="code")
 	private Integer code;
 
 	@Column(name="name")
 	private String name;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	private State state;
 
 	public City() {	}
 	
@@ -33,10 +34,6 @@ public class City extends SerializableEntity<City> {
 		super();
 		this.name = name;
 		this.code = code;
-	}
-
-	public Long getId() {
-		return this.id;
 	}
 
 	public Integer getCode() {
@@ -47,6 +44,10 @@ public class City extends SerializableEntity<City> {
 		return this.name;
 	}
 	
+	public State getState() {
+		return state;
+	}
+
 	@Override
 	public String toString() {
 		return getCode() + " " + getName();

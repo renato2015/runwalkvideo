@@ -8,14 +8,14 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(schema="testdb", name="province")
-public class Province implements Serializable {
+@Table(schema="testdb", name="phppos_states")
+public class State implements Serializable {
 	@Id
 	private int id;
 
 	private String name;
 
-	protected Province() {	}
+	protected State() {	}
 
 	public int getId() {
 		return this.id;

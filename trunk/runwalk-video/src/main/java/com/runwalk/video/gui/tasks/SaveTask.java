@@ -10,7 +10,7 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
 
-public class SaveTask<T extends SerializableEntity<T>> extends AbstractTask<List<T>, Void> {
+public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractTask<List<T>, Void> {
 
 	private final EventList<T> itemList;
 
