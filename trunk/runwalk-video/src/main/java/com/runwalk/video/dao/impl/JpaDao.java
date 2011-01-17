@@ -3,6 +3,8 @@ package com.runwalk.video.dao.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -11,10 +13,6 @@ import javax.persistence.LockModeType;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.Query;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.Dao;
 
 /**
@@ -33,44 +31,53 @@ public class JpaDao<E> extends AbstractDao<E> {
 		super(typeParameter);
 		this.entityManagerFactory = entityManagerFactory;
 	}
-
-	protected EntityManagerFactory getEntityManagerFactory() {
+	
+	private EntityManagerFactory getEntityManagerFactory() {
 		return entityManagerFactory;
 	}
 
 	public void delete(E item) {
 		EntityTransaction tx = null;
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			E mergedItem = entityManager.merge(item);
 			entityManager.remove(mergedItem);
 			tx.commit();
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}
 	}
 
+	/**
+	 * Creates an {@link EntityManager} for use with the persistence operations in this class.
+	 * 
+	 * @return The result
+	 */
+	protected EntityManager createEntityManager() {
+		return getEntityManagerFactory().createEntityManager();
+	}
+
 	public void deleteById(Long id) {
 		EntityTransaction tx = null;
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			E item = entityManager.find(getTypeParameter(), id);
 			entityManager.remove(item);
 			tx.commit();
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}
@@ -78,7 +85,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	@SuppressWarnings("unchecked")
 	public List<E> getAll() {
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ")
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
@@ -88,17 +95,17 @@ public class JpaDao<E> extends AbstractDao<E> {
 	public E getById(long id) {
 		E result = null;
 		EntityTransaction tx = null;
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			result = entityManager.find(getTypeParameter(), id);
 			tx.commit();
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}
@@ -107,7 +114,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	@SuppressWarnings("unchecked")
 	public List<E> getByIds(Set<Long> ids) {
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id IN " + Iterables.toString(ids).replace("[", "(").replace("]", ")"))
 		.setHint("toplink.refresh", "true")
@@ -115,10 +122,10 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return query.getResultList();
 	}
 
-	public E merge(E item) throws OptimisticLockException {
+	public E merge(E item) {
 		EntityTransaction tx = null;
 		E result = null;
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
@@ -127,23 +134,21 @@ public class JpaDao<E> extends AbstractDao<E> {
 			// force the version field to increment
 			entityManager.lock(result, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 			tx.commit();
-		} catch (OptimisticLockException exc) {
-			throw exc;
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}
 		return result;
 	}
 	
-	public List<E> merge(Iterable<E> items) throws OptimisticLockException {
+	public List<E> merge(Iterable<E> items) {
 		EntityTransaction tx = null;
 		List<E> result = new ArrayList<E>();
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
@@ -155,13 +160,11 @@ public class JpaDao<E> extends AbstractDao<E> {
 				result.add(mergedItem);
 			}
 			tx.commit();
-		} catch (OptimisticLockException exc) {
-			throw exc;
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}
@@ -170,17 +173,17 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public void persist(E item) {
 		EntityTransaction tx = null;
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			entityManager.persist(item);
 			tx.commit();
-		} catch(Exception e) {
-			Logger.getLogger(getClass()).error(e);
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 			}
+			throw e;
 		} finally {
 			entityManager.close();
 		}

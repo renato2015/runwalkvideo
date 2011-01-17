@@ -60,7 +60,9 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 			} else if (value instanceof Date) {
 				date = (Date) value;
 			}
-			setText(date == null ? "<geen>" : format.format(date));
+			synchronized(format) {
+				setText(date == null ? "<geen>" : format.format(date));
+			}
 		}
 		return this;
 	}    

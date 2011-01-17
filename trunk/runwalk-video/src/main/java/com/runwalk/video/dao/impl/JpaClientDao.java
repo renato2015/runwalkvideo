@@ -25,7 +25,7 @@ public class JpaClientDao extends JpaDao<Client> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<Client> getAll() {
-		EntityManager entityManager = getEntityManagerFactory().createEntityManager();
+		EntityManager entityManager = createEntityManager();
 		Query query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e ")
 		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
 		// the cascadeparts hint will make startup much slower, refreshing all cascaded entities

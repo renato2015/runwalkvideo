@@ -55,15 +55,14 @@ public class VideoPlayer extends VideoComponent {
 	private VideoPlayer(Recording recording, String path, IVideoPlayer playerImpl) {
 		super(playerCount);
 		this.playerImpl = playerImpl;
-		setTimer(new Timer(25, null));
-		getTimer().addActionListener(new ActionListener() {
+		setTimer(new Timer(25, new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				if (isPlaying()) {
 					firePropertyChange(POSITION, position, position = getPosition());
 				}
 			}
-		});
+		}));
 		loadVideo(recording, path);
 	}
 
