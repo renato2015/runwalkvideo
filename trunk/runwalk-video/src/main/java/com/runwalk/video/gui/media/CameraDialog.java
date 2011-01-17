@@ -69,7 +69,6 @@ public class CameraDialog extends JDialog {
 	 * @param parent The parent {@link Window} whose focusing behavior will be inherited. If null, then the exit action will be available in the {@link Dialog}
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
 	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
-	 * @param enableExitAction If this is <code>true</code> then the user will have the ability to close the application from this dialog
 	 * @param defaultCapturer The name of the default selected capturer
 	 */
 	public CameraDialog(Window parent, ActionMap actionMap, int capturerId, String defaultCapturerName) {

@@ -71,7 +71,9 @@ public class AppUtil {
 	public static String formatDate(Date date, SimpleDateFormat formatter) {
 		StringBuffer result = new StringBuffer("");
 		if (date != null) {
-			formatter.format(date, result, new FieldPosition(DateFormat.DAY_OF_WEEK_IN_MONTH_FIELD));
+			synchronized(formatter) {
+				formatter.format(date, result, new FieldPosition(DateFormat.DAY_OF_WEEK_IN_MONTH_FIELD));
+			}
 		}
 		return result.toString();
 	}

@@ -36,7 +36,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	private Long id;
 	
 	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
-	@JoinColumn(name="clientid", nullable=false)
+	@JoinColumn(name="clientid", nullable=false )
 	private Client client;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "analysis")
