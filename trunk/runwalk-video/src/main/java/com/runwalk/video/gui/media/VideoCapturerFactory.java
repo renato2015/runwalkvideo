@@ -101,8 +101,9 @@ public abstract class VideoCapturerFactory {
 		// populate dialog with capture devices and look for connected monitors
 		if (dialog.refreshCapturers()) {
 			// show the dialog on screen
-//			RunwalkVideoApp.getApplication().show(dialog);
+			dialog.pack();
 			dialog.setVisible(true);
+			dialog.toFront();
 			if (!dialog.isCancelled()) {
 				// implementation can be null here if returned by the dummy factory
 				if (capturer.getVideoImpl() != null) {

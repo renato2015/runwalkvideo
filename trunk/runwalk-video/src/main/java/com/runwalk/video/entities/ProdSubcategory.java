@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name="prod_subcategory", schema = "testdb")
+@Table(name="prod_subcategory")
 public class ProdSubcategory implements Serializable {
 	@Id
 	private int subcatid;

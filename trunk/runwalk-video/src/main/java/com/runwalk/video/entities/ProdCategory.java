@@ -8,7 +8,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name="prod_category", schema = "testdb")
+@Table(name="prod_category")
 public class ProdCategory implements Serializable {
 	@Id
 	private int catid;

@@ -36,7 +36,8 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	/** {@inheritDoc} */
 	public IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 		// initialize the capturer's native resources
-		return new DSJCapturer(capturerName, captureEncoderName);
+		//return new DSJCapturer(capturerName, captureEncoderName);
+		return new DSJFileSinkCapturer(capturerName);
 	}
 
 	/** {@inheritDoc} */

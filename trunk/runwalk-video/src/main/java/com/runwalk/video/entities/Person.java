@@ -16,7 +16,7 @@ import javax.persistence.Version;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(schema = "testdb", name = "phppos_people")
+@Table(name = "phppos_people")
 @DiscriminatorColumn(name=Person.TYPE)
 @AttributeOverride(name=Person.ID, column=@Column(name=Person.PERSON_ID))
 public abstract class Person extends SerializableEntity<Person> {

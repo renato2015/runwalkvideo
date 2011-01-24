@@ -23,7 +23,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @DiscriminatorValue(Client.PERSON_TYPE)
 @Inheritance(strategy=InheritanceType.JOINED)
-@Table(schema = "testdb", name = "phppos_customers")
+@Table(name = "phppos_customers")
 public class Client extends Person {
 	
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";

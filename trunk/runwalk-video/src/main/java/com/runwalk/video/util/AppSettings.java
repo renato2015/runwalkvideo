@@ -66,24 +66,24 @@ public class AppSettings implements Serializable {
 
 	public void loadSettings() {
 		logger.debug("Initializing ApplicationSettings..");
-		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+		File settingsFile = getSettingsFile();
 		try {
 			if (jaxbContext == null) {
 				logger.debug("Instantiating JAXB context..");
 				jaxbContext = JAXBContext.newInstance( Settings.class );
 			}
-			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
 			logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			settings = (Settings) unmarshaller.unmarshal(settingsFile);
 		} catch(JAXBException jaxbExc) {
 			logger.error("Exception while instantiating JAXB context", jaxbExc);
 		} catch(Exception exc) {
-			logger.error("Exception thrown while loading settings from file " + SETTINGS_XML, exc);
+			logger.error("Exception thrown while loading settings from file " + settingsFile.getName(), exc);
 			if (exc.getMessage() != null) {
-				logger.error("Settings file " + SETTINGS_XML + " seems to be corrupt. Attempting to delete..", exc);
+				logger.error("Settings file " + settingsFile.getName() + " seems to be corrupt. Attempting to delete..", exc);
 				try {
-					appContext.getLocalStorage().deleteFile(SETTINGS_XML);
+					ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+					appContext.getLocalStorage().deleteFile(settingsFile.getName());
 					logger.warn("Settings file deleted. Default settings will be applied");
 				} catch (IOException e) {
 					logger.error("Removing corrupt settings file failed", e);
@@ -97,12 +97,11 @@ public class AppSettings implements Serializable {
 	}
 
 	public void saveSettings() {
-		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
 		try {
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, FILE_ENCODING);
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			File settingsFile = new File(appContext.getLocalStorage().getDirectory(), SETTINGS_XML);
+			File settingsFile = getSettingsFile();
 			if (!settingsFile.exists() && !settingsFile.getParentFile().mkdirs() && !settingsFile.createNewFile()) {
 				throw new FileNotFoundException("Settings file could not be created by code");
 			}
@@ -111,6 +110,15 @@ public class AppSettings implements Serializable {
 		} catch (Exception exc) {
 			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, exc);
 		} 
+	}
+	
+	private File getSettingsFile() {
+		return new File(getLocalStorageDir(), SETTINGS_XML);
+	}
+	
+	public File getLocalStorageDir() {
+		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+		return appContext.getLocalStorage().getDirectory();
 	}
 
 	public Settings getSettings() {
