@@ -1,8 +1,12 @@
 package com.runwalk.video.test;
 
-import com.runwalk.video.gui.media.VideoComponent;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
+
+import com.runwalk.video.gui.media.VideoComponent;
 
 /**
  * A simple {@link TestCase} that tests the default screen id calculation for numbered instances of {@link VideoComponent}.
@@ -15,13 +19,19 @@ public class MonitorIdSelectionTestCase extends TestCase {
 	//test whether default screen ids are calculated correctly based on the number of available screens and a component's count
 	public void testScreenIdCalculation() throws Exception {
 		//test for one attached screen, default screen id should be 0 always
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
+		int defaultMonitorId = Arrays.asList(graphicsDevices).indexOf(defaultGraphicsDevice);
+		int freeMonitorId = graphicsDevices.length - defaultMonitorId;
+
 		for (int i = 2; i < 10; i++) {
-			assertEquals(0, VideoComponent.getDefaultMonitorId(1, i));
+			assertEquals(defaultMonitorId, VideoComponent.getDefaultMonitorId(1, i));
 		}
 		
-		//test for two attached screens, default screenId should be 1 always
+		//test for two attached screens, default screenId should be equal to the monitor free at that moment
 		for (int i = 2; i < 10; i++) {
-			assertEquals(1, VideoComponent.getDefaultMonitorId(2, i));
+			assertEquals(freeMonitorId, VideoComponent.getDefaultMonitorId(2, i));
 		}
 
 		//test for three attached screens, default screenId should alternate between 1 and 2

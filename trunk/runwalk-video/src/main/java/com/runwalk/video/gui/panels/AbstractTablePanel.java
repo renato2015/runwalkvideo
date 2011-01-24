@@ -16,6 +16,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+import org.apache.log4j.Level;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ListSelection;
 import ca.odell.glazedlists.ObservableElementList;
@@ -168,6 +170,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 							newValue = Iterables.getOnlyElement(sourceList);
 						}
 						firePropertyChange(SELECTED_ITEM, selectedItem, selectedItem = newValue);
+						getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
 						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 					}
 				}

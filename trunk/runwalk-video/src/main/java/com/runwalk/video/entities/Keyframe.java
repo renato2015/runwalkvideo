@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(schema="testdb", name="keyframes")
+@Table(name="keyframes")
 public class Keyframe extends SerializableEntity<Keyframe> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

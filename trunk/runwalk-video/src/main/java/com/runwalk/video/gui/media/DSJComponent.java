@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
@@ -14,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.gui.PropertyChangeSupport;
+import com.runwalk.video.util.AppSettings;
 
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
@@ -47,6 +49,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	static {
 		// initialize and unlock dsj dll at class loading time
 		DSEnvironment.setDebugLevel(4);
+		File setupFile = new File(AppSettings.getInstance().getLocalStorageDir(), "dsj.xml");
+		DSEnvironment.setSetupPath(setupFile.getAbsolutePath());
 		// get dsj unlock code from resource bundle, processed by maven at compile time
 		String packageName = DSJComponent.class.getPackage().getName();
 		String className = DSJComponent.class.getSimpleName();

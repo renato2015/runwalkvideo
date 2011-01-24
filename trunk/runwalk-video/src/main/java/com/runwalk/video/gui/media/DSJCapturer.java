@@ -52,7 +52,10 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		getLogger().debug("Video encoder for " + getTitle() + " set to " + getCaptureEncoder().getName());
 		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter());
 		getFiltergraph().record();
-
+		showFrameDropInfo();
+	}
+	
+	protected void showFrameDropInfo() {
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				while(isRecording()) {
@@ -120,7 +123,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 		return capturerName;
 	}
 
-	private boolean isRecording() {
+	protected boolean isRecording() {
 		return getFiltergraph().getState() == DSCapture.RECORDING;
 	}
 

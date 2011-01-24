@@ -8,7 +8,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(schema="testdb", name="phppos_states")
+@Table(name="phppos_states")
 public class State implements Serializable {
 	@Id
 	private int id;

@@ -23,7 +23,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name="movies")
+@Table(name="movies")
 public class Recording extends SerializableEntity<Recording> {
 	
 	public static final String RECORDED = "recorded";

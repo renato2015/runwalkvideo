@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name = "phppos_cities")
+@Table(name = "phppos_cities")
 @NamedQueries(value={
 		@NamedQuery(name="findByZipCode", query="SELECT DISTINCT c from City c WHERE c.code = :zipCode ORDER BY c.code ASC"),
 		@NamedQuery(name="findByName", query="SELECT DISTINCT c from City c WHERE c.name = :name ORDER BY c.code ASC"),

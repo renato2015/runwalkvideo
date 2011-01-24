@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -86,20 +87,19 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	 * @param componentId The instance number
 	 * @return The screen id
 	 */
-	public static int getDefaultMonitorId(int graphicsDevicesCount, int componentId) {
-		int result = graphicsDevicesCount - 1;
-		if (graphicsDevicesCount > 2) {
-			int availableScreenCount = graphicsDevicesCount - 1;
-			result = 0;
-			// assign a different (alternating) monitor for each instance if there are more than 2 monitors in total
-			for (int i = 1; i <= componentId; i++) {
-				if (result >= availableScreenCount) {
-					result = 1;
-				} else {
-					result ++;
-				}
-			}
+	public static int getDefaultMonitorId(int monitorCount, int componentId) {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
+		// assign default monitor number to initial result
+		int defaultMonitorId = Arrays.asList(graphicsDevices).indexOf(defaultGraphicsDevice);
+		int result = defaultMonitorId;
+		int availableScreenCount = monitorCount - 1;
+		if (monitorCount > 1) {
+			// set to monitor on which the main window is not showing
+			result = availableScreenCount - defaultMonitorId;
 		}
+		//TODO add support for three monitors
 		return result;
 	}
 
@@ -235,33 +235,34 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	private Integer checkMonitorId(Integer monitorId, int monitorCount) {
-		int defaultMonitorId = getDefaultMonitorId(monitorCount, getComponentId());
 		// check preconditions
 		if (monitorId != null && monitorId < monitorCount) {
 			// use monitor set by user
-			getLogger().log(Level.INFO, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
+			getLogger().log(Level.DEBUG, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
 		} else {
 			// use default monitor, because it wasn't set or found to be invalid
-			monitorId = defaultMonitorId;
+			monitorId = getDefaultMonitorId(0, getComponentId());
 			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getTitle() + ".");
 		}
 		return monitorId;
 	}
 
 	protected void showComponent() {
-		showComponent(true, null);
+		// TODO monitorId property is set by creation factory.. maybe it can be passed as an argument, too?
+		showComponent(true, this.monitorId);
 	}
 
 	protected void showComponent(boolean fullScreen, Integer monitorId) {
 		// get the graphicsdevice corresponding with the given monitor id
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
 		monitorId = checkMonitorId(monitorId, graphicsDevices.length);
 		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
 		// get a reference to the previously visible component
 		Container oldContainer = getHolder();
-		// go fullscreen if the selected monitor is not the primary one (index 0)
-		fullScreen = fullScreen && monitorId > 0;
+		// go fullscreen if the selected monitor is not the default one
+		fullScreen = fullScreen && graphicsDevice != defaultGraphicsDevice;
 		if (fullScreen) {
 			boolean frameInitialized = getFullScreenFrame() != null;
 			getVideoImpl().setFullScreen(graphicsDevice, true);

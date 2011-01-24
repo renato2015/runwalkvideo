@@ -128,8 +128,6 @@ public class CameraDialog extends JDialog {
 			}
 
 		});
-		pack();
-		toFront();
 	}
 	
 	private void addAction(String actionName, ActionMap actionMap) {
@@ -221,14 +219,14 @@ public class CameraDialog extends JDialog {
 	}
 	
 	/**
-	 * Add extra monitor selection buttons, only if there are more than 2 connected.  
+	 * Add extra monitor selection buttons, only if there are more than 1 connected.  
 	 */
 	public void addMonitors() {
 		// get graphics environment
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		// let user choose on which screen to show the capturer, only if more than one is connected
-		if (graphicsDevices.length > 2) {
+		if (graphicsDevices.length > 1) {
 			buttonPanel.removeAll();
 			JLabel screenLabel = new JLabel(getResourceMap().getString("screenLabel.text"));
 			buttonPanel.add(screenLabel, "wrap, grow, span");

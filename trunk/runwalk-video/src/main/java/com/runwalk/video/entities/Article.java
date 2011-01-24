@@ -12,7 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(schema="testdb", name = "articles")
+@Table(name = "articles")
 @NamedQueries(value={
 		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar")
 })

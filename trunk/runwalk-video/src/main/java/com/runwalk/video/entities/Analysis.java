@@ -25,7 +25,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(schema="testdb", name="analysis")
+@Table(name="analysis")
 public class Analysis extends SerializableEntity<Analysis> {
 
 	public final static String RECORDING_COUNT = "recordingCount";
