@@ -24,7 +24,7 @@ public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCaptur
 
 	private String capturerName;
 
-	DSJCapturer(String capturerName) {
+	public DSJCapturer(String capturerName) {
 		this(capturerName, null);
 	}
 	

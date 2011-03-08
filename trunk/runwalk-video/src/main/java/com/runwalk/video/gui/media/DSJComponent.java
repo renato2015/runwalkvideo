@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
 
@@ -15,9 +13,7 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.gui.PropertyChangeSupport;
-import com.runwalk.video.util.AppSettings;
 
-import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
@@ -32,11 +28,6 @@ import de.humatic.dsj.rc.RendererControls;
  */
 public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport {
 	
-	private static final String DSJ_UNLOCK_NAME = "dsj.unlockName";
-	private static final String DSJ_CODE3 = "dsj.code3";
-	private static final String DSJ_CODE2 = "dsj.code2";
-	private static final String DSJ_CODE1 = "dsj.code1";
-
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
 	/**
@@ -46,23 +37,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 */
 	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
 
-	static {
-		// initialize and unlock dsj dll at class loading time
-		DSEnvironment.setDebugLevel(4);
-		File setupFile = new File(AppSettings.getInstance().getLocalStorageDir(), "dsj.xml");
-		DSEnvironment.setSetupPath(setupFile.getAbsolutePath());
-		// get dsj unlock code from resource bundle, processed by maven at compile time
-		String packageName = DSJComponent.class.getPackage().getName();
-		String className = DSJComponent.class.getSimpleName();
-		// get class resource bundle using the bsaf naming convention
-		ResourceBundle bundle = ResourceBundle.getBundle(packageName + ".resources." + className);
-		String unlockName = bundle.getString(DSJ_UNLOCK_NAME);
-		Long code1 = Long.parseLong(bundle.getString(DSJ_CODE1));
-		Long code2 = Long.parseLong(bundle.getString(DSJ_CODE2));
-		Long code3= Long.parseLong(bundle.getString(DSJ_CODE3));
-		DSEnvironment.unlockDLL(unlockName, code1, code2, code3);
-	}
-	
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;

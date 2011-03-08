@@ -8,6 +8,10 @@ import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.sink.FileSink;
 
+/**
+ * This class has some extended capabilities for recording to some non default formats using a customer encoders and muxers.
+ * @author Jeroen Peelaerts
+ */
 public class DSJFileSinkCapturer extends DSJCapturer {
 
 	private FileSink sink;
