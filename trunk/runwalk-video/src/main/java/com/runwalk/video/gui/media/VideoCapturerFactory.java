@@ -24,7 +24,7 @@ public abstract class VideoCapturerFactory {
 	 * @param captureEncoderName The name of the default capture encoder, null if none
 	 * @return A video implementation that is ready to start running
 	 */
-	public abstract IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName);
+	protected abstract IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName);
 
 	/**
 	 * This method should return a list with all <b>uninitialized</b> capturer names.
@@ -53,7 +53,7 @@ public abstract class VideoCapturerFactory {
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
 	 * 
-	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link CameraDialog}
+	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link CameraDialog}, can be <code>null</code>
 	 * @param defaultCapturerName The name of the last chosen capturer
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
@@ -61,7 +61,7 @@ public abstract class VideoCapturerFactory {
 	public VideoCapturer createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer capturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(parentComponent, capturer.getApplicationActionMap(), 
+		CameraDialog dialog = new CameraDialog(parentComponent,null, 
 				capturer.getComponentId(), defaultCapturerName);
 		dialog.setLocationRelativeTo(null);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
@@ -85,6 +85,7 @@ public abstract class VideoCapturerFactory {
 						IVideoCapturer capturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
 						capturer.setVideoImpl(capturerImpl);
 					} catch(RuntimeException e) {
+						//TODO show appropriate error dialog here, in this case the creation will prolly return null
 						Logger.getLogger(VideoCapturerFactory.class).error(e);
 					}
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
@@ -128,9 +129,11 @@ public abstract class VideoCapturerFactory {
 	 * 
 	 * @author Jeroen Peelaerts
 	 */
-	public static class DummyVideoCapturerFactory extends VideoCapturerFactory {
+	public final static class DummyVideoCapturerFactory extends VideoCapturerFactory {
+		
+		private DummyVideoCapturerFactory() { }
 
-		public IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
+		protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 			return null;
 		}
 

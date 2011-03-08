@@ -1,8 +1,10 @@
 package com.runwalk.video.gui.media;
 
 import java.util.List;
+import java.util.ResourceBundle;
 
 import com.google.common.collect.Lists;
+import com.runwalk.video.test.NativeIdsLibraryTest;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;
@@ -10,8 +12,26 @@ import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 
 public class DSJCapturerFactory extends VideoCapturerFactory {
+	
+	private static final String DSJ_UNLOCK_NAME = "dsj.unlockName";
+	private static final String DSJ_CODE3 = "dsj.code3";
+	private static final String DSJ_CODE2 = "dsj.code2";
+	private static final String DSJ_CODE1 = "dsj.code1";
 
-	DSJCapturerFactory() { }
+	protected DSJCapturerFactory() {
+		// initialize and unlock dsj dll at class loading time
+		DSEnvironment.setDebugLevel(4);
+		// get dsj unlock code from resource bundle, processed by maven at compile time
+		String packageName = DSJComponent.class.getPackage().getName();
+		String className = DSJComponent.class.getSimpleName();
+		// get class resource bundle using the bsaf naming convention
+		ResourceBundle bundle = ResourceBundle.getBundle(packageName + ".resources." + className);
+		String unlockName = bundle.getString(DSJ_UNLOCK_NAME);
+		Long code1 = Long.parseLong(bundle.getString(DSJ_CODE1));
+		Long code2 = Long.parseLong(bundle.getString(DSJ_CODE2));
+		Long code3= Long.parseLong(bundle.getString(DSJ_CODE3));
+		DSEnvironment.unlockDLL(unlockName, code1, code2, code3);
+	}
 	
 	/**
 	 * Find a {@link DSFiltergraph} that contains a filter with the specified name.
@@ -34,10 +54,12 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	}
 		
 	/** {@inheritDoc} */
-	public IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
+	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 		// initialize the capturer's native resources
 		//return new DSJCapturer(capturerName, captureEncoderName);
-		return new DSJFileSinkCapturer(capturerName);
+		DSJFileSinkCapturer dsjFileSinkCapturer = new DSJFileSinkCapturer(capturerName);
+		new NativeIdsLibraryTest().testGetCameras();
+		return dsjFileSinkCapturer;
 	}
 
 	/** {@inheritDoc} */
