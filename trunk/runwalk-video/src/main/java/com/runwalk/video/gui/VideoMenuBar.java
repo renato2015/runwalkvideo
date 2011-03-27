@@ -18,8 +18,8 @@ import javax.swing.KeyStroke;
 import org.jdesktop.application.ApplicationAction;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.media.VideoComponent;
-import com.runwalk.video.gui.media.VideoComponent.State;
+import com.runwalk.video.media.VideoComponent;
+import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.util.ResourceInjector;
 
 @SuppressWarnings("serial")

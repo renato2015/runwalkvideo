@@ -1,4 +1,4 @@
-package com.runwalk.video.test;
+package com.runwalk.video.media.ueye;
 
 import com.ochafik.lang.jnaerator.runtime.Structure;
 /**

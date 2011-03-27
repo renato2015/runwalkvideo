@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.io.File;
 import java.util.List;

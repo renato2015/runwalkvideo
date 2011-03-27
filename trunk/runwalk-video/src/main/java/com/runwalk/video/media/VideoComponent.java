@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -271,7 +271,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 			}
 		} else {
 			getVideoImpl().setFullScreen(graphicsDevice, false);
-			if (getInternalFrame() == null) {
+			if (getInternalFrame() == null && getVideoImpl().getComponent() != null) {
 				createInternalFrame();
 			}
 		}
@@ -279,9 +279,11 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 			oldContainer.setVisible(false);
 		}
 		setFullScreen(fullScreen);
-		setComponentTitle(getTitle());
-		setVisible(true);
-		getApplication().createOrShowComponent(this);
+		if (getHolder() != null) {
+			setComponentTitle(getTitle());
+			setVisible(true);
+			getApplication().createOrShowComponent(this);
+		}
 	}
 
 	private void createInternalFrame() {
@@ -397,10 +399,13 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	public void toFront() {
-		if (isFullScreen()) {
-			getFullScreenFrame().toFront();
-		} else {
-			getInternalFrame().toFront();
+		// FIXME clean this up
+		if (getHolder() != null) {
+			if (isFullScreen()) {
+				getFullScreenFrame().toFront();
+			} else {
+				getInternalFrame().toFront();
+			}
 		}
 	}
 

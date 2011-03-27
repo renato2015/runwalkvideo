@@ -1,10 +1,12 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media.dsj;
 
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
 
 import org.jdesktop.application.Action;
+
+import com.runwalk.video.media.IVideoPlayer;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;

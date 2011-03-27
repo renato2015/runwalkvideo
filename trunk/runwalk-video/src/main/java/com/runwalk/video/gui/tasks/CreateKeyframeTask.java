@@ -8,7 +8,7 @@ import org.jdesktop.application.Task;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.media.VideoPlayer;
+import com.runwalk.video.media.VideoPlayer;
 import com.runwalk.video.util.AppUtil;
 
 public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {

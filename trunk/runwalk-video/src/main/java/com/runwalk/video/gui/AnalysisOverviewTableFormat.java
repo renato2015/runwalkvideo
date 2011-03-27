@@ -11,7 +11,7 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.gui.media.MediaControls;
+import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.ResourceInjector;
 

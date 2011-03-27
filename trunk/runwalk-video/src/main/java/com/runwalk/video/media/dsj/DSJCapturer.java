@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media.dsj;
 
 import java.io.File;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.List;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Lists;
+import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.media.VideoCapturerFactory;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;
@@ -18,7 +20,7 @@ import de.humatic.dsj.DSJException;
  * 
  * @author Jeroen Peelaerts
  */
-public class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
+class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
 	private DSFilterInfo captureEncoder;
 

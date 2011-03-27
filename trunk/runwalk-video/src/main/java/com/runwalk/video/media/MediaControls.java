@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -53,7 +53,6 @@ import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.gui.AppInternalFrame;
 import com.runwalk.video.gui.AppWindowWrapper;
-import com.runwalk.video.gui.media.VideoComponent.State;
 import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.tasks.AbstractTask;
@@ -61,6 +60,7 @@ import com.runwalk.video.gui.tasks.CreateKeyframeTask;
 import com.runwalk.video.gui.tasks.CreateOverlayImageTask;
 import com.runwalk.video.gui.tasks.RecordTask;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 

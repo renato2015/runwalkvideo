@@ -1,10 +1,11 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media.dsj;
 
 import java.util.List;
 import java.util.ResourceBundle;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.test.NativeIdsLibraryTest;
+import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.media.VideoCapturerFactory;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;
@@ -18,7 +19,7 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	private static final String DSJ_CODE2 = "dsj.code2";
 	private static final String DSJ_CODE1 = "dsj.code1";
 
-	protected DSJCapturerFactory() {
+	public DSJCapturerFactory() {
 		// initialize and unlock dsj dll at class loading time
 		DSEnvironment.setDebugLevel(4);
 		// get dsj unlock code from resource bundle, processed by maven at compile time
@@ -57,9 +58,7 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 		// initialize the capturer's native resources
 		//return new DSJCapturer(capturerName, captureEncoderName);
-		DSJFileSinkCapturer dsjFileSinkCapturer = new DSJFileSinkCapturer(capturerName);
-		new NativeIdsLibraryTest().testGetCameras();
-		return dsjFileSinkCapturer;
+		return new DSJFileSinkCapturer(capturerName);
 	}
 
 	/** {@inheritDoc} */
