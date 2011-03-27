@@ -5,8 +5,8 @@ import java.io.File;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.media.VideoCapturer;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.media.VideoCapturer;
 
 public class RecordTask extends AbstractTask<Boolean, Void> {
 

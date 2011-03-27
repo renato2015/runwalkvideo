@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Dialog;
@@ -12,6 +12,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.ActionMap;
@@ -180,7 +181,7 @@ public class CameraDialog extends JDialog {
 	@Action
 	public boolean refreshCapturers() {
 		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-		List<String> capturerNames = VideoCapturerFactory.getInstance().getCapturerNames();
+		Collection<String> capturerNames = VideoCapturerFactory.getInstance().getCapturerNames();
 		// return if no capturers available
 		if (capturerNames.isEmpty()) {
 			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorDialog.message"), 
@@ -200,7 +201,7 @@ public class CameraDialog extends JDialog {
 	 * 
 	 * @param capturerNames The names of the available capturers
 	 */
-	private void addCapturers(List<String> capturerNames) {
+	private void addCapturers(Collection<String> capturerNames) {
 		String[] captureDevicesArray = Iterables.toArray(capturerNames, String.class);
 		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection

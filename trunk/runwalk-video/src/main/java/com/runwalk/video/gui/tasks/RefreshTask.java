@@ -21,6 +21,7 @@ import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.gui.AnalysisConnector;
+import com.runwalk.video.gui.panels.AbstractTablePanel;
 import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.gui.panels.AnalysisTablePanel;
 import com.runwalk.video.gui.panels.ClientTablePanel;
@@ -34,12 +35,12 @@ import com.runwalk.video.gui.panels.ClientTablePanel;
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
-	private final ClientTablePanel clientTablePanel;
+	private final AbstractTablePanel<Client> clientTablePanel;
 	private final AnalysisTablePanel analysisTablePanel;
-	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
+	private final AbstractTablePanel<Analysis> analysisOverviewTablePanel;
 
-	public RefreshTask(DaoService daoService, ClientTablePanel clientTablePanel, 
-			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+	public RefreshTask(DaoService daoService, AbstractTablePanel<Client> clientTablePanel, 
+			AnalysisTablePanel analysisTablePanel, AbstractTablePanel<Analysis> analysisOverviewTablePanel) {
 		super("refresh");
 		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
@@ -108,7 +109,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return daoService;
 	}
 	
-	private ClientTablePanel getClientTablePanel() {
+	private AbstractTablePanel<Client> getClientTablePanel() {
 		return clientTablePanel;
 	}
 
@@ -116,7 +117,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return analysisTablePanel;
 	}
 
-	private AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
+	private AbstractTablePanel<Analysis> getAnalysisOverviewTablePanel() {
 		return analysisOverviewTablePanel;
 	}
 

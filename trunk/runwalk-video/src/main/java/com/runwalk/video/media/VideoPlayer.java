@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -15,6 +15,8 @@ import org.jdesktop.application.utils.PlatformType;
 import com.google.common.collect.Sets;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.media.dsj.DSJPlayer;
+import com.runwalk.video.media.jmc.JMCPlayer;
 
 public class VideoPlayer extends VideoComponent {
 

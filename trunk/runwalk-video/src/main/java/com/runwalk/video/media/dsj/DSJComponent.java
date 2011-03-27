@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media.dsj;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -13,6 +13,9 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.gui.PropertyChangeSupport;
+import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.media.IVideoComponent;
+import com.runwalk.video.media.IVideoPlayer;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
@@ -26,7 +29,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport {
+abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 

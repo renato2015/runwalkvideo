@@ -13,8 +13,8 @@ import org.apache.commons.io.FileUtils;
 
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.gui.media.DSJPlayer;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.media.dsj.DSJPlayer;
 
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;

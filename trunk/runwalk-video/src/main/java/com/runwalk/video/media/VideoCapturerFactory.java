@@ -1,14 +1,18 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media;
 
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
+
+import com.runwalk.video.media.dsj.DSJCapturerFactory;
+import com.runwalk.video.media.ueye.UEyeCapturerFactory;
 
 public abstract class VideoCapturerFactory {
 
@@ -31,7 +35,7 @@ public abstract class VideoCapturerFactory {
 	 * 
 	 * @return The {@link List} with available capturers
 	 */
-	public abstract List<String> getCapturerNames();
+	public abstract Collection<String> getCapturerNames();
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -41,7 +45,11 @@ public abstract class VideoCapturerFactory {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
-				factory = new DSJCapturerFactory();
+				if (System.getProperty("native_capturer") != null) {
+					factory = new UEyeCapturerFactory();
+				} else {
+					factory = new DSJCapturerFactory();
+				}
 			} else {
 				factory = new DummyVideoCapturerFactory();
 			}
@@ -61,7 +69,7 @@ public abstract class VideoCapturerFactory {
 	public VideoCapturer createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer capturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(parentComponent,null, 
+		CameraDialog dialog = new CameraDialog(parentComponent, capturer.getApplicationActionMap(), 
 				capturer.getComponentId(), defaultCapturerName);
 		dialog.setLocationRelativeTo(null);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 

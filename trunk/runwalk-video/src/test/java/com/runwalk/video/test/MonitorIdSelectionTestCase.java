@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import com.runwalk.video.gui.media.VideoComponent;
+import com.runwalk.video.media.VideoComponent;
 
 /**
  * A simple {@link TestCase} that tests the default screen id calculation for numbered instances of {@link VideoComponent}.

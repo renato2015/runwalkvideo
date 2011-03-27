@@ -1,4 +1,4 @@
-package com.runwalk.video.gui.media;
+package com.runwalk.video.media.jmc;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
+import com.runwalk.video.media.IVideoPlayer;
 import com.sun.media.jmc.MediaProvider;
 import com.sun.media.jmc.control.AudioControl;
 import com.sun.media.jmc.control.VideoRenderControl;
