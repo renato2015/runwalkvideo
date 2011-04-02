@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -57,10 +56,6 @@ class UEyeCapturer implements IVideoCapturer {
 	public Dimension getDimension() {
 		// TODO eventually read dimensions from settings file??
 		return null;
-	}
-
-	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
-		// capturer always runs fullscreen
 	}
 
 	public void startRunning() {
@@ -154,6 +149,47 @@ class UEyeCapturer implements IVideoCapturer {
 
 	public Component getComponent() {
 		return null;
+	}
+
+	@Override
+	public boolean isFullScreenEnabled() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isFullScreen() {
+		return false;
+	}
+
+	@Override
+	public void setFullScreen(boolean fullScreen, Integer monitorId) {
+		// TODO implement this
+		
+	}
+
+	@Override
+	public boolean isVisible() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setTitle(String title) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void toFront() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

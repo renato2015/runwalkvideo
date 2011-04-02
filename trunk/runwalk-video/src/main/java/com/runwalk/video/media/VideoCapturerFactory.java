@@ -45,7 +45,7 @@ public abstract class VideoCapturerFactory {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
-				if (System.getProperty("native_capturer") != null) {
+				if (System.getProperty("native_capturer") == "true") {
 					factory = new UEyeCapturerFactory();
 				} else {
 					factory = new DSJCapturerFactory();
@@ -118,8 +118,6 @@ public abstract class VideoCapturerFactory {
 				if (capturer.getVideoImpl() != null) {
 					// prepare the capturer for showing live video
 					capturer.getVideoImpl().startRunning();
-					// go fullscreen if screenId > 1, otherwise start in windowed mode on the first screen
-					capturer.showComponent();
 				}
 			} else {
 				// dispose chosen capturer if canceled

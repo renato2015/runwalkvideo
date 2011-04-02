@@ -27,22 +27,25 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.gui.AnalysisOverviewTableFormat;
-import com.runwalk.video.gui.AnalysisTableFormat;
-import com.runwalk.video.gui.AppInternalFrame;
-import com.runwalk.video.gui.AppWindowWrapper;
-import com.runwalk.video.gui.VideoMenuBar;
-import com.runwalk.video.gui.actions.ApplicationActions;
-import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
-import com.runwalk.video.gui.panels.AnalysisTablePanel;
-import com.runwalk.video.gui.panels.ClientInfoPanel;
-import com.runwalk.video.gui.panels.ClientTablePanel;
-import com.runwalk.video.gui.panels.StatusPanel;
-import com.runwalk.video.gui.tasks.CheckFreeDiskSpaceTask;
-import com.runwalk.video.gui.tasks.RefreshTask;
-import com.runwalk.video.gui.tasks.UploadLogFilesTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.MediaControls;
+import com.runwalk.video.panels.AnalysisOverviewTablePanel;
+import com.runwalk.video.panels.AnalysisTablePanel;
+import com.runwalk.video.panels.ClientInfoPanel;
+import com.runwalk.video.panels.ClientTablePanel;
+import com.runwalk.video.panels.StatusPanel;
+import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
+import com.runwalk.video.tasks.RefreshTask;
+import com.runwalk.video.tasks.UploadLogFilesTask;
+import com.runwalk.video.ui.AnalysisOverviewTableFormat;
+import com.runwalk.video.ui.AnalysisTableFormat;
+import com.runwalk.video.ui.AppInternalFrame;
+import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.VideoMenuBar;
+import com.runwalk.video.ui.WindowManager;
+import com.runwalk.video.ui.actions.ApplicationActionConstants;
+import com.runwalk.video.ui.actions.ApplicationActions;
+import com.runwalk.video.ui.actions.MediaActionConstants;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.TaskExecutor;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
@@ -51,7 +54,7 @@ import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 /**
  * The main class of the application.
  */
-public class RunwalkVideoApp extends SingleFrameApplication {
+public class RunwalkVideoApp extends SingleFrameApplication implements ApplicationActionConstants, MediaActionConstants {
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
 
@@ -67,15 +70,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	private JScrollableDesktopPane scrollableDesktopPane;
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
-
-	public static final String EXIT_ACTION = "exitApplication";
-	public static final String SAVE_SETTINGS_ACTION = "saveSettings";
-	public static final String REFRESH_ACTION = "refresh";
-	public static final String UPLOAD_LOG_FILES_ACTION = "uploadLogFiles";
-	public static final String SAVE_ENTITIES_ACTION = "save";
-	public static final String CHECK_FREE_DISK_SPACE_ACTION = "checkFreeDiskSpace";
-	public static final String REFRESH_VIDEO_FILES_ACTION = "refreshVideoFiles";
-
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -139,9 +133,11 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		getMainFrame().add(getScrollableDesktopPane());
 		// create menu bar
 		menuBar = new VideoMenuBar();
+		// create window manager
+		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
 		mediaControls = new MediaControls(AppSettings.getInstance(), getVideoFileManager(), 
-			getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+			windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
@@ -151,8 +147,8 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		// add all internal frames from here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
 		// add the window to the WINDOW menu
-		createOrShowComponent(getMediaControls());
-		createOrShowComponent(getClientMainView());
+		windowManager.addWindow(getMediaControls());
+		windowManager.addWindow(getClientMainView());
 		// create a custom property to support saving internalframe sessions state
 		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
 		// show the main frame, all its session settings from the last time will be restored
@@ -165,7 +161,7 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 		super.shutdown();
 		saveSettings();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
-		executeAction(getMediaControls().getApplicationActionMap(), MediaControls.STOP_ALL_VIDEO_COMPONENTS_ACTION);
+		executeAction(getMediaControls().getApplicationActionMap(), STOP_ALL_VIDEO_COMPONENTS_ACTION);
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
@@ -208,27 +204,6 @@ public class RunwalkVideoApp extends SingleFrameApplication {
 	@org.jdesktop.application.Action
 	public void exitApplication() {
 		exit();
-	}
-	
-	/*
-	 * GUI methods
-	 */
-	
-	public void createOrShowComponent(AppWindowWrapper appComponent) {
-		Container container = appComponent == null ? null : appComponent.getHolder();
-		if (container != null) {
-			container.setVisible(true);
-			if (container instanceof BaseInternalFrame) {
-				BaseInternalFrame baseInternalFrame = (BaseInternalFrame) container;
-				if (new Dimension(0,0).equals(baseInternalFrame.getSize())) {
-					baseInternalFrame.pack();
-					getScrollableDesktopPane().add(baseInternalFrame);
-					getMenuBar().addWindow(appComponent);	
-				}
-			}  else {
-				getMenuBar().addWindow(appComponent);	
-			}
-		}
 	}
 
 	private AppInternalFrame createMainView() {

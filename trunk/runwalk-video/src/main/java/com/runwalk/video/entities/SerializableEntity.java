@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
-import com.runwalk.video.gui.PropertyChangeSupport;
+import com.runwalk.video.ui.PropertyChangeSupport;
 
 @SuppressWarnings("serial")
 @MappedSuperclass

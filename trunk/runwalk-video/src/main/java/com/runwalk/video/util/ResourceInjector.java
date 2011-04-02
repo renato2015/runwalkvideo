@@ -4,8 +4,8 @@ import javax.swing.Action;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.runwalk.video.gui.AppComponent;
-import com.runwalk.video.gui.actions.ApplicationActions;
+import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.ui.actions.ApplicationActions;
 
 @AppComponent
 public class ResourceInjector {

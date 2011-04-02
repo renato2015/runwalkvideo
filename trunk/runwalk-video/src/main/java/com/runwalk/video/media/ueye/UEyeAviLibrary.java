@@ -1,7 +1,5 @@
 package com.runwalk.video.media.ueye;
 
-import com.ochafik.lang.jnaerator.runtime.LibraryExtractor;
-
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
@@ -16,8 +14,9 @@ import com.sun.jna.ptr.IntByReference;
  */
 public class UEyeAviLibrary implements Library {
 	
-	public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("uEye_tools", true, UEyeAviLibrary.class);
-	public static final NativeLibrary JNA_NATIVE_LIB = NativeLibrary.getInstance(UEyeAviLibrary.JNA_LIBRARY_NAME, com.ochafik.lang.jnaerator.runtime.MangledFunctionMapper.DEFAULT_OPTIONS);
+	//public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("uEye_tools", true, UEyeAviLibrary.class);
+	public static final String JNA_LIBRARY_NAME = "uEye_tools";
+	public static final NativeLibrary JNA_NATIVE_LIB = NativeLibrary.getInstance(UEyeAviLibrary.JNA_LIBRARY_NAME);
 
 	public static final int IS_AVI_CM_BAYER = 11;
 	public static final int IS_AVI_CM_RGB24 = 1;

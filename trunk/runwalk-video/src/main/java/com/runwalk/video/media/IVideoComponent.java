@@ -16,40 +16,34 @@ import java.awt.image.BufferedImage;
  */
 public interface IVideoComponent {
 
-	public static final String FULLSCREEN = "fullscreen";
-
-	public String getTitle();
-
-	public Frame getFullscreenFrame();
-
-	/**
-	 * Get an AWT {@link Component} in which the video will be rendered for windowed mode.
-	 * @return The component
-	 */
-	public Component getComponent();
+	String FULLSCREEN = "fullscreen";
 	
+	String VISIBLE = "visible";
+	
+	String FULL_SCREEN_ENABLED = "fullScreenEnabled";
+	
+	String getTitle();
+
 	/**
 	 * Dispose all the resources involved for showing this component to screen.
 	 */
-	public void dispose();
+	void dispose();
 
-	public boolean isActive();
+	boolean isActive();
 	
-	public Dimension getDimension();
-
-	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b);
+	Dimension getDimension();
 	
 	/**
 	 * Start running and bring the component to a state in which the {@link Component} returned by {@link #getComponent()} 
 	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are initialized and ready to show video.
 	 */
-	public abstract void startRunning();
+	 void startRunning();
 
-	/**
+	 /**
 	 * Stop running and bring the component to a state in which video format settings can be applied. 
 	 * In most cases the component will have to stop previewing video in order to reconfigure properly.
 	 */
-	public abstract void stopRunning();
+	void stopRunning();
 	
 	/**
 	 * Set a {@link BufferedImage} and draw it on top of the rendering component.
@@ -58,8 +52,22 @@ public interface IVideoComponent {
 	 * @param image The image to draw
 	 * @param alphaColor The color to use for transparancy
 	 */
-	public void setOverlayImage(BufferedImage image, Color alphaColor);
+	void setOverlayImage(BufferedImage image, Color alphaColor);
 	
-	public BufferedImage getImage();
+	BufferedImage getImage();
+	
+	boolean isFullScreenEnabled();
+	
+	boolean isFullScreen();
+	
+	void setFullScreen(boolean fullScreen, Integer monitorId);
+	
+	boolean isVisible();
+	
+	void setVisible(boolean visible);
+
+	void setTitle(String title);
+
+	void toFront();
 	
 }

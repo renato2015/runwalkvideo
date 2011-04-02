@@ -5,6 +5,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
@@ -12,10 +15,12 @@ import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
-import com.runwalk.video.gui.PropertyChangeSupport;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.ui.Floatable;
+import com.runwalk.video.ui.Maximizable;
+import com.runwalk.video.ui.PropertyChangeSupport;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
@@ -29,7 +34,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, Floatable, Maximizable, ComponentListener {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -43,6 +48,10 @@ abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent,
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;
+
+	private boolean fullScreenEnabled;
+
+	private boolean visible;
 	
 	/** {@inheritDoc} */
 	public void startRunning() {
@@ -126,9 +135,10 @@ abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent,
 		if (getFiltergraph() != null) {
 			// full screen frame needs to disposed on rebuilding..
 			// TODO review this code.. is this DSJComponent's responsibility?
-			Frame fullscreenFrame = getFiltergraph().getFullScreenWindow();
-			if (fullscreenFrame != null) {
-				fullscreenFrame.dispose();
+			Frame fullScreenFrame = getFiltergraph().getFullScreenWindow();
+			if (fullScreenFrame != null) {
+				fullScreenFrame.dispose();
+				fullScreenFrame.removeComponentListener(this);
 			}
 			getFiltergraph().dispose();
 		}
@@ -145,14 +155,66 @@ abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent,
 	public Frame getFullscreenFrame() {
 		return getFiltergraph().getFullScreenWindow();
 	}
+	
+	public void setFullScreenEnabled(boolean fullScreenEnabled) {
+		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
+	}
 
-	public void setFullScreen(GraphicsDevice device, boolean fullscreen) {
-		if (fullscreen) {
+	public boolean isFullScreenEnabled() {
+		return fullScreenEnabled;
+	}
+	
+	public void setVisible(boolean visible) {
+		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		// TODO set actual visibility
+	}
+	
+	public boolean isVisible() {
+		return visible;
+	}
+	
+	@Override
+	public boolean isFullScreen() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setFullScreen(boolean fullScreen, Integer monitorId) {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		GraphicsDevice device = graphicsDevices[monitorId];
+		if (fullScreen) {
 			getFiltergraph().goFullScreen(device, 1);
 		} else {
 			getFiltergraph().leaveFullScreen();
 		}
 	}
+
+	@Override
+	public void setTitle(String title) {
+		if (getFullscreenFrame() != null) {
+			getFullscreenFrame().setTitle(title);
+			getFullscreenFrame().setName(title);
+		}
+	}
+
+	@Override
+	public void toFront() {
+		// TODO Auto-generated method stub
+	}
+	
+	public void componentShown(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+
+	public void componentHidden(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+
+	public void componentResized(ComponentEvent e) { }
+
+	public void componentMoved(ComponentEvent e) { }
 
 	public BufferedImage getImage() {
 		return getFiltergraph().getImage();

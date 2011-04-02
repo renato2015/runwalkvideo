@@ -15,7 +15,7 @@ public interface IVideoPlayer extends IVideoComponent {
 	 * @param path The path to the file or url to open
 	 * @return <code>true</code> if the native resources were disposed and rebuilt
 	 */
-	public boolean loadVideo(String path);
+	boolean loadVideo(String path);
 
 
 	/**
@@ -23,63 +23,63 @@ public interface IVideoPlayer extends IVideoComponent {
 	 * 
 	 * @return The playback position
 	 */
-	public int getPosition();
+	int getPosition();
 
 	/**
 	 * Set the current playback position for this player in milliseconds.
 	 * 
 	 * @param pos The playback position
 	 */
-	public void setPosition(int pos);
+	void setPosition(int pos);
 
 	/**
 	 * Return the duration of the current openend video file in milliseconds.
 	 * 
 	 * @return The duration
 	 */
-	public int getDuration();
+	int getDuration();
 	
 	/**
 	 * Stop playback and reset the playback position to zero.
 	 */
-	public void stop();
+	void stop();
 
 	/**
 	 * Start playback.
 	 */
-	public void play();
+	void play();
 
 	/**
 	 * Pause playback.
 	 */
-	public void pause();
+	void pause();
 	
 	/**
 	 * Set the volume level for playback, currenly not used as no sound is recorded anyway.
 	 * 
 	 * @param volume The volume level
 	 */
-	public void setVolume(float volume);
+	void setVolume(float volume);
 	
 	/**
 	 * Return the volume level for the current openend video.
 	 * 
 	 * @return The volume level
 	 */
-	public float getVolume();
+	float getVolume();
 	
 	/**
 	 * Set the playback rate. The default rate is <code>1.0f</code>. Some predefined playback rates are defined in {@link AppSettings#PLAY_RATES}
 	 * 
 	 * @param rate The playback rate
 	 */
-	public void setPlayRate(float rate);
+	void setPlayRate(float rate);
 	
 	/**
 	 * Return the current playback rate.
 	 * 
 	 * @return The playback rate
 	 */
-	public float getPlayRate();
+	float getPlayRate();
 
 }

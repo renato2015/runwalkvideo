@@ -1,6 +1,4 @@
 package com.runwalk.video.media.ueye;
-import com.ochafik.lang.jnaerator.runtime.LibraryExtractor;
-
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
@@ -17,7 +15,8 @@ import com.sun.jna.win32.StdCallLibrary;
  */
 public class UEyeLibrary implements StdCallLibrary {
 	
-	public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("uEye_api", true, UEyeLibrary.class);
+	//public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("uEye_api", true, UEyeLibrary.class);
+	public static String JNA_LIBRARY_NAME = "uEye_api";
 	public static final NativeLibrary JNA_NATIVE_LIB = NativeLibrary.getInstance(UEyeLibrary.JNA_LIBRARY_NAME);
 	
 	static {

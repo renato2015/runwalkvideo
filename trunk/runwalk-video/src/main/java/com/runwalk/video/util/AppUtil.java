@@ -14,7 +14,7 @@ import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.gui.AppWindowWrapper;
+import com.runwalk.video.ui.AppWindowWrapper;
 
 public class AppUtil {
 	//duration formats

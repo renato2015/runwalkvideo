@@ -2,6 +2,7 @@ package com.runwalk.video.dao.impl;
 
 import javax.persistence.EntityManagerFactory;
 
+import com.runwalk.video.dao.AbstractDaoService;
 import com.runwalk.video.dao.Dao;
 
 public class JpaDaoService extends AbstractDaoService {
