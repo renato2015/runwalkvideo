@@ -17,8 +17,6 @@ import org.jdesktop.application.ApplicationActionMap;
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppWindowWrapper;
-import com.runwalk.video.ui.Floatable;
-import com.runwalk.video.ui.Maximizable;
 import com.runwalk.video.ui.PropertyChangeSupport;
 
 /**
@@ -109,10 +107,10 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	public Component getHolder() {
 		Component component = null;
 		// check whether the maximizable interface is implemented
-		if (Maximizable.class.isAssignableFrom(getVideoImpl().getClass())) {
-			component = ((Maximizable) getVideoImpl()).getFullscreenFrame();
-		} else if (Floatable.class.isAssignableFrom(getVideoImpl().getClass())) {
-			component = ((Floatable) getVideoImpl()).getComponent();
+		if (getVideoImpl().getFullscreenFrame() != null) {
+			component = getVideoImpl().getFullscreenFrame();
+		} else if (getVideoImpl().getComponent() != null) {
+			component = getVideoImpl().getComponent();
 		}
 		return component;
 	}

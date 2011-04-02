@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.GraphicsDevice;
 import java.awt.image.BufferedImage;
 
 /**
@@ -44,6 +43,14 @@ public interface IVideoComponent {
 	 * In most cases the component will have to stop previewing video in order to reconfigure properly.
 	 */
 	void stopRunning();
+	
+	/**
+	 * Get an AWT {@link Component} in which the video will be rendered for windowed mode.
+	 * @return The component
+	 */
+	Component getComponent();
+	
+	Frame getFullscreenFrame();
 	
 	/**
 	 * Set a {@link BufferedImage} and draw it on top of the rendering component.
