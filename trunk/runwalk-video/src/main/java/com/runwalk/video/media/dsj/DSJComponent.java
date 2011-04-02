@@ -18,8 +18,6 @@ import org.jdesktop.application.Action;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
-import com.runwalk.video.ui.Floatable;
-import com.runwalk.video.ui.Maximizable;
 import com.runwalk.video.ui.PropertyChangeSupport;
 
 import de.humatic.dsj.DSFilter;
@@ -34,7 +32,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, Floatable, Maximizable, ComponentListener {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 

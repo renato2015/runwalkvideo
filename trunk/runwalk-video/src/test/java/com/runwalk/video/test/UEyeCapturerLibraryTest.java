@@ -34,22 +34,23 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		cameraNames.clear();
 
 		// open camera
-		String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE.ini";
+		String settingsFile = "H:/Documents and Settings/Administrator/My Documents/uEye configurations/3.80settings.ini";
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName);
 		IntByReference aviPointer = new IntByReference(0);
-		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "C:/test2.avi", 0);
+		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);
 		try {
 			// wait for the camera thread to die
 			//cameraThread.join();
-			Thread.sleep(3000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		UEyeCapturerLibrary.StopRecording(aviPointer.getValue());
+		result = UEyeCapturerLibrary.StopRecording(aviPointer.getValue());
+		System.out.println("stopRecording result: "+ result);
 		UEyeCapturerLibrary.StopRunning(cameraHandle);
 		System.out.println("Camera stopped running");
 	}
