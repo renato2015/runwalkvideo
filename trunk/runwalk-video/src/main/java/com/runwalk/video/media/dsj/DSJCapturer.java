@@ -129,5 +129,4 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 		return getFiltergraph().getState() == DSCapture.RECORDING;
 	}
 
-
 }

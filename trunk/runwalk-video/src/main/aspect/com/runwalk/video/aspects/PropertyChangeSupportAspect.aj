@@ -8,7 +8,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.jdesktop.application.AbstractBean;
 
 import com.runwalk.video.entities.SerializableEntity;
-import com.runwalk.video.gui.PropertyChangeSupport;
+import com.runwalk.video.ui.PropertyChangeSupport;
 
 /**
  * This aspect will weave {@link SwingPropertyChangeSupport} into all {@link SerializableEntity}'s without requiring them to inherit

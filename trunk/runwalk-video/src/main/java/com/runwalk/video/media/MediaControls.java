@@ -51,39 +51,29 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.AppInternalFrame;
-import com.runwalk.video.gui.AppWindowWrapper;
-import com.runwalk.video.gui.panels.AnalysisOverviewTablePanel;
-import com.runwalk.video.gui.panels.AnalysisTablePanel;
-import com.runwalk.video.gui.tasks.AbstractTask;
-import com.runwalk.video.gui.tasks.CreateKeyframeTask;
-import com.runwalk.video.gui.tasks.CreateOverlayImageTask;
-import com.runwalk.video.gui.tasks.RecordTask;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.VideoComponent.State;
+import com.runwalk.video.panels.AnalysisOverviewTablePanel;
+import com.runwalk.video.panels.AnalysisTablePanel;
+import com.runwalk.video.tasks.AbstractTask;
+import com.runwalk.video.tasks.CreateKeyframeTask;
+import com.runwalk.video.tasks.CreateOverlayImageTask;
+import com.runwalk.video.tasks.RecordTask;
+import com.runwalk.video.ui.AppInternalFrame;
+import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.WindowManager;
+import com.runwalk.video.ui.actions.ApplicationActionConstants;
+import com.runwalk.video.ui.actions.MediaActionConstants;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class MediaControls extends AppInternalFrame implements PropertyChangeListener {
+public class MediaControls extends AppInternalFrame implements PropertyChangeListener, ApplicationActionConstants, MediaActionConstants {
 
-	private static final String MUTE_ACTION = "mute";
-	private static final String FULL_SCREEN_ACTION = "toggleFullScreen";
-	private static final String INCREASE_VOLUME_ACTION = "increaseVolume";
-	private static final String DECREASE_VOLUME_ACTION = "decreaseVolume";
-	private static final String CREATE_KEYFRAME_ACTION = "createKeyframe";
-	private static final String NEXT_KEYFRAME_ACTION = "nextKeyframe";
-	private static final String FASTER_ACTION = "faster";
-	private static final String TOGGLE_PLAY_ACTION = "togglePlay";
-	private static final String STOP_ACTION = "stop";
-	private static final String RECORD_ACTION = "record";
-	private static final String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
-	public static final String STOP_ALL_VIDEO_COMPONENTS_ACTION = "stopAllVideoComponents";
-
-	private static final String FULL_SCREEN_ENABLED = VideoComponent.FULL_SCREEN_ENABLED;
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
+
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
 
 	private Boolean selectedRecordingRecordable = false;
@@ -100,19 +90,21 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private final AnalysisTablePanel analysisTablePanel;
 	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
 
+	private final WindowManager windowManager;
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 
 	private RecordTask recordTask = null;
 
-	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService, 
-			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
+			DaoService daoService, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		super("Media controls", false);
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
 		this.appSettings = appSettings;
 		this.analysisTablePanel = analysisTablePanel;
 		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
+		this.windowManager = windowManager;
 
 		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
@@ -170,8 +162,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		createJButton(DECREASE_VOLUME_ACTION); 
 		createJButton(INCREASE_VOLUME_ACTION); 
 		createJToggleButton(MUTE_ACTION, "mute.Action.pressedIcon"); 
-		createJButton(CameraDialog.SHOW_CAPTURER_SETTINGS_ACTION); 
-		createJButton(CameraDialog.SHOW_CAMERA_SETTINGS_ACTION); 
+		createJButton(SHOW_CAPTURER_SETTINGS_ACTION); 
+		createJButton(SHOW_CAMERA_SETTINGS_ACTION); 
 		createJButton(FULL_SCREEN_ACTION); 
 
 		elapsedTimeLabel = new JLabel();
@@ -238,8 +230,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
 	public Task<Void, Void> toggleFullScreen() {
 		// need to set this manually here, as there is no component that will invoke this method first
-		frontMostComponent.setFullScreen(!frontMostComponent.isFullScreen());
-		return frontMostComponent.toggleFullScreen();
+		//return frontMostComponent.toggleFullScreen();
+		return null;
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)
@@ -447,6 +439,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		// if there is no actionEvent specified, then this call was made at startup time
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(parentWindow, capturerName, captureEncoderName);
+		getWindowManager().addWindow(capturer);
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer
@@ -521,6 +514,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 						player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
 						player.addPropertyChangeListener(this);
 						videoComponents.add(player);
+						getWindowManager().addWindow(player);
 					} 
 					recordingCount++;
 					player.toFront();
@@ -704,7 +698,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				VideoComponent newComponent = Iterables.find(components, new Predicate<VideoComponent>() {
 
 					public boolean apply(VideoComponent input) {
-						return input != component && input.getHolder().isVisible();
+						return input != component && input.isVisible();
 					}
 
 				});
@@ -771,6 +765,10 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			}
 		}
 		return result.build();
+	}
+	
+	public WindowManager getWindowManager() {
+		return windowManager;
 	}
 
 	public VideoFileManager getVideoFileManager() {

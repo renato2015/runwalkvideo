@@ -72,7 +72,7 @@ public class VideoPlayer extends VideoComponent {
 		setRecording(recording);
 		if (getVideoImpl().loadVideo(path)) {
 			// TODO fix this, hardcoded to zeroth monitor
-			showComponent(true, 0);
+			// showComponent(true, 0);
 		}
 		setComponentTitle(getTitle());
 		setPosition(0);

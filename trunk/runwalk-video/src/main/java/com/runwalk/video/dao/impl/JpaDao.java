@@ -15,6 +15,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterables;
+import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
 
 /**

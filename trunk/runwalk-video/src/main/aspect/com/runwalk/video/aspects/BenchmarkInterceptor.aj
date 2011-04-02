@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 public aspect BenchmarkInterceptor {
 
-    after() returning : execution(* com.runwalk.video.gui.tasks.AbstractTask.doInBackground()) {
+    after() returning : execution(* com.runwalk.video.tasks.AbstractTask.doInBackground()) {
     	Task<?, ?> task = (Task<?, ?>) thisJoinPoint.getTarget();
     	long ms = task.getExecutionDuration(TimeUnit.MILLISECONDS);
     	long s = task.getExecutionDuration(TimeUnit.SECONDS);

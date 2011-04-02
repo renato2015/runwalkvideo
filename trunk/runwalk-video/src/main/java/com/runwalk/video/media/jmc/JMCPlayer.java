@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,13 +15,14 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.ui.Floatable;
 import com.sun.media.jmc.MediaProvider;
 import com.sun.media.jmc.control.AudioControl;
 import com.sun.media.jmc.control.VideoRenderControl;
 import com.sun.media.jmc.event.VideoRendererEvent;
 import com.sun.media.jmc.event.VideoRendererListener;
 
-public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
+public class JMCPlayer implements IVideoPlayer, VideoRendererListener, Floatable {
 
 	AudioControl ac;
 	VideoRenderControl vrc;
@@ -65,11 +65,7 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 				vrc = mp.getControl(VideoRenderControl.class);
 				vrc.addVideoRendererListener(this);
 				videoPanel = new JPanel();
-				frame = new JFrame();
-				frame.setPreferredSize(new Dimension(786, 584));
-				frame.setTitle("JMC player");
-				frame.add(videoPanel);
-				frame.pack();
+				videoPanel.setPreferredSize(new Dimension(786, 584));
 			}
 		} catch (Exception e) {
 			Logger.getLogger(JMCPlayer.class).error(e);
@@ -167,10 +163,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return videoPanel;
 	}
 
-	public Frame getFullscreenFrame() {
-		return frame;
-	}
-
 	public String getTitle() {
 		return "JMC player";
 	}
@@ -179,9 +171,13 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		return true;
 	}
 
-	public void setFullScreen(GraphicsDevice graphicsDevice, boolean b) {
-		//FIXME not supported yet??
-		
+	public BufferedImage getImage() {
+		return bufferedImage;
+	}
+
+	@Override
+	public Dimension getDimension() {
+		return new Dimension(getImage().getWidth(), getImage().getHeight());
 	}
 
 	public void setOverlayImage(BufferedImage image, Color alphaColor) {
@@ -192,14 +188,39 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		// TODO Auto-generated method stub
 	}
 
-	public BufferedImage getImage() {
-		return bufferedImage;
+	@Override
+	public boolean isFullScreenEnabled() {
+		return false;
 	}
 
 	@Override
-	public Dimension getDimension() {
-		
-		return new Dimension(getImage().getWidth(), getImage().getHeight());
+	public boolean isFullScreen() {
+		return false;
+	}
+
+	@Override
+	public void setFullScreen(boolean fullScreen, Integer monitorId) {
+		// do nothing
+	}
+
+	@Override
+	public boolean isVisible() {
+		return frame.isVisible();
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		videoPanel.setVisible(visible);
+	}
+
+	@Override
+	public void setTitle(String title) {
+		frame.setTitle(title);
+	}
+
+	@Override
+	public void toFront() {
+		frame.toFront();
 	}
 
 }

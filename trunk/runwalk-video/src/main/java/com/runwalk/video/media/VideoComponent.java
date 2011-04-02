@@ -2,42 +2,24 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ActionMap;
-import javax.swing.JComponent;
 import javax.swing.Timer;
 
-import org.apache.log4j.Level;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.application.Task;
-import org.jdesktop.application.Task.BlockingScope;
-import org.jdesktop.beansbinding.AbstractBindingListener;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.Binding;
-import org.jdesktop.beansbinding.Binding.SyncFailure;
-import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.beansbinding.ELProperty;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.gui.AppInternalFrame;
-import com.runwalk.video.gui.AppWindowWrapper;
-import com.runwalk.video.gui.PropertyChangeSupport;
-import com.runwalk.video.gui.tasks.AbstractTask;
+import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.Floatable;
+import com.runwalk.video.ui.Maximizable;
+import com.runwalk.video.ui.PropertyChangeSupport;
 
 /**
  * This abstraction allows you to make easy reuse of the common video UI functionality  
@@ -46,62 +28,25 @@ import com.runwalk.video.gui.tasks.AbstractTask;
  * @author Jeroen Peelaerts
  *
  */
-public abstract class VideoComponent implements PropertyChangeSupport, AppWindowWrapper, ComponentListener {
+public abstract class VideoComponent implements PropertyChangeSupport, AppWindowWrapper {
 
-	public static final String FULL_SCREEN = "fullScreen";
 	public static final String IDLE = "idle";
-	public static final String FULL_SCREEN_ENABLED = "fullScreenEnabled";
 	public static final String STATE = "state";
 	public static final String MONITOR_ID = "monitorId";
 	public static final String DISPOSED = "disposed";
 
 	private Recording recording;
-	private AppInternalFrame internalFrame;
 	private Timer timer;
-	private boolean fullScreen = false;
 	private WeakReference<ActionMap> actionMap;
 	private State state;
 	private Integer monitorId;
-	private boolean fullScreenEnabled;
 	private boolean overlayed;
-	private boolean visible = true;
-	private Binding<? extends AppWindowWrapper, Boolean, ? extends JComponent, Boolean> enabledBinding;
 
 	/**
 	 * This variable is used to determine the default monitor on which this component will be shown.
 	 */
 	private final int componentId;
 
-	/**
-	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
-	 * The resulting number will be used for showing a {@link VideoCapturer} or {@link VideoPlayer} instance, 
-	 * which both are uniquely numbered.
-	 * 
-	 * <ul>
-	 * <li>If the total number of available monitors is smaller than 2, then the last monitor index will be used at all times.</li>
-	 * <li>If the total number of available monitors is greater than 2, then the assigned monitor index will alternate between 1 and the last
-	 * monitor index according to the value of the componentId parameter.</li>
-	 * </ul>
-	 * 
-	 * @param graphicsDevicesCount The amount of available screens
-	 * @param componentId The instance number
-	 * @return The screen id
-	 */
-	public static int getDefaultMonitorId(int monitorCount, int componentId) {
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
-		// assign default monitor number to initial result
-		int defaultMonitorId = Arrays.asList(graphicsDevices).indexOf(defaultGraphicsDevice);
-		int result = defaultMonitorId;
-		int availableScreenCount = monitorCount - 1;
-		if (monitorCount > 1) {
-			// set to monitor on which the main window is not showing
-			result = availableScreenCount - defaultMonitorId;
-		}
-		//TODO add support for three monitors
-		return result;
-	}
 
 	protected VideoComponent(int componentId) {
 		this.componentId = componentId;
@@ -139,14 +84,6 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		this.timer = timer;
 	}
 
-	public Frame getFullScreenFrame() {
-		return getVideoImpl().getFullscreenFrame();
-	}
-
-	public AppInternalFrame getInternalFrame() {
-		return internalFrame;
-	}
-
 	/**
 	 * Returns an unique id for this concrete {@link VideoComponent} type.
 	 * Implementations can be numbered independently from each other.
@@ -166,23 +103,18 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	 * @param title The title
 	 */
 	protected void setComponentTitle(String title) {
-		if (isFullScreen()) {
-			getFullScreenFrame().setTitle(title);
-			getFullScreenFrame().setName(title);
-		} else {
-			getInternalFrame().setName(title);
-			getInternalFrame().setTitle(title);
-		}
+		getVideoImpl().setTitle(title);
 	}
 
-	public Container getHolder() {
-		Container container = null;
-		if (isFullScreen()) {
-			container = getFullScreenFrame();
-		} else {
-			container = getInternalFrame();
+	public Component getHolder() {
+		Component component = null;
+		// check whether the maximizable interface is implemented
+		if (Maximizable.class.isAssignableFrom(getVideoImpl().getClass())) {
+			component = ((Maximizable) getVideoImpl()).getFullscreenFrame();
+		} else if (Floatable.class.isAssignableFrom(getVideoImpl().getClass())) {
+			component = ((Floatable) getVideoImpl()).getComponent();
 		}
-		return container;
+		return component;
 	}
 
 	protected void setMonitorId(int monitorId) {
@@ -190,23 +122,28 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	public boolean isFullScreen() {
-		return fullScreen;
+		return getVideoImpl().isFullScreen();
 	}
 
-	public void setFullScreen(boolean fullScreen) {
-		firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
+	public void setFullScreen(boolean fullScreen, int monitorId) {
+		monitorId = this.monitorId == null ? monitorId : this.monitorId;
+		getVideoImpl().setFullScreen(fullScreen, monitorId);
+	}
+	
+	public boolean isFullScreenEnabled() {
+		return getVideoImpl().isFullScreenEnabled();
 	}
 
 	public boolean isVisible() {
-		return visible;
+		return getVideoImpl().isVisible();
 	}
 
 	public void setVisible(boolean visible) {
-		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		getVideoImpl().setVisible(visible);
 	}
 
 	public void toggleVisibility() {
-		getHolder().setVisible(isVisible());
+		getVideoImpl().setVisible(isVisible());
 	}
 
 	public BufferedImage getImage() {
@@ -234,25 +171,12 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		return overlayed;
 	}
 
-	private Integer checkMonitorId(Integer monitorId, int monitorCount) {
-		// check preconditions
-		if (monitorId != null && monitorId < monitorCount) {
-			// use monitor set by user
-			getLogger().log(Level.DEBUG, "Monitor number " + monitorId + " selected for " + getTitle() + ".");
-		} else {
-			// use default monitor, because it wasn't set or found to be invalid
-			monitorId = getDefaultMonitorId(0, getComponentId());
-			getLogger().log(Level.WARN, "Default monitor number " + monitorId + " selected for " + getTitle() + ".");
-		}
-		return monitorId;
-	}
-
-	protected void showComponent() {
+/*	protected void showComponent() {
 		// TODO monitorId property is set by creation factory.. maybe it can be passed as an argument, too?
 		showComponent(true, this.monitorId);
-	}
+	}*/
 
-	protected void showComponent(boolean fullScreen, Integer monitorId) {
+	/*protected void showComponent(boolean goFullScreen, Integer monitorId) {
 		// get the graphicsdevice corresponding with the given monitor id
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
@@ -262,11 +186,15 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		// get a reference to the previously visible component
 		Container oldContainer = getHolder();
 		// go fullscreen if the selected monitor is not the default one
-		fullScreen = fullScreen && graphicsDevice != defaultGraphicsDevice;
+		if (getVideoImpl().isActive()) {
+			fullScreen = getVideoImpl().isFullScreen();
+		} else {
+			fullScreen = graphicsDevice != defaultGraphicsDevice;
+		}
 		if (fullScreen) {
 			boolean frameInitialized = getFullScreenFrame() != null;
 			getVideoImpl().setFullScreen(graphicsDevice, true);
-			if (!frameInitialized) {
+			if (frameInitialized) {
 				getFullScreenFrame().addComponentListener(this);
 			}
 		} else {
@@ -282,42 +210,10 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		if (getHolder() != null) {
 			setComponentTitle(getTitle());
 			setVisible(true);
-			getApplication().createOrShowComponent(this);
 		}
-	}
+	}*/
 
-	private void createInternalFrame() {
-		internalFrame = new AppInternalFrame(getTitle(), false);
-		getInternalFrame().add(getVideoImpl().getComponent());
-		getInternalFrame().addComponentListener(this);
-		BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("associatedButton.enabled");
-		ELProperty<AppWindowWrapper, Boolean> fullScreen = ELProperty.create("{!fullScreen}");
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, fullScreen, getInternalFrame(), enabled);
-		enabledBinding.addBindingListener(new AbstractBindingListener() {
-
-			@Override
-			public void bindingBecameBound(Binding binding) {
-				// TODO Auto-generated method stub
-				super.bindingBecameBound(binding);
-			}
-
-			@Override
-			public void syncFailed(Binding binding, SyncFailure failure) {
-				// TODO Auto-generated method stub
-				super.syncFailed(binding, failure);
-			}
-
-			@Override
-			public void synced(Binding binding) {
-				// TODO Auto-generated method stub
-				super.synced(binding);
-			}
-
-		});
-		enabledBinding.bind();
-	}
-
-	@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, selectedProperty = FULL_SCREEN, block = BlockingScope.ACTION)
+	/*@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, selectedProperty = FULL_SCREEN, block = BlockingScope.ACTION)
 	public Task<Void, Void> toggleFullScreen() {
 		return new AbstractTask<Void, Void>("toggleFullScreen") {
 
@@ -329,26 +225,18 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 			}
 
 		};
-	}
+	}*/
 
 	protected void setState(State state) {
 		firePropertyChange(STATE, this.state, this.state = state);
 		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		setFullScreenEnabled(isIdle() && graphicsDevices.length > 1);
+		//GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		//GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		//setFullScreenEnabled(isIdle() && graphicsDevices.length > 1);
 	}
 
 	public State getState() {
 		return state;
-	}
-
-	public void setFullScreenEnabled(boolean fullScreenEnabled) {
-		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
-	}
-
-	public boolean isFullScreenEnabled() {
-		return fullScreenEnabled;
 	}
 
 	public boolean isIdle() {
@@ -365,11 +253,11 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		return getState() == State.STOPPED;
 	}
 
-	private void maybeRemoveComponentListener(Component comp, ComponentListener l) {
+	/*private void maybeRemoveComponentListener(Component comp, ComponentListener l) {
 		if (comp != null) {
 			comp.addComponentListener(l);
 		}
-	}
+	}*/
 
 	public void stopRunning() {
 		getVideoImpl().stopRunning();
@@ -383,13 +271,12 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		// no propertyChangeListener left here??
 		if (getVideoImpl() != null) {			
 			// dispose on the video implementation will dispose resources for the full screen frame
-			maybeRemoveComponentListener(getFullScreenFrame(), this);
+			// maybeRemoveComponentListener(getFullScreenFrame(), this);
 			getVideoImpl().dispose();
-			if (getInternalFrame() != null) {
-				enabledBinding.unbind();
+			/*if (getInternalFrame() != null) {
 				getInternalFrame().removeComponentListener(this);
 				getInternalFrame().dispose();
-			}
+			}*/
 		}
 		setRecording(null);
 	}
@@ -399,14 +286,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	}
 
 	public void toFront() {
-		// FIXME clean this up
-		if (getHolder() != null) {
-			if (isFullScreen()) {
-				getFullScreenFrame().toFront();
-			} else {
-				getInternalFrame().toFront();
-			}
-		}
+		getVideoImpl().toFront();
 	}
 
 	public boolean isActive() {
@@ -503,18 +383,6 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		// if no result here then recurse
 		return recurse ? getLastImplementor(theClass.getSuperclass(), interf) : theClass;
 	}
-
-	public void componentShown(ComponentEvent e) {
-		setVisible(e.getComponent().isVisible());
-	}
-
-	public void componentHidden(ComponentEvent e) {
-		setVisible(e.getComponent().isVisible());
-	}
-
-	public void componentResized(ComponentEvent e) { }
-
-	public void componentMoved(ComponentEvent e) { }
 
 	public enum State {
 		PLAYING, RECORDING, IDLE, DISPOSED, STOPPED

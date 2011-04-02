@@ -1,5 +1,4 @@
 package com.runwalk.video.media.ueye;
-import com.ochafik.lang.jnaerator.runtime.LibraryExtractor;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.ptr.IntByReference;
@@ -9,8 +8,9 @@ import com.sun.jna.win32.StdCallLibrary;
  * This dll abstracts functionality delivered by {@link UEyeCapturerLibrary} and {@link UEyeLibrary}
  */
 public class UEyeCapturerLibrary implements StdCallLibrary {
-	public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("ueye-native-lib", true, UEyeCapturerLibrary.class);
-	public static final NativeLibrary JNA_NATIVE_LIB = NativeLibrary.getInstance(UEyeCapturerLibrary.JNA_LIBRARY_NAME, com.ochafik.lang.jnaerator.runtime.MangledFunctionMapper.DEFAULT_OPTIONS);
+	//public static final java.lang.String JNA_LIBRARY_NAME = LibraryExtractor.getLibraryPath("ueye-native-lib", true, UEyeCapturerLibrary.class);
+	public static final String JNA_LIBRARY_NAME = "ueye-nativelib";
+	public static final NativeLibrary JNA_NATIVE_LIB = NativeLibrary.getInstance(UEyeCapturerLibrary.JNA_LIBRARY_NAME);
 	
 	//CuEyeCapturer INSTANCE = (CuEyeCapturer) Native.loadLibrary("CuEyeCapturer", CuEyeCapturer.class);
 

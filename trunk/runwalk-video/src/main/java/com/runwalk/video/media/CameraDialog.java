@@ -13,7 +13,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
@@ -31,23 +30,17 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.gui.AppComponent;
+import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.ui.WindowManager;
+import com.runwalk.video.ui.actions.ApplicationActionConstants;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class CameraDialog extends JDialog {
-
-	// class properties
+public class CameraDialog extends JDialog implements ApplicationActionConstants {
+	
+	// bound class properties
 	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";
 
-	// class actions
-	public static final String INITIALIZE_CAPTURER_ACTION = "initializeCapturer";
-	public static final String REFRESH_CAPTURER_ACTION = "refreshCapturers";
-	public static final String SHOW_CAMERA_SETTINGS_ACTION = "showCameraSettings";
-	public static final String SHOW_CAPTURER_SETTINGS_ACTION = "showCapturerSettings";
-	private static final String DISMISS_DIALOG_ACTION = "dismissDialog";
-	
 	private JComboBox capturerComboBox;
 
 	private String selectedCapturerName;
@@ -107,7 +100,7 @@ public class CameraDialog extends JDialog {
 		add(buttonPanel, "wrap, grow, hidemode 3");
 
 		if (enableExitAction) {
-			javax.swing.Action exitAction = getAction(RunwalkVideoApp.EXIT_ACTION);
+			javax.swing.Action exitAction = getAction(EXIT_ACTION);
 			JButton cancelButton = new JButton(exitAction); // NOI18N
 			add(cancelButton, "grow");
 		}
@@ -234,7 +227,7 @@ public class CameraDialog extends JDialog {
 			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();
 			// get the default monitor id for this capturer
-			int defaultMonitorId = VideoComponent.getDefaultMonitorId(graphicsDevices.length, capturerId);
+			int defaultMonitorId = WindowManager.getDefaultMonitorId(graphicsDevices.length, capturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);

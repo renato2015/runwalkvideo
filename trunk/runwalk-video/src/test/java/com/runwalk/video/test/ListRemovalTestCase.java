@@ -25,7 +25,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.gui.AnalysisConnector;
+import com.runwalk.video.ui.AnalysisConnector;
 
 public class ListRemovalTestCase extends TestCase {
 
