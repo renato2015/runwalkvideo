@@ -2,6 +2,7 @@ package com.runwalk.video.media.ueye;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.win32.StdCallLibrary;
 /**
  * JNA Wrapper for library <b>ueye-native-library</b><br>
@@ -40,5 +41,7 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	public static native int StartRecording(IntByReference cameraHandle, IntByReference aviPointer, final String path, double fps);
 	
 	public static native int StopRecording(int aviHandle);
+	
+	public static native LongByReference GetFrameDropInfo(int aviHandle);
 	
 }
