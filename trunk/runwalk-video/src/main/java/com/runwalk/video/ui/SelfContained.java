@@ -1,6 +1,5 @@
 package com.runwalk.video.ui;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.beans.PropertyChangeListener;
 
@@ -14,15 +13,13 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  *
  */
-@AppComponent(actionMapStopClass = AppWindowWrapper.class)
-public interface AppWindowWrapper extends WindowConstants {
+@AppComponent(actionMapStopClass = SelfContained.class)
+public interface SelfContained extends WindowConstants {
 
 	/**
 	 * Make the implementor eligible for garbage collection.
 	 */
 	public void dispose();
-	
-	public Component getHolder();
 	
 	public String getTitle();
 	
@@ -32,6 +29,17 @@ public interface AppWindowWrapper extends WindowConstants {
 	
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility();
+	
+	public void toFront();
+	
+	public void setFullScreen(boolean fullScreen, Integer monitorId);
+	
+	public boolean isFullScreen();
+	
+	public boolean isToggleFullScreenEnabled();
+	
+	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
+	public void toggleFullScreen();
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	

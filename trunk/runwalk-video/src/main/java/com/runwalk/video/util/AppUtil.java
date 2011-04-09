@@ -14,7 +14,7 @@ import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.SelfContained;
 
 public class AppUtil {
 	//duration formats
@@ -82,28 +82,5 @@ public class AppUtil {
 		return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1) : s;
 	}
 	
-	/**
-	 * Find an {@link AppWindowWrapper} in a given {@link Collection} for 
-	 * which {@link AppWindowWrapper#getHolder()} equals {@link Component}.
-	 * 
-	 * @param <T> The concrete type of the {@link AppWindowWrapper}
-	 * @param windowWrappers The {@link Collection} to look in 
-	 * @param component The current visible {@link Component}
-	 * @return The found {@link AppWindowWrapper}
-	 * 
-	 * @see AppWindowWrapper#getHolder()
-	 */
-	public static <T extends AppWindowWrapper> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
-		T result = null;
-		Iterator<T> iterator = windowWrappers.iterator();
-		while(iterator.hasNext() && result == null) {
-			T next = iterator.next();
-			if (next.getHolder() == component) {
-				result = next;
-			}
-		}
-		return result;
-	}
-
 
 }

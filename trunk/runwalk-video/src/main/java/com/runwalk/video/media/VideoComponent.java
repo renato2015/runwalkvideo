@@ -1,7 +1,6 @@
 package com.runwalk.video.media;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
@@ -16,8 +15,9 @@ import org.jdesktop.application.ApplicationActionMap;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.PropertyChangeSupport;
+import com.runwalk.video.ui.SelfContained;
 
 /**
  * This abstraction allows you to make easy reuse of the common video UI functionality  
@@ -26,7 +26,8 @@ import com.runwalk.video.ui.PropertyChangeSupport;
  * @author Jeroen Peelaerts
  *
  */
-public abstract class VideoComponent implements PropertyChangeSupport, AppWindowWrapper {
+@AppComponent
+public abstract class VideoComponent implements PropertyChangeSupport {
 
 	public static final String IDLE = "idle";
 	public static final String STATE = "state";
@@ -94,45 +95,16 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		return componentId;
 	}
 
-	/**
-	 * Set the title of the component that is currently shown, which will become
-	 * visible in the top of the window frame.
-	 * 
-	 * @param title The title
-	 */
-	protected void setComponentTitle(String title) {
-		getVideoImpl().setTitle(title);
-	}
-
-	public Component getHolder() {
-		Component component = null;
-		// check whether the maximizable interface is implemented
-		if (getVideoImpl().getFullscreenFrame() != null) {
-			component = getVideoImpl().getFullscreenFrame();
-		} else if (getVideoImpl().getComponent() != null) {
-			component = getVideoImpl().getComponent();
-		}
-		return component;
-	}
-
 	protected void setMonitorId(int monitorId) {
 		this.monitorId = monitorId;
 	}
 
-	public boolean isFullScreen() {
-		return getVideoImpl().isFullScreen();
-	}
-
-	public void setFullScreen(boolean fullScreen, int monitorId) {
+/*	public void setFullScreen(boolean fullScreen, int monitorId) {
 		monitorId = this.monitorId == null ? monitorId : this.monitorId;
 		getVideoImpl().setFullScreen(fullScreen, monitorId);
 	}
-	
-	public boolean isFullScreenEnabled() {
-		return getVideoImpl().isFullScreenEnabled();
-	}
-
-	public boolean isVisible() {
+	*/
+/*	public boolean isVisible() {
 		return getVideoImpl().isVisible();
 	}
 
@@ -142,7 +114,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 
 	public void toggleVisibility() {
 		getVideoImpl().setVisible(isVisible());
-	}
+	}*/
 
 	public BufferedImage getImage() {
 		return getVideoImpl().getImage();
@@ -283,12 +255,12 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 		return getVideoImpl().getTitle();
 	}
 
-	public void toFront() {
+/*	public void toFront() {
 		getVideoImpl().toFront();
-	}
+	}*/
 
 	public boolean isActive() {
-		return getHolder() != null && getHolder().isVisible() && getVideoImpl().isActive();
+		return getVideoImpl().isActive();
 	}
 
 	/**
@@ -297,7 +269,7 @@ public abstract class VideoComponent implements PropertyChangeSupport, AppWindow
 	public ActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
 			// get the action map of the abstractions
-			ActionMap actionMap = getContext().getActionMap(AppWindowWrapper.class, this);
+			ActionMap actionMap = getContext().getActionMap(SelfContained.class, this);
 			ActionMap insertionReference = actionMap;
 			// get the action map of the implementations
 			Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), IVideoComponent.class);

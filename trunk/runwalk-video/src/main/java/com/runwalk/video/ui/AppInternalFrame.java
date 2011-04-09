@@ -5,6 +5,8 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import javax.swing.JInternalFrame;
 
@@ -18,7 +20,7 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrapper {
+public class AppInternalFrame extends BaseInternalFrame implements ComponentListener, SelfContained {
 	
 	private boolean visible = true;
 
@@ -27,21 +29,19 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	 * @param title set the frame's title.
 	 * @param resizable set whether the frame should be resizable.
 	 */
-	public AppInternalFrame(boolean resizable) {
-		this("", resizable);
-	}
-	
 	public AppInternalFrame(String title, boolean resizable) {
 		super(title, resizable, true);
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
-	}
-
-	public BaseInternalFrame getHolder() {
-		return this;
+		addComponentListener(this);
 	}
 	
+	public void dispose() {
+		removeComponentListener(this);
+		super.dispose();
+	}
+
 	public void toggleVisibility() {
 		super.setVisible(isVisible());
 	}
@@ -49,6 +49,18 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 	public void setVisible(boolean visible) {
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 	}
+	
+	public void componentShown(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+
+	public void componentHidden(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+
+	public void componentResized(ComponentEvent e) { }
+
+	public void componentMoved(ComponentEvent e) { }
 
 	public static class InternalFrameState extends WindowState {
 
@@ -112,6 +124,23 @@ public class AppInternalFrame extends BaseInternalFrame implements AppWindowWrap
 			}
 		}
 
+	}
+
+	public void setFullScreen(boolean fullScreen, Integer monitorId) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	public boolean isFullScreen() {
+		// internal frame is never full screen
+		return false;
+	}
+
+	public boolean isToggleFullScreenEnabled() {
+		return false;
+	}
+
+	public void toggleFullScreen() {
+		throw new UnsupportedOperationException("not implemented");
 	}
 	
 }

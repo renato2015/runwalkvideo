@@ -18,7 +18,9 @@ import org.jdesktop.application.Action;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.PropertyChangeSupport;
+import com.runwalk.video.ui.SelfContained;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
@@ -32,7 +34,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, SelfContained, Containable {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -48,6 +50,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	private boolean rejectPauseFilter = false;
 
 	private boolean fullScreenEnabled;
+	
+	private boolean fullScreen;
 
 	private boolean visible;
 	
@@ -88,7 +92,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		// this action will be shown as a JCheckBoxMenuItem in the menu bar
 	}
 
-	protected Logger getLogger() {
+	public Logger getLogger() {
 		return Logger.getLogger(getClass());
 	}
 
@@ -173,8 +177,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	
 	@Override
 	public boolean isFullScreen() {
-		// TODO Auto-generated method stub
-		return false;
+		return fullScreen;
 	}
 
 	@Override
@@ -183,13 +186,14 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		GraphicsDevice device = graphicsDevices[monitorId];
 		if (fullScreen) {
+			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().goFullScreen(device, 1);
 		} else {
+			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().leaveFullScreen();
 		}
 	}
 
-	@Override
 	public void setTitle(String title) {
 		if (getFullscreenFrame() != null) {
 			getFullscreenFrame().setTitle(title);
@@ -197,9 +201,23 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		}
 	}
 
-	@Override
 	public void toFront() {
+		if (getFullscreenFrame() != null) {
+			getFullscreenFrame().toFront();
+		}
+	}
+	
+	public void toggleVisibility() {
+		setVisible(!isVisible());
+	}
+
+	public boolean isToggleFullScreenEnabled() {
+		return true;
+	}
+
+	public void toggleFullScreen() {
 		// TODO Auto-generated method stub
+		// toggle fullscreen here!!
 	}
 	
 	public void componentShown(ComponentEvent e) {

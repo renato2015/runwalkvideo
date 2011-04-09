@@ -1,17 +1,18 @@
 package com.runwalk.video.ui;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
-import javax.swing.JInternalFrame;
+import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 
+import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;
 import com.runwalk.video.media.VideoComponent.State;
@@ -58,73 +59,92 @@ public class WindowManager implements PropertyChangeListener {
 		this.menuBar = menuBar;
 		this.pane = pane;
 	}
-	
-	private boolean isDecoratedWindow(Component component) { 
-		Container ancestorOfClass = SwingUtilities.getAncestorOfClass(JInternalFrame.class, component);
-		return Window.class.isAssignableFrom(component.getClass()) || ancestorOfClass == null;
+
+	public void addWindow(VideoComponent videoComponent) {
+		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		boolean isContainable = videoImpl instanceof Containable;
+		boolean isSelfContained = videoImpl instanceof SelfContained;
+		if (isSelfContained) {
+			SelfContained selfContainedImpl = (SelfContained) videoImpl;
+			boolean fullScreen = selfContainedImpl.isFullScreen();
+			boolean toggleFullScreenEnabled = selfContainedImpl.isToggleFullScreenEnabled();
+			if (!fullScreen && toggleFullScreenEnabled) {
+				// go fullscreen by default
+				int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
+				selfContainedImpl.setFullScreen(true, monitorId);
+				selfContainedImpl.addPropertyChangeListener(this);
+			} else if (isContainable && !fullScreen && !toggleFullScreenEnabled) {
+				Component component = ((Containable) videoImpl).getComponent();
+				selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
+			}
+			selfContainedImpl.addPropertyChangeListener(this);
+			//TODO add else condition, if not fullscreen and toggle unavailable t
+			addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
+		} else if (isContainable) {
+			Component component = ((Containable) videoImpl).getComponent();
+			SelfContained selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
+			selfContainedImpl.addPropertyChangeListener(this);
+		}
+	}
+
+	public void addWindow(SelfContained selfContained) {
+		addWindow(selfContained, selfContained.getApplicationActionMap());
 	}
 	
-	public void addWindow(VideoComponent videoComponent) {
-		// go fullscreen by default
-		addWindow((AppWindowWrapper) videoComponent);
-		int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
-		videoComponent.setFullScreen(true, monitorId);
+	public void addWindow(Containable containable) {
+		createInternalFrame(containable.getComponent(), containable.getTitle());
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode
-	public void addWindow(AppWindowWrapper appComponent) {
+	private void addWindow(SelfContained appComponent, ActionMap actionMap) {
 		//TODO enforce constraint here: should only be called once for each window
 		if (appComponent != null) {
-			Component component = appComponent.getHolder();
-			if (component != null) {
-				// add a PCE so this object can mediate events between the menu bar and video component
-				component.addPropertyChangeListener(this);
-				// check whether container implements the 
-				// if the given component is not a subclass of Window then we have to put it in a viewable container ourselves
-				JInternalFrame internalFrame = null;
-				if (!isDecoratedWindow(component)) {
-					internalFrame = createInternalFrame(component, appComponent.getTitle());
-				} else if (component instanceof JInternalFrame) {
-					internalFrame = (JInternalFrame) component;
-					internalFrame.pack();
-					getPane().add(internalFrame);
-				}
-			}
-			getMenuBar().addMenu(appComponent.getTitle(), appComponent.getApplicationActionMap());
+			getMenuBar().addMenu(appComponent.getTitle(), actionMap);
 			showWindow(appComponent);
 		}
 	}
-
-	public void setWindowVisibility(AppWindowWrapper appComponent, boolean visible) {
-		Component component = getDecoratingComponent(appComponent);  
+	
+	public void setWindowVisibility(Containable containable, boolean visible) {
+		SelfContained component = getDecoratingComponent(containable);  
 		if (component != null) {
 			component.setVisible(visible);
 		}
-		appComponent.setVisible(visible);
-	}
-	
-	public void showWindow(AppWindowWrapper appComponent) {
-		setWindowVisibility(appComponent, true);
 	}
 
-	public void hideWindow(AppWindowWrapper appComponent) {
-		setWindowVisibility(appComponent, false);
+	public void setWindowVisibility(SelfContained selfContained, boolean visible) {
+		selfContained.setVisible(visible);
+	}
+
+	public void showWindow(SelfContained selfContained) {
+		setWindowVisibility(selfContained, true);
 	}
 	
-	/**
-	 * @param appComponent
-	 */
-	private Component getDecoratingComponent(AppWindowWrapper appComponent) {
-		Component component = appComponent.getHolder();
+	public void showWindow(Containable containable) {
+		setWindowVisibility(containable, true);
+	}
+
+	public void hideWindow(SelfContained selfContained) {
+		setWindowVisibility(selfContained, false);
+	}
+	
+	public void hideWindow(Containable containable) {
+		setWindowVisibility(containable, false);
+	}
+
+	private SelfContained getDecoratingComponent(Containable containable) {
+		SelfContained result = null;
+		Component component = containable.getComponent();
 		if (component != null) {
-			component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, appComponent.getHolder());
+			component = SwingUtilities.getAncestorOfClass(SelfContained.class, component);
 		}
-		return component;
+		return result;
 	}
 
 	private AppInternalFrame createInternalFrame(Component component, String title) {
 		AppInternalFrame internalFrame = new AppInternalFrame(title, false);
-		
+		internalFrame.add(component);
+		internalFrame.pack();
+		getPane().add(internalFrame);
 		// FIXME add component listener to internal frame to detect closing
 		//internalFrame.addComponentListener(this);
 		/*BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("associatedButton.enabled");
@@ -174,13 +194,12 @@ public class WindowManager implements PropertyChangeListener {
 		if (VideoComponent.STATE.equals(evt.getPropertyName())) {
 			VideoComponent.State newState = (State) evt.getNewValue();
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
-				AppWindowWrapper appComponent = (AppWindowWrapper) evt.getSource();
+			/*	VideoComponent videoComponent = (SelfContained) evt.getSource();
 				getMenuBar().removeMenu(appComponent.getTitle());
 				appComponent.removePropertyChangeListener(this);
-				Component decoratedComponent = getDecoratingComponent(appComponent);
 				if (decoratedComponent != null) {
 					((JInternalFrame) decoratedComponent).dispose();
-				}
+				}*/
 			}
 		}
 	}
@@ -191,6 +210,72 @@ public class WindowManager implements PropertyChangeListener {
 
 	private JScrollableDesktopPane getPane() {
 		return pane;
+	}
+	
+	/**
+	 * Find an {@link SelfContained} in a given {@link Collection} for 
+	 * which {@link SelfContained#getHolder()} equals {@link Component}.
+	 * 
+	 * @param <T> The concrete type of the {@link SelfContained}
+	 * @param windowWrappers The {@link Collection} to look in 
+	 * @param component The current visible {@link Component}
+	 * @return The found {@link SelfContained}
+	 * 
+	 * @see SelfContained#getHolder()
+	 */
+	public <T extends VideoComponent> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
+		T result = null;
+		Iterator<T> iterator = windowWrappers.iterator();
+		while(iterator.hasNext() && result == null) {
+			T next = iterator.next();
+			if (next.getTitle() == component.getName()) {
+				result = next;
+			}
+		}
+		return result;
+	}
+
+	public void toFront(VideoComponent videoComponent) {
+		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		if (videoImpl instanceof SelfContained) {
+			SelfContained selfContainedImpl = (SelfContained) videoComponent.getVideoImpl();
+			selfContainedImpl.toFront();
+		} else if (videoImpl instanceof Containable) {
+			SelfContained selfContained = getDecoratingComponent((Containable) videoImpl);
+			if (selfContained != null) {
+				selfContained.toFront();
+			}
+		}
+	}
+	
+	public boolean isToggleFullScreenEnabled(VideoComponent videoComponent) {
+		boolean result = false;
+		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		if (videoImpl instanceof SelfContained) {
+			SelfContained selfContainedImpl = (SelfContained) videoComponent.getVideoImpl();
+			result = selfContainedImpl.isToggleFullScreenEnabled();
+		} else if (videoImpl instanceof Containable) {
+			SelfContained selfContained = getDecoratingComponent((Containable) videoImpl);
+			if (selfContained != null) {
+				result = selfContained.isToggleFullScreenEnabled();
+			}
+		}
+		return result;
+	}
+	
+	public boolean isVisible(VideoComponent videoComponent) {
+		boolean result = false;
+		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		if (videoImpl instanceof SelfContained) {
+			SelfContained selfContainedImpl = (SelfContained) videoComponent.getVideoImpl();
+			result = selfContainedImpl.isVisible();
+		} else if (videoImpl instanceof Containable) {
+			SelfContained selfContained = getDecoratingComponent((Containable) videoImpl);
+			if (selfContained != null) {
+				result = selfContained.isVisible();
+			}
+		}
+		return result;
 	}
 
 }
