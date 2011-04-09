@@ -92,7 +92,10 @@ public class WindowManager implements PropertyChangeListener {
 	}
 	
 	public void addWindow(Containable containable) {
-		createInternalFrame(containable.getComponent(), containable.getTitle());
+		AppInternalFrame createInternalFrame = createInternalFrame(containable.getComponent(), containable.getTitle());
+		ActionMap actionMap = createInternalFrame.getApplicationActionMap();
+		actionMap.setParent(containable.getApplicationActionMap());
+		getMenuBar().addMenu(containable.getTitle(), actionMap);
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode

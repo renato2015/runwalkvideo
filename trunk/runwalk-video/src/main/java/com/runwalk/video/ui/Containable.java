@@ -2,6 +2,7 @@ package com.runwalk.video.ui;
 
 import java.awt.Component;
 
+@AppComponent
 public interface Containable {
 	
 	/**
