@@ -1,10 +1,8 @@
 package com.runwalk.video.media.ueye;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +15,13 @@ import javax.swing.filechooser.FileFilter;
 import org.apache.log4j.Logger;
 
 import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.ui.PropertyChangeSupport;
+import com.runwalk.video.ui.SelfContained;
+import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 
-class UEyeCapturer implements IVideoCapturer {
+class UEyeCapturer implements IVideoCapturer, SelfContained, PropertyChangeSupport {
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 
@@ -83,7 +85,26 @@ class UEyeCapturer implements IVideoCapturer {
 		aviHandle = new IntByReference(0);
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, destFile.getAbsolutePath(), 25);
 		System.out.println("startRecording result: "+ result);
+		Thread thread = new Thread(new Runnable() {
+			public void run() {
+				// TODO should only run when recording 
+				while(true) {
+					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviHandle.getValue());
+					Pointer p = frameDropInfo.getPointer();
+					System.out.println("captured: " + p.getInt(0) + 
+							" dropped: "+ p.getInt(1));
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// FIXME dont swallow
+					}
+				}
+			}
+		}, "FrameDropInfoThread");
+		thread.start();
 	}
+	
+	
 
 	public void stopRecording() {
 		int result = UEyeCapturerLibrary.StopRecording(aviHandle.getValue());
@@ -143,53 +164,40 @@ class UEyeCapturer implements IVideoCapturer {
 		return Collections.singletonList(MJPEG_ENCODER);
 	}
 
-	public Frame getFullscreenFrame() {
-		return null;
-	}
-
-	public Component getComponent() {
-		return null;
-	}
-
-	@Override
-	public boolean isFullScreenEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean isFullScreen() {
-		return false;
+		return true;
 	}
 
-	@Override
 	public void setFullScreen(boolean fullScreen, Integer monitorId) {
-		// TODO implement this
-		
+		throw new UnsupportedOperationException("not implemented");
 	}
 
-	@Override
 	public boolean isVisible() {
-		// TODO Auto-generated method stub
+		return true;
+	}
+
+	public void setVisible(boolean visible) {
+		// TODO to be implemented
+	}
+
+	public void setTitle(String title) {
+		// TODO to be implemented
+	}
+
+	public void toFront() {
+		// should call into the ueye-nativelib for this
+	}
+	
+	public void toggleVisibility() {
+		setVisible(!isVisible());
+	}
+
+	public boolean isToggleFullScreenEnabled() {
 		return false;
 	}
 
-	@Override
-	public void setVisible(boolean visible) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setTitle(String title) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void toFront() {
-		// TODO Auto-generated method stub
-		
+	public void toggleFullScreen() {
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 }

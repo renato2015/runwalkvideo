@@ -12,6 +12,7 @@ import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
 import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public class UEyeCapturerLibraryTest extends TestCase {
@@ -34,14 +35,30 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		cameraNames.clear();
 
 		// open camera
-		String settingsFile = "H:/Documents and Settings/Administrator/My Documents/uEye configurations/3.80settings.ini";
+		String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE2.ini";
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName);
-		IntByReference aviPointer = new IntByReference(0);
+		final IntByReference aviPointer = new IntByReference(0);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);
+		Thread thread = new Thread(new Runnable() {
+			public void run() {
+				while(true) {
+					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviPointer.getValue());
+					Pointer p = frameDropInfo.getPointer();
+					System.out.println("captured: " + p.getInt(0) + 
+							" dropped: "+ p.getInt(1));
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						System.out.println("thread interrupted");
+					}
+				}
+			}
+		}, "FrameDropInfoThread");
+		thread.start();
 		try {
 			// wait for the camera thread to die
 			//cameraThread.join();

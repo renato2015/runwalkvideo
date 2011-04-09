@@ -40,7 +40,7 @@ import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.SelfContained;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;

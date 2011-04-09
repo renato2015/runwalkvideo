@@ -36,7 +36,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 	private int vh = 0;
 	
 	private JPanel videoPanel;
-	private JFrame frame;
 
 	public JMCPlayer(float rate) {
 		this.mp = new MediaProvider();
@@ -183,18 +182,16 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public boolean isFullScreenEnabled() {
 		return false;
 	}
 
-	@Override
 	public boolean isFullScreen() {
 		return false;
 	}
 
 	public void setFullScreen(boolean fullScreen, Integer monitorId) {
-		// do nothing
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 	public boolean isVisible() {
@@ -203,10 +200,6 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 
 	public void setVisible(boolean visible) {
 		videoPanel.setVisible(visible);
-	}
-
-	public void setTitle(String title) {
-		//videoPanel.setTitle(title);
 	}
 
 	public void toFront() {

@@ -81,5 +81,5 @@ public interface IVideoPlayer extends IVideoComponent {
 	 * @return The playback rate
 	 */
 	float getPlayRate();
-
+	
 }

@@ -60,7 +60,8 @@ import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.AppWindowWrapper;
+import com.runwalk.video.ui.SelfContained;
+import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.MediaActionConstants;
@@ -228,10 +229,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	//TODO kan dit met een proxy action??
 	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
-	public Task<Void, Void> toggleFullScreen() {
+	public void toggleFullScreen() {
 		// need to set this manually here, as there is no component that will invoke this method first
 		//return frontMostComponent.toggleFullScreen();
-		return null;
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)
@@ -507,6 +507,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					if (recordingCount < getPlayers().size()) {
 						player = getPlayers().get(recordingCount);;
 						player.loadVideo(recording, videoFile.getAbsolutePath());
+//						getWindowManager().setTitle(player, )
 						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 						setSliderLabels(recording);
 					} else {
@@ -517,7 +518,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 						getWindowManager().addWindow(player);
 					} 
 					recordingCount++;
-					player.toFront();
+					getWindowManager().toFront(player);
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this),
 							"De opname die u probeerde te openen kon niet worden gevonden",
@@ -613,7 +614,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				component.removePropertyChangeListener(this);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
-			AppWindowWrapper capturer = (AppWindowWrapper) evt.getSource();
+			SelfContained capturer = (SelfContained) evt.getSource();
 			Long timeRecorded = (Long) newValue;
 			// only update status info if it is the fronmost capturer
 			if (getFrontMostCapturer() == capturer) {
@@ -632,7 +633,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				}
 				setStatusInfo(position, player.getDuration());
 			}
-		} else if (evt.getPropertyName().equals(VideoComponent.VISIBLE)) {
+		} else if (evt.getPropertyName().equals(WindowConstants.VISIBLE)) {
 			toggleVideoComponentControls((VideoComponent) evt.getSource(), (Boolean) evt.getNewValue());
 		}
 		//DSJ fires the following event for notifying that playing has stoppped..
@@ -648,7 +649,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 	
 	private void enableVideoComponentControls(final Component component) {
-		enableVideoComponentControls(AppUtil.getWindowWrapper(videoComponents, component));
+		enableVideoComponentControls(getWindowManager().getWindowWrapper(videoComponents, component));
 	}
 
 	/**
@@ -683,7 +684,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					title.append(" > " ).append(getFrontMostPlayer().getRecording().getVideoFileName());
 				}
 			}
-			setFullScreenEnabled(videoComponent.isFullScreenEnabled());
+			setFullScreenEnabled(getWindowManager().isToggleFullScreenEnabled(videoComponent));
 			setTitle(title.toString());
 		} /*else {
 			// try to enable recording again, if no capturer is active, it will be disabled
@@ -698,7 +699,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 				VideoComponent newComponent = Iterables.find(components, new Predicate<VideoComponent>() {
 
 					public boolean apply(VideoComponent input) {
-						return input != component && input.isVisible();
+						return input != component && getWindowManager().isVisible(input);
 					}
 
 				});
@@ -729,7 +730,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	public void capturersToFront() {
 		// TODO flickering??
 		for (VideoCapturer capturer : getCapturers()) {
-			capturer.toFront();
+			getWindowManager().toFront(capturer);
 		}
 	}
 
@@ -759,7 +760,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	private <T extends VideoComponent> List<T> getComponents(Class<T> filterClass) {
 		ImmutableList.Builder<T> result = ImmutableList.builder();
-		for (AppWindowWrapper videoComponent : videoComponents) {
+		for (VideoComponent videoComponent : videoComponents) {
 			if (videoComponent.getClass() == filterClass) {
 				result.add(filterClass.cast(videoComponent));
 			}

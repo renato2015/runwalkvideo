@@ -3,7 +3,6 @@ package com.runwalk.video.media;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.image.BufferedImage;
 
 /**
@@ -14,29 +13,12 @@ import java.awt.image.BufferedImage;
  *
  */
 public interface IVideoComponent {
-
-	String FULLSCREEN = "fullscreen";
-	
-	String VISIBLE = "visible";
-	
-	String FULL_SCREEN_ENABLED = "fullScreenEnabled";
-	
-	String getTitle();
-
-	/**
-	 * Dispose all the resources involved for showing this component to screen.
-	 */
-	void dispose();
-
-	boolean isActive();
-	
-	Dimension getDimension();
 	
 	/**
 	 * Start running and bring the component to a state in which the {@link Component} returned by {@link #getComponent()} 
 	 * or the {@link java.awt.Window} returned by {@link #getFullscreenFrame()} are initialized and ready to show video.
 	 */
-	 void startRunning();
+	void startRunning();
 
 	 /**
 	 * Stop running and bring the component to a state in which video format settings can be applied. 
@@ -45,12 +27,13 @@ public interface IVideoComponent {
 	void stopRunning();
 	
 	/**
-	 * Get an AWT {@link Component} in which the video will be rendered for windowed mode.
-	 * @return The component
+	 * Dispose all the resources involved for showing this component to screen.
 	 */
-	Component getComponent();
+	void dispose();
+
+	boolean isActive();
 	
-	Frame getFullscreenFrame();
+	Dimension getDimension();
 	
 	/**
 	 * Set a {@link BufferedImage} and draw it on top of the rendering component.
@@ -63,18 +46,6 @@ public interface IVideoComponent {
 	
 	BufferedImage getImage();
 	
-	boolean isFullScreenEnabled();
-	
-	boolean isFullScreen();
-	
-	void setFullScreen(boolean fullScreen, Integer monitorId);
-	
-	boolean isVisible();
-	
-	void setVisible(boolean visible);
-
-	void setTitle(String title);
-
-	void toFront();
+	String getTitle();
 	
 }
