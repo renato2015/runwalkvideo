@@ -22,12 +22,12 @@ public interface SelfContained extends WindowConstants {
 	public void dispose();
 	
 	public String getTitle();
-	
+
 	public boolean isVisible();
 	
 	public void setVisible(boolean visible);
 	
-	@Action(selectedProperty = VISIBLE)
+	@Action(enabledProperty = VISIBLE)
 	public void toggleVisibility();
 	
 	public void toFront();

@@ -16,6 +16,7 @@ import org.jdesktop.application.ApplicationActionMap;
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
 
@@ -98,23 +99,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	protected void setMonitorId(int monitorId) {
 		this.monitorId = monitorId;
 	}
-
-/*	public void setFullScreen(boolean fullScreen, int monitorId) {
-		monitorId = this.monitorId == null ? monitorId : this.monitorId;
-		getVideoImpl().setFullScreen(fullScreen, monitorId);
-	}
-	*/
-/*	public boolean isVisible() {
-		return getVideoImpl().isVisible();
-	}
-
-	public void setVisible(boolean visible) {
-		getVideoImpl().setVisible(visible);
-	}
-
-	public void toggleVisibility() {
-		getVideoImpl().setVisible(isVisible());
-	}*/
 
 	public BufferedImage getImage() {
 		return getVideoImpl().getImage();
@@ -223,12 +207,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		return getState() == State.STOPPED;
 	}
 
-	/*private void maybeRemoveComponentListener(Component comp, ComponentListener l) {
-		if (comp != null) {
-			comp.addComponentListener(l);
-		}
-	}*/
-
 	public void stopRunning() {
 		getVideoImpl().stopRunning();
 	}
@@ -241,12 +219,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		// no propertyChangeListener left here??
 		if (getVideoImpl() != null) {			
 			// dispose on the video implementation will dispose resources for the full screen frame
-			// maybeRemoveComponentListener(getFullScreenFrame(), this);
 			getVideoImpl().dispose();
-			/*if (getInternalFrame() != null) {
-				getInternalFrame().removeComponentListener(this);
-				getInternalFrame().dispose();
-			}*/
 		}
 		setRecording(null);
 	}
@@ -254,10 +227,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public String getTitle() {
 		return getVideoImpl().getTitle();
 	}
-
-/*	public void toFront() {
-		getVideoImpl().toFront();
-	}*/
 
 	public boolean isActive() {
 		return getVideoImpl().isActive();
@@ -269,11 +238,16 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public ActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
 			// get the action map of the abstractions
-			ActionMap actionMap = getContext().getActionMap(SelfContained.class, this);
+			ActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
 			ActionMap insertionReference = actionMap;
 			// get the action map of the implementations
-			Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), IVideoComponent.class);
-			ApplicationActionMap videoImplActionMap = getContext().getActionMap(firstImplementor, getVideoImpl());
+			//Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), SelfContained.class);
+			ApplicationActionMap videoImplActionMap = null;
+			if (getVideoImpl() instanceof SelfContained) {
+				videoImplActionMap = getContext().getActionMap(SelfContained.class, getVideoImpl());
+			} else {
+				videoImplActionMap = getContext().getActionMap(Containable.class, getVideoImpl());
+			}
 			// the lastImplementor is the class whose hierarchy will be searched for IVideoComponent implementors
 			Class<?> lastImplementor = getVideoImpl().getClass();
 			Class<?> abstractionClass = getClass();

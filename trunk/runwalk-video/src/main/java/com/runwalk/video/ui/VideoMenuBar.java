@@ -22,6 +22,7 @@ import com.runwalk.video.util.ResourceInjector;
 @AppComponent
 public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants, WindowConstants {
 
+	private static final String MENU_BAR_TITLE = "Menu Bar";
 	private JMenu windowMenu;
 	private JDialog aboutBox;
 
@@ -177,7 +178,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 	}*/
 
 	public String getTitle() {
-		return "Menu Bar";
+		return MENU_BAR_TITLE;
 	}
 
 }
