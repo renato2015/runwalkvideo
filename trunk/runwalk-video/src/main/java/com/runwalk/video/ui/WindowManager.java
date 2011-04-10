@@ -72,13 +72,11 @@ public class WindowManager implements PropertyChangeListener {
 				// go fullscreen by default
 				int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
 				selfContainedImpl.setFullScreen(true, monitorId);
-				selfContainedImpl.addPropertyChangeListener(this);
 			} else if (isContainable && !fullScreen && !toggleFullScreenEnabled) {
 				Component component = ((Containable) videoImpl).getComponent();
 				selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
 			}
 			selfContainedImpl.addPropertyChangeListener(this);
-			//TODO add else condition, if not fullscreen and toggle unavailable t
 			addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
 		} else if (isContainable) {
 			Component component = ((Containable) videoImpl).getComponent();
@@ -92,10 +90,11 @@ public class WindowManager implements PropertyChangeListener {
 	}
 	
 	public void addWindow(Containable containable) {
-		AppInternalFrame createInternalFrame = createInternalFrame(containable.getComponent(), containable.getTitle());
-		ActionMap actionMap = createInternalFrame.getApplicationActionMap();
+		AppInternalFrame selfContainedImpl = createInternalFrame(containable.getComponent(), containable.getTitle());
+		ActionMap actionMap = selfContainedImpl.getApplicationActionMap();
 		actionMap.setParent(containable.getApplicationActionMap());
-		getMenuBar().addMenu(containable.getTitle(), actionMap);
+		// add a PCE to listen for title changes
+		addWindow(selfContainedImpl, actionMap);
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode
@@ -133,14 +132,18 @@ public class WindowManager implements PropertyChangeListener {
 	public void hideWindow(Containable containable) {
 		setWindowVisibility(containable, false);
 	}
-
-	private SelfContained getDecoratingComponent(Containable containable) {
-		SelfContained result = null;
+	
+	private <T extends SelfContained> T getDecoratingComponent(Class<T> theClass, Containable containable) {
+		T result = null;
 		Component component = containable.getComponent();
 		if (component != null) {
-			component = SwingUtilities.getAncestorOfClass(SelfContained.class, component);
+			result = theClass.cast(SwingUtilities.getAncestorOfClass(theClass, component));
 		}
 		return result;
+	}
+
+	private SelfContained getDecoratingComponent(Containable containable) {
+		return getDecoratingComponent(SelfContained.class, containable);
 	}
 
 	private AppInternalFrame createInternalFrame(Component component, String title) {
@@ -148,7 +151,6 @@ public class WindowManager implements PropertyChangeListener {
 		internalFrame.add(component);
 		internalFrame.pack();
 		getPane().add(internalFrame);
-		// FIXME add component listener to internal frame to detect closing
 		//internalFrame.addComponentListener(this);
 		/*BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("associatedButton.enabled");
 		ELProperty<AppWindowWrapper, Boolean> fullScreen = ELProperty.create("{!fullScreen}");
@@ -197,12 +199,20 @@ public class WindowManager implements PropertyChangeListener {
 		if (VideoComponent.STATE.equals(evt.getPropertyName())) {
 			VideoComponent.State newState = (State) evt.getNewValue();
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
-			/*	VideoComponent videoComponent = (SelfContained) evt.getSource();
-				getMenuBar().removeMenu(appComponent.getTitle());
-				appComponent.removePropertyChangeListener(this);
-				if (decoratedComponent != null) {
-					((JInternalFrame) decoratedComponent).dispose();
-				}*/
+				VideoComponent videoComponent = (VideoComponent) evt.getSource();
+				getMenuBar().removeMenu(videoComponent.getTitle());
+				videoComponent.removePropertyChangeListener(this);
+				IVideoComponent videoImpl = videoComponent.getVideoImpl();
+				if (videoImpl instanceof Containable) {
+					// if containable then dispose the wrapping component
+					SelfContained selfContainedImpl = getDecoratingComponent((Containable) videoImpl);
+					selfContainedImpl.dispose();
+				}
+			}
+		} else if (WindowConstants.TITLE.equals(evt.getPropertyName())) {
+			if (evt.getSource() instanceof Containable) {
+				AppInternalFrame internalFrame = getDecoratingComponent(AppInternalFrame.class, (Containable) evt.getSource());
+				internalFrame.setTitle(evt.getNewValue().toString());
 			}
 		}
 	}
@@ -236,6 +246,13 @@ public class WindowManager implements PropertyChangeListener {
 			}
 		}
 		return result;
+	}
+	
+	public void setTitle(Containable containable, String title) {
+		AppInternalFrame internalFrame = getDecoratingComponent(AppInternalFrame.class, containable);
+		if (internalFrame != null) {
+			internalFrame.setTitle(title);
+		}
 	}
 
 	public void toFront(VideoComponent videoComponent) {

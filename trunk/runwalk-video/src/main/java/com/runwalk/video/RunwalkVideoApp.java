@@ -1,7 +1,6 @@
 package com.runwalk.video;
 
-import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
@@ -10,6 +9,7 @@ import javax.persistence.Persistence;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.UndoableEditListener;
 
@@ -40,7 +40,7 @@ import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.SelfContained;
+import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -48,7 +48,6 @@ import com.runwalk.video.ui.actions.ApplicationActions;
 import com.runwalk.video.ui.actions.MediaActionConstants;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.TaskExecutor;
-import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 /**
@@ -64,7 +63,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private AnalysisOverviewTablePanel overviewTablePanel;
 	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
-	private AppInternalFrame clientMainView;
+	private Containable clientMainView;
 	private VideoMenuBar menuBar;
 	private ApplicationActions applicationActions;
 	private JScrollableDesktopPane scrollableDesktopPane;
@@ -206,10 +205,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		exit();
 	}
 
-	private AppInternalFrame createMainView() {
-		AppInternalFrame result = new AppInternalFrame("Klanten en analyses", true);
+	private Containable createMainView() {
+		final JPanel panel = new JPanel();
 		ResourceMap resourceMap = getContext().getResourceMap();
-		result.setName(resourceMap.getString("mainView.title"));
+		panel.setName(resourceMap.getString("mainView.title"));
 		// create the tabpanel
 		JTabbedPane tabPanel = new  JTabbedPane();
 		tabPanel.setName("detailTabbedPane");
@@ -217,10 +216,21 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		tabPanel.addTab(resourceMap.getString("analysisPanel.TabConstraints.tabTitle"),  getAnalysisTablePanel()); // NOI18N
 		tabPanel.addTab(resourceMap.getString("conversionPanel.TabConstraints.tabTitle"),  getAnalysisOverviewTablePanel()); // NOI18N
 		// set layout and add everything to the frame
-		result.setLayout(new MigLayout("flowy", "[grow,fill]", "[grow,fill]"));
-		result.add(getClientTablePanel());
-		result.add(tabPanel, "height :280:");
-		result.add(getStatusPanel(), "height 30!");
+		panel.setLayout(new MigLayout("flowy", "[grow,fill]", "[grow,fill]"));
+		panel.add(getClientTablePanel());
+		panel.add(tabPanel, "height :280:");
+		panel.add(getStatusPanel(), "height 30!");
+		Containable result = new Containable() {
+
+			public Component getComponent() {
+				return panel;
+			}
+
+			public String getTitle() {
+				return "Klanten & Analyses";
+			}
+			
+		};
 		return result;
 	}
 
@@ -232,7 +242,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return applicationActions;
 	}
 
-	public AppInternalFrame getClientMainView() {
+	public Containable getClientMainView() {
 		return clientMainView;
 	}
 

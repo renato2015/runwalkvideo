@@ -159,7 +159,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 	
 	public void setFullScreenEnabled(boolean fullScreenEnabled) {
-		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
+		firePropertyChange(TOGGLE_FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
 	}
 
 	public boolean isFullScreenEnabled() {

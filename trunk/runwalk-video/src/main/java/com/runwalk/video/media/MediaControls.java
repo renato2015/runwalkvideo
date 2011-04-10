@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
@@ -59,7 +60,7 @@ import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
-import com.runwalk.video.ui.AppInternalFrame;
+import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.SelfContained;
 import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
@@ -69,7 +70,7 @@ import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class MediaControls extends AppInternalFrame implements PropertyChangeListener, ApplicationActionConstants, MediaActionConstants {
+public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, MediaActionConstants, Containable {
 
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
@@ -78,7 +79,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
 
 	private Boolean selectedRecordingRecordable = false;
-	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, fullScreenEnabled;
+	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
 
 	private JLabel elapsedTimeLabel;
 	private JSlider scroll;
@@ -96,10 +97,11 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	private final DaoService daoService;
 
 	private RecordTask recordTask = null;
+	
+	private String title;
 
 	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
 			DaoService daoService, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
-		super("Media controls", false);
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
 		this.appSettings = appSettings;
@@ -228,7 +230,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 	}
 
 	//TODO kan dit met een proxy action??
-	@Action(enabledProperty = FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
+	@Action(enabledProperty = TOGGLE_FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
 	public void toggleFullScreen() {
 		// need to set this manually here, as there is no component that will invoke this method first
 		//return frontMostComponent.toggleFullScreen();
@@ -424,12 +426,12 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		return stopEnabled;
 	}
 
-	public boolean isFullScreenEnabled() {
-		return fullScreenEnabled;
+	public boolean isToggleFullScreenEnabled() {
+		return toggleFullScreenEnabled;
 	}
 
-	public void setFullScreenEnabled(boolean fullScreenEnabled) {
-		firePropertyChange(FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled );
+	public void setToggleFullScreenEnabled(boolean fullScreenEnabled) {
+		firePropertyChange(TOGGLE_FULL_SCREEN_ENABLED, this.toggleFullScreenEnabled, this.toggleFullScreenEnabled = fullScreenEnabled );
 	}
 
 	@Action
@@ -605,7 +607,7 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 			State state = (State) newValue;
 			if (component == frontMostComponent) {
 				boolean fullScreenEnabled = state == VideoComponent.State.IDLE && component.isActive();
-				setFullScreenEnabled(fullScreenEnabled);
+				setToggleFullScreenEnabled(fullScreenEnabled);
 			}
 			playButton.setSelected(state == State.PLAYING);
 			if (state == State.DISPOSED) {
@@ -684,8 +686,8 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 					title.append(" > " ).append(getFrontMostPlayer().getRecording().getVideoFileName());
 				}
 			}
-			setFullScreenEnabled(getWindowManager().isToggleFullScreenEnabled(videoComponent));
-			setTitle(title.toString());
+			setToggleFullScreenEnabled(getWindowManager().isToggleFullScreenEnabled(videoComponent));
+			getWindowManager().setTitle(this, title.toString());
 		} /*else {
 			// try to enable recording again, if no capturer is active, it will be disabled
 			setRecordingEnabled(true);
@@ -715,9 +717,9 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 		clearStatusInfo();
 		setStopEnabled(false);
 		setPlayerControlsEnabled(false);
-		setFullScreenEnabled(false);
+		setToggleFullScreenEnabled(false);
 		setRecordingEnabled(false);
-		setTitle(getName());
+		getWindowManager().setTitle(this, getName());
 	}
 
 	public void setPlayerControlsEnabled(boolean playerControlsEnabled) {
@@ -790,6 +792,14 @@ public class MediaControls extends AppInternalFrame implements PropertyChangeLis
 
 	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
 		return analysisOverviewTablePanel;
+	}
+
+	public Component getComponent() {
+		return this;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 }

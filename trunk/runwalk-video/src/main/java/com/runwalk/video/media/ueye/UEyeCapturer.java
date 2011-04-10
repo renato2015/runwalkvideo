@@ -21,7 +21,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 
-class UEyeCapturer implements IVideoCapturer, SelfContained, PropertyChangeSupport {
+class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 
@@ -44,7 +44,7 @@ class UEyeCapturer implements IVideoCapturer, SelfContained, PropertyChangeSuppo
 	public String getTitle() {
 		return cameraName;
 	}
-
+	
 	public void dispose() {
 		// set all handles to null
 		cameraHandle = null;
@@ -103,8 +103,6 @@ class UEyeCapturer implements IVideoCapturer, SelfContained, PropertyChangeSuppo
 		}, "FrameDropInfoThread");
 		thread.start();
 	}
-	
-	
 
 	public void stopRecording() {
 		int result = UEyeCapturerLibrary.StopRecording(aviHandle.getValue());
@@ -177,10 +175,6 @@ class UEyeCapturer implements IVideoCapturer, SelfContained, PropertyChangeSuppo
 	}
 
 	public void setVisible(boolean visible) {
-		// TODO to be implemented
-	}
-
-	public void setTitle(String title) {
 		// TODO to be implemented
 	}
 
