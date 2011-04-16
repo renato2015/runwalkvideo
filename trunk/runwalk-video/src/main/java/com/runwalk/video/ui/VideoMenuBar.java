@@ -116,12 +116,14 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 	public void addMenu(String title, ActionMap actionMap) {
 		JMenu menu = new JMenu(title);
 		if (actionMap != null & actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
-			Action visibilityAction = actionMap.get(TOGGLE_VISIBILITY_ACTION);
+			Action toggleVisibilityAction = actionMap.get(TOGGLE_VISIBILITY_ACTION);
 			char shortcut = Character.forDigit(windowMenu.getMenuComponentCount(), 9);
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
-			visibilityAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
-			menu.add(addMenuItem(visibilityAction));
-			actionMap.remove(visibilityAction);
+			toggleVisibilityAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+			menu.add(addMenuItem(toggleVisibilityAction));
+			Action toggleFullScreenAction = actionMap.get(TOGGLE_FULL_SCREEN_ACTION);
+			menu.add(addMenuItem(toggleFullScreenAction));
+			actionMap.remove(toggleFullScreenAction);
 			// add all actions from the appcomponent's actionmap to the menu
 			menu.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
@@ -133,7 +135,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		}
 		windowMenu.add(menu);
 	}
-
+	
 	private JMenuItem addMenuItem(Action action) {
 		JMenuItem result = null;
 		Object selectedKey = action.getValue(Action.SELECTED_KEY);

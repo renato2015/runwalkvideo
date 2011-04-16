@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.Containable;
+import com.runwalk.video.ui.IAppComponent;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
 
@@ -37,7 +38,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	private Recording recording;
 	private Timer timer;
-	private WeakReference<ActionMap> actionMap;
+	private WeakReference<ApplicationActionMap> actionMap;
 	private State state;
 	private Integer monitorId;
 	private boolean overlayed;
@@ -235,11 +236,11 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	/**
 	 * Merge the {@link ActionMap} of the implementation with the one of this instance..
 	 */
-	public ActionMap getApplicationActionMap() {
+	public synchronized ApplicationActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
 			// get the action map of the abstractions
-			ActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
-			ActionMap insertionReference = actionMap;
+			ApplicationActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
+			ApplicationActionMap insertionReference = actionMap;
 			// get the action map of the implementations
 			//Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), SelfContained.class);
 			ApplicationActionMap videoImplActionMap = null;
@@ -250,29 +251,33 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			}
 			// the lastImplementor is the class whose hierarchy will be searched for IVideoComponent implementors
 			Class<?> lastImplementor = getVideoImpl().getClass();
-			Class<?> abstractionClass = getClass();
 			// loop over all classes derived from VideoComponent
-			while (VideoComponent.class.isAssignableFrom(abstractionClass)) {
+			while (videoImplActionMap != insertionReference) {
 				// get the next implementor for IVideoComponent in the hierarchy of startClass
 				lastImplementor = getLastImplementor(lastImplementor, IVideoComponent.class);
 				// this loop is necessary if there are more classes in the implementors hierarchy than in that of the abstraction
-				while(videoImplActionMap.getActionsClass() != lastImplementor) {
+				while(videoImplActionMap.getActionsClass() != lastImplementor && IVideoComponent.class.isAssignableFrom(lastImplementor)) {
 					videoImplActionMap = (ApplicationActionMap) videoImplActionMap.getParent();
 				}
 				// now insert the found part of the implementation action map in the action map of the abstraction
-				ActionMap oldParent = insertionReference.getParent();
+				ApplicationActionMap oldParent = (ApplicationActionMap) insertionReference.getParent();
 				insertionReference.setParent(videoImplActionMap);
 				// save a reference to the parent of the implementation's action map
 				ApplicationActionMap tail = (ApplicationActionMap) videoImplActionMap.getParent();
+				// if the implementation action map's class implements IAppComponent, then we need to add its actionmap
+//				if (implementsInterface(videoImplActionMap.getActionsClass(), IAppComponent.class)) {
+//					tail = (ApplicationActionMap) videoImplActionMap.getParent();
+//				}
 				videoImplActionMap.setParent(oldParent);
+				// the next insertion point of the abstraction's action map will be it's parent before the insertion
+				if (IVideoComponent.class.isAssignableFrom(videoImplActionMap.getActionsClass())) {
+					insertionReference = oldParent;
+					lastImplementor = lastImplementor.getSuperclass();
+				}
 				// set the implementation's action map to the parent of the action map that was inserted into the abstractions' action map
 				videoImplActionMap = tail;
-				// the next insertion point of the abstraction's action map will be it's parent before the insertion
-				insertionReference = oldParent;
-				lastImplementor = lastImplementor.getSuperclass();
-				abstractionClass = abstractionClass.getSuperclass();
 			}
-			this.actionMap = new WeakReference<ActionMap>(actionMap);
+			this.actionMap = new WeakReference<ApplicationActionMap>(actionMap);
 		}
 		return actionMap != null ? actionMap.get() : getContext().getActionMap(this);
 	}
@@ -323,7 +328,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	 * @return The first {@link Class} implementing the given interface
 	 */
 	private Class<?> getLastImplementor(Class<?> theClass, Class<?> interf) {
-		boolean recurse = !implementsInterface(theClass, interf);
+		boolean recurse = !implementsInterface(theClass, interf) && theClass.getSuperclass() != null;
 		// if no result here then recurse
 		return recurse ? getLastImplementor(theClass.getSuperclass(), interf) : theClass;
 	}

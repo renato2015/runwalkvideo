@@ -9,6 +9,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
 
@@ -34,7 +36,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, SelfContained, Containable {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, SelfContained, Containable, PropertyChangeListener {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -75,6 +77,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void setFiltergraph(T filtergraph) {
 		this.filtergraph = filtergraph;
 		filtergraph.dumpGraph(true);
+		filtergraph.addPropertyChangeListener(this);
 	}
 
 	public boolean getRejectPauseFilter() {
@@ -188,16 +191,12 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		if (fullScreen) {
 			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().goFullScreen(device, 1);
+			// TODO install a PCE to listen for ENTER_FS and EXIT_FS
+			getFullscreenFrame().setTitle(getTitle());
+			getFullscreenFrame().setName(getTitle());
 		} else {
 			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().leaveFullScreen();
-		}
-	}
-
-	public void setTitle(String title) {
-		if (getFullscreenFrame() != null) {
-			getFullscreenFrame().setTitle(title);
-			getFullscreenFrame().setName(title);
 		}
 	}
 
@@ -208,7 +207,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 	
 	public void toggleVisibility() {
-		setVisible(!isVisible());
+		// just leave this empty, selected property will be called..
 	}
 
 	public boolean isToggleFullScreenEnabled() {
@@ -216,8 +215,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void toggleFullScreen() {
-		// TODO Auto-generated method stub
-		// toggle fullscreen here!!
+		// just leave this empty, selected property will be called..
+	}
+	
+	public void propertyChange(PropertyChangeEvent evt) {
+//		if (evt.getPropertyName() == DSFiltergraph.ENTER_FS) {
+//			// full screen mode entered...
+//		} else if (evt.getPropertyName() == DSFiltergraph.EXIT_FS) {
+//			
+//		}
 	}
 	
 	public void componentShown(ComponentEvent e) {
