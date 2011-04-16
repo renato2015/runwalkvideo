@@ -21,9 +21,7 @@ import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.panels.AbstractTablePanel;
-import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
-import com.runwalk.video.panels.ClientTablePanel;
 import com.runwalk.video.ui.AnalysisConnector;
 
 /**

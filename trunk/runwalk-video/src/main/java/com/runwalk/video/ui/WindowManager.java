@@ -201,18 +201,24 @@ public class WindowManager implements PropertyChangeListener {
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
 				VideoComponent videoComponent = (VideoComponent) evt.getSource();
 				getMenuBar().removeMenu(videoComponent.getTitle());
-				videoComponent.removePropertyChangeListener(this);
 				IVideoComponent videoImpl = videoComponent.getVideoImpl();
-				if (videoImpl instanceof Containable) {
-					// if containable then dispose the wrapping component
+				// if the implementation implements both SelfContained and Containable
+				if (videoImpl instanceof SelfContained) {
+					((SelfContained) videoImpl).removePropertyChangeListener(this);
+				} else if (videoImpl instanceof Containable) {
+					// if Containable and not SelfContained then dispose the wrapping component
 					SelfContained selfContainedImpl = getDecoratingComponent((Containable) videoImpl);
+					selfContainedImpl.removePropertyChangeListener(this);
 					selfContainedImpl.dispose();
 				}
 			}
-		} else if (WindowConstants.TITLE.equals(evt.getPropertyName())) {
+		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
 			if (evt.getSource() instanceof Containable) {
-				AppInternalFrame internalFrame = getDecoratingComponent(AppInternalFrame.class, (Containable) evt.getSource());
-				internalFrame.setTitle(evt.getNewValue().toString());
+				// go back to windowed mode
+				Boolean newValue = (Boolean) evt.getNewValue();
+				if (newValue == Boolean.FALSE) {
+					addWindow((Containable) evt.getSource());
+				}
 			}
 		}
 	}
@@ -239,7 +245,7 @@ public class WindowManager implements PropertyChangeListener {
 	public <T extends VideoComponent> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
 		T result = null;
 		Iterator<T> iterator = windowWrappers.iterator();
-		while(iterator.hasNext() && result == null) {
+		while(iterator.hasNext() && result == null && component != null) {
 			T next = iterator.next();
 			if (next.getTitle() == component.getName()) {
 				result = next;

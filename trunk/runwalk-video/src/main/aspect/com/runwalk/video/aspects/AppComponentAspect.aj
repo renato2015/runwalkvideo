@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.ActionMap;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
@@ -47,7 +48,7 @@ public aspect AppComponentAspect {
 		return getContext().getResourceMap(getClass(), IAppComponent.class);
 	}
 
-	public ActionMap IAppComponent.getApplicationActionMap() {
+	public ApplicationActionMap IAppComponent.getApplicationActionMap() {
 		AppComponent annotation = getAnnotationRecursively(getClass());
 		Class<?> stopClass = annotation == null ? getClass() : annotation.actionMapStopClass();
 		return getContext().getActionMap(stopClass, this);

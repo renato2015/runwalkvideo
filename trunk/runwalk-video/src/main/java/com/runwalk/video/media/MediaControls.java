@@ -78,6 +78,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
 
+	private static final String TITLE = "Media Controls";
+	
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
 
@@ -98,8 +100,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private RecordTask recordTask = null;
 	
-	private String title;
-
 	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
 			DaoService daoService, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		this.videoFileManager = videoFileManager;
@@ -180,15 +180,14 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			public void propertyChange(PropertyChangeEvent e) {
 				String property = e.getPropertyName();
-				Component component = null;
 				Window activeWindow = focusManager.getActiveWindow();
-				if (activeWindow != null) {
+				if (activeWindow != null && e.getNewValue() != null) {
 					if (("focusedWindow".equals(property)) && !activeWindow.getName().equals("mainFrame")) {
-						component = (Component) e.getNewValue();
+						enableVideoComponentControls((Component) e.getNewValue());
 					} else if ("focusOwner".equals(property)) {
-						component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
+						Component component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
+						enableVideoComponentControls(component);
 					}
-					enableVideoComponentControls(component);
 				}
 			}
 
@@ -799,7 +798,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	public String getTitle() {
-		return title;
+		return TITLE;
 	}
 
 }

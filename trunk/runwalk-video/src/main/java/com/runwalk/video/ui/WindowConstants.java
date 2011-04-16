@@ -6,6 +6,8 @@ public interface WindowConstants {
 	
 	String VISIBLE = "visible";
 	
+	String TOGGLE_FULL_SCREEN_ACTION = "toggleFullScreen";
+	
 	String TOGGLE_FULL_SCREEN_ENABLED = "toggleFullScreenEnabled";
 	
 	String FULL_SCREEN = "fullScreen";

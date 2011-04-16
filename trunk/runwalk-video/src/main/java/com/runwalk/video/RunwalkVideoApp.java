@@ -220,7 +220,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		panel.add(getClientTablePanel());
 		panel.add(tabPanel, "height :280:");
 		panel.add(getStatusPanel(), "height 30!");
-		Containable result = new Containable() {
+		return new Containable() {
 
 			public Component getComponent() {
 				return panel;
@@ -231,7 +231,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			}
 			
 		};
-		return result;
 	}
 
 	/*
