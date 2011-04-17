@@ -119,7 +119,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
 	/**
 	 * This method should return the name of the capturer which was originally 
-	 * provided by {@link VideoCapturerFactory#initializeCapturer(String, String)}.
+	 * provided by {@link VideoCapturerFactory#createCapturer(java.awt.Window, String, String)}.
 	 */
 	public String getTitle() {
 		return capturerName;

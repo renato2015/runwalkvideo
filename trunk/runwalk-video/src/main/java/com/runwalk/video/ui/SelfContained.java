@@ -21,13 +21,17 @@ public interface SelfContained extends WindowConstants {
 	 */
 	public void dispose();
 	
+	/**
+	 * The title for this component. This should be a unique across the application
+	 * @return The title
+	 */
 	public String getTitle();
 
 	public boolean isVisible();
 	
 	public void setVisible(boolean visible);
 	
-	@Action(enabledProperty = VISIBLE)
+	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility();
 	
 	public void toFront();

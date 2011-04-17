@@ -189,15 +189,14 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		GraphicsDevice device = graphicsDevices[monitorId];
 		if (fullScreen) {
-			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().goFullScreen(device, 1);
 			// TODO install a PCE to listen for ENTER_FS and EXIT_FS
 			getFullscreenFrame().setTitle(getTitle());
 			getFullscreenFrame().setName(getTitle());
 		} else {
-			firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 			getFiltergraph().leaveFullScreen();
 		}
+		firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 	}
 
 	public void toFront() {
