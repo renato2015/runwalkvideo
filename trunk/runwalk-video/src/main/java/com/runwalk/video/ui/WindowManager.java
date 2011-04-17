@@ -12,6 +12,9 @@ import java.util.Iterator;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 
+import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ApplicationActionMap;
+
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;
@@ -19,7 +22,7 @@ import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.media.VideoPlayer;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
-public class WindowManager implements PropertyChangeListener {
+public class WindowManager implements PropertyChangeListener, WindowConstants {
 
 	private VideoMenuBar menuBar;
 	private JScrollableDesktopPane pane;
@@ -147,7 +150,7 @@ public class WindowManager implements PropertyChangeListener {
 	}
 
 	private AppInternalFrame createInternalFrame(Component component, String title) {
-		AppInternalFrame internalFrame = new AppInternalFrame(title, false);
+		AppInternalFrame internalFrame = new AppInternalFrame(title, true);
 		internalFrame.add(component);
 		internalFrame.pack();
 		getPane().add(internalFrame);
@@ -214,12 +217,29 @@ public class WindowManager implements PropertyChangeListener {
 			}
 		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
 			if (evt.getSource() instanceof Containable) {
+				Containable containable = (Containable) evt.getSource();
 				// go back to windowed mode
 				Boolean newValue = (Boolean) evt.getNewValue();
 				if (newValue == Boolean.FALSE) {
-					addWindow((Containable) evt.getSource());
+					AppInternalFrame selfContainedImpl = createInternalFrame(containable.getComponent(), containable.getTitle());
+					// handle SelfContained action proxy's..
+					setActionProxy(containable.getApplicationActionMap(), TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
+					setActionProxy(containable.getApplicationActionMap(), TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
+					showWindow(selfContainedImpl);
 				}
 			}
+		}
+	}
+	
+	private void setActionProxy(ApplicationActionMap actionMap, String actionName, ApplicationActionMap newActionMap) {
+		ApplicationAction action = (ApplicationAction) actionMap.get(actionName);
+		ApplicationAction proxyAction = (ApplicationAction) newActionMap.get(actionName);
+		if (action != null) {
+			// if action in there already, then set it's proxy
+			action.setProxy(proxyAction);
+		} else {
+			// if action not in there, then add it to the map
+			actionMap.put(actionName, proxyAction);
 		}
 	}
 
@@ -236,23 +256,39 @@ public class WindowManager implements PropertyChangeListener {
 	 * which {@link SelfContained#getHolder()} equals {@link Component}.
 	 * 
 	 * @param <T> The concrete type of the {@link SelfContained}
-	 * @param windowWrappers The {@link Collection} to look in 
+	 * @param videoComponents The {@link Collection} to search
 	 * @param component The current visible {@link Component}
 	 * @return The found {@link SelfContained}
 	 * 
 	 * @see SelfContained#getHolder()
 	 */
-	public <T extends VideoComponent> T getWindowWrapper(Iterable<T> windowWrappers, final Component component) {
+	public <T extends VideoComponent> T findVideoComponent(Iterable<T> videoComponents, final Component component) {
 		T result = null;
-		Iterator<T> iterator = windowWrappers.iterator();
+		Iterator<T> iterator = videoComponents.iterator();
 		while(iterator.hasNext() && result == null && component != null) {
-			T next = iterator.next();
-			if (next.getTitle() == component.getName()) {
-				result = next;
+			T videoComponent = iterator.next();
+			IVideoComponent videoImpl = videoComponent.getVideoImpl();
+			if (videoImpl instanceof Containable) {
+				if (((Containable) videoImpl).getComponent() == component) {
+					result = videoComponent;
+				}
 			}
 		}
 		return result;
 	}
+	
+	public <T extends VideoComponent> T findVideoComponent(Iterable<T> videoComponents, final String title) {
+		T result = null;
+		Iterator<T> iterator = videoComponents.iterator();
+		while(iterator.hasNext() && result == null) {
+			T videoComponent = iterator.next();
+			if (videoComponent.getVideoImpl().getTitle().equals(title)) {
+				result = videoComponent;
+			}
+		}
+		return result;
+	}
+	
 	
 	public void setTitle(Containable containable, String title) {
 		AppInternalFrame internalFrame = getDecoratingComponent(AppInternalFrame.class, containable);

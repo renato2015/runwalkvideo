@@ -2,6 +2,7 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
@@ -61,7 +62,6 @@ import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.SelfContained;
 import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -72,6 +72,7 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, MediaActionConstants, Containable {
 
+	private static final String TITLE_SEPARATOR = " > ";
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
@@ -182,8 +183,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				String property = e.getPropertyName();
 				Window activeWindow = focusManager.getActiveWindow();
 				if (activeWindow != null && e.getNewValue() != null) {
-					if (("focusedWindow".equals(property)) && !activeWindow.getName().equals("mainFrame")) {
-						enableVideoComponentControls((Component) e.getNewValue());
+					if (("focusedWindow".equals(property)) && !activeWindow.getName().equals("mainFrame") && Frame.class.isAssignableFrom(activeWindow.getClass())) {
+						enableVideoComponentControls(((Frame) activeWindow).getTitle());
 					} else if ("focusOwner".equals(property)) {
 						Component component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
 						enableVideoComponentControls(component);
@@ -615,7 +616,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				component.removePropertyChangeListener(this);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
-			SelfContained capturer = (SelfContained) evt.getSource();
+			VideoComponent capturer = (VideoComponent) evt.getSource();
 			Long timeRecorded = (Long) newValue;
 			// only update status info if it is the fronmost capturer
 			if (getFrontMostCapturer() == capturer) {
@@ -650,7 +651,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 	
 	private void enableVideoComponentControls(final Component component) {
-		enableVideoComponentControls(getWindowManager().getWindowWrapper(videoComponents, component));
+		VideoComponent videoComponent = getWindowManager().findVideoComponent(videoComponents, component);
+		enableVideoComponentControls(videoComponent);
+	}
+	
+	private void enableVideoComponentControls(final String title) {
+		VideoComponent videoComponent = getWindowManager().findVideoComponent(videoComponents, title);
+		enableVideoComponentControls(videoComponent);
 	}
 
 	/**
@@ -669,8 +676,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
 		if (isIdle || isWorkingAndSimilar) {
 			frontMostComponent = videoComponent;
-			StringBuilder title = new StringBuilder(getName());
-			title.append(" > ").append(videoComponent.getTitle());
+			StringBuilder title = new StringBuilder(getTitle());
+			title.append(TITLE_SEPARATOR).append(videoComponent.getTitle());
 			if (isIdle) {
 				if (videoComponent instanceof VideoCapturer) {
 					clearStatusInfo();
@@ -682,7 +689,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					setPlayerControlsEnabled(true);
 					setStopEnabled(getFrontMostPlayer().getPosition() > 0);
 					setStatusInfo(getFrontMostPlayer().getRecording(), getFrontMostPlayer().getPosition(), getFrontMostPlayer().getDuration());
-					title.append(" > " ).append(getFrontMostPlayer().getRecording().getVideoFileName());
+					title.append(TITLE_SEPARATOR ).append(getFrontMostPlayer().getRecording().getVideoFileName());
 				}
 			}
 			setToggleFullScreenEnabled(getWindowManager().isToggleFullScreenEnabled(videoComponent));

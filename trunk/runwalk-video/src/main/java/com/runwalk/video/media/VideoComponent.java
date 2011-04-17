@@ -17,7 +17,6 @@ import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.IAppComponent;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
 
@@ -126,62 +125,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		return overlayed;
 	}
 
-/*	protected void showComponent() {
-		// TODO monitorId property is set by creation factory.. maybe it can be passed as an argument, too?
-		showComponent(true, this.monitorId);
-	}*/
-
-	/*protected void showComponent(boolean goFullScreen, Integer monitorId) {
-		// get the graphicsdevice corresponding with the given monitor id
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
-		monitorId = checkMonitorId(monitorId, graphicsDevices.length);
-		GraphicsDevice graphicsDevice = graphicsDevices[monitorId];
-		// get a reference to the previously visible component
-		Container oldContainer = getHolder();
-		// go fullscreen if the selected monitor is not the default one
-		if (getVideoImpl().isActive()) {
-			fullScreen = getVideoImpl().isFullScreen();
-		} else {
-			fullScreen = graphicsDevice != defaultGraphicsDevice;
-		}
-		if (fullScreen) {
-			boolean frameInitialized = getFullScreenFrame() != null;
-			getVideoImpl().setFullScreen(graphicsDevice, true);
-			if (frameInitialized) {
-				getFullScreenFrame().addComponentListener(this);
-			}
-		} else {
-			getVideoImpl().setFullScreen(graphicsDevice, false);
-			if (getInternalFrame() == null && getVideoImpl().getComponent() != null) {
-				createInternalFrame();
-			}
-		}
-		if (oldContainer != null) {
-			oldContainer.setVisible(false);
-		}
-		setFullScreen(fullScreen);
-		if (getHolder() != null) {
-			setComponentTitle(getTitle());
-			setVisible(true);
-		}
-	}*/
-
-	/*@org.jdesktop.application.Action(enabledProperty = FULL_SCREEN_ENABLED, selectedProperty = FULL_SCREEN, block = BlockingScope.ACTION)
-	public Task<Void, Void> toggleFullScreen() {
-		return new AbstractTask<Void, Void>("toggleFullScreen") {
-
-			protected Void doInBackground() throws Exception {
-				// go fullscreen if component is displaying on the primary device, otherwise apply windowed mode
-				monitorId = monitorId != null && monitorId == 0 ? null : 0;
-				showComponent(isFullScreen(), monitorId);
-				return null;
-			}
-
-		};
-	}*/
-
 	protected void setState(State state) {
 		firePropertyChange(STATE, this.state, this.state = state);
 		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
@@ -265,9 +208,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 				// save a reference to the parent of the implementation's action map
 				ApplicationActionMap tail = (ApplicationActionMap) videoImplActionMap.getParent();
 				// if the implementation action map's class implements IAppComponent, then we need to add its actionmap
-//				if (implementsInterface(videoImplActionMap.getActionsClass(), IAppComponent.class)) {
-//					tail = (ApplicationActionMap) videoImplActionMap.getParent();
-//				}
 				videoImplActionMap.setParent(oldParent);
 				// the next insertion point of the abstraction's action map will be it's parent before the insertion
 				if (IVideoComponent.class.isAssignableFrom(videoImplActionMap.getActionsClass())) {
@@ -280,28 +220,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			this.actionMap = new WeakReference<ApplicationActionMap>(actionMap);
 		}
 		return actionMap != null ? actionMap.get() : getContext().getActionMap(this);
-	}
-
-	/**
-	 * Search a class hierarchy from bottom to top and return the first {@link Class} that implements the given interface.
-	 * 
-	 * @param theClass The {@link Class} whose hierarchy will be searched
-	 * @param interf The interface
-	 * @return The first {@link Class} implementing the given interface
-	 */
-	private Class<?> getFirstImplementor(Class<?> theClass, Class<?> interf) {
-		List<Class<?>> allClasses = Lists.newArrayList();
-		while(theClass != null) {
-			allClasses.add(theClass);
-			theClass = theClass.getSuperclass();
-		}
-		Collections.reverse(allClasses);
-		for (Class<?> firstClass : allClasses) {
-			if (implementsInterface(firstClass, interf)) {
-				return firstClass;
-			}
-		}
-		return null;
 	}
 
 	/**
