@@ -3,8 +3,6 @@ package com.runwalk.video.ui;
 import java.awt.Window;
 import java.beans.PropertyChangeListener;
 
-import org.jdesktop.application.Action;
-
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
@@ -31,22 +29,20 @@ public interface SelfContained extends WindowConstants {
 	
 	public void setVisible(boolean visible);
 	
-	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility();
 	
 	public void toFront();
 	
-	public void setFullScreen(boolean fullScreen, Integer monitorId);
-	
-	public boolean isFullScreen();
-	
-	public boolean isToggleFullScreenEnabled();
-	
-	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
-	public void toggleFullScreen();
-	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	
 	public void removePropertyChangeListener(PropertyChangeListener listener);
+
+	public void setMonitorId(Integer monitorId);
+	
+	/** 
+	 * The monitor id to use for fullscreen mode .
+	 * @return The monitor id
+	 */
+	public Integer getMonitorId();
 	
 }

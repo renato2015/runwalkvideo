@@ -21,12 +21,13 @@ import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
 import com.runwalk.video.ui.Containable;
+import com.runwalk.video.ui.FullScreenSupport;
 import com.runwalk.video.ui.PropertyChangeSupport;
-import com.runwalk.video.ui.SelfContained;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
+import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.rc.RendererControls;
 
 /**
@@ -36,7 +37,7 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, SelfContained, Containable, PropertyChangeListener {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, FullScreenSupport, Containable, PropertyChangeListener {
 	
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -56,6 +57,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	private boolean fullScreen;
 
 	private boolean visible;
+	
+	private int monitorId;
 	
 	/** {@inheritDoc} */
 	public void startRunning() {
@@ -139,11 +142,12 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void dispose() {
 		if (getFiltergraph() != null) {
 			// full screen frame needs to disposed on rebuilding..
-			// TODO review this code.. is this DSJComponent's responsibility?
+			getFiltergraph().removePropertyChangeListener(this);
 			Frame fullScreenFrame = getFiltergraph().getFullScreenWindow();
 			if (fullScreenFrame != null) {
-				fullScreenFrame.dispose();
 				fullScreenFrame.removeComponentListener(this);
+				// TODO make this call or not?
+				// fullScreenFrame.dispose();
 			}
 			getFiltergraph().dispose();
 		}
@@ -171,7 +175,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	
 	public void setVisible(boolean visible) {
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
-		// TODO set actual visibility
 	}
 	
 	public boolean isVisible() {
@@ -183,19 +186,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return fullScreen;
 	}
 
-	@Override
-	public void setFullScreen(boolean fullScreen, Integer monitorId) {
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		GraphicsDevice device = graphicsDevices[monitorId];
-		if (fullScreen) {
-			getFiltergraph().goFullScreen(device, 1);
-			// TODO install a PCE to listen for ENTER_FS and EXIT_FS
-			getFullscreenFrame().setTitle(getTitle());
-			getFullscreenFrame().setName(getTitle());
-		} else {
-			getFiltergraph().leaveFullScreen();
-		}
+	public void setFullScreen(boolean fullScreen) {
 		firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
 	}
 
@@ -205,6 +196,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		}
 	}
 	
+	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility() {
 		// just leave this empty, selected property will be called..
 	}
@@ -213,16 +205,49 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return true;
 	}
 
+	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
 	public void toggleFullScreen() {
-		// just leave this empty, selected property will be called..
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice foundDevice = null;
+		for (GraphicsDevice device : graphicsEnvironment.getScreenDevices()) {
+			if (device.getIDstring().endsWith(getMonitorId().toString())) {
+				foundDevice = device;
+			}
+		}
+		// disable toggling for now.. re-enable when DSJ fires ENTER_FS or EXIT_FS
+		setFullScreenEnabled(false);
+		if (!fullScreen) {
+			getFiltergraph().goFullScreen(foundDevice, 1);
+			// TODO install a PCE to listen for ENTER_FS and EXIT_FS
+			getFullscreenFrame().setTitle(getTitle());
+			getFullscreenFrame().setName(getTitle());
+		} else {
+			getFiltergraph().leaveFullScreen();
+		}
 	}
 	
+	public Integer getMonitorId() {
+		return monitorId;
+	}
+
+	public void setMonitorId(Integer monitorId) {
+		this.monitorId = monitorId;
+	}
+
 	public void propertyChange(PropertyChangeEvent evt) {
-//		if (evt.getPropertyName() == DSFiltergraph.ENTER_FS) {
-//			// full screen mode entered...
-//		} else if (evt.getPropertyName() == DSFiltergraph.EXIT_FS) {
-//			
-//		}
+		int eventType = DSJUtils.getEventType(evt);
+		if (eventType == DSFiltergraph.GRAPH_EVENT ) {
+			int eventCode = DSJUtils.getEventValue_int(evt);
+			if (eventCode == DSFiltergraph.ENTER_FS) {
+				setFullScreen(true);
+				getLogger().debug("Fullscreen mode entered for " + getTitle());
+				setFullScreenEnabled(true);
+			} else if (eventCode == DSFiltergraph.EXIT_FS) {
+				setFullScreen(false);
+				getLogger().debug("Fullscreen mode exited for " + getTitle());
+				setFullScreenEnabled(true);
+			}
+		}
 	}
 	
 	public void componentShown(ComponentEvent e) {

@@ -6,7 +6,7 @@ public interface MediaActionConstants {
 	
 	String MUTE_ACTION = "mute";
 	
-	String FULL_SCREEN_ACTION = "toggleFullScreen";
+	String TOGGLE_FULL_SCREEN_ACTION = "toggleFullScreen";
 	
 	String INCREASE_VOLUME_ACTION = "increaseVolume";
 	

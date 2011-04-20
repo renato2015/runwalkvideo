@@ -13,6 +13,7 @@ import org.jdesktop.application.utils.PlatformType;
 
 import com.runwalk.video.media.dsj.DSJCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeCapturerFactory;
+import com.runwalk.video.ui.SelfContained;
 
 public abstract class VideoCapturerFactory {
 
@@ -97,9 +98,11 @@ public abstract class VideoCapturerFactory {
 						Logger.getLogger(VideoCapturerFactory.class).error(e);
 					}
 				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
-					// user clicked a monitor button, set it on the capturer
-					int monitorId = Integer.parseInt(evt.getNewValue().toString());
-					capturer.setMonitorId(monitorId);
+					if (capturer.getVideoImpl() instanceof SelfContained) {
+						// user clicked a monitor button, set it on the capturer
+						int monitorId = Integer.parseInt(evt.getNewValue().toString());
+						((SelfContained) capturer.getVideoImpl()).setMonitorId(monitorId);
+					}
 				} /*else if (evt.getPropertyName().equals(CameraDialog.CAPTURER_INITIALIZED)) {
 					// prepare the capturer for showing live video
 					capturer.getVideoImpl().startCapturer();

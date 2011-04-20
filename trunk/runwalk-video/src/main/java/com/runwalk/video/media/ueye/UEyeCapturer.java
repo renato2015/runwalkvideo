@@ -13,6 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.application.Action;
 
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.ui.PropertyChangeSupport;
@@ -166,7 +167,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		return true;
 	}
 
-	public void setFullScreen(boolean fullScreen, Integer monitorId) {
+	public void setFullScreen(boolean fullScreen) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
@@ -182,6 +183,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		// should call into the ueye-nativelib for this
 	}
 	
+	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility() {
 		setVisible(!isVisible());
 	}
@@ -192,6 +194,14 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	public void toggleFullScreen() {
 		throw new UnsupportedOperationException("not implemented");
+	}
+
+	public void setMonitorId(Integer monitorId) {
+		// pass to native code here
+	}
+
+	public Integer getMonitorId() {
+		return 0;
 	}
 
 }
