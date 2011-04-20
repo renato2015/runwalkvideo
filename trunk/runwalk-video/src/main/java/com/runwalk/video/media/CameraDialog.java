@@ -2,6 +2,7 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
@@ -23,6 +24,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -230,13 +232,16 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 			int defaultMonitorId = WindowManager.getDefaultMonitorId(graphicsDevices.length, capturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
+				DisplayMode displayMode = graphicsDevice.getDisplayMode();
+				String resolution = displayMode.getWidth() + "x" + displayMode.getHeight();
+				JToggleButton button = new JToggleButton("<html><center>" + monitorIdString + "<br>" + resolution + "</center></html>");
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
-				JButton button = new JButton(monitorIdString);
+				button.setActionCommand(monitorIdString);
 				button.addActionListener(new ActionListener() {
 
 					public void actionPerformed(ActionEvent e) {
 						JButton source = (JButton) e.getSource();
-						String monitorId = source.getText();
+						String monitorId = source.getActionCommand();
 						firePropertyChange(VideoComponent.MONITOR_ID, selectedMonitorId, selectedMonitorId = monitorId);
 					}
 

@@ -39,7 +39,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	private Timer timer;
 	private WeakReference<ApplicationActionMap> actionMap;
 	private State state;
-	private Integer monitorId;
 	private boolean overlayed;
 
 	/**
@@ -95,11 +94,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public int getComponentId() {
 		return componentId;
 	}
-
-	protected void setMonitorId(int monitorId) {
-		this.monitorId = monitorId;
-	}
-
+	
 	public BufferedImage getImage() {
 		return getVideoImpl().getImage();
 	}

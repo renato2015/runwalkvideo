@@ -57,6 +57,13 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		//TODO add support for three monitors
 		return result;
 	}
+	
+	public static int getDefaultMonitorId() {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
+		monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
+		return Integer.parseInt(monitorIdString);
+	}
 
 	public WindowManager(VideoMenuBar menuBar, JScrollableDesktopPane pane) {
 		this.menuBar = menuBar;
@@ -67,17 +74,24 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
 		boolean isContainable = videoImpl instanceof Containable;
 		boolean isSelfContained = videoImpl instanceof SelfContained;
+		boolean isFullScreenSupported = videoImpl instanceof FullScreenSupport;
 		if (isSelfContained) {
 			SelfContained selfContainedImpl = (SelfContained) videoImpl;
-			boolean fullScreen = selfContainedImpl.isFullScreen();
-			boolean toggleFullScreenEnabled = selfContainedImpl.isToggleFullScreenEnabled();
-			if (!fullScreen && toggleFullScreenEnabled) {
-				// go fullscreen by default
-				int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
-				selfContainedImpl.setFullScreen(true, monitorId);
-			} else if (isContainable && !fullScreen && !toggleFullScreenEnabled) {
-				Component component = ((Containable) videoImpl).getComponent();
-				selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
+			if (isFullScreenSupported) {
+				FullScreenSupport fsVideoImpl = (FullScreenSupport) videoImpl;
+				boolean toggleFullScreenEnabled = fsVideoImpl.isToggleFullScreenEnabled();
+				boolean fullScreen = fsVideoImpl.isFullScreen();
+				if (!fullScreen && toggleFullScreenEnabled) {
+					// go fullscreen by default
+					// int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
+					// FIXME monitor ID should be set on the selfContained in some way!
+					// TODO go fullscreen if monitorId not on the default screen (only when FulllScreenSupport available)
+					// TODO otherwise always dock the window if Containable, if not, don't open
+					fsVideoImpl.setFullScreen(true);
+				} else if (isContainable && !fullScreen && !toggleFullScreenEnabled) {
+					Component component = ((Containable) videoImpl).getComponent();
+					selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
+				}
 			}
 			selfContainedImpl.addPropertyChangeListener(this);
 			addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
@@ -91,7 +105,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	public void addWindow(SelfContained selfContained) {
 		addWindow(selfContained, selfContained.getApplicationActionMap());
 	}
-	
+
 	public void addWindow(Containable containable) {
 		AppInternalFrame selfContainedImpl = createInternalFrame(containable.getComponent(), containable.getTitle());
 		ActionMap actionMap = selfContainedImpl.getApplicationActionMap();
@@ -108,7 +122,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			showWindow(appComponent);
 		}
 	}
-	
+
 	public void setWindowVisibility(Containable containable, boolean visible) {
 		SelfContained component = getDecoratingComponent(containable);  
 		if (component != null) {
@@ -123,7 +137,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	public void showWindow(SelfContained selfContained) {
 		setWindowVisibility(selfContained, true);
 	}
-	
+
 	public void showWindow(Containable containable) {
 		setWindowVisibility(containable, true);
 	}
@@ -131,11 +145,11 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	public void hideWindow(SelfContained selfContained) {
 		setWindowVisibility(selfContained, false);
 	}
-	
+
 	public void hideWindow(Containable containable) {
 		setWindowVisibility(containable, false);
 	}
-	
+
 	private <T extends SelfContained> T getDecoratingComponent(Class<T> theClass, Containable containable) {
 		T result = null;
 		Component component = containable.getComponent();
@@ -150,7 +164,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	private AppInternalFrame createInternalFrame(Component component, String title) {
-		AppInternalFrame internalFrame = new AppInternalFrame(title, true);
+		AppInternalFrame internalFrame = new AppInternalFrame(title, true, getDefaultMonitorId());
 		internalFrame.add(component);
 		internalFrame.pack();
 		getPane().add(internalFrame);
@@ -199,6 +213,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		// disposing windows is handled by listening to the components' eventsget
+		// FIXME disposing should be done by... the video impl itself??
 		if (VideoComponent.STATE.equals(evt.getPropertyName())) {
 			VideoComponent.State newState = (State) evt.getNewValue();
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
@@ -212,7 +227,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 					// if Containable and not SelfContained then dispose the wrapping component
 					SelfContained selfContainedImpl = getDecoratingComponent((Containable) videoImpl);
 					selfContainedImpl.removePropertyChangeListener(this);
-					selfContainedImpl.dispose();
+					//selfContainedImpl.dispose();
 				}
 			}
 		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
@@ -230,7 +245,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			}
 		}
 	}
-	
+
 	private void setActionProxy(ApplicationActionMap actionMap, String actionName, ApplicationActionMap newActionMap) {
 		ApplicationAction action = (ApplicationAction) actionMap.get(actionName);
 		ApplicationAction proxyAction = (ApplicationAction) newActionMap.get(actionName);
@@ -250,7 +265,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	private JScrollableDesktopPane getPane() {
 		return pane;
 	}
-	
+
 	/**
 	 * Find an {@link SelfContained} in a given {@link Collection} for 
 	 * which {@link SelfContained#getHolder()} equals {@link Component}.
@@ -276,7 +291,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		}
 		return result;
 	}
-	
+
 	public <T extends VideoComponent> T findVideoComponent(Iterable<T> videoComponents, final String title) {
 		T result = null;
 		Iterator<T> iterator = videoComponents.iterator();
@@ -288,8 +303,8 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		}
 		return result;
 	}
-	
-	
+
+
 	public void setTitle(Containable containable, String title) {
 		AppInternalFrame internalFrame = getDecoratingComponent(AppInternalFrame.class, containable);
 		if (internalFrame != null) {
@@ -309,22 +324,22 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			}
 		}
 	}
-	
+
 	public boolean isToggleFullScreenEnabled(VideoComponent videoComponent) {
 		boolean result = false;
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
-		if (videoImpl instanceof SelfContained) {
-			SelfContained selfContainedImpl = (SelfContained) videoComponent.getVideoImpl();
+		if (videoImpl instanceof FullScreenSupport) {
+			FullScreenSupport selfContainedImpl = (FullScreenSupport) videoComponent.getVideoImpl();
 			result = selfContainedImpl.isToggleFullScreenEnabled();
 		} else if (videoImpl instanceof Containable) {
-			SelfContained selfContained = getDecoratingComponent((Containable) videoImpl);
-			if (selfContained != null) {
-				result = selfContained.isToggleFullScreenEnabled();
+			FullScreenSupport fsVideoImpl = getDecoratingComponent(FullScreenSupport.class, (Containable) videoImpl);
+			if (fsVideoImpl != null) {
+				result = fsVideoImpl.isToggleFullScreenEnabled();
 			}
 		}
 		return result;
 	}
-	
+
 	public boolean isVisible(VideoComponent videoComponent) {
 		boolean result = false;
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();

@@ -10,6 +10,7 @@ import java.awt.event.ComponentListener;
 
 import javax.swing.JInternalFrame;
 
+import org.jdesktop.application.Action;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
@@ -23,18 +24,21 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 public class AppInternalFrame extends BaseInternalFrame implements ComponentListener, SelfContained {
 	
 	private boolean visible = true;
+	
+	private int monitorId;
 
 	/**
 	 * Create a new JInternalFrame.
 	 * @param title set the frame's title.
 	 * @param resizable set whether the frame should be resizable.
 	 */
-	public AppInternalFrame(String title, boolean resizable) {
+	public AppInternalFrame(String title, boolean resizable, int monitorId) {
 		super(title, resizable, true);
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
 		addComponentListener(this);
+		this.monitorId = monitorId;
 	}
 	
 	public void dispose() {
@@ -42,6 +46,7 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 		super.dispose();
 	}
 
+	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility() {
 		super.setVisible(isVisible());
 	}
@@ -126,21 +131,12 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 
 	}
 
-	public void setFullScreen(boolean fullScreen, Integer monitorId) {
-		throw new UnsupportedOperationException("not implemented");
+	public void setMonitorId(Integer monitorId) {
+		this.monitorId = monitorId;
 	}
 
-	public boolean isFullScreen() {
-		// internal frame is never full screen
-		return false;
-	}
-
-	public boolean isToggleFullScreenEnabled() {
-		return false;
-	}
-
-	public void toggleFullScreen() {
-		throw new UnsupportedOperationException("not implemented");
+	public Integer getMonitorId() {
+		return monitorId;
 	}
 	
 }

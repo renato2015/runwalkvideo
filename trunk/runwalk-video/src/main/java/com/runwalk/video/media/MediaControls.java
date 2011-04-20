@@ -168,7 +168,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		createJToggleButton(MUTE_ACTION, "mute.Action.pressedIcon"); 
 		createJButton(SHOW_CAPTURER_SETTINGS_ACTION); 
 		createJButton(SHOW_CAMERA_SETTINGS_ACTION); 
-		createJButton(FULL_SCREEN_ACTION); 
+		// TODO add global proxy action to toggle fullscreen window for frontmost
+	//	createJButton(FULL_SCREEN_ACTION); 
 
 		elapsedTimeLabel = new JLabel();
 		clearStatusInfo();
@@ -227,13 +228,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			}
 
 		};
-	}
-
-	//TODO kan dit met een proxy action??
-	@Action(enabledProperty = TOGGLE_FULL_SCREEN_ENABLED, block = BlockingScope.ACTION)
-	public void toggleFullScreen() {
-		// need to set this manually here, as there is no component that will invoke this method first
-		//return frontMostComponent.toggleFullScreen();
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)

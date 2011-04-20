@@ -121,14 +121,18 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
 			toggleVisibilityAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
 			menu.add(addMenuItem(toggleVisibilityAction));
+			actionMap.remove(TOGGLE_VISIBILITY_ACTION);
 			Action toggleFullScreenAction = actionMap.get(TOGGLE_FULL_SCREEN_ACTION);
-			menu.add(addMenuItem(toggleFullScreenAction));
-			actionMap.remove(toggleFullScreenAction);
+			if (toggleFullScreenAction != null) {
+				menu.add(addMenuItem(toggleFullScreenAction));
+				actionMap.remove(TOGGLE_FULL_SCREEN_ACTION);
+			}
 			// add all actions from the appcomponent's actionmap to the menu
 			menu.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
 				Action action = actionMap.get(key);
-				if (getContext().getActionMap().get(key) == null) {
+				JMenuItem addedItem = getMenuItem(action.getValue(Action.NAME));
+				if (getContext().getActionMap().get(key) == null && addedItem != null) {
 					menu.add(addMenuItem(action));
 				}
 			}
@@ -151,16 +155,24 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		result.setText(actionDescription.toString());
 		return result;
 	}
-
-	public void removeMenu(String title) {
+	
+	private JMenuItem getMenuItem(Object key) {
 		for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
 			Component menuComponent = windowMenu.getMenuComponent(i);
 			if (menuComponent instanceof JMenuItem ) {
 				JMenuItem menuItem = (JMenuItem) menuComponent;
-				if (menuItem.getText().equals(title)) {
-					windowMenu.remove(menuItem);
+				if (menuItem.getText().equals(key)) {
+					return menuItem;
 				}
 			}
+		}
+		return null;
+	}
+
+	public void removeMenu(String title) {
+		JMenuItem menuItem = getMenuItem(title);
+		if (menuItem != null) {
+			windowMenu.remove(menuItem);
 		}
 		windowMenu.updateUI();
 		windowMenu.revalidate();
