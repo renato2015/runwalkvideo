@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.Timer;
@@ -13,7 +11,6 @@ import javax.swing.Timer;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
 
-import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.Containable;

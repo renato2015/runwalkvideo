@@ -10,6 +10,7 @@ import com.runwalk.video.media.ueye.UEYE_CAMERA_LIST;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
 import com.runwalk.video.media.ueye.UEyeLibrary;
+import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
@@ -39,7 +40,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, WindowManager.getDefaultMonitorId());
 		final IntByReference aviPointer = new IntByReference(0);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);
