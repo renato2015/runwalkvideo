@@ -9,6 +9,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import javax.swing.JInternalFrame;
+import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.session.PropertySupport;
@@ -21,7 +22,7 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class AppInternalFrame extends BaseInternalFrame implements ComponentListener, SelfContained {
+public class AppInternalFrame extends BaseInternalFrame implements /*ComponentListener,*/ SelfContained {
 	
 	private boolean visible = true;
 	
@@ -37,20 +38,21 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
-		addComponentListener(this);
+		//addComponentListener(this);
 		this.monitorId = monitorId;
 	}
 	
 	public void dispose() {
-		removeComponentListener(this);
+		//removeComponentListener(this);
 		super.dispose();
 	}
-
+	
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility() {
-		super.setVisible(isVisible());
+		super.setVisible(visible);
 	}
 	
+	@Override
 	public void setVisible(boolean visible) {
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 	}

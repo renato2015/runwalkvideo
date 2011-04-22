@@ -34,6 +34,8 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	private File settingsFile;
 
+	private Integer monitorId;
+
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
 		cameraHandle = new IntByReference(cameraId);
@@ -63,7 +65,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	public void startRunning() {
 		LOGGER.debug("Opening camera " + getTitle());
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile.getAbsolutePath(), getTitle());
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile.getAbsolutePath(), getTitle(), getMonitorId());
 		LOGGER.debug("Using settings file at " + settingsFile.getAbsolutePath());
 		LOGGER.debug("StartRunning result = " + result);
 	}
@@ -197,11 +199,11 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public void setMonitorId(Integer monitorId) {
-		// pass to native code here
+		this.monitorId = monitorId;
 	}
 
 	public Integer getMonitorId() {
-		return 0;
+		return monitorId;
 	}
 
 }

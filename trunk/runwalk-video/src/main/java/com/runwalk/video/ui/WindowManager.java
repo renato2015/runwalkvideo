@@ -58,11 +58,16 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		return result;
 	}
 	
-	public static int getDefaultMonitorId() {
+		public static int getDefaultMonitorId() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
 		monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
 		return Integer.parseInt(monitorIdString);
+	}
+	
+	public static GraphicsDevice getDefaultGraphicsDevice() {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		return graphicsEnvironment.getDefaultScreenDevice();
 	}
 
 	public WindowManager(VideoMenuBar menuBar, JScrollableDesktopPane pane) {
@@ -81,13 +86,17 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				FullScreenSupport fsVideoImpl = (FullScreenSupport) videoImpl;
 				boolean toggleFullScreenEnabled = fsVideoImpl.isToggleFullScreenEnabled();
 				boolean fullScreen = fsVideoImpl.isFullScreen();
-				if (!fullScreen && toggleFullScreenEnabled) {
+				if (toggleFullScreenEnabled) {
 					// go fullscreen by default
 					// int monitorId = getDefaultMonitorId(2, videoComponent.getComponentId());
 					// FIXME monitor ID should be set on the selfContained in some way!
 					// TODO go fullscreen if monitorId not on the default screen (only when FulllScreenSupport available)
-					// TODO otherwise always dock the window if Containable, if not, don't open
-					fsVideoImpl.setFullScreen(true);
+					if (fsVideoImpl.getMonitorId() != getDefaultMonitorId()) {
+						fsVideoImpl.toggleFullScreen();
+					} else if (isContainable) {
+						// TODO otherwise always dock the window if Containable, if not, don't open
+						
+					}
 				} else if (isContainable && !fullScreen && !toggleFullScreenEnabled) {
 					Component component = ((Containable) videoImpl).getComponent();
 					selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
@@ -99,6 +108,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			Component component = ((Containable) videoImpl).getComponent();
 			SelfContained selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
 			selfContainedImpl.addPropertyChangeListener(this);
+			addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
 		}
 	}
 
@@ -168,7 +178,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		internalFrame.add(component);
 		internalFrame.pack();
 		getPane().add(internalFrame);
-		//internalFrame.addComponentListener(this);
+		// TODO toggle enabled state of button in docking framework
 		/*BeanProperty<JComponent, Boolean> enabled = BeanProperty.create("associatedButton.enabled");
 		ELProperty<AppWindowWrapper, Boolean> fullScreen = ELProperty.create("{!fullScreen}");
 		Binding<? extends AppWindowWrapper, Boolean, ? extends JComponent, Boolean> enabledBinding = 

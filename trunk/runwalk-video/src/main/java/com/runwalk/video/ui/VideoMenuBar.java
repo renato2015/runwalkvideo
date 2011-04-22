@@ -120,27 +120,26 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 			char shortcut = Character.forDigit(windowMenu.getMenuComponentCount(), 9);
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);
 			toggleVisibilityAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
-			menu.add(addMenuItem(toggleVisibilityAction));
-			actionMap.remove(TOGGLE_VISIBILITY_ACTION);
+			menu.add(createMenuItem(toggleVisibilityAction));
 			Action toggleFullScreenAction = actionMap.get(TOGGLE_FULL_SCREEN_ACTION);
 			if (toggleFullScreenAction != null) {
-				menu.add(addMenuItem(toggleFullScreenAction));
-				actionMap.remove(TOGGLE_FULL_SCREEN_ACTION);
+				menu.add(createMenuItem(toggleFullScreenAction));
 			}
 			// add all actions from the appcomponent's actionmap to the menu
 			menu.add(new JSeparator());
 			for (Object key : actionMap.allKeys()) {
 				Action action = actionMap.get(key);
-				JMenuItem addedItem = getMenuItem(action.getValue(Action.NAME));
-				if (getContext().getActionMap().get(key) == null && addedItem != null) {
-					menu.add(addMenuItem(action));
+				// see whether the action has already been added to the menu
+				JMenuItem menuItem = getMenuItem(menu, action);
+				if (getContext().getActionMap().get(key) == null && menuItem == null) {
+					menu.add(createMenuItem(action));
 				}
 			}
 		}
 		windowMenu.add(menu);
 	}
 	
-	private JMenuItem addMenuItem(Action action) {
+	private JMenuItem createMenuItem(Action action) {
 		JMenuItem result = null;
 		Object selectedKey = action.getValue(Action.SELECTED_KEY);
 		if (selectedKey != null) {
@@ -148,29 +147,38 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		} else {
 			result = new JMenuItem(action);
 		}
+		result.setText(getActionDescription(action));
+		return result;
+	}
+	
+	private String getActionDescription(Action action) {
 		Object actionDescription = action.getValue(javax.swing.Action.NAME);
 		if (actionDescription == null) {
 			actionDescription = action.getValue(javax.swing.Action.SHORT_DESCRIPTION);
 		}
-		result.setText(actionDescription.toString());
-		return result;
+		return actionDescription.toString();
 	}
 	
-	private JMenuItem getMenuItem(Object key) {
-		for (int i = 0; i < windowMenu.getMenuComponentCount(); i++) {
-			Component menuComponent = windowMenu.getMenuComponent(i);
+	private JMenuItem getMenuItem(JMenu menu, String actionDescription) {
+		for (int i = 0; i < menu.getMenuComponentCount(); i++) {
+			Component menuComponent = menu.getMenuComponent(i);
 			if (menuComponent instanceof JMenuItem ) {
 				JMenuItem menuItem = (JMenuItem) menuComponent;
-				if (menuItem.getText().equals(key)) {
+				if (menuItem.getText().equals(actionDescription)) {
 					return menuItem;
 				}
 			}
 		}
 		return null;
 	}
+	
+	private JMenuItem getMenuItem(JMenu menu, Action action) {
+		String actionDescription = getActionDescription(action);
+		return getMenuItem(menu, actionDescription);
+	}
 
 	public void removeMenu(String title) {
-		JMenuItem menuItem = getMenuItem(title);
+		JMenuItem menuItem = getMenuItem(windowMenu, title);
 		if (menuItem != null) {
 			windowMenu.remove(menuItem);
 		}

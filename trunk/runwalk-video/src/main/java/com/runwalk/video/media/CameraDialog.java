@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 
+import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -240,7 +241,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 				button.addActionListener(new ActionListener() {
 
 					public void actionPerformed(ActionEvent e) {
-						JButton source = (JButton) e.getSource();
+						AbstractButton source = (AbstractButton) e.getSource();
 						String monitorId = source.getActionCommand();
 						firePropertyChange(VideoComponent.MONITOR_ID, selectedMonitorId, selectedMonitorId = monitorId);
 					}
