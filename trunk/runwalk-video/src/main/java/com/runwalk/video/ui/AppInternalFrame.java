@@ -9,7 +9,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import javax.swing.JInternalFrame;
-import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.session.PropertySupport;
@@ -22,26 +21,24 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class AppInternalFrame extends BaseInternalFrame implements /*ComponentListener,*/ SelfContained {
+public class AppInternalFrame extends BaseInternalFrame implements ComponentListener, SelfContained {
 	
 	private boolean visible = true;
 	
-	private int monitorId;
-
 	/**
 	 * Create a new JInternalFrame.
 	 * @param title set the frame's title.
 	 * @param resizable set whether the frame should be resizable.
 	 */
-	public AppInternalFrame(String title, boolean resizable, int monitorId) {
+	public AppInternalFrame(String title, boolean resizable) {
 		super(title, resizable, true);
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
 		//addComponentListener(this);
-		this.monitorId = monitorId;
 	}
 	
+	@Override
 	public void dispose() {
 		//removeComponentListener(this);
 		super.dispose();
@@ -134,11 +131,11 @@ public class AppInternalFrame extends BaseInternalFrame implements /*ComponentLi
 	}
 
 	public void setMonitorId(Integer monitorId) {
-		this.monitorId = monitorId;
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	public Integer getMonitorId() {
-		return monitorId;
+		return null;
 	}
 	
 }
