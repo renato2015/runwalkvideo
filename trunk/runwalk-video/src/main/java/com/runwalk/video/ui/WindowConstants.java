@@ -13,5 +13,7 @@ public interface WindowConstants {
 	String FULL_SCREEN = "fullScreen";
 	
 	String TITLE = "title";
+	
+	String MONITOR_ID = "monitorId";
 
 }

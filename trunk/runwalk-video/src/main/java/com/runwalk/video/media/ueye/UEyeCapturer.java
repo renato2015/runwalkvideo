@@ -35,6 +35,8 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	private File settingsFile;
 
 	private Integer monitorId;
+	
+	private boolean visible = false;
 
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
@@ -65,7 +67,8 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	public void startRunning() {
 		LOGGER.debug("Opening camera " + getTitle());
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile.getAbsolutePath(), getTitle(), getMonitorId());
+		String settingsFilePath = settingsFile == null ? null : settingsFile.getAbsolutePath();
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), getMonitorId());
 		LOGGER.debug("Using settings file at " + settingsFile.getAbsolutePath());
 		LOGGER.debug("StartRunning result = " + result);
 	}
@@ -178,7 +181,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public void setVisible(boolean visible) {
-		// TODO to be implemented
+		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 	}
 
 	public void toFront() {
@@ -187,7 +190,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility() {
-		setVisible(!isVisible());
+		// TODO call native lib to set visiblity here
 	}
 
 	public boolean isToggleFullScreenEnabled() {

@@ -29,7 +29,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	public static final String IDLE = "idle";
 	public static final String STATE = "state";
-	public static final String MONITOR_ID = "monitorId";
 	public static final String DISPOSED = "disposed";
 
 	private Recording recording;

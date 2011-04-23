@@ -46,7 +46,7 @@ public abstract class VideoCapturerFactory {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
-				if (System.getProperty("native_capturer") == "true") {
+				if (System.getProperty("native_capturer").equals(Boolean.TRUE.toString())) {
 					factory = new UEyeCapturerFactory();
 				} else {
 					factory = new DSJCapturerFactory();
@@ -97,7 +97,7 @@ public abstract class VideoCapturerFactory {
 						//TODO show appropriate error dialog here, in this case the creation will prolly return null
 						Logger.getLogger(VideoCapturerFactory.class).error(e);
 					}
-				} else if (evt.getPropertyName().equals(VideoComponent.MONITOR_ID)) {
+				} else if (evt.getPropertyName().equals(SelfContained.MONITOR_ID)) {
 					if (capturer.getVideoImpl() instanceof SelfContained) {
 						// user clicked a monitor button, set it on the capturer
 						int monitorId = Integer.parseInt(evt.getNewValue().toString());
