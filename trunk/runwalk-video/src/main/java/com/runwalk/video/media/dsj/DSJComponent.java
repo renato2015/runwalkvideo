@@ -254,11 +254,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		getLogger().debug(DSConstants.eventToString((Integer) evt.getNewValue()));
 		//if (eventType == DSFiltergraph.ENTER_FS ) {
 			int eventCode = DSJUtils.getEventValue_int(evt);
-			if (eventCode == DSFiltergraph.ENTER_FS) {
+			if (eventType == DSFiltergraph.ENTER_FS) {
 				setFullScreen(true);
 				getLogger().debug("Fullscreen mode entered for " + getTitle());
 				setFullScreenEnabled(true);
-			} else if (eventCode == DSFiltergraph.EXIT_FS) {
+			} else if (eventType == DSFiltergraph.EXIT_FS) {
 				setFullScreen(false);
 				getLogger().debug("Fullscreen mode exited for " + getTitle());
 				setFullScreenEnabled(true);

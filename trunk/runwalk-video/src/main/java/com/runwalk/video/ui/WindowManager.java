@@ -16,6 +16,7 @@ import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 
 import com.runwalk.video.media.IVideoComponent;
+import com.runwalk.video.media.IVideoPlayer;
 import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;
 import com.runwalk.video.media.VideoComponent.State;
@@ -73,6 +74,15 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	public WindowManager(VideoMenuBar menuBar, JScrollableDesktopPane pane) {
 		this.menuBar = menuBar;
 		this.pane = pane;
+	}
+	
+	public void addWindow(VideoPlayer videoPlayer) {
+		IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
+		if (videoImpl instanceof SelfContained) {
+			int monitorId = getDefaultMonitorId(2, videoPlayer.getComponentId());
+			((SelfContained) videoImpl).setMonitorId(monitorId);			
+		}
+		addWindow((VideoComponent) videoPlayer);
 	}
 
 	public void addWindow(VideoComponent videoComponent) {
