@@ -67,9 +67,9 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	public void startRunning() {
 		LOGGER.debug("Opening camera " + getTitle());
-		String settingsFilePath = settingsFile == null ? null : settingsFile.getAbsolutePath();
+		String settingsFilePath = settingsFile == null ? "<default>" : settingsFile.getAbsolutePath();
 		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), getMonitorId());
-		LOGGER.debug("Using settings file at " + settingsFile.getAbsolutePath());
+		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
 	}
 
