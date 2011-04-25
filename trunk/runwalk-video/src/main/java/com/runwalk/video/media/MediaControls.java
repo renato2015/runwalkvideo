@@ -435,7 +435,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		// if there is no actionEvent specified, then this call was made at startup time
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		VideoCapturer capturer = VideoCapturerFactory.getInstance().createCapturer(parentWindow, capturerName, captureEncoderName);
-		getWindowManager().addWindow(capturer);
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer
@@ -443,6 +442,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				getAppSettings().setCapturerName(capturer.getVideoImpl().getTitle());
 			}
 			videoComponents.add(capturer);
+			getWindowManager().addWindow(capturer);
 			capturersToFront();
 		}
 	}

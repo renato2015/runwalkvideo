@@ -40,7 +40,8 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, WindowManager.getDefaultMonitorId());
+		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId);
 		final IntByReference aviPointer = new IntByReference(0);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);

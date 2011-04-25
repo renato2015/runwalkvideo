@@ -71,7 +71,8 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	public void startRunning() {
 		LOGGER.debug("Opening camera " + getTitle());
 		String settingsFilePath = settingsFile == null ? "<default>" : settingsFile.getAbsolutePath();
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), getMonitorId());
+		IntByReference monitorId = new IntByReference(getMonitorId());
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), monitorId);
 		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
 	}
@@ -120,7 +121,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	public void stopRecording() {
 		int result = UEyeCapturerLibrary.StopRecording(aviHandle.getValue());
 		setRecording(false);
-		LOGGER.debug("StopRecording result = " + result);
+		LOGGER.debug("StopRecording result: " + result);
 	}
 
 	/**
@@ -193,7 +194,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public void toFront() {
-		// should call into the ueye-nativelib for this
+		UEyeCapturerLibrary.CameraWndToFront(cameraHandle);
 	}
 	
 	@Action(selectedProperty = VISIBLE)

@@ -3,6 +3,7 @@ package com.runwalk.video;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.EventObject;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
@@ -326,10 +327,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public void showError(String error) {
 		Toolkit.getDefaultToolkit().beep();
 		getStatusPanel().showErrorMessage(error);
-	}
-
-	public void clearStatusMessage() {
-		getStatusPanel().showMessage("");
 	}
 
 	//getters for action maps in this application
