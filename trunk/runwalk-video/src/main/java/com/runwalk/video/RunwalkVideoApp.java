@@ -3,6 +3,7 @@ package com.runwalk.video;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -160,7 +161,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		super.shutdown();
 		saveSettings();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
-		executeAction(getMediaControls().getApplicationActionMap(), STOP_ALL_VIDEO_COMPONENTS_ACTION);
+		executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
 		if (isSaveNeeded()) {
 			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
 					"Wilt u de gemaakte wijzigingen opslaan?", 
@@ -169,7 +170,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				executeAction(getClientTablePanel().getApplicationActionMap(), SAVE_ENTITIES_ACTION);
 			}
 		}
-		getContext().getTaskService().shutdown();
+		try {
+			LOGGER.debug("Awaiting taskservice termination...");
+			getContext().getTaskService().awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			LOGGER.error(e);
+		}
 		getDaoService().shutdown();
 	}
 	
