@@ -38,6 +38,8 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	
 	private boolean visible = false;
 
+	private volatile boolean recording = false;
+
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
 		cameraHandle = new IntByReference(cameraId);
@@ -51,6 +53,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 	
 	public void dispose() {
+		stopRunning();
 		// set all handles to null
 		cameraHandle = null;
 		aviHandle = null;
@@ -91,10 +94,11 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		aviHandle = new IntByReference(0);
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, destFile.getAbsolutePath(), 25);
 		System.out.println("startRecording result: "+ result);
+		
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				// TODO should only run when recording 
-				while(true) {
+				while(isRecording()) {
 					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviHandle.getValue());
 					Pointer p = frameDropInfo.getPointer();
 					System.out.println("captured: " + p.getInt(0) + 
@@ -106,12 +110,16 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 					}
 				}
 			}
+
+			
 		}, "FrameDropInfoThread");
 		thread.start();
+		setRecording(true);	
 	}
 
 	public void stopRecording() {
 		int result = UEyeCapturerLibrary.StopRecording(aviHandle.getValue());
+		setRecording(false);
 		LOGGER.debug("StopRecording result = " + result);
 	}
 
@@ -207,6 +215,14 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 
 	public Integer getMonitorId() {
 		return monitorId;
+	}
+
+	private void setRecording(boolean recording) {
+		this.recording  = recording;
+	}
+	
+	private boolean isRecording() {
+		return recording;
 	}
 
 }

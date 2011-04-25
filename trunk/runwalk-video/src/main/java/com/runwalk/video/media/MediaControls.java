@@ -215,9 +215,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return button;
 	}
 	
-	@Action
-	public Task<Void, Void> disposeAllVideoComponents() {
-		return new AbstractTask<Void, Void>("stopAllVideoComponents") {
+	@Action(block=BlockingScope.APPLICATION)
+	public Task<Void, Void> disposeVideoComponents() {
+		return new AbstractTask<Void, Void>(DISPOSE_VIDEO_COMPONENTS_ACTION) {
 
 			protected Void doInBackground() throws Exception {
 				for (VideoComponent videoComponent : Lists.newArrayList(videoComponents)) {
