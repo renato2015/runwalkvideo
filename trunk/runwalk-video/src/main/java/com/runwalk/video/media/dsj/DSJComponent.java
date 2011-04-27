@@ -146,8 +146,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 			Frame fullScreenFrame = getFiltergraph().getFullScreenWindow();
 			if (fullScreenFrame != null) {
 				fullScreenFrame.removeComponentListener(this);
-				// TODO make this call or not?
-				// fullScreenFrame.dispose();
+				// this call is really needed to reopen a new video
+				fullScreenFrame.dispose();
 			}
 			getFiltergraph().dispose();
 		}
@@ -251,8 +251,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void propertyChange(PropertyChangeEvent evt) {
 		// FIXME this is not properly triggered yet
 		int eventType = DSJUtils.getEventType(evt);
-		getLogger().debug(DSConstants.eventToString((Integer) evt.getOldValue()));
-		getLogger().debug(DSConstants.eventToString((Integer) evt.getNewValue()));
+		//getLogger().debug(DSConstants.eventToString((Integer) evt.getOldValue()));
+		//getLogger().debug(DSConstants.eventToString((Integer) evt.getNewValue()));
 		//if (eventType == DSFiltergraph.ENTER_FS ) {
 			int eventCode = DSJUtils.getEventValue_int(evt);
 			if (eventType == DSFiltergraph.ENTER_FS) {
