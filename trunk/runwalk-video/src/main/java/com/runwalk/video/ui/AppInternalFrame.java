@@ -5,9 +5,11 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.JInternalFrame;
 
 import org.jdesktop.application.Action;
@@ -35,23 +37,29 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
-		//addComponentListener(this);
+		addComponentListener(this);
 	}
 	
 	@Override
 	public void dispose() {
-		//removeComponentListener(this);
+		removeComponentListener(this);
 		super.dispose();
 	}
 	
 	@Action(selectedProperty = VISIBLE)
-	public void toggleVisibility() {
-		super.setVisible(visible);
+	public void toggleVisibility(ActionEvent event) {
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			setVisible(source.isSelected());
+		}
 	}
 	
 	@Override
 	public void setVisible(boolean visible) {
+		// fire a pce as component does not do this by default
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		super.setVisible(visible);
 	}
 	
 	public void componentShown(ComponentEvent e) {

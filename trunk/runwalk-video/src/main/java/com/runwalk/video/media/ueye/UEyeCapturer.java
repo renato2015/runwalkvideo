@@ -3,6 +3,7 @@ package com.runwalk.video.media.ueye;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -142,7 +143,6 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		}
 	}
 
-	@Override
 	public void showCameraSettings() {
 		// show a filechooser dialog which enables you to select a settings file
 		final JFileChooser chooser = settingsFile == null ? new JFileChooser() : new JFileChooser(settingsFile);
@@ -163,12 +163,10 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		}
 	}
 
-	@Override
 	public String getCaptureEncoderName() {
 		return MJPEG_ENCODER;
 	}
 
-	@Override
 	public void setCaptureEncoderName(String name) {
 		// do nothing, this can only be MJPEG
 	}
@@ -198,7 +196,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 	
 	@Action(selectedProperty = VISIBLE)
-	public void toggleVisibility() {
+	public void toggleVisibility(ActionEvent event) {
 		// TODO call native lib to set visiblity here
 	}
 

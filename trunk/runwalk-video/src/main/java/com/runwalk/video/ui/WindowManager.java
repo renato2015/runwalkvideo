@@ -3,12 +3,16 @@ package com.runwalk.video.ui;
 import java.awt.Component;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 
@@ -59,11 +63,19 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		return result;
 	}
 	
+	public static int getDefaultMonitorId(VideoComponent videoComponent) {
+		return getDefaultMonitorId(getMonitorCount(), videoComponent.getComponentId());
+	}
+	
 	public static int getDefaultMonitorId() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
 		monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
 		return Integer.parseInt(monitorIdString);
+	}
+	
+	public static int getMonitorCount() {
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
 	}
 	
 	public static GraphicsDevice getDefaultGraphicsDevice() {
@@ -79,7 +91,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	public void addWindow(VideoPlayer videoPlayer) {
 		IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
 		if (videoImpl instanceof SelfContained) {
-			int monitorId = getDefaultMonitorId(2, videoPlayer.getComponentId());
+			int monitorId = getDefaultMonitorId(videoPlayer);
 			((SelfContained) videoImpl).setMonitorId(monitorId);			
 		}
 		addWindow((VideoComponent) videoPlayer);
@@ -105,20 +117,13 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
 					} else if (isContainable) {
 						addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
-						//Component component = ((Containable) videoImpl).getComponent();
-						//selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
 					}
 				} else if (isContainable && !fullScreen) {
 					addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
-					//Component component = ((Containable) videoImpl).getComponent();
-					//selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
 				}
 			}
 		} else if (isContainable) {
 			addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
-			//Component component = ((Containable) videoImpl).getComponent();
-			//SelfContained selfContainedImpl = createInternalFrame(component, videoComponent.getTitle());
-			//addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
 		}
 	}
 
@@ -139,15 +144,15 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode
-	private void addWindow(SelfContained selfContainedImpl, ActionMap actionMap) {
+	private void addWindow(final SelfContained selfContainedImpl, ActionMap actionMap) {
 		//TODO enforce constraint here: should only be called once for each window
 		if (selfContainedImpl != null) {
-			selfContainedImpl.addPropertyChangeListener(this);
+			selfContainedImpl.addPropertyChangeListener(this);		
 			getMenuBar().addMenu(selfContainedImpl.getTitle(), actionMap);
 			showWindow(selfContainedImpl);
 		}
 	}
-
+	
 	public void setWindowVisibility(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
 	}
@@ -292,7 +297,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			T videoComponent = iterator.next();
 			IVideoComponent videoImpl = videoComponent.getVideoImpl();
 			if (videoImpl instanceof Containable) {
-				if (((Containable) videoImpl).getComponent() == component) {
+				if (SwingUtilities.isDescendingFrom(((Containable) videoImpl).getComponent(), component)) {
 					result = videoComponent;
 				}
 			}

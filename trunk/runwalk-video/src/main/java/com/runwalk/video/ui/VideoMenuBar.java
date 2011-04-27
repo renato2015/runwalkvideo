@@ -15,6 +15,8 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.jdesktop.application.ApplicationAction;
+
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.util.ResourceInjector;
 
@@ -144,6 +146,10 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		Object selectedKey = action.getValue(Action.SELECTED_KEY);
 		if (selectedKey != null) {
 			result = new JCheckBoxMenuItem(action);
+			if (action instanceof ApplicationAction) {
+				ApplicationAction applicationAction = (ApplicationAction) action;
+				applicationAction.setProxySource(result);
+			}
 		} else {
 			result = new JMenuItem(action);
 		}
