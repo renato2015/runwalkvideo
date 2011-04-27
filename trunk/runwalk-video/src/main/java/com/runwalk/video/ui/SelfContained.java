@@ -1,6 +1,7 @@
 package com.runwalk.video.ui;
 
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
@@ -11,7 +12,7 @@ import com.tomtessier.scrollabledesktop.BaseInternalFrame;
  * @author Jeroen Peelaerts
  *
  */
-@AppComponent(actionMapStopClass = SelfContained.class)
+@AppComponent
 public interface SelfContained extends WindowConstants {
 
 	/**
@@ -29,7 +30,7 @@ public interface SelfContained extends WindowConstants {
 	
 	public void setVisible(boolean visible);
 	
-	public void toggleVisibility();
+	public void toggleVisibility(ActionEvent event);
 	
 	public void toFront();
 	

@@ -173,7 +173,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		}
 		try {
 			LOGGER.debug("Awaiting taskservice termination...");
-			getContext().getTaskService().awaitTermination(10, TimeUnit.SECONDS);
+			getContext().getTaskService().awaitTermination(2, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			LOGGER.error(e);
 		}

@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
@@ -195,7 +196,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	@Action(selectedProperty = VISIBLE)
-	public void toggleVisibility() {
+	public void toggleVisibility(ActionEvent event) {
 		// just leave this empty, selected property will be called..
 		if (isFullScreen() && getFullscreenFrame() != null) {
 			// setVisibility will be called first, as it is the selectedProperty for this Action
