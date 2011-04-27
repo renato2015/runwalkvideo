@@ -46,7 +46,8 @@ public abstract class VideoCapturerFactory {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
-				if (System.getProperty("native_capturer").equals(Boolean.TRUE.toString())) {
+				String nativeCapturer = System.getProperty("native_capturer");
+				if (Boolean.TRUE.toString().equals(nativeCapturer)) {
 					factory = new UEyeCapturerFactory();
 				} else {
 					factory = new DSJCapturerFactory();
