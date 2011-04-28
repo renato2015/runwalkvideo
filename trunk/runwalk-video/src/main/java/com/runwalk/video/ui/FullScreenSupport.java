@@ -1,5 +1,7 @@
 package com.runwalk.video.ui;
 
+import java.awt.event.ActionEvent;
+
 
 public interface FullScreenSupport extends SelfContained {
 
@@ -9,6 +11,6 @@ public interface FullScreenSupport extends SelfContained {
 
 	public abstract boolean isToggleFullScreenEnabled();
 
-	public abstract void toggleFullScreen();
+	public abstract void toggleFullScreen(ActionEvent event);
 
 }

@@ -797,6 +797,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public Component getComponent() {
 		return this;
 	}
+	
+	public boolean isResizable() {
+		return false;
+	}
 
 	public String getTitle() {
 		return TITLE;

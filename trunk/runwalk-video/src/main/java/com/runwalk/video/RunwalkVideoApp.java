@@ -237,6 +237,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				return "Klanten & Analyses";
 			}
 			
+			public boolean isResizable() {
+				return true;
+			}
+			
 		};
 	}
 

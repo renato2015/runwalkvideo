@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -25,7 +26,6 @@ import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.FullScreenSupport;
 import com.runwalk.video.ui.PropertyChangeSupport;
 
-import de.humatic.dsj.DSConstants;
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
@@ -54,7 +54,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	private boolean rejectPauseFilter = false;
 
-	private boolean fullScreenEnabled;
+	private boolean toggleFullScreenEnabled = true;
 
 	private boolean fullScreen;
 
@@ -160,21 +160,24 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public Component getComponent() {
 		return getFiltergraph().asComponent();
 	}
+	
+	public boolean isResizable() {
+		return true;
+	}
 
 	public Frame getFullscreenFrame() {
 		return getFiltergraph().getFullScreenWindow();
 	}
 
-	public void setFullScreenEnabled(boolean fullScreenEnabled) {
-		firePropertyChange(TOGGLE_FULL_SCREEN_ENABLED, this.fullScreenEnabled, this.fullScreenEnabled = fullScreenEnabled);
-	}
-
-	public boolean isFullScreenEnabled() {
-		return fullScreenEnabled;
-	}
-
 	public void setVisible(boolean visible) {
-		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		if (this.visible != visible) {
+			// just leave this empty, selected property will be called..
+			if (isFullScreen() && getFullscreenFrame() != null) {
+				// setVisibility will be called first, as it is the selectedProperty for this Action
+				getFullscreenFrame().setVisible(visible);
+			}
+			firePropertyChange(VISIBLE, this.visible, this.visible = visible);
+		}
 	}
 
 	public boolean isVisible() {
@@ -186,7 +189,24 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void setFullScreen(boolean fullScreen) {
-		firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
+		if (isToggleFullScreenEnabled() && this.fullScreen != fullScreen) {
+			GraphicsDevice foundDevice = getGraphicsDevice();
+			if (foundDevice != null) {
+				// disable toggling for now.. re-enable when DSJ fires ENTER_FS or EXIT_FS
+				setToggleFullScreenEnabled(false);
+				if (fullScreen) {
+					getFiltergraph().goFullScreen(foundDevice, 1);
+					// TODO install a PCE to listen for ENTER_FS and EXIT_FS
+					getFullscreenFrame().setTitle(getTitle());
+					getFullscreenFrame().setName(getTitle());
+				} else {
+					getFiltergraph().leaveFullScreen();
+					// TODO this should be done by capturing the PCE from the filtergraph
+				}
+				setToggleFullScreenEnabled(true);
+				firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
+			}
+		}
 	}
 
 	public void toFront() {
@@ -195,15 +215,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		}
 	}
 
-	@Action(selectedProperty = VISIBLE)
-	public void toggleVisibility(ActionEvent event) {
-		// just leave this empty, selected property will be called..
-		if (isFullScreen() && getFullscreenFrame() != null) {
-			// setVisibility will be called first, as it is the selectedProperty for this Action
-			getFullscreenFrame().setVisible(isVisible());
-		}
-	}
-	
 	public Integer getMonitorId() {
 		return monitorId;
 	}
@@ -214,6 +225,10 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public boolean isToggleFullScreenEnabled() {
 		return true;
+	}
+	
+	public void setToggleFullScreenEnabled(boolean toggleFullScreenEnabled) {
+		firePropertyChange(TOGGLE_FULL_SCREEN_ENABLED, this.toggleFullScreenEnabled, this.toggleFullScreenEnabled = toggleFullScreenEnabled);
 	}
 
 	private GraphicsDevice getGraphicsDevice() {
@@ -228,25 +243,23 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
-	public void toggleFullScreen() {
-		GraphicsDevice foundDevice = getGraphicsDevice();
-		if (foundDevice != null) {
-			// disable toggling for now.. re-enable when DSJ fires ENTER_FS or EXIT_FS
-			setFullScreenEnabled(false);
-			// setFullScreen will be called first, as it is the selected property for this action!
-			if (!fullScreen) {
-				getFiltergraph().goFullScreen(foundDevice, 1);
-				// TODO install a PCE to listen for ENTER_FS and EXIT_FS
-				setFullScreen(true);
-				getFullscreenFrame().setTitle(getTitle());
-				getFullscreenFrame().setName(getTitle());
-			} else {
-				getFiltergraph().leaveFullScreen();
-				// TODO this should be done by capturing the PCE from the filtergraph
-				setFullScreen(false);
-			}
+	public void toggleFullScreen(ActionEvent event) {
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			setFullScreen(source.isSelected());
 		}
 	}
+	
+	@Action(selectedProperty = VISIBLE)
+	public void toggleVisibility(ActionEvent event) {
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			setVisible(source.isSelected());
+		}
+	}
+	
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		// FIXME this is not properly triggered yet
@@ -258,11 +271,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 			if (eventType == DSFiltergraph.ENTER_FS) {
 				setFullScreen(true);
 				getLogger().debug("Fullscreen mode entered for " + getTitle());
-				setFullScreenEnabled(true);
+				setToggleFullScreenEnabled(true);
 			} else if (eventType == DSFiltergraph.EXIT_FS) {
 				setFullScreen(false);
 				getLogger().debug("Fullscreen mode exited for " + getTitle());
-				setFullScreenEnabled(true);
+				setToggleFullScreenEnabled(true);
 			}
 		//}
 	}

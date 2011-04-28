@@ -3,16 +3,12 @@ package com.runwalk.video.ui;
 import java.awt.Component;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 
@@ -113,7 +109,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 					Integer monitorId = fsVideoImpl.getMonitorId();
 					// go fullscreen if monitorId not on the default screen
 					if (monitorId != null && monitorId != getDefaultMonitorId()) {
-						fsVideoImpl.toggleFullScreen();
+						fsVideoImpl.setFullScreen(true);
 						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
 					} else if (isContainable) {
 						addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
@@ -136,7 +132,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 	
 	private void addWindow(Containable containable, ApplicationActionMap actionMap) {
-		AppInternalFrame selfContainedImpl = createInternalFrame(containable.getComponent(), containable.getTitle());
+		AppInternalFrame selfContainedImpl = createInternalFrame(containable);
 		// reeds bestaande actions in action map delegeren naar die van selfContainedImpl
 		setActionProxy(actionMap, TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
 		setActionProxy(actionMap, TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
@@ -174,9 +170,9 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		return getDecoratingComponent(SelfContained.class, containable);
 	}
 
-	private AppInternalFrame createInternalFrame(Component component, String title) {
-		AppInternalFrame internalFrame = new AppInternalFrame(title, true);
-		internalFrame.add(component);
+	private AppInternalFrame createInternalFrame(Containable containable) {
+		AppInternalFrame internalFrame = new AppInternalFrame(containable.getTitle(), containable.isResizable());
+		internalFrame.add(containable.getComponent());
 		internalFrame.pack();
 		getPane().add(internalFrame);
 		// TODO toggle enabled state of button in docking framework
@@ -246,14 +242,22 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
 			if (evt.getSource() instanceof Containable) {
 				Containable containable = (Containable) evt.getSource();
-				// go back to windowed mode
 				Boolean newValue = (Boolean) evt.getNewValue();
+				AppInternalFrame selfContainedImpl;
 				if (newValue == Boolean.FALSE) {
-					AppInternalFrame selfContainedImpl = createInternalFrame(containable.getComponent(), containable.getTitle());
+					// go back to windowed mode
+					selfContainedImpl = createInternalFrame(containable);
 					// handle SelfContained action proxy's..
 					setActionProxy(containable.getApplicationActionMap(), TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
 					setActionProxy(containable.getApplicationActionMap(), TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
 					showWindow(selfContainedImpl);
+				} else {
+					selfContainedImpl = getDecoratingComponent(AppInternalFrame.class, containable);
+					// remove wrapping container and dispose
+					if (selfContainedImpl != null) {
+						getPane().remove(selfContainedImpl);
+						selfContainedImpl.dispose();
+					}
 				}
 			}
 		}
