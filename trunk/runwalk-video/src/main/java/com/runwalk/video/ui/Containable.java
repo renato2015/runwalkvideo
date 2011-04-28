@@ -11,6 +11,8 @@ public interface Containable extends WindowConstants {
 	 */
 	Component getComponent();
 	
+	boolean isResizable();
+	
 	String getTitle();
 
 }

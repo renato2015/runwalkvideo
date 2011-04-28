@@ -1,5 +1,7 @@
 package com.runwalk.video.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -62,6 +64,7 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 			return result;
 		}
 		case 6: {
+			// FIXME could be a possible memory leak..
 			JButton button = new JButton("open");
 			button.setFont(AppSettings.MAIN_FONT);
 			button.addMouseListener(new MouseAdapter() {

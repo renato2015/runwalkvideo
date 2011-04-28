@@ -3,6 +3,8 @@ package com.runwalk.video.ui;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -146,9 +148,19 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		Object selectedKey = action.getValue(Action.SELECTED_KEY);
 		if (selectedKey != null) {
 			result = new JCheckBoxMenuItem(action);
+			result.addPropertyChangeListener(new PropertyChangeListener() {
+
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					// TODO Auto-generated method stub
+				}
+				
+			});
 			if (action instanceof ApplicationAction) {
 				ApplicationAction applicationAction = (ApplicationAction) action;
-				applicationAction.setProxySource(result);
+				if (applicationAction.getProxy() != null) {
+					applicationAction.setProxySource(result);
+				}
 			}
 		} else {
 			result = new JMenuItem(action);

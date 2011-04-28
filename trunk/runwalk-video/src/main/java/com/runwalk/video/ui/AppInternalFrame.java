@@ -6,8 +6,6 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.JInternalFrame;
@@ -19,13 +17,15 @@ import org.jdesktop.application.session.WindowState;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**
- * An abstract class that can be inherited to create an in application frame.
+ * An class that can be used to wrap classes that implement the {@link Containable} interface.
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class AppInternalFrame extends BaseInternalFrame implements ComponentListener, SelfContained {
-	
-	private boolean visible = true;
+public class AppInternalFrame extends BaseInternalFrame implements SelfContained {
+	/**
+	 * Initially all internal frames will not be visible
+	 */
+	private boolean visible = false;
 	
 	/**
 	 * Create a new JInternalFrame.
@@ -37,13 +37,6 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 		setName(title);
 		setDefaultCloseOperation(BaseInternalFrame.HIDE_ON_CLOSE);
 		setResizable(resizable);
-		addComponentListener(this);
-	}
-	
-	@Override
-	public void dispose() {
-		removeComponentListener(this);
-		super.dispose();
 	}
 	
 	@Action(selectedProperty = VISIBLE)
@@ -61,18 +54,6 @@ public class AppInternalFrame extends BaseInternalFrame implements ComponentList
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 		super.setVisible(visible);
 	}
-	
-	public void componentShown(ComponentEvent e) {
-		setVisible(e.getComponent().isVisible());
-	}
-
-	public void componentHidden(ComponentEvent e) {
-		setVisible(e.getComponent().isVisible());
-	}
-
-	public void componentResized(ComponentEvent e) { }
-
-	public void componentMoved(ComponentEvent e) { }
 
 	public static class InternalFrameState extends WindowState {
 
