@@ -62,6 +62,7 @@ import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.Containable;
+import com.runwalk.video.ui.FullScreenSupport;
 import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -502,8 +503,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					File videoFile = getVideoFileManager().getVideoFile(recording);
 					if (recordingCount < getPlayers().size()) {
 						player = getPlayers().get(recordingCount);;
-						player.loadVideo(recording, videoFile.getAbsolutePath());
-//						getWindowManager().setTitle(player, )
+						if (player.loadVideo(recording, videoFile.getAbsolutePath())) {
+							//getWindowManager().disposeWindow(player);
+							//getWindowManager().addWindow(player);
+							IVideoPlayer videoImpl = player.getVideoImpl();
+							((FullScreenSupport) videoImpl).setFullScreen(true);
+						}
+						// if loading fails, rebuild and show again
 						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 						setSliderLabels(recording);
 					} else {
@@ -525,11 +531,12 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			}
 		}
 		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
-		// show black overlay for players that don't show any opened files
-		for (int i = recordingCount; i < getPlayers().size(); i++) {
+		// show black overlay for players that don't show any opened file
+		// TODO check whether this is needed??
+		/*for (int i = recordingCount; i < getPlayers().size(); i++) {
 			VideoPlayer videoPlayer = getPlayers().get(i);
 			videoPlayer.setBlackOverlayImage();
-		}
+		}*/
 		setSliderPosition(0);
 	}
 

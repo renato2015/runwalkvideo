@@ -43,6 +43,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		} catch(DSJException e) {
 			rebuilt = true;
 			getLogger().error("Recording initialization failed.", e);
+			// TODO clean this up.. should be done better
 			dispose();
 			initFiltergraph(path, flags, listener);
 		} 
