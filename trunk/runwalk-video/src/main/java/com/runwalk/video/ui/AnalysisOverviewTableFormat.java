@@ -5,7 +5,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Action;
 import javax.swing.JButton;
+
+import org.jdesktop.application.ActionManager;
 
 import ca.odell.glazedlists.gui.TableFormat;
 
@@ -69,7 +72,9 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 			button.setFont(AppSettings.MAIN_FONT);
 			button.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					getMediaControls().openRecordings(analysis);
+					//getMediaControls().openRecordings(analysis);
+					Action action = getMediaControls().getAction(MediaControls.OPEN_RECORDINGS_ACTION);
+    				ActionManager.invokeAction(action, getMediaControls());
 				}
 			});
 			button.setEnabled(analysis.isRecorded());
