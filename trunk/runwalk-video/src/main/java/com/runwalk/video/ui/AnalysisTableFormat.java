@@ -3,7 +3,10 @@ package com.runwalk.video.ui;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Action;
 import javax.swing.JButton;
+
+import org.jdesktop.application.ActionManager;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
@@ -17,9 +20,13 @@ import com.runwalk.video.util.AppSettings;
 public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 	
 	private final MediaControls mediaControls;
+	
+	private final JButton openRecordingsButton;
 
 	public AnalysisTableFormat(MediaControls mediaControls) {
 		this.mediaControls = mediaControls;
+		openRecordingsButton = new JButton("open");
+		openRecordingsButton.setFont(AppSettings.MAIN_FONT);
 	}
 	
 	public int getColumnCount() {
@@ -53,7 +60,9 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
     		button.setFont(AppSettings.MAIN_FONT);
     		button.addMouseListener(new MouseAdapter() {
     			public void mouseClicked(MouseEvent e) {
-					getMediaControls().openRecordings(analysis);
+					//getMediaControls().openRecordings(analysis);
+    				Action action = getMediaControls().getAction(MediaControls.OPEN_RECORDINGS_ACTION);
+    				ActionManager.invokeAction(action, getMediaControls());
     			}
     		});
     		button.setEnabled(analysis.isRecorded());

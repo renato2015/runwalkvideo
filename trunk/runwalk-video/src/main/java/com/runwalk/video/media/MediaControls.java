@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -494,50 +495,63 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		getApplication().showMessage("Afspelen gestopt.");
 	}
 
-	public void openRecordings(final Analysis analysis) {
-		int recordingCount = 0;
-		for (Recording recording : analysis.getRecordings()) {
-			if (recording.isRecorded()) {
-				VideoPlayer player = null;
-				try {
-					File videoFile = getVideoFileManager().getVideoFile(recording);
-					if (recordingCount < getPlayers().size()) {
-						player = getPlayers().get(recordingCount);;
-						if (player.loadVideo(recording, videoFile.getAbsolutePath())) {
-							//getWindowManager().disposeWindow(player);
-							//getWindowManager().addWindow(player);
-							IVideoPlayer videoImpl = player.getVideoImpl();
-							((FullScreenSupport) videoImpl).setFullScreen(true);
+	@Action(block=BlockingScope.APPLICATION)
+	public Task<Void, Void> openRecordings() {
+		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				message("startMessage");
+				int recordingCount = 0;
+				final Analysis analysis = getAnalysisTablePanel().getSelectedItem();
+				for (Recording recording : analysis.getRecordings()) {
+					if (recording.isRecorded()) {
+						VideoPlayer player = null;
+						try {
+							File videoFile = getVideoFileManager().getVideoFile(recording);
+							if (recordingCount < getPlayers().size()) {
+								player = getPlayers().get(recordingCount);;
+								// TODO quick and dirty fix for graph rebuilding here..
+								if (player.loadVideo(recording, videoFile.getAbsolutePath())) {
+									//getWindowManager().disposeWindow(player);
+									//getWindowManager().addWindow(player);
+									IVideoPlayer videoImpl = player.getVideoImpl();
+									((FullScreenSupport) videoImpl).setFullScreen(true);
+								}
+								// if loading fails, rebuild and show again
+								getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
+								setSliderLabels(recording);
+							} else {
+								float playRate = getAppSettings().getPlayRate();
+								player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+								player.addPropertyChangeListener(MediaControls.this);
+								videoComponents.add(player);
+								getWindowManager().addWindow(player);
+							} 
+							recordingCount++;
+							getWindowManager().toFront(player);
+						} catch (Exception e) {
+							JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(MediaControls.this),
+									"De opname die u probeerde te openen kon niet worden gevonden",
+									"Fout bij openen opname",
+									JOptionPane.ERROR_MESSAGE);
+							getLogger().error(e);
 						}
-						// if loading fails, rebuild and show again
-						getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
-						setSliderLabels(recording);
-					} else {
-						float playRate = getAppSettings().getPlayRate();
-						player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
-						player.addPropertyChangeListener(this);
-						videoComponents.add(player);
-						getWindowManager().addWindow(player);
-					} 
-					recordingCount++;
-					getWindowManager().toFront(player);
-				} catch (Exception e) {
-					JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this),
-							"De opname die u probeerde te openen kon niet worden gevonden",
-							"Fout bij openen opname",
-							JOptionPane.ERROR_MESSAGE);
-					getLogger().error(e);
+					}
 				}
+				getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
+				message("endMessage", recordingCount, analysis);
+				// show black overlay for players that don't show any opened file
+				// TODO check whether this is needed??
+				/*for (int i = recordingCount; i < getPlayers().size(); i++) {
+					VideoPlayer videoPlayer = getPlayers().get(i);
+					videoPlayer.setBlackOverlayImage();
+				}*/
+				setSliderPosition(0);
+				return null;
 			}
-		}
-		getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis.toString());
-		// show black overlay for players that don't show any opened file
-		// TODO check whether this is needed??
-		/*for (int i = recordingCount; i < getPlayers().size(); i++) {
-			VideoPlayer videoPlayer = getPlayers().get(i);
-			videoPlayer.setBlackOverlayImage();
-		}*/
-		setSliderPosition(0);
+			
+		};
+		
 	}
 
 	private Hashtable<Integer, JLabel> createLabelTable() {

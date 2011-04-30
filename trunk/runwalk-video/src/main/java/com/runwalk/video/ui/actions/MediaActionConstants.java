@@ -27,5 +27,8 @@ public interface MediaActionConstants {
 	String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
 	
 	String DISPOSE_VIDEO_COMPONENTS_ACTION = "disposeVideoComponents";
+	
+	String OPEN_RECORDINGS_ACTION = "openRecordings";
+
 
 }
