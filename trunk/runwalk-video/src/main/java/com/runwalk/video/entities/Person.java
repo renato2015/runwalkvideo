@@ -29,10 +29,6 @@ public abstract class Person extends SerializableEntity<Person> {
 	public static final String PERSON_ID = "person_id";
 	public static final String TYPE = "type";
 	
-	public static enum PersonType {
-		CUSTOMER, EMPLOYEE, SUPPLIER;
-	}
-	
 	@Column(name = NAME)
 	private String name;
 	@Column(name = FIRSTNAME)
@@ -162,6 +158,10 @@ public abstract class Person extends SerializableEntity<Person> {
 	 */
 	public enum Gender {
 		FEMALE, MALE;
+	}
+	
+	public enum PersonType {
+		CUSTOMER, EMPLOYEE, SUPPLIER;
 	}
 
 }

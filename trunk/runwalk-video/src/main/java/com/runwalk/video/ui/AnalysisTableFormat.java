@@ -1,5 +1,7 @@
 package com.runwalk.video.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -14,17 +16,16 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 
 public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 	
-	private final MediaControls mediaControls;
+	private final Action openRecordingsAction;
 	
 	private final JButton openRecordingsButton;
 
-	public AnalysisTableFormat(MediaControls mediaControls) {
-		this.mediaControls = mediaControls;
+	public AnalysisTableFormat(Action openRecordingsAction) {
+		this.openRecordingsAction = openRecordingsAction;
 		openRecordingsButton = new JButton("open");
 		openRecordingsButton.setFont(AppSettings.MAIN_FONT);
 	}
@@ -56,13 +57,19 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		}
 		case 3: return recordingNotNull ? recording.getDuration() : 0L;
 		case 4: {
-			JButton button = new JButton("open");
+			final JButton button = new JButton("open");
     		button.setFont(AppSettings.MAIN_FONT);
+    		button.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+    			
+    		});
     		button.addMouseListener(new MouseAdapter() {
     			public void mouseClicked(MouseEvent e) {
-					//getMediaControls().openRecordings(analysis);
-    				Action action = getMediaControls().getAction(MediaControls.OPEN_RECORDINGS_ACTION);
-    				ActionManager.invokeAction(action, getMediaControls());
+    				ActionManager.invokeAction(getOpenRecordingsAction(), button);
     			}
     		});
     		button.setEnabled(analysis.isRecorded());
@@ -83,7 +90,7 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		return analysis;
 	}
 	
-	private MediaControls getMediaControls() {
-		return mediaControls;
+	private Action getOpenRecordingsAction() {
+		return openRecordingsAction;
 	}
 }

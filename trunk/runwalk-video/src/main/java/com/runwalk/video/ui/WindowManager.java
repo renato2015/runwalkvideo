@@ -16,7 +16,6 @@ import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 
 import com.runwalk.video.media.IVideoComponent;
-import com.runwalk.video.media.IVideoPlayer;
 import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;
 import com.runwalk.video.media.VideoComponent.State;
@@ -84,17 +83,22 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		this.pane = pane;
 	}
 	
-	public void addWindow(VideoPlayer videoPlayer) {
-		IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
+	public void addWindow(VideoComponent videoComponent) {
+		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		Integer monitorId = null;
 		if (videoImpl instanceof SelfContained) {
 			// set a monitor id here, as we cannot let the user select it himself
-			int monitorId = getDefaultMonitorId(videoPlayer);
-			((SelfContained) videoImpl).setMonitorId(monitorId);			
+			SelfContained selfContained = (SelfContained) videoImpl;
+			monitorId = selfContained.getMonitorId();
+			if (monitorId == null) {
+				monitorId = getDefaultMonitorId(getMonitorCount(), videoComponent.getComponentId());
+				selfContained.setMonitorId(monitorId);
+			}
 		}
-		addWindow((VideoComponent) videoPlayer);
+		addWindow(videoComponent, monitorId);
 	}
 
-	public void addWindow(VideoComponent videoComponent) {
+	public void addWindow(VideoComponent videoComponent, Integer monitorId) {
 		// FIXME can be null here
 		videoComponent.addPropertyChangeListener(this);
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
@@ -107,7 +111,6 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				FullScreenSupport fsVideoImpl = (FullScreenSupport) videoImpl;
 				boolean toggleFullScreenEnabled = fsVideoImpl.isToggleFullScreenEnabled();
 				if (toggleFullScreenEnabled && !fsVideoImpl.isFullScreen()) {
-					Integer monitorId = fsVideoImpl.getMonitorId();
 					// go fullscreen if monitorId not on the default screen
 					if (monitorId != null && monitorId != getDefaultMonitorId()) {
 						fsVideoImpl.setFullScreen(true);
@@ -208,7 +211,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			VideoComponent.State newState = (State) evt.getNewValue();
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
 				VideoComponent videoComponent = (VideoComponent) evt.getSource();
-				getMenuBar().removeMenu(videoComponent.getTitle());
+				getMenuBar().removeMenu(videoComponent.getVideoImpl().getTitle());
 				videoComponent.removePropertyChangeListener(this);
 				disposeWindow(videoComponent);
 			}
@@ -227,7 +230,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 					// remove wrapping container and dispose
 					disposeWindow(selfContainedImpl);
 				}
-				// change action proxy sources as the selfcontained wrapper has been changed
+				// TODO change action proxy sources as the selfcontained wrapper has been changed
 				//setActionProxy(containable.getApplicationActionMap(), TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
 				//setActionProxy(containable.getApplicationActionMap(), TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
 			}
@@ -314,7 +317,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	public boolean isToggleFullScreenEnabled(VideoComponent videoComponent) {
-		boolean result = getMonitorCount() > 1 && videoComponent.isIdle();
+		boolean result = getMonitorCount() > 1 && videoComponent.isIdle() && videoComponent.isActive();
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
 		if (videoImpl instanceof FullScreenSupport) {
 			FullScreenSupport selfContainedImpl = (FullScreenSupport) videoComponent.getVideoImpl();

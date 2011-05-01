@@ -110,7 +110,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 	public void about() {
 		Window parent = SwingUtilities.windowForComponent(this);
 		if (aboutBox == null) {
-			aboutBox = new RunwalkVideoAboutDialog(parent);
+			aboutBox = new AboutDialog(parent);
 		}
 		aboutBox.setLocationRelativeTo(parent);
 		// FIXME should use the windowmanager to show the dialog box here!!
@@ -148,14 +148,6 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		Object selectedKey = action.getValue(Action.SELECTED_KEY);
 		if (selectedKey != null) {
 			result = new JCheckBoxMenuItem(action);
-			result.addPropertyChangeListener(new PropertyChangeListener() {
-
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					// TODO Auto-generated method stub
-				}
-				
-			});
 			if (action instanceof ApplicationAction) {
 				ApplicationAction applicationAction = (ApplicationAction) action;
 				if (applicationAction.getProxy() != null) {

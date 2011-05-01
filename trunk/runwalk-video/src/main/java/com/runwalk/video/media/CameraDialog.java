@@ -136,9 +136,9 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		if (actionMap != null) {
 			final javax.swing.Action action = actionMap.get(actionName);
 			if (action != null) {
-				JButton chooseCapturerSettings = new JButton(action);
+				JButton button = new JButton(action);
 				String wrapButton = wrap ? ", wrap" : "";
-				add(chooseCapturerSettings, "align right, grow" + wrapButton);
+				add(button, "align right, grow" + wrapButton);
 			}
 		}
 	}

@@ -33,7 +33,9 @@ public class CheckFreeDiskSpaceTask extends AbstractTask<Long, Void> {
 	protected Long doInBackground() throws Exception {
 		message("startMessage");
 		String recordingPath = getVideoFileManager().getUncompressedVideoDir().getAbsolutePath();
-		return FileSystemUtils.freeSpaceKb(recordingPath) / 1024;
+		long result = FileSystemUtils.freeSpaceKb(recordingPath) / 1024;
+		message("endMessage", result);
+		return result;
 	}
 
 	@Override

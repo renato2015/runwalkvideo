@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.TreeSet;
 
+import javax.swing.AbstractButton;
 import javax.swing.Timer;
 
 import org.jdesktop.application.Action;
@@ -29,11 +30,11 @@ public class VideoPlayer extends VideoComponent {
 	private static int playerCount = 0;
 
 	private int position;
-	
+
 	private float volume;
-	
+
 	private IVideoPlayer playerImpl;
-	
+
 	public static VideoPlayer createInstance(String path, float playRate) {
 		return createInstance(null, path, playRate);
 	}
@@ -53,7 +54,7 @@ public class VideoPlayer extends VideoComponent {
 		}
 		return new VideoPlayer(recording, path, result);
 	}
-	
+
 	private VideoPlayer(Recording recording, String path, IVideoPlayer playerImpl) {
 		super(playerCount);
 		this.playerImpl = playerImpl;
@@ -71,18 +72,18 @@ public class VideoPlayer extends VideoComponent {
 	public boolean loadVideo(Recording recording, String path) {
 		setRecording(recording);
 		boolean result = getVideoImpl().loadVideo(path);
-			// TODO fix this, hardcoded to zeroth monitor
-			// showComponent(true, 0);
+		// TODO fix this, hardcoded to zeroth monitor
+		// showComponent(true, 0);
 		setPosition(0);
 		return result;
 	}
-	
+
 	public void pause() {
 		setState(State.IDLE);
 		getVideoImpl().pause();
 		getTimer().stop();
 	}
-	
+
 	public void play() {
 		setState(State.PLAYING);
 		// clear all previously drawn overlays
@@ -101,7 +102,7 @@ public class VideoPlayer extends VideoComponent {
 		setPosition(0);
 		getVideoImpl().stop();
 	}
-	
+
 	private void clearOverlayImage() {
 		if (isOverlayed()) {
 			getVideoImpl().setOverlayImage(null, Color.white);
@@ -141,7 +142,7 @@ public class VideoPlayer extends VideoComponent {
 		}
 		return playRate;
 	}
-	
+
 	public float getPlayRate() {
 		return getVideoImpl().getPlayRate();
 	}
@@ -150,7 +151,7 @@ public class VideoPlayer extends VideoComponent {
 		getVideoImpl().startRunning();
 		getVideoImpl().setPlayRate(rate);
 	}
-	
+
 	public void pauseIfPlaying() {
 		if (isPlaying()) {
 			pause();
@@ -189,7 +190,7 @@ public class VideoPlayer extends VideoComponent {
 		getLogger().debug("Final position: " + position);
 		return position;
 	}
-	
+
 	public void increaseVolume() {
 		getVideoImpl().setVolume(1.25f * getVideoImpl().getVolume());
 	}
@@ -197,23 +198,26 @@ public class VideoPlayer extends VideoComponent {
 	public void decreaseVolume() {
 		getVideoImpl().setVolume( getVideoImpl().getVolume() / 1.25f);
 	}
-	
-	public void setMuted(boolean muted) {
-		firePropertyChange(MUTED, isMuted(), muted);
-	}
 
-	@Action(enabledProperty = MUTED)
-	public void mute() {
-		if (isMuted()) {
-			volume = getVideoImpl().getVolume();
-			getVideoImpl().setVolume(0f);
-		} else {
-			getVideoImpl().setVolume(volume);
-		}
-	}
-	
 	public boolean isMuted() {
 		return getVideoImpl().getVolume() > 0;
+	}
+
+	public void setMuted(boolean muted) {
+		boolean wasMuted = isMuted();
+		// save volume settings
+		volume = getVideoImpl().getVolume();
+		getVideoImpl().setVolume(muted ? 0f : volume);
+		firePropertyChange(MUTED, wasMuted, muted);
+	}
+
+	@Action(selectedProperty = MUTED)
+	public void toggleMuted(ActionEvent event) {
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			setMuted(source.isSelected());
+		}
 	}
 
 	public int getDuration() {
@@ -227,11 +231,11 @@ public class VideoPlayer extends VideoComponent {
 	public IVideoPlayer getVideoImpl() {
 		return playerImpl;
 	}
-	
+
 	public void setVideoImpl(IVideoPlayer playerImpl) {
 		this.playerImpl = playerImpl;
 	}
-	
+
 	@Override
 	public void dispose() {
 		super.dispose();
