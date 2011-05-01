@@ -4,7 +4,6 @@
 
 package com.runwalk.video.ui;
 
-import java.awt.Frame;
 import java.awt.Window;
 
 import javax.swing.JButton;
@@ -17,11 +16,11 @@ import org.jdesktop.application.Action;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class RunwalkVideoAboutDialog extends JDialog {
+public class AboutDialog extends JDialog {
 
     private JButton closeButton;
 	
-	public RunwalkVideoAboutDialog(Window parent) {
+	public AboutDialog(Window parent) {
         super(parent);
         initComponents();
         getRootPane().setDefaultButton(closeButton);

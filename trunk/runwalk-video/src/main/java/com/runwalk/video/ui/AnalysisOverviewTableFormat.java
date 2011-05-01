@@ -1,7 +1,5 @@
 package com.runwalk.video.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -16,16 +14,15 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.ResourceInjector;
 
 public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 	
-	private final MediaControls mediaControls;
+	private final Action openRecordingsAction;
 
-	public AnalysisOverviewTableFormat(MediaControls mediaControls) {
-		this.mediaControls = mediaControls;
+	public AnalysisOverviewTableFormat(Action openRecordingsAction) {
+		this.openRecordingsAction = openRecordingsAction;
 	}
 
 	public int getColumnCount() {
@@ -68,13 +65,11 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 		}
 		case 6: {
 			// FIXME could be a possible memory leak..
-			JButton button = new JButton("open");
+			final JButton button = new JButton("open");
 			button.setFont(AppSettings.MAIN_FONT);
 			button.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					//getMediaControls().openRecordings(analysis);
-					Action action = getMediaControls().getAction(MediaControls.OPEN_RECORDINGS_ACTION);
-    				ActionManager.invokeAction(action, getMediaControls());
+    				ActionManager.invokeAction(getOpenRecordingsAction(), button);
 				}
 			});
 			button.setEnabled(analysis.isRecorded());
@@ -84,8 +79,8 @@ public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
 		}
 	}
 	
-	private MediaControls getMediaControls() {
-		return mediaControls;
+	private Action getOpenRecordingsAction() {
+		return openRecordingsAction;
 	}
 
 }

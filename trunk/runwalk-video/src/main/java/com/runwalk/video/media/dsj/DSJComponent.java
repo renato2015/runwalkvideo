@@ -116,7 +116,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	//@Action
-	//TODO hier een actie van maken..
+	//TODO hier een actie van maken.. toon een input dialog of iets dergelijks
 	public void insertFilter(String name) {
 		DSFilterInfo filterinfo = DSFilterInfo.filterInfoForName(name);
 		if (getFiltergraph() != null) {

@@ -4,7 +4,7 @@ public interface MediaActionConstants {
 
 	// all variables declared here are automatically public static final
 	
-	String MUTE_ACTION = "mute";
+	String MUTED_ACTION = "toggleMuted";
 	
 	String TOGGLE_FULL_SCREEN_ACTION = "toggleFullScreen";
 	
@@ -16,9 +16,11 @@ public interface MediaActionConstants {
 	
 	String NEXT_KEYFRAME_ACTION = "nextKeyframe";
 	
+	String SLOWER_ACTION = "slower";
+	
 	String FASTER_ACTION = "faster";
 	
-	String TOGGLE_PLAY_ACTION = "togglePlay";
+	String TOGGLE_PLAY_ACTION = "togglePlaying";
 	
 	String STOP_ACTION = "stop";
 	
@@ -29,6 +31,7 @@ public interface MediaActionConstants {
 	String DISPOSE_VIDEO_COMPONENTS_ACTION = "disposeVideoComponents";
 	
 	String OPEN_RECORDINGS_ACTION = "openRecordings";
-
+	
+	String OPEN_RECORDING_ACTION = "openRecording";
 
 }

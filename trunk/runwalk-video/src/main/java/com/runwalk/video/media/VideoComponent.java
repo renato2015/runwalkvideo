@@ -118,10 +118,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	protected void setState(State state) {
 		firePropertyChange(STATE, this.state, this.state = state);
-		// full screen mode is enabled for this component if there are at least 2 monitors connected and the component is idle
-		//GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		//GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		//setFullScreenEnabled(isIdle() && graphicsDevices.length > 1);
 	}
 
 	public State getState() {
@@ -167,6 +163,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	/**
 	 * Merge the {@link ActionMap} of the implementation with the one of this instance..
+	 * TODO {@link ActionMap} hierarchy is not completely correct yet after merging
 	 */
 	public synchronized ApplicationActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
