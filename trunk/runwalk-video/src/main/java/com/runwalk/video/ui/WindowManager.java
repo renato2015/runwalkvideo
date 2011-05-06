@@ -105,6 +105,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		boolean isContainable = videoImpl instanceof Containable;
 		boolean isSelfContained = videoImpl instanceof SelfContained;
 		boolean isFullScreenSupported = videoImpl instanceof FullScreenSupport;
+		String title = videoComponent.getTitle();
 		if (isSelfContained) {
 			SelfContained selfContainedImpl = (SelfContained) videoImpl;
 			if (isFullScreenSupported) {
@@ -114,41 +115,41 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 					// go fullscreen if monitorId not on the default screen
 					if (monitorId != null && monitorId != getDefaultMonitorId()) {
 						fsVideoImpl.setFullScreen(true);
-						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap());
+						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap(), title);
 					} else if (isContainable) {
-						addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
+						addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
 					}
 				} else if (isContainable && !fsVideoImpl.isFullScreen()) {
-					addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
+					addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
 				}
 			}
 		} else if (isContainable) {
-			addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap());
+			addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
 		}
 	}
 
 	public void addWindow(SelfContained selfContained) {
-		addWindow(selfContained, selfContained.getApplicationActionMap());
+		addWindow(selfContained, selfContained.getApplicationActionMap(), selfContained.getTitle());
 	}
 
 	public void addWindow(Containable containable) {
-		addWindow(containable, containable.getApplicationActionMap());
+		addWindow(containable, containable.getApplicationActionMap(), containable.getTitle());
 	}
 	
-	private void addWindow(Containable containable, ApplicationActionMap actionMap) {
+	private void addWindow(Containable containable, ApplicationActionMap actionMap, String title) {
 		AppInternalFrame selfContainedImpl = createInternalFrame(containable);
 		// reeds bestaande actions in action map delegeren naar die van selfContainedImpl
 		setActionProxy(actionMap, TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
 		setActionProxy(actionMap, TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
-		addWindow(selfContainedImpl, actionMap);
+		addWindow(selfContainedImpl, actionMap, title);
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode
-	private void addWindow(final SelfContained selfContainedImpl, ActionMap actionMap) {
+	private void addWindow(final SelfContained selfContainedImpl, ActionMap actionMap, String title) {
 		//TODO enforce constraint here: should only be called once for each window
 		if (selfContainedImpl != null) {
 			selfContainedImpl.addPropertyChangeListener(this);		
-			getMenuBar().addMenu(selfContainedImpl.getTitle(), actionMap);
+			getMenuBar().addMenu(title, actionMap);
 			setWindowVisibility(selfContainedImpl, true);
 		}
 	}
@@ -211,7 +212,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			VideoComponent.State newState = (State) evt.getNewValue();
 			if (VideoComponent.State.DISPOSED.equals(newState)) {
 				VideoComponent videoComponent = (VideoComponent) evt.getSource();
-				getMenuBar().removeMenu(videoComponent.getVideoImpl().getTitle());
+				getMenuBar().removeMenu(videoComponent.getTitle());
 				videoComponent.removePropertyChangeListener(this);
 				disposeWindow(videoComponent);
 			}

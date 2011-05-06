@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ActionManager;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
@@ -107,6 +108,16 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 
+	/**
+	 * <code>true</code> if all of the active {@link VideoPlayer}s are in playback mode
+	 */
+	private boolean playing = false;
+
+	/**
+	 * <code>true</code> if all of the active {@link VideoPlayer}s are muting their sound
+	 */
+	private boolean muted  = false;
+
 	private RecordTask recordTask = null;
 
 	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
@@ -171,7 +182,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		createJButton(CREATE_KEYFRAME_ACTION); 
 		createJButton(DECREASE_VOLUME_ACTION); 
 		createJButton(INCREASE_VOLUME_ACTION); 
-		createJButton(MUTED_ACTION); 
+		createJButton(TOGGLE_MUTED_ACTION); 
 		createJButton(SHOW_CAPTURER_SETTINGS_ACTION); 
 		createJButton(SHOW_CAMERA_SETTINGS_ACTION); 
 		// TODO bring consistency in button behavior, toggle fullscreen for all active windows??
@@ -246,38 +257,34 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED, selectedProperty = PLAYING )
-	public Task<Void, Void> togglePlaying(ActionEvent event) {
-		// check if event is originating from a component that has selected state
-		if (event.getSource() instanceof AbstractButton) {
-			final AbstractButton source = (AbstractButton) event.getSource();
-			setPlaying(source.isSelected());
-		}
-		return null;
+	public Task<Void, Void> togglePlaying() {
+		return new AbstractTask<Void, Void>(TOGGLE_PLAY_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				for (VideoPlayer player : getPlayers()) {
+					if (playing) {
+						player.play();
+						setStopEnabled(true);
+						message("startMessage", player.getPlayRate());
+					} else {
+						player.pause();
+						message("endMessage");
+					}
+				}
+				return null;
+			}
+
+		};
+
 	}
 
 	public boolean isPlaying() {
-		boolean result = false;
-		for (VideoPlayer player : getPlayers()) {
-			result |= player.isPlaying();
-		}
-		return result;
+		return playing;
 	}
 
 	public void setPlaying(final boolean playing) {
-		boolean isPlaying = isPlaying();
-		if (isPlaying != playing) {
-			for (VideoPlayer player : getPlayers()) {
-				if (playing) {
-					player.play();
-					setStopEnabled(true);
-					// message("playingStarted", player.getPlayRate());
-				} else {
-					player.pause();
-					// message("playingPaused");
-				}
-			}
-			firePropertyChange(PLAYING, isPlaying, playing);
-		}
+		firePropertyChange(PLAYING, this.playing, this.playing = playing);
+
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
@@ -295,12 +302,17 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED, selectedProperty = MUTED)
-	public void toggleMuted(ActionEvent event) {
-		// check if event is originating from a component that has selected state
-		if (event.getSource() instanceof AbstractButton) {
-			AbstractButton source = (AbstractButton) event.getSource();
-			setMuted(source.isSelected());
-		}
+	public Task<Void, Void> toggleMuted() {
+		return new AbstractTask<Void, Void>(TOGGLE_MUTED_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				for (VideoPlayer player : getPlayers()) {
+					player.setMuted(isMuted());
+				}
+				return null;
+			}
+
+		};
 	}
 
 	/**
@@ -308,13 +320,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	 * @param muted set to <code>true</code> to mute 
 	 */
 	public void setMuted(boolean muted) {
-		boolean isMuted = isMuted();
-		if (isMuted != muted) {
-			for (VideoPlayer player : getPlayers()) {
-				player.setMuted(muted);
-			}
-			firePropertyChange(MUTED, isMuted, muted);
-		}
+		firePropertyChange(MUTED, this.muted, this.muted   = muted);
+
 	}
 
 	/**
@@ -330,10 +337,11 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void slower() {
+	public void slower(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				setPlaying(true);
+				setPlaying(!isPlaying());
+				ActionManager.invokeAction(getAction(TOGGLE_PLAY_ACTION), (Component) event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -344,10 +352,12 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void faster() {
+	public void faster(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				setPlaying(true);
+				setPlaying(!isPlaying());
+				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
+				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
 				float playRate = player.faster();
 				// save play rate to settings
@@ -356,7 +366,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			}
 		}
 	}
-	
+
 	@Action
 	public Task<VideoPlayer, Void> openRecording(javax.swing.Action action) {
 		Object value = action.getValue(javax.swing.Action.LONG_DESCRIPTION);
@@ -367,7 +377,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				message("startMessage", url);
 				return VideoPlayer.createInstance(url, 1.0f);
 			}
-			
+
 		};
 		result.addTaskListener(new TaskListener.Adapter<VideoPlayer, Void>() {
 
@@ -376,8 +386,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
 				getWindowManager().addWindow(videoPlayer, monitorId);
 			}
-			
-			
+
+
 		});
 		return result;
 	}
