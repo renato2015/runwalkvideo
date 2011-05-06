@@ -3,8 +3,6 @@ package com.runwalk.video.aspects;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.ActionMap;
-
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
@@ -31,7 +29,7 @@ public aspect AppComponentAspect {
 	public RunwalkVideoApp IAppComponent.getApplication() {
 		return RunwalkVideoApp.getApplication();
 	}
-
+	
 	public ApplicationContext IAppComponent.getContext() {
 		return getApplication().getContext();
 	}

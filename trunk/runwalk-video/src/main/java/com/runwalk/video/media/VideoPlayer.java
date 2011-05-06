@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.TreeSet;
 
-import javax.swing.AbstractButton;
 import javax.swing.Timer;
 
 import org.jdesktop.application.Action;
@@ -34,6 +33,8 @@ public class VideoPlayer extends VideoComponent {
 	private float volume;
 
 	private IVideoPlayer playerImpl;
+
+	private boolean muted = false;
 
 	public static VideoPlayer createInstance(String path, float playRate) {
 		return createInstance(null, path, playRate);
@@ -204,20 +205,14 @@ public class VideoPlayer extends VideoComponent {
 	}
 
 	public void setMuted(boolean muted) {
-		boolean wasMuted = isMuted();
-		// save volume settings
-		volume = getVideoImpl().getVolume();
-		getVideoImpl().setVolume(muted ? 0f : volume);
-		firePropertyChange(MUTED, wasMuted, muted);
+		firePropertyChange(MUTED, this.muted, this.muted = muted);
 	}
 
 	@Action(selectedProperty = MUTED)
-	public void toggleMuted(ActionEvent event) {
-		// check if event is originating from a component that has selected state
-		if (event.getSource() instanceof AbstractButton) {
-			AbstractButton source = (AbstractButton) event.getSource();
-			setMuted(source.isSelected());
-		}
+	public void toggleMuted() {
+		// save volume settings
+		volume = getVideoImpl().getVolume();
+		getVideoImpl().setVolume(isMuted() ? 0f : volume);
 	}
 
 	public int getDuration() {

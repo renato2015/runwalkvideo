@@ -4,8 +4,8 @@ public interface MediaActionConstants {
 
 	// all variables declared here are automatically public static final
 	
-	String MUTED_ACTION = "toggleMuted";
-	
+	String TOGGLE_MUTED_ACTION = "toggleMuted";
+	 
 	String TOGGLE_FULL_SCREEN_ACTION = "toggleFullScreen";
 	
 	String INCREASE_VOLUME_ACTION = "increaseVolume";

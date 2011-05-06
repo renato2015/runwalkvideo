@@ -1,9 +1,8 @@
 package com.runwalk.video.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.WeakReference;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -20,12 +19,12 @@ import com.runwalk.video.util.AppSettings;
 
 public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 	
-	private final Action openRecordingsAction;
+	private final WeakReference<Action> openRecordingsAction;
 	
 	private final JButton openRecordingsButton;
 
 	public AnalysisTableFormat(Action openRecordingsAction) {
-		this.openRecordingsAction = openRecordingsAction;
+		this.openRecordingsAction = new WeakReference<Action>(openRecordingsAction);
 		openRecordingsButton = new JButton("open");
 		openRecordingsButton.setFont(AppSettings.MAIN_FONT);
 	}
@@ -59,14 +58,6 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		case 4: {
 			final JButton button = new JButton("open");
     		button.setFont(AppSettings.MAIN_FONT);
-    		button.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-    			
-    		});
     		button.addMouseListener(new MouseAdapter() {
     			public void mouseClicked(MouseEvent e) {
     				ActionManager.invokeAction(getOpenRecordingsAction(), button);
@@ -91,6 +82,6 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 	}
 	
 	private Action getOpenRecordingsAction() {
-		return openRecordingsAction;
+		return openRecordingsAction.get();
 	}
 }

@@ -3,6 +3,7 @@ package com.runwalk.video;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.EventObject;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
@@ -156,10 +157,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		show(getMainFrame());
 	}
 	
-	/** {@inheritDoc} */
-	@Override 
-	protected void shutdown() {
-		super.shutdown();
+	@Override
+	public void exit(EventObject event) {
 		saveSettings();
 //		executeAction(getApplicationActionMap(), "uploadLogFiles");
 		executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
@@ -171,15 +170,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				executeAction(getClientTablePanel().getApplicationActionMap(), SAVE_ENTITIES_ACTION);
 			}
 		}
-		try {
-			LOGGER.debug("Awaiting taskservice termination...");
-			getContext().getTaskService().awaitTermination(2, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			LOGGER.error(e);
-		}
+		LOGGER.debug("Taskservice shutting down...");
+		getContext().getTaskService().shutdown();
 		getDaoService().shutdown();
+		super.exit(event);
 	}
-	
+
 	/*
 	 * Global application actions
 	 */
@@ -309,7 +305,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 */
 	public void executeAction(ActionMap actionMap, String actionKey) {
 		Action action = actionMap.get(actionKey);
-//		ActionManager.invokeAction(action, getMainFrame());
 		if (action != null) {
 			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
 			action.actionPerformed(actionEvent);
