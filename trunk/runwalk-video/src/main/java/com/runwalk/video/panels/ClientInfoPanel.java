@@ -128,8 +128,20 @@ public class ClientInfoPanel extends JPanel {
 		firstnameField.setFont(AppSettings.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
 
+		AbstractBindingListener valueBindingListener = new AbstractBindingListener() {
+
+			@Override
+			public void targetChanged(Binding binding, PropertyStateEvent event) {
+				if (null == event.getNewValue() || "".equals(event.getNewValue())) {
+					getLogger().debug("Value for " + binding.getName() + " set to null or empty!");
+				}
+			}
+			
+		};
+		
 		BeanProperty<ClientTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, firstname, firstnameField, TEXT);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, firstname, firstnameField, TEXT, "firstNameBinding");
+		valueBinding.addBindingListener(valueBindingListener);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, firstnameField, ENABLED);
@@ -140,7 +152,8 @@ public class ClientInfoPanel extends JPanel {
 		nameField.getDocument().addUndoableEditListener(undoListener);
 		nameField.setFont(AppSettings.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> name = BeanProperty.create("selectedItem.name");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, name, nameField, TEXT);
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, name, nameField, TEXT, "lastNameBinding");
+		valueBinding.addBindingListener(valueBindingListener);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 
 		bindingGroup.addBinding(valueBinding);
