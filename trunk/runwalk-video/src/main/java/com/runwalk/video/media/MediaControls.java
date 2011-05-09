@@ -602,8 +602,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(block=BlockingScope.APPLICATION)
-	public Task<Void, Void> openRecordings(final ActionEvent event) {
-		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
+	public Task<Void, VideoPlayer> openRecordings(final ActionEvent event) {
+		return new AbstractTask<Void, VideoPlayer>(OPEN_RECORDINGS_ACTION) {
 
 			protected Void doInBackground() throws Exception {
 				message("startMessage");
@@ -611,32 +611,40 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				// FIXME this will only work when an analysis is selected in the AnalysisTablePanel
 				final Analysis analysis = getAnalysisTablePanel().getSelectedItem();
 				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
-					Recording recording = analysis.getRecordings().get(i);
+					final Recording recording = analysis.getRecordings().get(i);
 					if (recording.isRecorded()) {
-						VideoPlayer player = null;
+						VideoPlayer videoPlayer = null;
 						try {
-							File videoFile = getVideoFileManager().getVideoFile(recording);
+							final File videoFile = getVideoFileManager().getVideoFile(recording);
 							if (recordingCount < getPlayers().size()) {
-								player = getPlayers().get(recordingCount);;
+								videoPlayer = getPlayers().get(recordingCount);;
 								// TODO quick and dirty fix for graph rebuilding here.. cleanup please
-								if (player.loadVideo(recording, videoFile.getAbsolutePath())) {
+								if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
 									//getWindowManager().disposeWindow(player);
 									//getWindowManager().addWindow(player);
-									IVideoPlayer videoImpl = player.getVideoImpl();
+									IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
 									((FullScreenSupport) videoImpl).setFullScreen(true);
 								}
 								// if loading fails, rebuild and show again
 								getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
 								setSliderLabels(recording);
 							} else {
-								float playRate = getAppSettings().getPlayRate();
-								player = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
-								player.addPropertyChangeListener(MediaControls.this);
-								videoComponents.add(player);
-								getWindowManager().addWindow(player);
+								final float playRate = getAppSettings().getPlayRate();
+								SwingUtilities.invokeLater(new Runnable() {
+
+									public void run() {
+										VideoPlayer videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+										videoPlayer.addPropertyChangeListener(MediaControls.this);
+										videoComponents.add(videoPlayer);
+										getWindowManager().addWindow(videoPlayer);
+										getWindowManager().toFront(videoPlayer);
+									}
+									
+									
+								});
 							} 
 							recordingCount++;
-							getWindowManager().toFront(player);
+							//publish(videoPlayer);
 						} catch (Exception e) {
 							JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(MediaControls.this),
 									"De opname die u probeerde te openen kon niet worden gevonden",
@@ -657,6 +665,15 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				setSliderPosition(0);
 				return null;
 			}
+
+			@Override
+			protected void process(List<VideoPlayer> videoPlayers) {
+				for (VideoPlayer videoPlayer : videoPlayers) {
+					getWindowManager().toFront(videoPlayer);
+				}
+				super.process(videoPlayers);
+			}
+			
 
 		};
 
