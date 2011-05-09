@@ -44,6 +44,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
 		cameraHandle = new IntByReference(cameraId);
+		aviHandle = new IntByReference(0);
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		LOGGER.debug("InitializeCamera result = " + result);
 		LOGGER.debug("Camera handle value = "  + cameraHandle.getValue());
@@ -93,7 +94,6 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public void startRecording(File destFile) {
-		aviHandle = new IntByReference(0);
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, destFile.getAbsolutePath(), 25);
 		System.out.println("startRecording result: "+ result);
 		
@@ -179,10 +179,6 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		return true;
 	}
 
-	public void setFullScreen(boolean fullScreen) {
-		throw new UnsupportedOperationException("not implemented");
-	}
-
 	public boolean isVisible() {
 		return true;
 	}
@@ -198,14 +194,6 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
 		// TODO call native lib to set visiblity here
-	}
-
-	public boolean isToggleFullScreenEnabled() {
-		return false;
-	}
-
-	public void toggleFullScreen() {
-		throw new UnsupportedOperationException("not implemented");
 	}
 
 	public void setMonitorId(Integer monitorId) {
