@@ -11,19 +11,22 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
+import com.sun.jna.Callback;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 
-class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
+public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 
@@ -34,6 +37,16 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	private IntByReference aviHandle;
 
 	private File settingsFile;
+	
+	/** This hook can be used by native code to call back into java */
+	private Callback callback = new OnWndShowCallback() {
+
+		public void invoke(final boolean visible) {
+			// FIXME callback currently causes a buffer overrun
+			UEyeCapturer.this.visible = visible;
+		}
+		
+	};
 
 	private Integer monitorId;
 	
@@ -59,6 +72,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		// set all handles to null
 		cameraHandle = null;
 		aviHandle = null;
+		callback = null;
 	}
 
 	public boolean isActive() {
@@ -74,7 +88,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 		LOGGER.debug("Opening camera " + getTitle());
 		String settingsFilePath = settingsFile == null ? "<default>" : settingsFile.getAbsolutePath();
 		IntByReference monitorId = new IntByReference(getMonitorId());
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), monitorId);
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), monitorId, callback);
 		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
 	}
@@ -180,7 +194,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public boolean isVisible() {
-		return true;
+		return visible;
 	}
 
 	public void setVisible(boolean visible) {
@@ -188,12 +202,12 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public void toFront() {
-		UEyeCapturerLibrary.CameraWndToFront(cameraHandle);
+		UEyeCapturerLibrary.WndToFront(cameraHandle);
 	}
 	
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
-		// TODO call native lib to set visiblity here
+		UEyeCapturerLibrary.SetWndVisibility(cameraHandle, isVisible());
 	}
 
 	public void setMonitorId(Integer monitorId) {
@@ -201,7 +215,7 @@ class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContain
 	}
 
 	public Integer getMonitorId() {
-		return monitorId;
+		return monitorId == null ? 0 : monitorId;
 	}
 
 	private void setRecording(boolean recording) {

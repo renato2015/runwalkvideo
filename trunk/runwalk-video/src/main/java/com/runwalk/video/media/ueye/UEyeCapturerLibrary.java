@@ -1,4 +1,5 @@
 package com.runwalk.video.media.ueye;
+import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.ptr.IntByReference;
@@ -34,7 +35,7 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	 */
 	public static native int InitializeCamera(IntByReference cameraHandle);
 	
-	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, final String windowName, IntByReference monitorId);
+	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, final String windowName, IntByReference monitorId, Callback onWndShowCallback);
 	
 	public static native int StopRunning(IntByReference cameraHandle);
 	
@@ -44,6 +45,16 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	
 	public static native LongByReference GetFrameDropInfo(int aviHandle);
 	
-	public static native void CameraWndToFront(IntByReference cameraHandle);
+	public static native void WndToFront(IntByReference cameraHandle);
+
+	public static native void SetWndVisibility(IntByReference cameraHandle, boolean visible);
 	
+	// Equivalent JNA mapping
+	/**
+	 * {@link Callback} interface used for syncing the {@link UEyeCapturer}'s visibility state
+	 */
+	public static interface OnWndShowCallback extends StdCallCallback  {
+		void invoke(boolean visible);
+	}
+		
 }

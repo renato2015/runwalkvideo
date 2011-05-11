@@ -122,6 +122,9 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				} else if (isContainable && !fsVideoImpl.isFullScreen()) {
 					addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
 				}
+			} else {
+				// TODO NPE at VideoComponent.java:188 when trying to use overloaded version with three args
+				addWindow(selfContainedImpl);
 			}
 		} else if (isContainable) {
 			addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);

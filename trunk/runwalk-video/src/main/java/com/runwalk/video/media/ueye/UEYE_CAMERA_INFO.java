@@ -60,7 +60,8 @@ public class UEYE_CAMERA_INFO extends Structure<UEYE_CAMERA_INFO, UEYE_CAMERA_IN
 	}
 	
 	public String getModelInfo() {
-		return Native.toString(Model);
+		byte[] modelClone = Model.clone();
+		return Native.toString(modelClone);
 	}
 	
 	protected ByReference newByReference() { return new ByReference(); }
