@@ -9,6 +9,7 @@ import com.runwalk.video.media.ueye.UEYE_CAMERA_INFO;
 import com.runwalk.video.media.ueye.UEYE_CAMERA_LIST;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
+import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Pointer;
@@ -41,7 +42,15 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId);
+		
+		UEyeCapturerLibrary.OnWndShowCallback onWndShowCallback = new UEyeCapturerLibrary.OnWndShowCallback() {
+			
+			public void invoke(boolean visible) {
+				System.out.println("Window visibility set to " + visible);
+			}
+			
+		};
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId, onWndShowCallback);
 		final IntByReference aviPointer = new IntByReference(0);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);

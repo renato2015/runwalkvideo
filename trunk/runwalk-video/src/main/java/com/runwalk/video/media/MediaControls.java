@@ -630,19 +630,12 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 								setSliderLabels(recording);
 							} else {
 								final float playRate = getAppSettings().getPlayRate();
-								SwingUtilities.invokeLater(new Runnable() {
-
-									public void run() {
-										VideoPlayer videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
-										videoPlayer.addPropertyChangeListener(MediaControls.this);
-										videoComponents.add(videoPlayer);
-										getWindowManager().addWindow(videoPlayer);
-										getWindowManager().toFront(videoPlayer);
-									}
-									
-									
-								});
+								videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+								videoPlayer.addPropertyChangeListener(MediaControls.this);
+								videoComponents.add(videoPlayer);
+								getWindowManager().addWindow(videoPlayer);
 							} 
+							getWindowManager().toFront(videoPlayer);
 							recordingCount++;
 							//publish(videoPlayer);
 						} catch (Exception e) {

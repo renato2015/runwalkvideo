@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractButton;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
@@ -155,7 +156,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public Component getComponent() {
 		return getFiltergraph().asComponent();
 	}
-	
+
 	public boolean isResizable() {
 		return true;
 	}
@@ -208,9 +209,15 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void toFront() {
-		if (getFullscreenFrame() != null) {
-			getFullscreenFrame().toFront();
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+
+			public void run() {
+				if (getFullscreenFrame() != null) {
+					getFullscreenFrame().toFront();
+				}
+			}
+		
+		});
 	}
 
 	public Integer getMonitorId() {
@@ -224,7 +231,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public boolean isToggleFullScreenEnabled() {
 		return true;
 	}
-	
+
 	public void setToggleFullScreenEnabled(boolean toggleFullScreenEnabled) {
 		firePropertyChange(TOGGLE_FULL_SCREEN_ENABLED, this.toggleFullScreenEnabled, this.toggleFullScreenEnabled = toggleFullScreenEnabled);
 	}
@@ -248,7 +255,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 			setFullScreen(source.isSelected());
 		}
 	}
-	
+
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
 		// check if event is originating from a component that has selected state
