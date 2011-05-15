@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
@@ -27,6 +26,8 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 
 public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
+
+	public static final String UEYE_SETTINGS_PROPERTY = "ueye_settings_file";
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 
@@ -86,11 +87,26 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	public void startRunning() {
 		LOGGER.debug("Opening camera " + getTitle());
-		String settingsFilePath = settingsFile == null ? "<default>" : settingsFile.getAbsolutePath();
 		IntByReference monitorId = new IntByReference(getMonitorId());
+		String settingsFilePath = getSettingsFilePath();
 		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), monitorId, callback);
 		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
+	}
+	
+	private String getSettingsFilePath() {
+		String result = "<default>";
+		if (settingsFile != null ) {
+			result = settingsFile.getAbsolutePath();
+		} else {
+			String settingsFilePathProperty = System.getProperty(UEYE_SETTINGS_PROPERTY);
+			if (settingsFilePathProperty != null) {
+				if (new File(settingsFilePathProperty).exists()) {
+					result = settingsFilePathProperty;
+				}
+			}
+		}
+		return result;
 	}
 
 	public void stopRunning() {
