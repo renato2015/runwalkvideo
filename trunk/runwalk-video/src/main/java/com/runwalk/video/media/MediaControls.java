@@ -235,11 +235,12 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return new AbstractTask<Void, Void>(DISPOSE_VIDEO_COMPONENTS_ACTION) {
 
 			protected Void doInBackground() throws Exception {
-				message("startMessage");
+				message("startMessage", videoComponents.size());
 				for (VideoComponent videoComponent : Lists.newArrayList(videoComponents)) {
 					getLogger().debug("Stopping video for " + videoComponent.getTitle());
 					videoComponent.dispose();
 				}
+				message("endMessage");
 				return null;
 			}
 

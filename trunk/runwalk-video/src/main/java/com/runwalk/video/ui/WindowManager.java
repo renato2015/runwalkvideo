@@ -153,11 +153,11 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		if (selfContainedImpl != null) {
 			selfContainedImpl.addPropertyChangeListener(this);		
 			getMenuBar().addMenu(title, actionMap);
-			setWindowVisibility(selfContainedImpl, true);
+			setVisible(selfContainedImpl, true);
 		}
 	}
 	
-	public void setWindowVisibility(SelfContained selfContained, boolean visible) {
+	public void setVisible(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
 	}
 
@@ -228,7 +228,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 					// go back to windowed mode
 					selfContainedImpl = createInternalFrame(containable);
 					// handle SelfContained action proxy's..
-					setWindowVisibility(selfContainedImpl, true);
+					setVisible(selfContainedImpl, true);
 				} else {
 					selfContainedImpl = getDecoratingComponent(AppInternalFrame.class, containable);
 					// remove wrapping container and dispose
