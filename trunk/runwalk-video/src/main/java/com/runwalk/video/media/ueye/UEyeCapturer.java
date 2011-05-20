@@ -43,8 +43,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	private Callback callback = new OnWndShowCallback() {
 
 		public void invoke(final boolean visible) {
-			// FIXME callback currently causes a buffer overrun
-			UEyeCapturer.this.visible = visible;
+			firePropertyChange(VISIBLE, UEyeCapturer.this.visible, UEyeCapturer.this.visible = visible);
 		}
 		
 	};
@@ -133,11 +132,12 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 				while(isRecording()) {
 					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviHandle.getValue());
 					Pointer p = frameDropInfo.getPointer();
-					System.out.println("captured: " + p.getInt(0) + 
+					LOGGER.debug("captured: " + p.getInt(0) + 
 							" dropped: "+ p.getInt(1));
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
+						
 						// FIXME dont swallow
 					}
 				}

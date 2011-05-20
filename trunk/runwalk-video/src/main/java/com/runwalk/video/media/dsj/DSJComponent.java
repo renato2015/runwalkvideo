@@ -165,12 +165,24 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return getFiltergraph().getFullScreenWindow();
 	}
 
-	public void setVisible(boolean visible) {
+	public void setVisible(final boolean visible) {
+		// TODO adhere a default way for invoking @Actions and their selectedProperties
 		if (this.visible != visible) {
 			// just leave this empty, selected property will be called..
 			if (isFullScreen() && getFullscreenFrame() != null) {
 				// setVisibility will be called first, as it is the selectedProperty for this Action
-				getFullscreenFrame().setVisible(visible);
+				//TODO EDT dispatching code can eventually be moved to an aspect
+				if (SwingUtilities.isEventDispatchThread()) {
+					getFullscreenFrame().setVisible(visible);
+				} else {
+					SwingUtilities.invokeLater(new Runnable() {
+
+						public void run() {
+							getFullscreenFrame().setVisible(visible);
+						}
+
+					});
+				}
 			}
 			firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 		}
@@ -194,6 +206,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 				if (fullScreen) {
 					getFiltergraph().goFullScreen(foundDevice, 1);
 					getFullscreenFrame().addComponentListener(this);
+					// TODO move this to EDT?
 					getFullscreenFrame().setTitle(getTitle());
 					getFullscreenFrame().setName(getTitle());
 				} else {
@@ -209,15 +222,23 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public void toFront() {
-		SwingUtilities.invokeLater(new Runnable() {
+		//TODO EDT dispatching code can eventually be moved to an aspect
+		if (getFullscreenFrame() != null) {
+			if (SwingUtilities.isEventDispatchThread()) {
+				getFullscreenFrame().toFront();
+				getFullscreenFrame().requestFocus();
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
 
-			public void run() {
-				if (getFullscreenFrame() != null) {
-					getFullscreenFrame().toFront();
-				}
+					public void run() {
+						getFullscreenFrame().toFront();
+						getFullscreenFrame().requestFocus();
+					}
+
+				});
+
 			}
-		
-		});
+		}
 	}
 
 	public Integer getMonitorId() {

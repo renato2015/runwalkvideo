@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.EventObject;
-import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -89,7 +88,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
-	
+
 	/*
 	 * Application lifecycle methods
 	 */
@@ -100,7 +99,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// load data from the db using the BSAF task mechanism
 		executeAction(getContext().getActionMap(), REFRESH_ACTION);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	protected void initialize(String[] args) {
@@ -138,7 +137,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
 		mediaControls = new MediaControls(AppSettings.getInstance(), getVideoFileManager(), 
-			windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		Action openRecordingsAction = getMediaControls().getAction(OPEN_RECORDINGS_ACTION);
@@ -156,56 +155,57 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// show the main frame, all its session settings from the last time will be restored
 		show(getMainFrame());
 	}
-	
+
+	@org.jdesktop.application.Action
+	public void exitApplication() {
+		exit();
+	}
+
 	@Override
 	public void exit(EventObject event) {
-		saveSettings();
-//		executeAction(getApplicationActionMap(), "uploadLogFiles");
-		executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
-		if (isSaveNeeded()) {
-			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
-					"Wilt u de gemaakte wijzigingen opslaan?", 
-					"Wijzingen bewaren..", JOptionPane.OK_CANCEL_OPTION);
-			if (result == JOptionPane.OK_OPTION) {
+		ResourceMap resourceMap = getContext().getResourceMap();
+		int result = JOptionPane.showConfirmDialog(getMainFrame(), 
+				resourceMap.getString("exitApplication.confirmDialog.text"), 
+				resourceMap.getString("exitApplication.Action.text"), JOptionPane.OK_CANCEL_OPTION);
+		if (result == JOptionPane.OK_OPTION) {
+			//executeAction(getApplicationActionMap(), "uploadLogFiles");
+			executeAction(getApplicationActionMap(), SAVE_SETTINGS_ACTION);
+			if (isSaveNeeded()) {
 				executeAction(getClientTablePanel().getApplicationActionMap(), SAVE_ENTITIES_ACTION);
 			}
+			executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
+			LOGGER.debug("Taskservice shutting down...");
+			getContext().getTaskService().shutdown();
+			getDaoService().shutdown();
+			super.exit(event);
 		}
-		LOGGER.debug("Taskservice shutting down...");
-		getContext().getTaskService().shutdown();
-		getDaoService().shutdown();
-		super.exit(event);
 	}
 
 	/*
 	 * Global application actions
 	 */
-	
+
 	@org.jdesktop.application.Action
 	public void saveSettings() {
 		AppSettings.getInstance().saveSettings();
 	}
-	
+
 	@org.jdesktop.application.Action
 	public Task<Long, Void> checkFreeDiskSpace() {
 		return new CheckFreeDiskSpaceTask(getMainFrame(), getVideoFileManager());
 	}
-	
+
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
 		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION));
 		return refreshTask;
 	}
-	
+
 	@org.jdesktop.application.Action
 	public Task<Void, Void> uploadLogFiles() {
 		AppSettings appSettings = AppSettings.getInstance();
 		return new UploadLogFilesTask(appSettings.getLogFile(), appSettings.getLogFileUploadUrl());
-	}
-	
-	@org.jdesktop.application.Action
-	public void exitApplication() {
-		exit();
 	}
 
 	private Containable createMainView() {
@@ -232,11 +232,11 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			public String getTitle() {
 				return "Klanten & Analyses";
 			}
-			
+
 			public boolean isResizable() {
 				return true;
 			}
-			
+
 		};
 	}
 
@@ -255,7 +255,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public VideoMenuBar getMenuBar() {
 		return menuBar;
 	}
-	
+
 	public JScrollableDesktopPane getScrollableDesktopPane() {
 		return scrollableDesktopPane;
 	}
@@ -295,7 +295,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	/*
 	 * Convenience methods
 	 */
-	
+
 	/**
 	 * This method will look for an {@link Action} specified with the given key in the given {@link ActionMap} 
 	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method.
