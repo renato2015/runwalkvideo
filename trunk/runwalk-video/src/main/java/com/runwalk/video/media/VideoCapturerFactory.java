@@ -37,6 +37,9 @@ public abstract class VideoCapturerFactory {
 	 * @return The {@link List} with available capturers
 	 */
 	public abstract Collection<String> getCapturerNames();
+	
+	//TODO this logic will probably be moved to some entity outside of this class
+	//protected abstract boolean isPlatformSupported(PlatformType platformType);
 
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -46,6 +49,7 @@ public abstract class VideoCapturerFactory {
 		if (factory == null) {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
+				// load factories using reflection??
 				String nativeCapturer = System.getProperty("native_capturer");
 				if (Boolean.TRUE.toString().equals(nativeCapturer)) {
 					factory = new UEyeCapturerFactory();
