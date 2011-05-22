@@ -341,8 +341,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void slower(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				setPlaying(!isPlaying());
-				ActionManager.invokeAction(getAction(TOGGLE_PLAY_ACTION), (Component) event.getSource());
+				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
+				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -356,7 +356,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void faster(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				setPlaying(!isPlaying());
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
 				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
@@ -790,6 +789,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private void enableVideoComponentControls(final String title) {
 		VideoComponent videoComponent = getWindowManager().findVideoComponent(videoComponents, title);
+		getLogger().debug("Focus requested for component " + (videoComponent == null ? "null" : videoComponent.getTitle()) +  "(title: " + title + ")");
 		enableVideoComponentControls(videoComponent);
 	}
 
