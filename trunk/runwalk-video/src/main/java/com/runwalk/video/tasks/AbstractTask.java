@@ -1,5 +1,8 @@
 package com.runwalk.video.tasks;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
@@ -31,6 +34,16 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
     		result = getResourceMap().getString(resourceName(string), args);
     	}
     	return result;
+	}
+	
+	@Override
+	protected void failed(Throwable throwable) {
+		super.failed(throwable);
+		JOptionPane.showMessageDialog(
+				null, 
+				throwable.getMessage(),
+				getResourceString(resourceName("errorMessage")), 
+				JOptionPane.ERROR_MESSAGE);
 	}
 
 	public Logger getLogger() {

@@ -3,6 +3,8 @@ package com.runwalk.video.media.ueye;
 import java.util.Collection;
 import java.util.Map;
 
+import org.jdesktop.application.utils.PlatformType;
+
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
@@ -19,6 +21,8 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 	 * a {@link Map} that holds a mapping which associates the name of a device with it's unique ID
 	 */
 	private Map<String, Integer> cameraNameIdMap;
+	
+	public UEyeCapturerFactory() { 	}
 
 	/**
 	 * {@inheritDoc}
@@ -43,6 +47,10 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 			cameraNameIdMap.put(cameraInfo.getModelInfo(), cameraInfo.dwCameraID);
 		}
 		return cameraNameIdMap.keySet();
+	}
+
+	protected boolean isPlatformSupported(PlatformType platformType) {
+		return platformType == PlatformType.WINDOWS;
 	}
 
 }

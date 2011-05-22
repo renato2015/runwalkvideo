@@ -212,7 +212,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
-	
+	// TODO should move this to AbstractTask
 	protected void showErrorDialog(String title, Throwable throwable) {
 		JOptionPane.showMessageDialog(
 				SwingUtilities.windowForComponent(this), 

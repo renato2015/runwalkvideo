@@ -3,6 +3,8 @@ package com.runwalk.video.media.dsj;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.jdesktop.application.utils.PlatformType;
+
 import com.google.common.collect.Lists;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
@@ -76,6 +78,10 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 			}
 		}
 		return result;
+	}
+
+	protected boolean isPlatformSupported(PlatformType platformType) {
+		return platformType == PlatformType.WINDOWS;
 	}
 
 }

@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.EventObject;
+import java.util.List;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -29,7 +30,9 @@ import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.media.CompositeVideoCapturerFactory;
 import com.runwalk.video.media.MediaControls;
+import com.runwalk.video.media.VideoCapturerFactory;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
@@ -136,6 +139,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
+	//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
+	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
 		mediaControls = new MediaControls(AppSettings.getInstance(), getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();

@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -60,37 +62,39 @@ public class AppSettings implements Serializable {
 		settings = new Settings();
 	}
 
-	public synchronized static AppSettings getInstance() {
+	public static AppSettings getInstance() {
 		return INSTANCE;
 	}
 
 	public void loadSettings() {
 		logger.debug("Initializing ApplicationSettings..");
 		File settingsFile = getSettingsFile();
-		try {
-			if (jaxbContext == null) {
-				logger.debug("Instantiating JAXB context..");
-				jaxbContext = JAXBContext.newInstance( Settings.class );
-			}
-			logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
-			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-			settings = (Settings) unmarshaller.unmarshal(settingsFile);
-		} catch(JAXBException jaxbExc) {
-			logger.error("Exception while instantiating JAXB context", jaxbExc);
-		} catch(Exception exc) {
-			logger.error("Exception thrown while loading settings from file " + settingsFile.getName(), exc);
-			if (exc.getMessage() != null) {
-				logger.error("Settings file " + settingsFile.getName() + " seems to be corrupt. Attempting to delete..", exc);
-				try {
-					ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
-					appContext.getLocalStorage().deleteFile(settingsFile.getName());
-					logger.warn("Settings file deleted. Default settings will be applied");
-				} catch (IOException e) {
-					logger.error("Removing corrupt settings file failed", e);
+		synchronized(this) {
+			try { 
+				if (jaxbContext == null) {
+					logger.debug("Instantiating JAXB context..");
+					jaxbContext = JAXBContext.newInstance( Settings.class );
 				}
+				logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
+				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+				settings = (Settings) unmarshaller.unmarshal(settingsFile);
+			} catch(JAXBException jaxbExc) {
+				logger.error("Exception while instantiating JAXB context", jaxbExc);
+			} catch(Exception exc) {
+				logger.error("Exception thrown while loading settings from file " + settingsFile.getName(), exc);
+				if (exc.getMessage() != null) {
+					logger.error("Settings file " + settingsFile.getName() + " seems to be corrupt. Attempting to delete..", exc);
+					try {
+						ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+						appContext.getLocalStorage().deleteFile(settingsFile.getName());
+						logger.warn("Settings file deleted. Default settings will be applied");
+					} catch (IOException e) {
+						logger.error("Removing corrupt settings file failed", e);
+					}
+				}
+			} finally {
+				settings = settings == null ? new Settings() : settings;
 			}
-		} finally {
-			settings = settings == null ? new Settings() : settings;
 		}
 		logger.debug("Found videodir: " + getVideoDir().getAbsolutePath());
 		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
@@ -138,9 +142,11 @@ public class AppSettings implements Serializable {
 	}
 
 	public File getVideoDir() {
-		if (videoDir == null) {
-			File defaultDir = new File(System.getProperty("user.dir"));
-			videoDir = getDirectory(getSettings().videoDir, defaultDir);
+		synchronized(this) {
+			if (videoDir == null) {
+				File defaultDir = new File(System.getProperty("user.dir"));
+				videoDir = getDirectory(getSettings().videoDir, defaultDir);
+			}
 		}
 		return videoDir;
 	}
@@ -170,9 +176,11 @@ public class AppSettings implements Serializable {
 	}
 
 	public File getUncompressedVideoDir() {
-		if (uncompressedVideoDir == null) {
-			File defaultDir = new File(getVideoDir(), UNCOMPRESSED_VIDEO_DIRNAME);
-			uncompressedVideoDir = getDirectory(getSettings().uncompressedVideoDir, defaultDir);
+		synchronized(this) {
+			if (uncompressedVideoDir == null) {
+				File defaultDir = new File(getVideoDir(), UNCOMPRESSED_VIDEO_DIRNAME);
+				uncompressedVideoDir = getDirectory(getSettings().uncompressedVideoDir, defaultDir);
+			}
 		}
 		return uncompressedVideoDir;
 	}
@@ -260,6 +268,10 @@ public class AppSettings implements Serializable {
 	public void setVlcPath(String vlcPath) {
 		getSettings().vlcPath = vlcPath;
 	}
+	
+	public List<String> getVideoCapturerFactories() {
+		return Arrays.asList(getSettings().videoCapturerFactories);
+	}
 
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
@@ -284,6 +296,8 @@ public class AppSettings implements Serializable {
 		
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
+		private String[] videoCapturerFactories = new String[] {"com.runwalk.video.media.dsj.DSJCapturerFactory", "com.runwalk.video.media.ueye.UEyeCapturerFactory"};
+		
 		/** 
 		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
 		 */
