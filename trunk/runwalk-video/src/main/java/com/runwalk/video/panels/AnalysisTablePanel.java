@@ -150,12 +150,14 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public PersistTask<Analysis> addAnalysis() {
 		// insert a new analysis record
 		final Client selectedClient = getClientTablePanel().getSelectedItem();
-		if (selectedClient.getName() == null && selectedClient.getOrganization() == null) {
+		if (("".equals(selectedClient.getName())  || selectedClient.getName() == null) && 
+			("".equals(selectedClient.getOrganization()) || selectedClient.getOrganization() == null)) {
 			JOptionPane.showMessageDialog(
 					SwingUtilities.windowForComponent(this), 
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
 					getResourceMap().getString("addAnalysis.Action.text"), 
 					JOptionPane.ERROR_MESSAGE);
+			getLogger().warn("Attempt to insert analysis for " + selectedClient-):
 			return null;
 		}
 		Analysis analysis = new Analysis(selectedClient);

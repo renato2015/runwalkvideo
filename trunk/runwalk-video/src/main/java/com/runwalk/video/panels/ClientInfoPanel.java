@@ -133,7 +133,7 @@ public class ClientInfoPanel extends JPanel {
 			@Override
 			public void targetChanged(Binding binding, PropertyStateEvent event) {
 				if (null == event.getNewValue() || "".equals(event.getNewValue())) {
-					getLogger().debug("Value for " + binding.getName() + " set to null or empty!");
+					getLogger().warn("Value for " + binding.getName() + " set to null or empty!");
 				}
 			}
 			

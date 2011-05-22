@@ -204,7 +204,7 @@ public class VideoFileManager {
 		File videoFile = getVideoFile(recording);
 		if (videoFile != null) {
 			videoFile.deleteOnExit();
-			LOGGER.debug(videoFile.getAbsolutePath() + " scheduled for deletion at shutdown.");
+			LOGGER.debug(videoFile.getAbsolutePath() + " scheduled for deletion.");
 		}
 	}
 	
