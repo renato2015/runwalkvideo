@@ -157,7 +157,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
 					getResourceMap().getString("addAnalysis.Action.text"), 
 					JOptionPane.ERROR_MESSAGE);
-			getLogger().warn("Attempt to insert analysis for " + selectedClient-):
+			getLogger().warn("Attempt to insert analysis for " + selectedClient + " failed.");
 			return null;
 		}
 		Analysis analysis = new Analysis(selectedClient);
