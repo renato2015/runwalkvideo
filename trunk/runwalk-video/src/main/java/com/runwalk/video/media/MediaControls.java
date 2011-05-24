@@ -341,6 +341,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void slower(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
+				player.setPlaying(!isPlaying());
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
 				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
@@ -356,6 +357,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void faster(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
+				player.setPlaying(!isPlaying());
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
 				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
