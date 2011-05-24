@@ -341,7 +341,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void slower(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				player.setPlaying(!isPlaying());
+				setPlaying(!isPlaying());
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
 				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
@@ -357,7 +357,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void faster(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
 			if (!player.isPlaying()) {
-				player.setPlaying(!isPlaying());
+				setPlaying(!isPlaying());
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
 				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
@@ -650,7 +650,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					}
 				}
 				getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis);
-				message("endMessage", recordingCount, analysis.getClient());
+				message("endMessage", recordingCount, analysis != null ? analysis.getClient() : "<geen>");
 				// show black overlay for players that don't show any opened file
 				// TODO check whether this is needed??
 				/*for (int i = recordingCount; i < getPlayers().size(); i++) {
