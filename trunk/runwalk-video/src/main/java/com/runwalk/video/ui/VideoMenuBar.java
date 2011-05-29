@@ -117,6 +117,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		getApplication().show(aboutBox);
 	}
 
+	@OnEdt
 	public void addMenu(String title, ActionMap actionMap) {
 		JMenu menu = new JMenu(title);
 		if (actionMap != null & actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
@@ -187,6 +188,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		return getMenuItem(menu, actionDescription);
 	}
 
+	@OnEdt
 	public void removeMenu(String title) {
 		JMenuItem menuItem = getMenuItem(windowMenu, title);
 		if (menuItem != null) {

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -14,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -66,6 +68,7 @@ import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.FullScreenSupport;
+import com.runwalk.video.ui.OnEdt;
 import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -457,6 +460,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			}
 
 		});
+		setPlaying(false);
 		return result;
 	}
 
@@ -598,13 +602,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		for (VideoPlayer player : getPlayers()) {
 			player.stop();
 		}
-		firePropertyChange(PLAYING, true, false);
+		setPlaying(false);
 		setStatusInfo(0, getFrontMostPlayer().getDuration());
 		getApplication().showMessage("Afspelen gestopt.");
 	}
 
 	@Action(block=BlockingScope.APPLICATION)
-	public Task<Void, VideoPlayer> openRecordings(final ActionEvent event) {
+	public Task<Void, VideoPlayer> openRecordings() {
 		return new AbstractTask<Void, VideoPlayer>(OPEN_RECORDINGS_ACTION) {
 
 			protected Void doInBackground() throws Exception {
@@ -612,45 +616,32 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				int recordingCount = 0;
 				// FIXME this will only work when an analysis is selected in the AnalysisTablePanel
 				final Analysis analysis = getAnalysisTablePanel().getSelectedItem();
+				VideoPlayer videoPlayer = null;
 				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
 					final Recording recording = analysis.getRecordings().get(i);
 					if (recording.isRecorded()) {
-						VideoPlayer videoPlayer = null;
-						try {
-							final File videoFile = getVideoFileManager().getVideoFile(recording);
-							if (recordingCount < getPlayers().size()) {
-								videoPlayer = getPlayers().get(recordingCount);;
-								// TODO quick and dirty fix for graph rebuilding here.. cleanup please
-								if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
-									//getWindowManager().disposeWindow(player);
-									//getWindowManager().addWindow(player);
-									IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
-									((FullScreenSupport) videoImpl).setFullScreen(true);
-								}
-								// if loading fails, rebuild and show again
-								getLogger().info("Videofile " + videoFile.getAbsolutePath() + " opened and ready for playback.");
-								setSliderLabels(recording);
-							} else {
-								final float playRate = getAppSettings().getPlayRate();
-								videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
-								videoPlayer.addPropertyChangeListener(MediaControls.this);
-								videoComponents.add(videoPlayer);
-								getWindowManager().addWindow(videoPlayer);
-							} 
-							getWindowManager().toFront(videoPlayer);
-							recordingCount++;
-							//publish(videoPlayer);
-						} catch (Exception e) {
-							JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(MediaControls.this),
-									"De opname die u probeerde te openen kon niet worden gevonden",
-									"Fout bij openen opname",
-									JOptionPane.ERROR_MESSAGE);
-							getLogger().error(e);
-						}
+						final File videoFile = getVideoFileManager().getVideoFile(recording);
+						if (recordingCount < getPlayers().size()) {
+							videoPlayer = getPlayers().get(recordingCount);
+							// TODO quick and dirty fix for graph rebuilding here.. cleanup please
+							if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
+								//getWindowManager().disposeWindow(player);
+								//getWindowManager().addWindow(player);
+								IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
+								((FullScreenSupport) videoImpl).setFullScreen(true);
+							}
+							// if loading fails, rebuild and show again
+						} else {
+							final float playRate = getAppSettings().getPlayRate();
+							videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+							videoPlayer.addPropertyChangeListener(MediaControls.this);
+							videoComponents.add(videoPlayer);
+							getWindowManager().addWindow(videoPlayer);
+						} 
+						setSliderLabels(recording);
+						recordingCount++;
 					}
 				}
-				getLogger().info("Opened " + recordingCount + " recording(s) for " + analysis);
-				message("endMessage", recordingCount, analysis != null ? analysis.getClient() : "<geen>");
 				// show black overlay for players that don't show any opened file
 				// TODO check whether this is needed??
 				/*for (int i = recordingCount; i < getPlayers().size(); i++) {
@@ -658,17 +649,11 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					videoPlayer.setBlackOverlayImage();
 				}*/
 				setSliderPosition(0);
+				new Robot().waitForIdle();
+				getWindowManager().toFront(videoPlayer);
+				message("endMessage", recordingCount, analysis != null ? analysis.getClient() : "<geen>");
 				return null;
 			}
-
-			@Override
-			protected void process(List<VideoPlayer> videoPlayers) {
-				for (VideoPlayer videoPlayer : videoPlayers) {
-					getWindowManager().toFront(videoPlayer);
-				}
-				super.process(videoPlayers);
-			}
-			
 
 		};
 
@@ -681,6 +666,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return table;
 	}
 
+	@OnEdt
 	public void setSliderLabels(Recording recording) {
 		Hashtable<Integer, JLabel> table = createLabelTable();
 		if (recording != null) {

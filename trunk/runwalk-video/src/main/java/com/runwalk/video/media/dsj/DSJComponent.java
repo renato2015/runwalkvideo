@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractButton;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
@@ -23,6 +22,7 @@ import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
 import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.FullScreenSupport;
+import com.runwalk.video.ui.OnEdt;
 import com.runwalk.video.ui.PropertyChangeSupport;
 
 import de.humatic.dsj.DSFilter;
@@ -165,24 +165,14 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return getFiltergraph().getFullScreenWindow();
 	}
 
+	@OnEdt
 	public void setVisible(final boolean visible) {
 		// TODO adhere a default way for invoking @Actions and their selectedProperties
 		if (this.visible != visible) {
 			// just leave this empty, selected property will be called..
 			if (isFullScreen() && getFullscreenFrame() != null) {
 				// setVisibility will be called first, as it is the selectedProperty for this Action
-				//TODO EDT dispatching code can eventually be moved to an aspect
-				if (SwingUtilities.isEventDispatchThread()) {
-					getFullscreenFrame().setVisible(visible);
-				} else {
-					SwingUtilities.invokeLater(new Runnable() {
-
-						public void run() {
-							getFullscreenFrame().setVisible(visible);
-						}
-
-					});
-				}
+				getFullscreenFrame().setVisible(visible);
 			}
 			firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 		}
@@ -221,23 +211,12 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		}
 	}
 
+	@OnEdt
 	public void toFront() {
-		//TODO EDT dispatching code can eventually be moved to an aspect
 		if (getFullscreenFrame() != null) {
-			if (SwingUtilities.isEventDispatchThread()) {
-				getFullscreenFrame().toFront();
-				getFullscreenFrame().requestFocus();
-			} else {
-				SwingUtilities.invokeLater(new Runnable() {
-
-					public void run() {
-						getFullscreenFrame().toFront();
-						getFullscreenFrame().requestFocus();
-					}
-
-				});
-
-			}
+			getFullscreenFrame().toFront();
+			getFullscreenFrame().setFocusable(true);
+			getFullscreenFrame().requestFocus();
 		}
 	}
 
