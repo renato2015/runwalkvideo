@@ -42,7 +42,7 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		JOptionPane.showMessageDialog(
 				null, 
 				throwable.getMessage(),
-				getResourceString(resourceName("errorMessage")), 
+				getResourceString(resourceName(ERROR_MESSAGE)), 
 				JOptionPane.ERROR_MESSAGE);
 	}
 

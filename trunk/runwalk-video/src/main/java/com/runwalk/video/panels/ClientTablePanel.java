@@ -134,6 +134,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(enabledProperty = SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
 		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getDaoService(), Client.class, getItemList());
+		// TODO move this to the SaveTask itself??
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -179,7 +180,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				Client client = event.getValue();
 				getItemList().add(client);
 				setSelectedItem(client);
-				getApplication().getClientInfoPanel().requestFocus();
+				ClientTablePanel.this.transferFocus();
 				setSaveNeeded(true);
 			}
 
