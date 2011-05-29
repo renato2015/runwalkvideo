@@ -3,8 +3,6 @@ package com.runwalk.video.ui;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;

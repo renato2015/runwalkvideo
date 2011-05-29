@@ -151,11 +151,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				}
 			}
 
-			@Override
-			public void failed(TaskEvent<Throwable> event) {
-				showErrorDialog(getResourceMap().getString("save.errorMessage"), event.getValue());
-			}
-
 		});
 		return saveTask;
 	}
@@ -184,11 +179,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				setSaveNeeded(true);
 			}
 
-			@Override
-			public void failed(TaskEvent<Throwable> event) {
-				showErrorDialog(getResourceMap().getString("persist.errorMessage"), event.getValue());
-			}
-
 		});
 		return result;
 	}
@@ -215,11 +205,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				// select previous record
 				setSelectedItem(lastSelectedRowIndex - 1);
 				setSaveNeeded(true);
-			}
-
-			@Override
-			public void failed(TaskEvent<Throwable> event) {
-				showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
 			}
 			
 		});

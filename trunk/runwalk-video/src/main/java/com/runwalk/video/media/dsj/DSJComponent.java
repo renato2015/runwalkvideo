@@ -186,6 +186,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		return fullScreen;
 	}
 
+	@OnEdt
 	public void setFullScreen(boolean fullScreen) {
 		// TODO second condition commented out quick & dirty fix
 		if (isToggleFullScreenEnabled()/* && this.fullScreen != fullScreen*/) {
@@ -215,8 +216,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void toFront() {
 		if (getFullscreenFrame() != null) {
 			getFullscreenFrame().toFront();
-			getFullscreenFrame().setFocusable(true);
-			getFullscreenFrame().requestFocus();
 		}
 	}
 

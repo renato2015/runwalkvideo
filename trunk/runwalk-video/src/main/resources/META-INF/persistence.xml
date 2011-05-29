@@ -29,7 +29,7 @@
 		    <property name="eclipselink.jdbc.user" value="${jdbc.user}" />
 		    <property name="eclipselink.jdbc.password" value="${jdbc.password}" />
 			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$RunwalkLogger"/>
-			<property name="eclipselink.logging.level" value="FINER" />
+			<property name="eclipselink.logging.level" value="FINE" />
 			
 		</properties>
 	</persistence-unit>

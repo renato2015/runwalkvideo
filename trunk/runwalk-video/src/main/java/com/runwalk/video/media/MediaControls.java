@@ -15,7 +15,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.NoSuchElementException;

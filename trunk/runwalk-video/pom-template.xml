@@ -367,6 +367,23 @@
 			<artifactId>javafx-jmc</artifactId>
     		<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.runwalk.runwalk-video</groupId>
+			<artifactId>ueye-nativelib</artifactId>
+			<version>0.1-SNAPSHOT</version>
+			<classifier>natives-win-${os.arch}</classifier>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.jnaerator</groupId>-->
+<!--			<artifactId>jnaerator-runtime</artifactId>-->
+<!--			<version>0.9.4</version>-->
+<!--			<scope>compile</scope>-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.2.7</version>
+		</dependency>
 		<!-- Swing libraries -->
 		<dependency>
 			<groupId>com.miglayout</groupId>
