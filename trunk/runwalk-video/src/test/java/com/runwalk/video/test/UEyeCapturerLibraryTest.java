@@ -9,9 +9,9 @@ import com.runwalk.video.media.ueye.UEYE_CAMERA_INFO;
 import com.runwalk.video.media.ueye.UEYE_CAMERA_LIST;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
-import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.runwalk.video.ui.WindowManager;
+import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
@@ -27,10 +27,10 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	public void testGetCameras() {
 		UEYE_CAMERA_LIST.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		final IntByReference cameraHandle = new IntByReference(0);
-		String windowName = null;
+		char[] windowName = null;
 		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
 			UEYE_CAMERA_INFO ueye_CAMERA_INFO = cameraNames.uci[i];
-			windowName = ueye_CAMERA_INFO.getModelInfo();
+			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
 			System.out.println("WindowName returned: " + windowName);
 			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);
 		}
@@ -50,6 +50,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 			}
 			
 		};
+		
 		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId, onWndShowCallback);
 		final IntByReference aviPointer = new IntByReference(0);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);

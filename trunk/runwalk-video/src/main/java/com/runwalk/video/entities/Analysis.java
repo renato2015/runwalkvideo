@@ -35,7 +35,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
+	@ManyToOne(cascade=/*{CascadeType.MERGE,*/ CascadeType.REFRESH/*}*/)
 	@JoinColumn(name="clientid", nullable=false )
 	private Client client;
 	

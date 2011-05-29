@@ -3,10 +3,9 @@ package com.runwalk.video.tasks;
 import java.util.List;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.matchers.Matcher;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
 
@@ -20,26 +19,30 @@ public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractT
 
 	public SaveTask(DaoService daoService, Class<T> theClass, EventList<T> itemList) {
 		super("save");
-		this.itemList = GlazedLists.eventList(itemList);
+		this.itemList = itemList;
 		this.daoService = daoService;
 		this.theClass = theClass;
 	}
 
 	protected List<T> doInBackground() {
 		message("startMessage");
-		// filter out the dirty items in the list
-		Iterable<T> dirtyItems = Iterables.filter(getItemList(), new Predicate<T>() {
-
-			public boolean apply(T input) {
-				return input.isDirty();
-			}
-
-		});
 		List<T> result = null;
-		// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
-		result = getDaoService().getDao(getTypeParameter()).merge(dirtyItems);
+		getItemList().getReadWriteLock().readLock().lock();
+		try {
+			FilterList<T> dirtyItems = new FilterList<T>(getItemList(), new Matcher<T>() {
+
+				public boolean matches(T item) {
+					return item.isDirty();
+				}
+				
+			});
+			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
+			result = getDaoService().getDao(getTypeParameter()).merge(dirtyItems);
+			message("endMessage", result.size());
+		} finally {
+			getItemList().getReadWriteLock().readLock().unlock();
+		}
 		// dirty flag should be set back to false by a task listener
-		message("endMessage", result.size());
 		return result;
 	}
 
@@ -47,7 +50,7 @@ public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractT
 		return daoService;
 	}
 
-	private List<T> getItemList() {
+	private EventList<T> getItemList() {
 		return itemList;
 	}
 

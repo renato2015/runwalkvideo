@@ -1,7 +1,9 @@
 package com.runwalk.video.tasks;
 
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
+
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.ResourceMap;
@@ -39,10 +41,14 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 	@Override
 	protected void failed(Throwable throwable) {
 		super.failed(throwable);
+		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+		if (activeWindow == null || !activeWindow.getName().equals("mainFrame")) {
+			activeWindow = null;
+		}
 		JOptionPane.showMessageDialog(
-				null, 
-				throwable.getMessage(),
-				getResourceString(resourceName(ERROR_MESSAGE)), 
+				activeWindow, 
+				throwable,
+				getResourceString(ERROR_MESSAGE), 
 				JOptionPane.ERROR_MESSAGE);
 	}
 

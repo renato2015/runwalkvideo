@@ -155,8 +155,8 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			getMenuBar().addMenu(title, actionMap);
 			setVisible(selfContainedImpl, true);
 		}
-	}
 	
+	}
 	public void setVisible(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
 	}

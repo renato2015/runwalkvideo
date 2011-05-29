@@ -21,6 +21,7 @@ import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
 import com.sun.jna.Callback;
+import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
@@ -88,7 +89,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 		LOGGER.debug("Opening camera " + getTitle());
 		IntByReference monitorId = new IntByReference(getMonitorId());
 		String settingsFilePath = getSettingsFilePath();
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, getTitle(), monitorId, callback);
+		char[] windowName = Native.toCharArray(getTitle());
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, windowName, monitorId, callback);
 		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
 	}
@@ -203,10 +205,6 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	public List<String> getCaptureEncoderNames() {
 		return Collections.singletonList(MJPEG_ENCODER);
-	}
-
-	public boolean isFullScreen() {
-		return true;
 	}
 
 	public boolean isVisible() {

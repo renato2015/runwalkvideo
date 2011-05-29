@@ -176,11 +176,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				}
 			}
 
-			@Override
-			public void failed(TaskEvent<Throwable> event) {
-				showErrorDialog(getResourceMap().getString("persist.errorMessage"), event.getValue());
-			}
-
 		});
 		return result;
 	}
@@ -216,11 +211,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
 					}
-				}
-
-				@Override
-				public void failed(TaskEvent<Throwable> event) {
-					showErrorDialog(getResourceMap().getString("delete.errorMessage"), event.getValue());
 				}
 
 			});

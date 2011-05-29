@@ -72,7 +72,7 @@ public class VideoCapturer extends VideoComponent {
 	public void dispose() {
 		super.dispose();
 		capturerCount++;
-		setVideoImpl(null);
+		//setVideoImpl(null);
 	}
 
 	public void startRecording(Recording recording, File videoFile) {

@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.ui.OnEdt;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
