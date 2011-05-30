@@ -607,21 +607,23 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(block=BlockingScope.APPLICATION)
-	public Task<Void, VideoPlayer> openRecordings() {
-		return new AbstractTask<Void, VideoPlayer>(OPEN_RECORDINGS_ACTION) {
+	public /*Task<Void, VideoPlayer>*/ void openRecordings() {
+		/*return new AbstractTask<Void, VideoPlayer>(OPEN_RECORDINGS_ACTION) {
 
-			protected Void doInBackground() throws Exception {
-				message("startMessage");
+			protected Void doInBackground() throws Exception {*/
+		//		message("startMessage");
+				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
 				// FIXME this will only work when an analysis is selected in the AnalysisTablePanel
 				final Analysis analysis = getAnalysisTablePanel().getSelectedItem();
-				VideoPlayer videoPlayer = null;
 				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
 					final Recording recording = analysis.getRecordings().get(i);
 					if (recording.isRecorded()) {
 						final File videoFile = getVideoFileManager().getVideoFile(recording);
-						if (recordingCount < getPlayers().size()) {
-							videoPlayer = getPlayers().get(recordingCount);
+						final int tempCount = recordingCount;
+
+						if (tempCount < getPlayers().size()) {
+							videoPlayer = getPlayers().get(tempCount);
 							// TODO quick and dirty fix for graph rebuilding here.. cleanup please
 							if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
 								//getWindowManager().disposeWindow(player);
@@ -637,9 +639,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 							videoComponents.add(videoPlayer);
 							getWindowManager().addWindow(videoPlayer);
 						} 
-						setSliderLabels(recording);
-						recordingCount++;
+						
 					}
+					setSliderLabels(recording);
+					recordingCount++;
 				}
 				// show black overlay for players that don't show any opened file
 				// TODO check whether this is needed??
@@ -648,13 +651,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					videoPlayer.setBlackOverlayImage();
 				}*/
 				setSliderPosition(0);
-				new Robot().waitForIdle();
+		//		new Robot().waitForIdle();
 				getWindowManager().toFront(videoPlayer);
-				message("endMessage", recordingCount, analysis != null ? analysis.getClient() : "<geen>");
-				return null;
-			}
+		//		message("endMessage", recordingCount, analysis != null ? analysis.getClient() : "<geen>");
+		//		return null;
+		/*	}
 
-		};
+		};*/
 
 	}
 
