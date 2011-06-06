@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -211,14 +210,6 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
-	}
-	// TODO should move this to AbstractTask
-	protected void showErrorDialog(String title, Throwable throwable) {
-		JOptionPane.showMessageDialog(
-				SwingUtilities.windowForComponent(this), 
-				throwable.getMessage(), 
-				title, 
-				JOptionPane.ERROR_MESSAGE);
 	}
 
 	protected class CustomJTableRenderer implements TableCellRenderer {
