@@ -2,12 +2,8 @@ package com.runwalk.video.ui;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.ref.WeakReference;
 
-import javax.swing.Action;
 import javax.swing.JButton;
-
-import org.jdesktop.application.ActionManager;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
@@ -15,18 +11,15 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 
 public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 	
-	private final WeakReference<Action> openRecordingsAction;
-	
-	private final JButton openRecordingsButton;
+	private final MediaControls mediaControls;
 
-	public AnalysisTableFormat(Action openRecordingsAction) {
-		this.openRecordingsAction = new WeakReference<Action>(openRecordingsAction);
-		openRecordingsButton = new JButton("open");
-		openRecordingsButton.setFont(AppSettings.MAIN_FONT);
+	public AnalysisTableFormat(MediaControls mediaControls) {
+		this.mediaControls = mediaControls;
 	}
 	
 	public int getColumnCount() {
@@ -56,11 +49,11 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		}
 		case 3: return recordingNotNull ? recording.getDuration() : 0L;
 		case 4: {
-			final JButton button = new JButton("open");
+			JButton button = new JButton("open");
     		button.setFont(AppSettings.MAIN_FONT);
     		button.addMouseListener(new MouseAdapter() {
     			public void mouseClicked(MouseEvent e) {
-    				ActionManager.invokeAction(getOpenRecordingsAction(), button);
+					getMediaControls().openRecordings(analysis);
     			}
     		});
     		button.setEnabled(analysis.isRecorded());
@@ -81,7 +74,7 @@ public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
 		return analysis;
 	}
 	
-	private Action getOpenRecordingsAction() {
-		return openRecordingsAction.get();
+	private MediaControls getMediaControls() {
+		return mediaControls;
 	}
 }
