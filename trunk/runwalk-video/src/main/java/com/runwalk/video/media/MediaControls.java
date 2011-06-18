@@ -264,7 +264,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			protected Void doInBackground() throws Exception {
 				for (VideoPlayer player : getPlayers()) {
-					if (playing) {
+					if (!isPlaying()) {
 						player.play();
 						setStopEnabled(true);
 						message("startMessage", player.getPlayRate());
@@ -341,10 +341,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void slower(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
-			if (!player.isPlaying()) {
-				setPlaying(!isPlaying());
+			if (!isPlaying()) {
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, (Component) event.getSource());
+				ActionManager.invokeAction(action, event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -357,10 +356,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public void faster(ActionEvent event) {
 		for (VideoPlayer player : getPlayers()) {
-			if (!player.isPlaying()) {
-				setPlaying(!isPlaying());
+			if (!isPlaying()) {
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, (Component) event.getSource());
+				ActionManager.invokeAction(action, event.getSource());
 			} else {
 				float playRate = player.faster();
 				// save play rate to settings
@@ -608,14 +606,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void openRecordings(Analysis analysis) {
 		VideoPlayer videoPlayer = null;
 		int recordingCount = 0;
+		// FIXME this will only work when an analysis is selected in the AnalysisTablePanel
 		for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
 			final Recording recording = analysis.getRecordings().get(i);
 			if (recording.isRecorded()) {
 				final File videoFile = getVideoFileManager().getVideoFile(recording);
-				final int tempCount = recordingCount;
-
-				if (tempCount < getPlayers().size()) {
-					videoPlayer = getPlayers().get(tempCount);
+				if (recordingCount < getPlayers().size()) {
+					videoPlayer = getPlayers().get(recordingCount);
 					// TODO quick and dirty fix for graph rebuilding here.. cleanup please
 					if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
 						//getWindowManager().disposeWindow(player);

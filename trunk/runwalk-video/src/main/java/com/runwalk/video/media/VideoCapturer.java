@@ -92,7 +92,11 @@ public class VideoCapturer extends VideoComponent {
 		getTimer().stop();
 		getVideoImpl().stopRecording();
 		setIdle(true);
-		getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+		if ("none".equals(getVideoImpl().getCaptureEncoderName())) {
+			getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+		} else {
+			getRecording().setRecordingStatus(RecordingStatus.COMPRESSED);
+		}
 	}
 
 	@Action

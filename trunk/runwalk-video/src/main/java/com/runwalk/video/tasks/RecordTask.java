@@ -34,6 +34,9 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			getDaoService().getDao(Recording.class).persist(recording);
 			getAnalysis().addRecording(recording);
 			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
+			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
+				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
+			}
 			capturer.startRecording(recording, videoFile);
 		}
 		message("recordingMessage", getAnalysis().getClient().toString());
