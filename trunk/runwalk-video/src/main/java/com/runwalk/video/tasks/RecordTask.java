@@ -2,6 +2,9 @@ package com.runwalk.video.tasks;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
@@ -36,6 +39,11 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
 			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
 				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
+			}
+			File parentDir = videoFile.getParentFile();
+			if (!parentDir.exists()) {
+				boolean mkdirs = parentDir.mkdirs();
+				getLogger().debug("Directory creation result for " + parentDir.getName() + " is " + mkdirs);
 			}
 			capturer.startRecording(recording, videoFile);
 		}

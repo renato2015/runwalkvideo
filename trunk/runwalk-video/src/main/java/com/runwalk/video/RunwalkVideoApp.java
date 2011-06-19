@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.EventObject;
+import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -176,8 +177,15 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			}
 			executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
 			LOGGER.debug("Taskservice shutting down...");
-			getContext().getTaskService().shutdown();
-			getDaoService().shutdown();
+			
+			try {
+				getContext().getTaskService().shutdown();
+				getContext().getTaskService().awaitTermination(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				LOGGER.error(e);
+			} finally {
+				getDaoService().shutdown();
+			}
 			super.exit(event);
 		}
 	}

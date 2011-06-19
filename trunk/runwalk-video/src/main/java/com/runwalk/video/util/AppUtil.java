@@ -1,20 +1,15 @@
 package com.runwalk.video.util;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-
-import com.runwalk.video.ui.SelfContained;
 
 public class AppUtil {
 	//duration formats

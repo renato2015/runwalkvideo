@@ -264,7 +264,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			protected Void doInBackground() throws Exception {
 				for (VideoPlayer player : getPlayers()) {
-					if (!isPlaying()) {
+					if (isPlaying()) {
 						player.play();
 						setStopEnabled(true);
 						message("startMessage", player.getPlayRate());
@@ -343,7 +343,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		for (VideoPlayer player : getPlayers()) {
 			if (!isPlaying()) {
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, event.getSource());
+				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -358,7 +358,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		for (VideoPlayer player : getPlayers()) {
 			if (!isPlaying()) {
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, event.getSource());
+				ActionManager.invokeAction(action, (Component) event.getSource());
 			} else {
 				float playRate = player.faster();
 				// save play rate to settings
