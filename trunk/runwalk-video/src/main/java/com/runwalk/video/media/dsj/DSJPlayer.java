@@ -11,6 +11,7 @@ import com.runwalk.video.ui.OnEdt;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
+import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
 public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
@@ -20,6 +21,8 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	private float framerate;
 
 	private float rate;
+	
+	private int fourCc = -1;
 	
 	public DSJPlayer(float rate) {
 		this.rate = rate;
@@ -39,16 +42,29 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 			if (rebuilt = getFiltergraph() == null) {
 				initFiltergraph(path, flags, listener);
 			} else {
-				rebuilt = getFiltergraph().loadFile(path , 0) < 0;
+				// do not reload video if fourCc is not the same
+				int[] fileStats = DSJUtils.getBasicFileStats(path);
+				int fourCc = fileStats[5];
+				if (fourCc != -1 && this.fourCc == fourCc) {
+					rebuilt = getFiltergraph().loadFile(path , 0) < 0;
+				} else {
+					getLogger().debug("FourCc was " + this.fourCc + " and will be set to " + fourCc);
+					rebuilt = rebuildFiltergraph(path, flags, listener);
+				}
+				this.fourCc = fourCc;
 			}
 		} catch(DSJException e) {
-			rebuilt = true;
 			getLogger().error("Recording initialization failed.", e);
-			// TODO clean this up.. should be done better
-			dispose();
-			initFiltergraph(path, flags, listener);
-		} 
+			rebuilt = rebuildFiltergraph(path, flags, listener);
+		}
 		return rebuilt;
+	}
+	
+	private boolean rebuildFiltergraph(String path, int flags, PropertyChangeListener listener) {
+		// TODO clean this up.. should be done better
+		dispose();
+		initFiltergraph(path, flags, listener);
+		return true;
 	}
 	
 	private void initFiltergraph(String path, int flags, PropertyChangeListener listener) {
