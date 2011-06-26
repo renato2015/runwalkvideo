@@ -25,6 +25,8 @@
  			<property name="eclipselink.cache.type.City" value="Full"/>
  			<!-- need to call the StaticWeave class at build time -->
  			<!-- property name="eclipselink.weaving" value="static" -->
+ 			<property name="eclipselink.jdbc.read-connections.max" value="10"/>
+ 			<property name="eclipselink.jdbc.write-connections.max" value="10"/>
 		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
 		    <property name="eclipselink.jdbc.url" value="${jdbc.url}" />
 		    <property name="eclipselink.jdbc.user" value="${jdbc.user}" />
