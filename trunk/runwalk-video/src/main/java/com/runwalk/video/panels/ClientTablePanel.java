@@ -146,8 +146,10 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					Client client = getItemList().get(index);
 					// set dirty flag to false again
 					client.setDirty(false);
-					// increment version field
-					client.incrementVersion();
+					// set version field on old client
+					if (mergedClient.getVersion() != client.getVersion()) {
+						client.incrementVersion();
+					}
 				}
 			}
 

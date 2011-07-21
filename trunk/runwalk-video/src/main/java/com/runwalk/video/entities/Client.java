@@ -41,7 +41,7 @@ public class Client extends Person {
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 
 	@Column(name = "account_number")
-	private Integer taxNumber;
+	private String taxNumber;
 	
 	@Transient
 	private String organization;
@@ -55,11 +55,11 @@ public class Client extends Person {
 		setName(name);
 	}
 
-	public Integer getTaxNumber() {
+	public String getTaxNumber() {
 		return this.taxNumber;
 	}
 
-	public void setTaxNumber(Integer taxNumber) {
+	public void setTaxNumber(String taxNumber) {
 		this.taxNumber = taxNumber;
 	}
 
