@@ -7,7 +7,6 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
@@ -17,6 +16,7 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
+import com.runwalk.video.entities.SerializableEntity;
 
 /**
  * This is a default {@link Dao} implementation for a J2SE application managed persistence context. 
@@ -132,10 +132,15 @@ public class JpaDao<E> extends AbstractDao<E> {
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
-			Logger.getLogger(getClass()).log(Level.INFO, "Merging " + item.toString());
+			if (item instanceof SerializableEntity<?>) {
+				// do a find first
+				SerializableEntity<?> entity = (SerializableEntity<?>) item;
+				SerializableEntity<?> oldEntity = entityManager.find(entity.getClass(), entity.getId());
+				Logger logger = Logger.getLogger(getClass());
+				// dump result to log
+				logger.log(Level.INFO, "Merging " + entity.toString() + " with " + oldEntity.toString());
+			}
 			result = entityManager.merge(item);
-			// force the version field to increment
-			entityManager.lock(result, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 			tx.commit();
 		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
@@ -156,10 +161,15 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			for(E item : items) {
-				Logger.getLogger(getClass()).log(Level.INFO, "Merging " + item.toString());
+				if (item instanceof SerializableEntity<?>) {
+					// do a find first
+					SerializableEntity<?> entity = (SerializableEntity<?>) item;
+					SerializableEntity<?> oldEntity = entityManager.find(entity.getClass(), entity.getId());
+					Logger logger = Logger.getLogger(getClass());
+					// dump result to log
+					logger.log(Level.INFO, "Merging " + entity.toString() + " with " + oldEntity.toString());
+				}
 				E mergedItem = entityManager.merge(item);
-				// force the version field to increment
-				entityManager.lock(mergedItem, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 				result.add(mergedItem);
 			}
 			tx.commit();
