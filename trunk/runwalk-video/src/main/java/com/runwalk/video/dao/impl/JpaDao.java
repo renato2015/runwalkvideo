@@ -125,22 +125,24 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return query.getResultList();
 	}
 
-	public E merge(E item) {
+	public E merge(E entity) {
 		EntityTransaction tx = null;
 		E result = null;
 		EntityManager entityManager = createEntityManager();
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
-			if (item instanceof SerializableEntity<?>) {
+			if (entity instanceof SerializableEntity<?>) {
 				// do a find first
-				SerializableEntity<?> entity = (SerializableEntity<?>) item;
-				SerializableEntity<?> oldEntity = entityManager.find(entity.getClass(), entity.getId());
-				Logger logger = Logger.getLogger(getClass());
-				// dump result to log
-				logger.log(Level.INFO, "Merging " + entity.toString() + " with " + oldEntity.toString());
+				SerializableEntity<?> unmanagedEntity = (SerializableEntity<?>) entity;
+				if (unmanagedEntity.getId() != null) {
+					SerializableEntity<?> managedEntity = entityManager.find(unmanagedEntity.getClass(), unmanagedEntity.getId());
+					Logger logger = Logger.getLogger(getClass());
+					// dump result to log
+					logger.log(Level.INFO, "Merging " + unmanagedEntity + " with " + managedEntity);
+				}
 			}
-			result = entityManager.merge(item);
+			result = entityManager.merge(entity);
 			tx.commit();
 		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
