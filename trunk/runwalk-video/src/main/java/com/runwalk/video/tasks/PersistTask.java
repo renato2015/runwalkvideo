@@ -21,7 +21,7 @@ public class PersistTask<T> extends AbstractTask<T, Void> {
 
 	protected T doInBackground() {
 		message("startMessage");
-		getDaoService().getDao(getItemClass()).merge(getItem());
+		getDaoService().getDao(getItemClass()).persist(getItem());
 		message("endMessage", getExecutionDuration(TimeUnit.MILLISECONDS));
 		return getItem();
 	}
