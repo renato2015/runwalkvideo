@@ -147,7 +147,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public int compareTo(Person o) {
-		return this.equals(o) ? 0 : getId() != null ? getId().compareTo(o.getId()) : 1;
+		return this.equals(o) ? 0 : o != null && getId() != null ? getId().compareTo(o.getId()) : 1;
 	}
 	
 	/**

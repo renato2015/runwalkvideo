@@ -134,12 +134,13 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx.begin();
 			if (entity instanceof SerializableEntity<?>) {
 				// do a find first
-				SerializableEntity<?> unmanagedEntity = (SerializableEntity<?>) entity;
-				if (unmanagedEntity.getId() != null) {
-					SerializableEntity<?> managedEntity = entityManager.find(unmanagedEntity.getClass(), unmanagedEntity.getId());
+				SerializableEntity<?> detachedEntity = (SerializableEntity<?>) entity;
+				if (detachedEntity.getId() != null) {
+					SerializableEntity<?> managedEntity = entityManager.find(detachedEntity.getClass(), detachedEntity.getId());
 					Logger logger = Logger.getLogger(getClass());
 					// dump result to log
-					logger.log(Level.INFO, "Merging " + unmanagedEntity + " with " + managedEntity);
+					logger.log(Level.INFO, "Merging " + detachedEntity + " with " + managedEntity);
+					// detach again
 				}
 			}
 			result = entityManager.merge(entity);
@@ -165,11 +166,13 @@ public class JpaDao<E> extends AbstractDao<E> {
 			for(E item : items) {
 				if (item instanceof SerializableEntity<?>) {
 					// do a find first
-					SerializableEntity<?> entity = (SerializableEntity<?>) item;
-					SerializableEntity<?> oldEntity = entityManager.find(entity.getClass(), entity.getId());
-					Logger logger = Logger.getLogger(getClass());
-					// dump result to log
-					logger.log(Level.INFO, "Merging " + entity.toString() + " with " + oldEntity.toString());
+					SerializableEntity<?> detachedEntity = (SerializableEntity<?>) item;
+					if (detachedEntity.getId() != null) {
+						SerializableEntity<?> managedEntity = entityManager.find(detachedEntity.getClass(), detachedEntity.getId());
+						Logger logger = Logger.getLogger(getClass());
+						// dump result to log
+						logger.log(Level.INFO, "Merging " + detachedEntity.toString() + " with " + managedEntity.toString());
+					}
 				}
 				E mergedItem = entityManager.merge(item);
 				result.add(mergedItem);
@@ -200,6 +203,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 			}
 			throw e;
 		} finally {
+			entityManager.clear();
 			entityManager.close();
 		}
 	}
