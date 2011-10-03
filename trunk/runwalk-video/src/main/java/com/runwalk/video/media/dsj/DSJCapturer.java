@@ -3,11 +3,8 @@ package com.runwalk.video.media.dsj;
 import java.io.File;
 import java.util.List;
 
-import org.jdesktop.application.utils.PlatformType;
-
 import com.google.common.collect.Lists;
 import com.runwalk.video.media.IVideoCapturer;
-import com.runwalk.video.media.VideoCapturerFactory;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;

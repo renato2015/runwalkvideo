@@ -35,7 +35,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 		this.entityManagerFactory = entityManagerFactory;
 	}
 	
-	private EntityManagerFactory getEntityManagerFactory() {
+	protected final EntityManagerFactory getEntityManagerFactory() {
 		return entityManagerFactory;
 	}
 
@@ -63,7 +63,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 	 * 
 	 * @return The result
 	 */
-	protected EntityManager createEntityManager() {
+	protected final EntityManager createEntityManager() {
 		return getEntityManagerFactory().createEntityManager();
 	}
 
@@ -203,7 +203,6 @@ public class JpaDao<E> extends AbstractDao<E> {
 			}
 			throw e;
 		} finally {
-			entityManager.clear();
 			entityManager.close();
 		}
 	}

@@ -1,8 +1,5 @@
 package com.runwalk.video.media;
 
-import com.runwalk.video.media.dsj.DSJPlayer;
-import com.runwalk.video.util.AppSettings;
-
 public interface IVideoPlayer extends IVideoComponent {
 
 	/**

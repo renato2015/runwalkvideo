@@ -14,7 +14,6 @@ import org.jdesktop.application.ApplicationActionMap;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.OnEdt;
 import com.runwalk.video.ui.PropertyChangeSupport;
 import com.runwalk.video.ui.SelfContained;
 
