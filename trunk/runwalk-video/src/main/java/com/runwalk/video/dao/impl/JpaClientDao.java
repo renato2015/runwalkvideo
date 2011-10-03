@@ -33,6 +33,15 @@ public class JpaClientDao extends JpaDao<Client> {
 		.setHint(QueryHints.REFRESH, "true");
 		return query.getResultList();
 	}
+
+	@Override
+	public void persist(Client item) {
+		super.persist(item);
+		// remove client from second level cache
+		getEntityManagerFactory().getCache().evict(Client.class, item.getId());
+	}
+	
+	
 	
 	
 }
