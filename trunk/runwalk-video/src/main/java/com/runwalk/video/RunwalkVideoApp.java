@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.EventObject;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManagerFactory;
@@ -25,6 +26,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
 
+import com.google.common.collect.Maps;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
@@ -106,8 +108,13 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	protected void initialize(String[] args) {
 		AppSettings.getInstance().loadSettings();
 		String puName = getContext().getResourceMap().getString("Application.name");
+		// read db connection properties from settings file
+		Map<String, String> connectionProperties = Maps.newHashMap();
+		connectionProperties.put("eclipselink.jdbc.url", AppSettings.getInstance().getDbUrl());
+		connectionProperties.put("eclipselink.jdbc.user", AppSettings.getInstance().getDbUser());
+		connectionProperties.put("eclipselink.jdbc.password", AppSettings.getInstance().getDbPassword());
 		// create entityManagerFactory for default persistence unit
-		EntityManagerFactory emFactory = Persistence.createEntityManagerFactory(puName);
+		EntityManagerFactory emFactory = Persistence.createEntityManagerFactory(puName, connectionProperties);
 		// create specialized dao's
 		JpaClientDao clientDao = new JpaClientDao(Client.class, emFactory);
 		// create daoManager and add specialized dao's

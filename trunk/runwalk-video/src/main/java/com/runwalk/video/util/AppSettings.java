@@ -249,6 +249,18 @@ public class AppSettings implements Serializable {
 		return getSettings().logFileUploadUrl;
 	}
 	
+	public String getDbUrl() {
+		return getSettings().dbUrl;
+	}
+	
+	public String getDbPassword() {
+		return getSettings().dbPassword;
+	}
+	
+	public String getDbUser() {
+		return getSettings().dbUser;
+	}
+	
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
 		if (getSettings().videoFolderRetrievalStrategy == null) {
 			getSettings().videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
@@ -305,6 +317,12 @@ public class AppSettings implements Serializable {
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 		
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+		
+		private String dbUrl = "jdbc:mysql://localhost:3306";
+		
+		private String dbUser = "root";
+		
+		private String dbPassword = "Letmein3";
  
 	}
 
