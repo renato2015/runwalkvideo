@@ -177,7 +177,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 		});
 		EventTableModel<T> dataModel = new EventTableModel<T>(specializedList, getTableFormat());
 		getTable().setModel(dataModel);
-		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
 	}
