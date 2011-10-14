@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
@@ -33,7 +34,6 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ActionManager;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
@@ -345,7 +345,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				// set selectedProperty manually as it won't be set when invoking it from code
 				setPlaying(true);
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, (Component) event.getSource());
+				invokeAction(action, event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -362,7 +362,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				// set selectedProperty manually as it won't be set when invoking it from code
 				setPlaying(true);
 				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				ActionManager.invokeAction(action, (Component) event.getSource());
+				invokeAction(action, event.getSource());
 			} else {
 				float playRate = player.faster();
 				// save play rate to settings
@@ -372,6 +372,29 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		}
 	}
 
+	/**
+	 * This method will look for an {@link javax.swing.Action} specified with the given key in the given {@link ActionMap} 
+	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method. If the specified {@link javax.swing.Action} has
+	 * a {@link javax.swing.Action#SELECTED_KEY} set, then this method will invert its value.
+	 * 
+	 * @param action The {@link Action} to be executed
+	 * @param component The component used as the {@link Action}'s source
+	 */
+	public void invokeAction(javax.swing.Action action, Object source) {
+		if (action != null) {
+			ActionEvent actionEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, action.toString());
+			/*Object selected = action.getValue(javax.swing.Action.SELECTED_KEY);
+			if (selected != null) {
+				Boolean newValue = !((Boolean) selected).booleanValue();
+				if (action instanceof ApplicationAction) {
+					((ApplicationAction) action).setSelected(newValue);
+				} else {
+					action.putValue(javax.swing.Action.SELECTED_KEY, newValue);
+				}
+			}*/
+			action.actionPerformed(actionEvent);
+		}
+	}
 	@Action
 	public Task<VideoPlayer, Void> openRecording(javax.swing.Action action) {
 		Object value = action.getValue(javax.swing.Action.LONG_DESCRIPTION);
