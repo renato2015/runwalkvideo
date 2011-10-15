@@ -3,15 +3,15 @@
 	<groupId>com.runwalk</groupId>
 	<artifactId>runwalk-video</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2</version>
+	<version>0.3-SNAPSHOT</version>
 	<name>runwalk-video</name>
 	<url>http://www.runwalk.be</url>
 	<description>Beheer van klanten en loopanalyses</description>
 	<inceptionYear>2008</inceptionYear>
 	<scm>
-		<connection>scm:svn:http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</connection>
-		<developerConnection>scm:svn:http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</developerConnection>
-		<url>http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</url>
+		<connection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</developerConnection>
+		<url>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</url>
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>
