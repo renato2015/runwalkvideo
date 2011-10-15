@@ -1,18 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.runwalk</groupId>
 	<artifactId>runwalk-video</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.2</version>
 	<name>runwalk-video</name>
 	<url>http://www.runwalk.be</url>
 	<description>Beheer van klanten en loopanalyses</description>
 	<inceptionYear>2008</inceptionYear>
 	<scm>
-		<connection>scm:svn:http://code.google.com/p/runwalkvideo/trunk</connection>
-		<developerConnection>scm:svn:http://code.google.com/p/runwalkvideo/trunk</developerConnection>
-		<url>http://code.google.com/p/runwalkvideo/trunk</url>
+		<connection>scm:svn:http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</connection>
+		<developerConnection>scm:svn:http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</developerConnection>
+		<url>http://code.google.com/p/runwalkvideo/tags/runwalk-video-0.2</url>
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>
@@ -266,9 +265,7 @@
 						<phase>deploy</phase>
 						<configuration>
 							<tasks>
-								<ftp server="${ftp.url}" remotedir="${ftp.remotedir}"
-									userid="${ftp.user}" password="${ftp.password}" binary="yes"
-									depends="yes" verbose="yes">
+								<ftp server="${ftp.url}" remotedir="${ftp.remotedir}" userid="${ftp.user}" password="${ftp.password}" binary="yes" depends="yes" verbose="yes">
 									<fileset dir="${project.build.directory}">
 										<include name="lib/**/*.jar" />
 										<include name="${jnlpOutputFilename}" />
@@ -336,7 +333,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -356,7 +353,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
