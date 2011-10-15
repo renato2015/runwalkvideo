@@ -1,6 +1,6 @@
 package com.runwalk.video.aspects;
 
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -8,7 +8,6 @@ import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
-import com.google.common.collect.Lists;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.IAppComponent;
@@ -45,25 +44,31 @@ public aspect AppComponentAspect {
 	public ResourceMap IAppComponent.getResourceMap() {
 		return getContext().getResourceMap(getClass(), IAppComponent.class);
 	}
+	
+	public ApplicationActionMap IAppComponent.getApplicationActionMap(Class<?> stopClass, Object instance) {
+		Class<?> theClass = instance.getClass();
+		while(stopClass.isInterface() && theClass.getSuperclass() != null) {
+			theClass = theClass.getSuperclass();
+			List<Class<?>> interfaces = Arrays.asList(theClass.getInterfaces());
+			if (interfaces.contains(stopClass)) {
+				// theClass won't be an interface anymore
+				stopClass = theClass;
+			}
+		}
+		stopClass = stopClass.isInterface() ? theClass : stopClass;
+		return getContext().getActionMap(stopClass, instance);
+	}
 
 	public ApplicationActionMap IAppComponent.getApplicationActionMap() {
-		AppComponent annotation = getAnnotationRecursively(getClass());
-		Class<?> stopClass = annotation == null ? getClass() : annotation.actionMapStopClass();
+		Class<?> stopClass = getStopClass(getClass());
 		return getContext().getActionMap(stopClass, this);
 	}
 	
-	private AppComponent IAppComponent.getAnnotationRecursively(Class<?> theClass) {
-		AppComponent annotation = theClass.getAnnotation(AppComponent.class);
-		while(annotation == null && theClass != null) {
-			List<Class<?>> list = Lists.asList(theClass, theClass.getInterfaces());
-			Iterator<Class<?>> iterator = list.iterator();
-			while(iterator.hasNext() && annotation == null) {
-				Class<?> next = iterator.next();
-				annotation = next.getAnnotation(AppComponent.class);
-			}
+	private Class<?> IAppComponent.getStopClass(Class<?> theClass) {
+		while(theClass.getSuperclass() != null) {
 			theClass = theClass.getSuperclass();
 		}
-		return annotation;
+		return theClass;
 	}
 	
 }

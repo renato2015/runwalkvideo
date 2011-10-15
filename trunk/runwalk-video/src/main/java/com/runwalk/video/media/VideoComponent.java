@@ -174,9 +174,9 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			//Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), SelfContained.class);
 			ApplicationActionMap videoImplActionMap = null;
 			if (getVideoImpl() instanceof SelfContained) {
-				videoImplActionMap = getContext().getActionMap(SelfContained.class, getVideoImpl());
+				videoImplActionMap = getApplicationActionMap(SelfContained.class, getVideoImpl());
 			} else {
-				videoImplActionMap = getContext().getActionMap(Containable.class, getVideoImpl());
+				videoImplActionMap = getApplicationActionMap(Containable.class, getVideoImpl());
 			}
 			// the lastImplementor is the class whose hierarchy will be searched for IVideoComponent implementors
 			Class<?> lastImplementor = getVideoImpl().getClass();
