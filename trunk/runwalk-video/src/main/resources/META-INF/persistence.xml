@@ -26,14 +26,14 @@
  			<!-- need to call the StaticWeave class at build time -->
  			<!-- property name="eclipselink.weaving" value="static" -->
  			<property name="eclipselink.jdbc.read-connections.max" value="10"/>
+ 			<property name="eclipselink.jdbc.read-connections.min" value="5"/>
  			<property name="eclipselink.jdbc.write-connections.max" value="10"/>
 		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
-		    <property name="eclipselink.jdbc.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8" />
+		    <property name="eclipselink.jdbc.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8&amp;autoReconnectForPools=true" />
 		    <property name="eclipselink.jdbc.user" value="${jdbc.user}" />
 		    <property name="eclipselink.jdbc.password" value="${jdbc.password}" />
 			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$RunwalkLogger"/>
 			<property name="eclipselink.logging.level" value="FINE" />
-			
 		</properties>
 	</persistence-unit>
 </persistence>

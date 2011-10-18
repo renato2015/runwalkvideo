@@ -25,7 +25,7 @@ public class TaskExecutor<T, V> extends TaskListener.Adapter<T, V> {
 	
 	@Override
 	public void finished(TaskEvent<Void> event) {
-		getApplication().executeAction(getActionMap(), getActionName());
+		invokeAction(getActionName(), null);
 	}
 
 	public ActionMap getActionMap() {

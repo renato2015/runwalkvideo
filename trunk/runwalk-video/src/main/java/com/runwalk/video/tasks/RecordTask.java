@@ -5,6 +5,7 @@ import java.io.File;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.VideoCapturer;
 
@@ -28,6 +29,45 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 
 	protected Boolean doInBackground() throws Exception {
 		message("startMessage");
+		startRecording();
+		synchronized(this) {
+			while (isRecording()) {
+				wait(500);
+			}
+		}
+		return stopRecording();
+	}
+
+	/**
+	 * Stop recording.
+	 * 
+	 * @return return <code>true</code> if recording succeeded
+	 */
+	private Boolean stopRecording() {
+		boolean result = false;
+		for (VideoCapturer capturer : getCapturers()) {
+			capturer.stopRecording();
+			String videoPath = capturer.getVideoPath();
+			Recording recording = getVideoFileManager().getRecording(videoPath);
+			if ("none".equals(capturer.getCaptureEncoderName())) {
+				recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+			} else {
+				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+			}
+			File recordedFile = getVideoFileManager().getVideoFile(recording);
+			result = result |= recordedFile != null;
+			if (!result) {
+				errorMessage("errorMessage", recordedFile.getAbsoluteFile());
+			}
+			message("endMessage", getAnalysis().getClient().toString());
+		}
+		return result;
+	}
+
+	/**
+	 * Start recording.
+	 */
+	private void startRecording() {
 		for (VideoCapturer capturer : getCapturers()) {
 			Recording recording = new Recording(getAnalysis());
 			// persist recording first, then add it to the analysis
@@ -42,25 +82,10 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 				boolean mkdirs = parentDir.mkdirs();
 				getLogger().debug("Directory creation result for " + parentDir.getAbsolutePath() + " is " + mkdirs);
 			}
-			capturer.startRecording(recording, videoFile);
+			recording.setRecordingStatus(RecordingStatus.RECORDING);
+			capturer.startRecording(videoFile);
 		}
 		message("recordingMessage", getAnalysis().getClient().toString());
-		synchronized(this) {
-			while (isRecording()) {
-				wait(500);
-			}
-		}
-		boolean result = false;
-		for (VideoCapturer capturer : getCapturers()) {
-			capturer.stopRecording();
-			File recordedFile = getVideoFileManager().getVideoFile(capturer.getRecording());
-			result = result |= recordedFile != null;
-			if (!result) {
-				errorMessage("errorMessage", recordedFile.getAbsoluteFile());
-			}
-			message("endMessage", getAnalysis().getClient().toString());
-		}
-		return result;
 	}
 	
 	public boolean isRecording() {

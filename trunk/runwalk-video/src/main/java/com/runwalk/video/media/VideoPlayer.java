@@ -1,8 +1,6 @@
 package com.runwalk.video.media;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.TreeSet;
 
@@ -13,8 +11,6 @@ import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Sets;
-import com.runwalk.video.entities.Keyframe;
-import com.runwalk.video.entities.Recording;
 import com.runwalk.video.media.dsj.DSJPlayer;
 import com.runwalk.video.media.jmc.JMCPlayer;
 
@@ -37,10 +33,6 @@ public class VideoPlayer extends VideoComponent {
 	private boolean muted = false;
 
 	public static VideoPlayer createInstance(String path, float playRate) {
-		return createInstance(null, path, playRate);
-	}
-
-	public static VideoPlayer createInstance(Recording recording, String path, float playRate) {
 		playerCount++;
 		// check if the play rate is supported by the video player, if not then use the lowest one
 		if (!PLAY_RATES.contains(playRate)) {
@@ -53,28 +45,21 @@ public class VideoPlayer extends VideoComponent {
 		} else {
 			result = new JMCPlayer(playRate);
 		}
-		return new VideoPlayer(recording, path, result);
+		return new VideoPlayer(path, result);
 	}
 
-	private VideoPlayer(Recording recording, String path, IVideoPlayer playerImpl) {
+	private VideoPlayer(String path, IVideoPlayer playerImpl) {
 		super(playerCount);
 		this.playerImpl = playerImpl;
-		setTimer(new Timer(25, new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				if (isPlaying()) {
-					firePropertyChange(POSITION, position, position = getPosition());
-				}
-			}
-		}));
-		loadVideo(recording, path);
+		setTimer(new Timer(25, null));
+		loadVideo(path);
 	}
 
-	public boolean loadVideo(Recording recording, String path) {
-		setRecording(recording);
-		boolean result = getVideoImpl().loadVideo(path);
+	public boolean loadVideo(String videoPath) {
+		boolean result = getVideoImpl().loadVideo(videoPath);
 		// TODO fix this, hardcoded to zeroth monitor
 		// showComponent(true, 0);
+		setVideoPath(videoPath);
 		setPosition(0);
 		return result;
 	}
@@ -157,30 +142,6 @@ public class VideoPlayer extends VideoComponent {
 		if (isPlaying()) {
 			pause();
 		}
-	}
-
-	public void nextKeyframe() {
-		getRecording().sortKeyframes();
-		for (Keyframe frame : getRecording().getKeyframes()) {
-			if (frame.getPosition() > getPosition()) {
-				setPosition(frame.getPosition());
-				getLogger().debug("NEXT: Keyframe position " + getPosition() + " " + frame.getPosition());
-				return;
-			}
-		}
-	}
-
-	public void previousKeyframe() {
-		getRecording().sortKeyframes();
-		for (int i = getRecording().getKeyframeCount()-1; i >= 0; i--) {
-			Keyframe frame = getRecording().getKeyframes().get(i);
-			if (frame.getPosition() < getVideoImpl().getPosition()) {
-				setPosition(frame.getPosition());
-				getLogger().debug(getRecording().getVideoFileName() + " PREVIOUS: Keyframe position " + getVideoImpl().getPosition() + " " + frame.getPosition());
-				return;
-			}
-		}
-		setPosition(0);
 	}
 
 	public int getKeyframePosition() {

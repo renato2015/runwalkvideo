@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -18,9 +19,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractButton;
-import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
@@ -30,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -75,7 +77,8 @@ import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, MediaActionConstants, Containable {
+public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, 
+	MediaActionConstants, Containable, ActionListener {
 
 	private static final String TITLE_SEPARATOR = " > ";	
 
@@ -94,7 +97,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
-
+	
 	private JLabel elapsedTimeLabel;
 	private JSlider scroll;
 
@@ -322,8 +325,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	 * @param muted set to <code>true</code> to mute 
 	 */
 	public void setMuted(boolean muted) {
-		firePropertyChange(MUTED, this.muted, this.muted   = muted);
-
+		firePropertyChange(MUTED, this.muted, this.muted  = muted);
 	}
 
 	/**
@@ -344,8 +346,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			if (!isPlaying()) {
 				// set selectedProperty manually as it won't be set when invoking it from code
 				setPlaying(true);
-				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				invokeAction(action, event.getSource());
+				invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
 			} else {
 				float playRate = player.slower();
 				// save play rate to settings
@@ -361,8 +362,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			if (!isPlaying()) {
 				// set selectedProperty manually as it won't be set when invoking it from code
 				setPlaying(true);
-				javax.swing.Action action = getAction(TOGGLE_PLAY_ACTION);
-				invokeAction(action, event.getSource());
+				invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
 			} else {
 				float playRate = player.faster();
 				// save play rate to settings
@@ -372,29 +372,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		}
 	}
 
-	/**
-	 * This method will look for an {@link javax.swing.Action} specified with the given key in the given {@link ActionMap} 
-	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method. If the specified {@link javax.swing.Action} has
-	 * a {@link javax.swing.Action#SELECTED_KEY} set, then this method will invert its value.
-	 * 
-	 * @param action The {@link Action} to be executed
-	 * @param component The component used as the {@link Action}'s source
-	 */
-	public void invokeAction(javax.swing.Action action, Object source) {
-		if (action != null) {
-			ActionEvent actionEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, action.toString());
-			/*Object selected = action.getValue(javax.swing.Action.SELECTED_KEY);
-			if (selected != null) {
-				Boolean newValue = !((Boolean) selected).booleanValue();
-				if (action instanceof ApplicationAction) {
-					((ApplicationAction) action).setSelected(newValue);
-				} else {
-					action.putValue(javax.swing.Action.SELECTED_KEY, newValue);
-				}
-			}*/
-			action.actionPerformed(actionEvent);
-		}
-	}
 	@Action
 	public Task<VideoPlayer, Void> openRecording(javax.swing.Action action) {
 		Object value = action.getValue(javax.swing.Action.LONG_DESCRIPTION);
@@ -403,7 +380,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			protected VideoPlayer doInBackground() throws Exception {
 				message("startMessage", url);
-				return VideoPlayer.createInstance(url, 1.0f);
+				return url != null && url.length() > 0 ? VideoPlayer.createInstance(url, 1.0f) : null;
 			}
 
 		};
@@ -411,8 +388,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			public void succeeded(TaskEvent<VideoPlayer> event) {
 				VideoPlayer videoPlayer = event.getValue();
-				int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
-				getWindowManager().addWindow(videoPlayer, monitorId);
+				if (videoPlayer != null) {
+					int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
+					getWindowManager().addWindow(videoPlayer, monitorId);
+				}
 			}
 
 
@@ -449,7 +428,17 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void nextKeyframe() {
 		for (VideoPlayer player : getPlayers()) {
 			player.pauseIfPlaying();
-			player.nextKeyframe();
+			// get the current recording for the player
+			String videoPath = player.getVideoPath();
+			Recording recording = getVideoFileManager().getRecording(videoPath);
+			recording.sortKeyframes();
+			for (Keyframe frame : recording.getKeyframes()) {
+				if (frame.getPosition() > player.getPosition()) {
+					player.setPosition(frame.getPosition());
+					getLogger().debug("NEXT: Keyframe position " + player.getPosition() + " " + frame.getPosition());
+					return;
+				}
+			}
 		}
 		// TODO clean up
 		firePropertyChange(PLAYING, true, false);
@@ -459,7 +448,19 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void previousKeyframe() {
 		for (VideoPlayer player : getPlayers()) {
 			player.pauseIfPlaying();
-			player.previousKeyframe();
+			String videoPath = player.getVideoPath();
+			Recording recording = getVideoFileManager().getRecording(videoPath);
+			recording.sortKeyframes();
+			for (int i = recording.getKeyframeCount()-1; i >= 0; i--) {
+				Keyframe frame = recording.getKeyframes().get(i);
+				if (frame.getPosition() < player.getPosition()) {
+					player.setPosition(frame.getPosition());
+					getLogger().debug(recording.getVideoFileName() + " PREVIOUS: Keyframe position " + player.getPosition() + " " + frame.getPosition());
+					return;
+				}
+			}
+			player.setPosition(0);
+			
 		}
 		// TODO clean up
 		firePropertyChange(PLAYING, true, false);
@@ -467,7 +468,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
 	public CreateKeyframeTask createKeyframe() {
-		CreateKeyframeTask result = new CreateKeyframeTask(getDaoService(), getFrontMostPlayer(), getPlayers());
+		CreateKeyframeTask result = new CreateKeyframeTask(getVideoFileManager(), getDaoService(), getFrontMostPlayer(), getPlayers());
 		result.addTaskListener(new TaskListener.Adapter<Keyframe, Void>() {
 
 			@SuppressWarnings("unchecked")
@@ -641,7 +642,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				if (recordingCount < getPlayers().size()) {
 					videoPlayer = getPlayers().get(recordingCount);
 					// TODO quick and dirty fix for graph rebuilding here.. cleanup please
-					if (videoPlayer.loadVideo(recording, videoFile.getAbsolutePath())) {
+					if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
 						//getWindowManager().disposeWindow(player);
 						//getWindowManager().addWindow(player);
 						IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
@@ -650,8 +651,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					// if loading fails, rebuild and show again
 				} else {
 					final float playRate = getAppSettings().getPlayRate();
-					videoPlayer = VideoPlayer.createInstance(recording, videoFile.getAbsolutePath(), playRate);
+					videoPlayer = VideoPlayer.createInstance(videoFile.getAbsolutePath(), playRate);
 					videoPlayer.addPropertyChangeListener(MediaControls.this);
+					videoPlayer.addActionListener(MediaControls.this);
 					videoComponents.add(videoPlayer);
 					getWindowManager().addWindow(videoPlayer);
 				} 
@@ -731,6 +733,29 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		}
 		return result;
 	}
+	
+	public void actionPerformed(ActionEvent evt) {
+		if (evt.getSource() instanceof Timer) {
+			Timer timer = (Timer) evt.getSource();
+			if (getFrontMostCapturer().getTimer() == timer && getFrontMostCapturer().isRecording()) {
+				String videoPath = getFrontMostCapturer().getVideoPath();
+				Recording recording = getVideoFileManager().getRecording(videoPath);
+				// set duration for recording
+				long executionDuration = recordTask.getExecutionDuration(TimeUnit.MILLISECONDS);
+				recording.setDuration(executionDuration);	
+				// only update status info if it is the fronmost capturer
+				updateTimeStamps(executionDuration, 0);
+			} else if (getFrontMostPlayer().getTimer() == timer) {
+				// only update status info for the frontmost player
+				int position = getFrontMostPlayer().getPosition();
+				if (position == 0 && getFrontMostPlayer().isPlaying()) {
+					getLogger().debug("playback position set to 0");
+					stop();
+				}
+				setStatusInfo(position, getFrontMostPlayer().getDuration());
+			}
+		}
+	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		Object newValue = evt.getNewValue();
@@ -745,27 +770,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				videoComponents.remove(component);
 				disableVideoComponentControls(component);
 				component.removePropertyChangeListener(this);
-			}
-		} else if (evt.getPropertyName().equals(VideoCapturer.TIME_RECORDING)) {
-			VideoComponent capturer = (VideoComponent) evt.getSource();
-			Long timeRecorded = (Long) newValue;
-			// only update status info if it is the fronmost capturer
-			if (getFrontMostCapturer() == capturer) {
-				updateTimeStamps(timeRecorded, 0);
+				component.removeActionListener(this);
 			}
 		} else if (evt.getPropertyName().equals(VideoCapturer.CAPTURE_ENCODER_NAME)) {
 			// TODO save capture encoder name for the given videoCapturer?	
-		} else if (evt.getPropertyName().equals(VideoPlayer.POSITION))  {
-			Integer position = (Integer) newValue;
-			VideoPlayer player = (VideoPlayer) evt.getSource();
-			// only update status info for the frontmost player
-			if (getFrontMostPlayer() == player) {
-				if (position == 0 && player.isPlaying()) {
-					getLogger().debug("playback position set to 0");
-					stop();
-				}
-				setStatusInfo(position, player.getDuration());
-			}
 		} else if (evt.getPropertyName().equals(WindowConstants.VISIBLE)) {
 			toggleVideoComponentControls((VideoComponent) evt.getSource(), (Boolean) evt.getNewValue());
 		}
@@ -820,8 +828,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					setRecordingEnabled(false);
 					setPlayerControlsEnabled(true);
 					setStopEnabled(getFrontMostPlayer().getPosition() > 0);
-					setStatusInfo(getFrontMostPlayer().getRecording(), getFrontMostPlayer().getPosition(), getFrontMostPlayer().getDuration());
-					title.append(TITLE_SEPARATOR ).append(getFrontMostPlayer().getRecording().getVideoFileName());
+					String videoPath = getFrontMostPlayer().getVideoPath();
+					Recording recording = getVideoFileManager().getRecording(videoPath);
+					setStatusInfo(recording, getFrontMostPlayer().getPosition(), getFrontMostPlayer().getDuration());
+					title.append(TITLE_SEPARATOR ).append(recording.getVideoFileName());
 				}
 			}
 			setToggleFullScreenEnabled(getWindowManager().isToggleFullScreenEnabled(videoComponent));
