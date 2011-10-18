@@ -1,9 +1,13 @@
 package com.runwalk.video.aspects;
 
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.ActionMap;
+
 import org.apache.log4j.Logger;
+import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
@@ -62,6 +66,31 @@ public aspect AppComponentAspect {
 	public ApplicationActionMap IAppComponent.getApplicationActionMap() {
 		Class<?> stopClass = getStopClass(getClass());
 		return getContext().getActionMap(stopClass, this);
+	}
+	
+	/**
+	 * This method will look for an {@link javax.swing.Action} specified with the given key in the given {@link ActionMap} 
+	 * and invoke its {@link Action#actionPerformed(ActionEvent)} method. If the specified {@link javax.swing.Action} has
+	 * a {@link javax.swing.Action#SELECTED_KEY} set, then this method will invert its value.
+	 * 
+	 * @param action The {@link Action} to be executed
+	 * @param component The component used as the {@link Action}'s source
+	 */
+	public void IAppComponent.invokeAction(String actionName, Object source) {
+		javax.swing.Action action = getAction(actionName);
+		if (action != null) {
+			ActionEvent actionEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, action.toString());
+			/*Object selected = action.getValue(javax.swing.Action.SELECTED_KEY);
+			if (selected != null) {
+				Boolean newValue = !((Boolean) selected).booleanValue();
+				if (action instanceof ApplicationAction) {
+					((ApplicationAction) action).setSelected(newValue);
+				} else {
+					action.putValue(javax.swing.Action.SELECTED_KEY, newValue);
+				}
+			}*/
+			action.actionPerformed(actionEvent);
+		}
 	}
 	
 	private Class<?> IAppComponent.getStopClass(Class<?> theClass) {

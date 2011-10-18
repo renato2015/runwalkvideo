@@ -2,6 +2,7 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 
@@ -11,7 +12,6 @@ import javax.swing.Timer;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
 
-import com.runwalk.video.entities.Recording;
 import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.PropertyChangeSupport;
@@ -31,12 +31,13 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public static final String STATE = "state";
 	public static final String DISPOSED = "disposed";
 
-	private Recording recording;
 	private Timer timer;
 	private WeakReference<ApplicationActionMap> actionMap;
 	private State state;
 	private boolean overlayed;
-
+	
+	private String videoPath;
+	
 	/**
 	 * This variable is used to determine the default monitor on which this component will be shown.
 	 */
@@ -49,6 +50,14 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	public abstract IVideoComponent getVideoImpl();
+	
+	public void addActionListener(ActionListener listener) {
+		getTimer().addActionListener(listener);
+	}
+	
+	public void removeActionListener(ActionListener listener) {
+		getTimer().removeActionListener(listener);
+	}
 
 	/**
 	 * This method simply invokes {@link #startRunning()} if the video component is stopped 
@@ -61,14 +70,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		} else {
 			getVideoImpl().startRunning();
 		}
-	}
-
-	public Recording getRecording() {
-		return recording;
-	}
-
-	public void setRecording(Recording recording) {
-		this.recording = recording;
 	}
 
 	protected Timer getTimer() {
@@ -148,9 +149,10 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			// dispose on the video implementation will dispose resources for the full screen frame
 			getVideoImpl().dispose();
 		}
+		setTimer(null);
+		setVideoPath(null);
 		// fire a PCE after disposing the implementation
 		setState(State.DISPOSED);
-		setRecording(null);
 	}
 
 	public String getTitle() {
@@ -159,6 +161,14 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	public boolean isActive() {
 		return getVideoImpl().isActive();
+	}
+
+	public String getVideoPath() {
+		return videoPath;
+	}
+
+	public void setVideoPath(String videoPath) {
+		this.videoPath = videoPath;
 	}
 
 	/**

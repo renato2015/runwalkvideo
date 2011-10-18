@@ -2,15 +2,15 @@ package com.runwalk.video.io;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
@@ -34,12 +34,23 @@ public class VideoFileManager {
 
 	private static final Logger LOGGER = Logger.getLogger(VideoFileManager.class);
 
-	private Map<Recording, File> recordingFileMap = Maps.newHashMap();
+	private BiMap<Recording, File> recordingFileMap = HashBiMap.create();
 
 	private final AppSettings appSettings;
 
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
+	}
+	
+	/** 
+	 * Get a {@link Recording} from the cache that represents the video on the given path.
+	 * Will return <code>null</code> if nothing was found.
+	 * 
+	 * @param path The path to get the Recording for
+	 * @return The found recording
+	 */
+	public Recording getRecording(String path) {
+		return recordingFileMap.inverse().get(new File(path));
 	}
 	
 	private File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {

@@ -4,8 +4,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
-import com.tomtessier.scrollabledesktop.BaseInternalFrame;
-
 /**
  * This class will wrap a {@link BaseInternalFrame} or a {@link Window} for use with the application windowing framework.
  * 

@@ -1,7 +1,5 @@
 package com.runwalk.video.media;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
@@ -11,8 +9,6 @@ import javax.swing.Timer;
 import org.jdesktop.application.Action;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.entities.Recording;
-import com.runwalk.video.entities.RecordingStatus;
 
 public class VideoCapturer extends VideoComponent {
 
@@ -25,21 +21,11 @@ public class VideoCapturer extends VideoComponent {
 	 */
 	private static int capturerCount = 0;
 	
-	private long timeStarted, timeRecorded;
-	
 	private IVideoCapturer videoImpl;
 	
 	VideoCapturer() {
 		super(++capturerCount);
 		setTimer(new Timer(1000, null));
-		getTimer().addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				long currentTime = System.currentTimeMillis();
-				firePropertyChange(TIME_RECORDING, timeRecorded, timeRecorded = currentTime - timeStarted);
-				getRecording().setDuration(timeRecorded);	
-			}
-		});
 	}
 	
 	@Action
@@ -52,11 +38,11 @@ public class VideoCapturer extends VideoComponent {
 				JOptionPane.PLAIN_MESSAGE,
 				null,
 				Iterables.toArray(captureEncoderNames, String.class),
-				getVideoImpl().getCaptureEncoderName());
+				getCaptureEncoderName());
 		if (captureEncoderName != null) {
-			firePropertyChange(CAPTURE_ENCODER_NAME, getVideoImpl().getCaptureEncoderName(), captureEncoderName);
+			firePropertyChange(CAPTURE_ENCODER_NAME, getCaptureEncoderName(), captureEncoderName);
 			getVideoImpl().setCaptureEncoderName(captureEncoderName);
-			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getVideoImpl().getCaptureEncoderName());
+			getLogger().debug("Video encoder for " + getTitle() + " changed to " + getCaptureEncoderName());
 		}
 	}
 
@@ -72,18 +58,14 @@ public class VideoCapturer extends VideoComponent {
 	public void dispose() {
 		super.dispose();
 		capturerCount++;
-		//setVideoImpl(null);
 	}
 
-	public void startRecording(Recording recording, File videoFile) {
-		if (videoFile == null || recording == null) {
+	public void startRecording(File videoFile) {
+		if (videoFile == null) {
 			throw new IllegalArgumentException("No valid file or recording specified");
 		} 
-		setRecording(recording);
-		timeStarted = System.currentTimeMillis();
 		getVideoImpl().startRecording(videoFile);
 		getLogger().debug("Recording to file " + videoFile.getAbsolutePath());
-		recording.setRecordingStatus(RecordingStatus.RECORDING);
 		getTimer().restart();
 		setState(State.RECORDING);
 	}
@@ -92,13 +74,16 @@ public class VideoCapturer extends VideoComponent {
 		getTimer().stop();
 		getVideoImpl().stopRecording();
 		setIdle(true);
-		if ("none".equals(getVideoImpl().getCaptureEncoderName())) {
-			getRecording().setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-		} else {
-			getRecording().setRecordingStatus(RecordingStatus.COMPRESSED);
-		}
 	}
 
+	/**
+	 * Return the currently used capture encoder name.
+	 * @return The name of the encoder
+	 */
+	public String getCaptureEncoderName() {
+		return getVideoImpl().getCaptureEncoderName();
+	}
+	
 	@Action
 	public void showCapturerSettings() {
 		getVideoImpl().showCaptureSettings();
