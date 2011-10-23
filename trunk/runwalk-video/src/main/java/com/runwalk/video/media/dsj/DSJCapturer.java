@@ -1,6 +1,5 @@
 package com.runwalk.video.media.dsj;
 
-import java.io.File;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -45,9 +44,9 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 		super.startRunning();
 	}
 
-	public void startRecording(File destFile) {
+	public void startRecording(String videoPath) {
 		getFiltergraph().setAviExportOptions(-1, -1, -1, getRejectPauseFilter(), -1);
-		getFiltergraph().setCaptureFile(destFile.getAbsolutePath(), getCaptureEncoder(), DSFilterInfo.doNotRender(), true);
+		getFiltergraph().setCaptureFile(videoPath, getCaptureEncoder(), DSFilterInfo.doNotRender(), true);
 		getLogger().debug("Video encoder for " + getTitle() + " set to " + getCaptureEncoder().getName());
 		getLogger().debug("Pause filter rejection set to " + getRejectPauseFilter());
 		getFiltergraph().record();

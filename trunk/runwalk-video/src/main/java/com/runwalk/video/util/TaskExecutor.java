@@ -1,5 +1,7 @@
 package com.runwalk.video.util;
 
+import java.awt.Component;
+
 import javax.swing.ActionMap;
 
 import org.jdesktop.application.TaskEvent;
@@ -12,20 +14,19 @@ public class TaskExecutor<T, V> extends TaskListener.Adapter<T, V> {
 
 	private final String actionName;
 
-	private ActionMap actionMap;
+	private final ActionMap actionMap;
 	
-	public TaskExecutor(ActionMap actionMap, String actionName) {
+	private final Component source;
+	
+	public TaskExecutor(ActionMap actionMap, String actionName, Component source) {
 		this.actionMap = actionMap;
 		this.actionName = actionName;
-	}
-	
-	public TaskExecutor(String actionName) {
-		this.actionName = actionName;
+		this.source = source;
 	}
 	
 	@Override
 	public void finished(TaskEvent<Void> event) {
-		invokeAction(getActionName(), null);
+		invokeAction(getActionName(), getActionMap(), getSource());
 	}
 
 	public ActionMap getActionMap() {
@@ -36,4 +37,8 @@ public class TaskExecutor<T, V> extends TaskListener.Adapter<T, V> {
 		return actionName;
 	}
 
+	public Component getSource() {
+		return source;
+	}
+	
 }

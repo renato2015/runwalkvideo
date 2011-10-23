@@ -1,6 +1,5 @@
 package com.runwalk.video.media.dsj;
 
-import java.io.File;
 
 import org.apache.log4j.Level;
 
@@ -22,7 +21,7 @@ public class DSJFileSinkCapturer extends DSJCapturer {
 	}
 
 	@Override
-	public void startRecording(File destFile) {
+	public void startRecording(String videoPath) {
 		if (sink == null || !controllable) {
 			try {
 				getLogger().log(Level.DEBUG, "Reading sink definitions from " + DSEnvironment.getSetupPath());

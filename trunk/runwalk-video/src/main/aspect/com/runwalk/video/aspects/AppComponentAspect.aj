@@ -77,7 +77,11 @@ public aspect AppComponentAspect {
 	 * @param component The component used as the {@link Action}'s source
 	 */
 	public void IAppComponent.invokeAction(String actionName, Object source) {
-		javax.swing.Action action = getAction(actionName);
+		invokeAction(actionName, getApplicationActionMap(), source);
+	}
+	
+	public void IAppComponent.invokeAction(String actionName, ActionMap actionMap, Object source) {
+		javax.swing.Action action = actionMap.get(actionName);
 		if (action != null) {
 			ActionEvent actionEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, action.toString());
 			/*Object selected = action.getValue(javax.swing.Action.SELECTED_KEY);

@@ -9,9 +9,9 @@ public interface IVideoCapturer extends IVideoComponent {
 
 	/**
 	 * Start recording to the specified {@link File}. 
-	 * @param destFile The file to use for capturing
+	 * @param videoPath The file to use for capturing
 	 */
-	void startRecording(File destFile);
+	void startRecording(String videoPath);
 	
 	void stopRecording();
 

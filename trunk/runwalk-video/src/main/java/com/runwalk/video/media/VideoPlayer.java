@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.TreeSet;
 
-import javax.swing.Timer;
-
 import org.jdesktop.application.Action;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
@@ -51,7 +49,6 @@ public class VideoPlayer extends VideoComponent {
 	private VideoPlayer(String path, IVideoPlayer playerImpl) {
 		super(playerCount);
 		this.playerImpl = playerImpl;
-		setTimer(new Timer(25, null));
 		loadVideo(path);
 	}
 
@@ -67,7 +64,6 @@ public class VideoPlayer extends VideoComponent {
 	public void pause() {
 		setState(State.IDLE);
 		getVideoImpl().pause();
-		getTimer().stop();
 	}
 
 	public void play() {
@@ -76,14 +72,12 @@ public class VideoPlayer extends VideoComponent {
 		clearOverlayImage();
 		getVideoImpl().startRunning();
 		getVideoImpl().play();
-		getTimer().restart();
 	}
 
 	public void stop() {
 		setState(State.IDLE);
 		// clear all previously drawn overlays
 		clearOverlayImage();
-		getTimer().stop();
 		// set position to 0 here and for player this instance and its 'native' implementation
 		setPosition(0);
 		getVideoImpl().stop();

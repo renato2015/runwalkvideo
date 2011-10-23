@@ -1,10 +1,8 @@
 package com.runwalk.video.media;
 
-import java.io.File;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.Timer;
 
 import org.jdesktop.application.Action;
 
@@ -25,7 +23,6 @@ public class VideoCapturer extends VideoComponent {
 	
 	VideoCapturer() {
 		super(++capturerCount);
-		setTimer(new Timer(1000, null));
 	}
 	
 	@Action
@@ -60,18 +57,17 @@ public class VideoCapturer extends VideoComponent {
 		capturerCount++;
 	}
 
-	public void startRecording(File videoFile) {
-		if (videoFile == null) {
+	public void startRecording(String videoPath) {
+		if (videoPath == null) {
 			throw new IllegalArgumentException("No valid file or recording specified");
 		} 
-		getVideoImpl().startRecording(videoFile);
-		getLogger().debug("Recording to file " + videoFile.getAbsolutePath());
-		getTimer().restart();
+		setVideoPath(videoPath);
+		getVideoImpl().startRecording(videoPath);
+		getLogger().debug("Recording to file " + videoPath );
 		setState(State.RECORDING);
 	}
 
 	public void stopRecording() {
-		getTimer().stop();
 		getVideoImpl().stopRecording();
 		setIdle(true);
 	}
