@@ -124,8 +124,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 		return null;
 	}
 
-	public void startRecording(File destFile) {
-		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, destFile.getAbsolutePath(), 25);
+	public void startRecording(String videoPath) {
+		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, videoPath, 25);
 		System.out.println("startRecording result: "+ result);
 		
 		Thread thread = new Thread(new Runnable() {

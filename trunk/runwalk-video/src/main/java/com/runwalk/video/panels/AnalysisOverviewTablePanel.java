@@ -82,7 +82,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
 		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
-		refreshVideoFilesTask.addTaskListener(new TaskExecutor<Boolean, Void>(RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION));
+		refreshVideoFilesTask.addTaskListener(new TaskExecutor<Boolean, Void>(getApplicationActionMap(), RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION, this));
 		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 			@Override

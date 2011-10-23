@@ -15,7 +15,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 	private final VideoFileManager videoFileManager;
 	private final Iterable<VideoCapturer> capturers;
 	private final Analysis analysis;
-	private volatile boolean recording;
+	private volatile boolean recording = false;
 
 	public RecordTask(VideoFileManager videoFileManager, DaoService daoService, 
 			Iterable<VideoCapturer> capturers, Analysis analysis) {
@@ -24,7 +24,6 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 		this.videoFileManager = videoFileManager;
 		this.capturers = capturers;
 		this.analysis = analysis;
-		this.recording = true;
 	}
 
 	protected Boolean doInBackground() throws Exception {
@@ -36,6 +35,33 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			}
 		}
 		return stopRecording();
+	}
+	
+	/**
+	 * Start recording.
+	 */
+	private void startRecording() {
+		for (VideoCapturer capturer : getCapturers()) {
+			Recording recording = new Recording(getAnalysis());
+			// persist recording first, then add it to the analysis
+			getDaoService().getDao(Recording.class).persist(recording);
+			getAnalysis().addRecording(recording);
+			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
+			getVideoFileManager().addToCache(recording, videoFile);
+			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
+				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
+			}
+			File parentDir = videoFile.getParentFile();
+			if (!parentDir.exists()) {
+				boolean mkdirs = parentDir.mkdirs();
+				getLogger().debug("Directory creation result for " + parentDir.getAbsolutePath() + " is " + mkdirs);
+			}
+			recording.setRecordingStatus(RecordingStatus.RECORDING);
+			capturer.startRecording(videoFile.getAbsolutePath());
+			// set recording to true if recording / file key value pair added to file manager
+			setRecording(true);
+		}
+		message("recordingMessage", getAnalysis().getClient().toString());
 	}
 
 	/**
@@ -64,30 +90,6 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 		return result;
 	}
 
-	/**
-	 * Start recording.
-	 */
-	private void startRecording() {
-		for (VideoCapturer capturer : getCapturers()) {
-			Recording recording = new Recording(getAnalysis());
-			// persist recording first, then add it to the analysis
-			getDaoService().getDao(Recording.class).persist(recording);
-			getAnalysis().addRecording(recording);
-			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
-			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
-				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
-			}
-			File parentDir = videoFile.getParentFile();
-			if (!parentDir.exists()) {
-				boolean mkdirs = parentDir.mkdirs();
-				getLogger().debug("Directory creation result for " + parentDir.getAbsolutePath() + " is " + mkdirs);
-			}
-			recording.setRecordingStatus(RecordingStatus.RECORDING);
-			capturer.startRecording(videoFile);
-		}
-		message("recordingMessage", getAnalysis().getClient().toString());
-	}
-	
 	public boolean isRecording() {
 		return this.recording;
 	}

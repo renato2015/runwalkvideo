@@ -6,6 +6,7 @@ import java.awt.Window;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 
@@ -18,7 +19,7 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 	
 	@SuppressWarnings("deprecation")
 	public AbstractTask(String name) {
-		super(RunwalkVideoApp.getApplication(), name);
+		super(Application.getInstance(), name);
 		logger = Logger.getLogger(getClass());
 	}
 

@@ -1,7 +1,6 @@
 package com.runwalk.video;
 
 import java.awt.Component;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.EventObject;
 import java.util.Map;
@@ -214,7 +213,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
 		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
-		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION));
+		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION, getMainFrame()));
 		return refreshTask;
 	}
 
@@ -337,11 +336,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	public void showMessage(String msg) {
 		getStatusPanel().showMessage(msg);
-	}
-
-	public void showError(String error) {
-		Toolkit.getDefaultToolkit().beep();
-		getStatusPanel().showErrorMessage(error);
 	}
 
 	//getters for action maps in this application

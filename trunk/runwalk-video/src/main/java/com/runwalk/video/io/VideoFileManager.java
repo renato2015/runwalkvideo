@@ -50,35 +50,49 @@ public class VideoFileManager {
 	 * @return The found recording
 	 */
 	public Recording getRecording(String path) {
-		return recordingFileMap.inverse().get(new File(path));
+		Recording result = null;
+		if (path != null ) {
+			File videoFile = new File(path);
+			result = recordingFileMap.inverse().get(videoFile);
+		}
+		return result;
 	}
 	
-	private File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
-		File videoFile = recordingFileMap.get(recording);
-		if (videoFile == null || !canReadAndExists(videoFile))  {
-			File compressedVideoFile = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
-			File uncompressedVideoFile = getUncompressedVideoFile(recording);
-			if (canReadAndExists(compressedVideoFile)) {
-				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
-				// duration wasn't saved.. set again
-				videoFile = compressedVideoFile;
-				checkRecordingDuration(recording, videoFile);
-			} else if (canReadAndExists(uncompressedVideoFile)) {
-				recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-				// duration wasn't saved.. set again
-				videoFile = uncompressedVideoFile;
-				checkRecordingDuration(recording, videoFile);
-			} else if (recording.getDuration() == 0) {
-				// video file does not exist and duration is set to 0, prolly nothing recorded yet
-				recording.setRecordingStatus(RecordingStatus.READY);
-				videoFile = uncompressedVideoFile;
-			} else {
-				LOGGER.warn("No videofile found for recording with filename " + recording.getVideoFileName());
-				recording.setRecordingStatus(RecordingStatus.NON_EXISTANT_FILE);
-			} 
-			recordingFileMap.put(recording, videoFile);
+	public boolean addToCache(Recording recording, File videoFile) {
+		if (videoFile != null) {
+			return recordingFileMap.put(recording, videoFile) != null;
 		}
-		return videoFile;
+		return false;
+	}
+	
+	private  File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
+		synchronized(recordingFileMap) {
+			File videoFile = recordingFileMap.get(recording);
+			if (videoFile == null || !canReadAndExists(videoFile))  {
+				File compressedVideoFile = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
+				File uncompressedVideoFile = getUncompressedVideoFile(recording);
+				if (canReadAndExists(compressedVideoFile)) {
+					recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+					// duration wasn't saved.. set again
+					videoFile = compressedVideoFile;
+					checkRecordingDuration(recording, videoFile);
+				} else if (canReadAndExists(uncompressedVideoFile)) {
+					recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+					// duration wasn't saved.. set again
+					videoFile = uncompressedVideoFile;
+					checkRecordingDuration(recording, videoFile);
+				} else if (recording.getDuration() == 0) {
+					// video file does not exist and duration is set to 0, prolly nothing recorded yet
+					recording.setRecordingStatus(RecordingStatus.READY);
+					videoFile = uncompressedVideoFile;
+				} else {
+					LOGGER.warn("No videofile found for recording with filename " + recording.getVideoFileName());
+					recording.setRecordingStatus(RecordingStatus.NON_EXISTANT_FILE);
+				} 
+				addToCache(recording, videoFile);
+			}
+			return videoFile;
+		}
 	}
 	
 	/**
