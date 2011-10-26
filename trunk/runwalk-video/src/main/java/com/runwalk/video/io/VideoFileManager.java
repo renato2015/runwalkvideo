@@ -59,8 +59,11 @@ public class VideoFileManager {
 	}
 	
 	public boolean addToCache(Recording recording, File videoFile) {
-		if (videoFile != null) {
+		if (videoFile != null && !recordingFileMap.containsValue(videoFile)) {
 			return recordingFileMap.put(recording, videoFile) != null;
+		} else if (recordingFileMap.containsValue(videoFile)) {
+			// for some reason a file is linked twice to a recording..
+			LOGGER.warn("Videofile is already present in cache for filename " + recording.getVideoFileName());
 		}
 		return false;
 	}
