@@ -10,8 +10,6 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 
-import com.runwalk.video.RunwalkVideoApp;
-
 public abstract class AbstractTask<T, V> extends Task<T, V> {
 	private static final String ERROR_MESSAGE = "errorMessage";
 	

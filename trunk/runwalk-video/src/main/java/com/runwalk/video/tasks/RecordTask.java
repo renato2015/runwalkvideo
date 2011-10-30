@@ -70,28 +70,33 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 	 * @return return <code>true</code> if recording succeeded
 	 */
 	private Boolean stopRecording() {
-		boolean result = false;
+		boolean result = true;
 		for (VideoCapturer capturer : getCapturers()) {
 			capturer.stopRecording();
-			String videoPath = capturer.getVideoPath();
-			Recording recording = getVideoFileManager().getRecording(videoPath);
-			if ("none".equals(capturer.getCaptureEncoderName())) {
-				recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
-			} else {
-				recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+			for (Recording recording : getAnalysis().getRecordings()) {
+				String videoPath = capturer.getVideoPath();
+				File videoFile = getVideoFileManager().getVideoFile(recording);
+				result = result &= videoFile != null;
+				if (!result) {
+					errorMessage("errorMessage", videoFile.getAbsoluteFile());
+				} else {
+					
+				}
+				if (videoPath != null && videoPath.equals(videoFile.getAbsolutePath())) {
+					if ("none".equals(capturer.getCaptureEncoderName())) {
+						recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+					} else {
+						recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+					}
+				}
 			}
-			File recordedFile = getVideoFileManager().getVideoFile(recording);
-			result = result |= recordedFile != null;
-			if (!result) {
-				errorMessage("errorMessage", recordedFile.getAbsoluteFile());
-			}
-			message("endMessage", getAnalysis().getClient().toString());
 		}
+		message("endMessage", getAnalysis().getClient().toString());
 		return result;
 	}
 
 	public boolean isRecording() {
-		return this.recording;
+		return recording;
 	}
 	
 	public void setRecording(boolean recording) {
