@@ -26,7 +26,6 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.matchers.Matcher;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
@@ -40,7 +39,6 @@ import com.runwalk.video.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.ui.DateTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
-import com.runwalk.video.util.TaskExecutor;
 
 @SuppressWarnings("serial")
 public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
@@ -82,7 +80,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
 		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
-		refreshVideoFilesTask.addTaskListener(new TaskExecutor<Boolean, Void>(getApplicationActionMap(), RunwalkVideoApp.CHECK_FREE_DISK_SPACE_ACTION, this));
 		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 			@Override

@@ -214,6 +214,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public Task<Boolean, Void> refresh() {
 		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION, getMainFrame()));
+		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), CHECK_FREE_DISK_SPACE_ACTION, getMainFrame()));
 		return refreshTask;
 	}
 
@@ -333,11 +334,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private UndoableEditListener createUndoableEditListener() {
 		return getApplicationActions().getUndoableEditListener();
 	}
-
-	public void showMessage(String msg) {
-		getStatusPanel().showMessage(msg);
-	}
-
+	
 	//getters for action maps in this application
 	public ActionMap getActionMap(Object obj) {
 		return getContext().getActionMap(obj);

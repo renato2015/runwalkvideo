@@ -1,15 +1,16 @@
 package com.runwalk.video.io;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
@@ -34,8 +35,10 @@ public class VideoFileManager {
 
 	private static final Logger LOGGER = Logger.getLogger(VideoFileManager.class);
 
-	private BiMap<Recording, File> recordingFileMap = HashBiMap.create();
-
+	private Map<Recording, File> recordingFileMap = new HashMap<Recording, File>();
+	/** A sorted view on the key set of the cached {@link #recordingFileMap}. */
+	private Set<Recording> sortedRecordings = new TreeSet<Recording>();
+	
 	private final AppSettings appSettings;
 
 	public VideoFileManager(AppSettings appSettings) {
@@ -43,27 +46,41 @@ public class VideoFileManager {
 	}
 	
 	/** 
-	 * Get a {@link Recording} from the cache that represents the video on the given path.
-	 * Will return <code>null</code> if nothing was found.
+	 * Get a {@link Recording} from the cache that is associated with the video file on the 
+	 * given path. Will return <code>null</code> if nothing was found. The iteration order 
+	 * is determined by the lastmodified timestamp of the {@link Recording} bean.
 	 * 
 	 * @param path The path to get the Recording for
 	 * @return The found recording
 	 */
-	public Recording getRecording(String path) {
-		Recording result = null;
-		if (path != null ) {
-			File videoFile = new File(path);
-			result = recordingFileMap.inverse().get(videoFile);
+	public Recording getRecording(String videoPath) {
+		File videoFile = new File(videoPath);
+		// worst case O(n) complexity for this operation
+		int i = 0;
+		for (Recording recording : sortedRecordings) {
+			// O(1) complexity for this lookup
+			File file = recordingFileMap.get(recording);
+			i++;
+			if (videoFile.equals(file)) {
+				Logger.getLogger(VideoFileManager.class).debug("Recording found after " + i + " iterations");
+				return recording;
+			}
 		}
-		return result;
+		return null;
 	}
 	
 	public boolean addToCache(Recording recording, File videoFile) {
-		if (videoFile != null && !recordingFileMap.containsValue(videoFile)) {
-			return recordingFileMap.put(recording, videoFile) != null;
-		} else if (recordingFileMap.containsValue(videoFile)) {
-			// for some reason a file is linked twice to a recording..
-			LOGGER.warn("Videofile is already present in cache for filename " + recording.getVideoFileName());
+		boolean containsKey = recordingFileMap.containsKey(recording);
+		synchronized(recordingFileMap) {
+			if (videoFile != null && !containsKey) {
+				// O(log(n)) time complexity for this operation
+				sortedRecordings.add(recording);
+				// O(1) time complexity for this operation
+				return recordingFileMap.put(recording, videoFile) != null;
+			} else if (containsKey) {
+				// for some reason a file is linked twice to a recording..
+				LOGGER.warn("Videofile is already present in cache for filename " + recording.getVideoFileName());
+			}
 		}
 		return false;
 	}

@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.runwalk.video.dao.impl.JpaClientDao;
-
 public abstract class AbstractDaoService implements DaoService {
 
 	private final Map<Class<?>,Dao<?>> daos = new HashMap<Class<?>, Dao<?>>();
@@ -23,8 +21,8 @@ public abstract class AbstractDaoService implements DaoService {
 		return daos;
 	}
 
-	public void addDao(JpaClientDao clientDao) {
-		getDaos().put(clientDao.getTypeParameter(), clientDao);
+	public void addDao(Dao<?> dao) {
+		getDaos().put(dao.getTypeParameter(), dao);
 	}
 	
 	public abstract void shutdown();

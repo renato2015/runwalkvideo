@@ -78,7 +78,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, 
-	MediaActionConstants, Containable, ActionListener {
+MediaActionConstants, Containable, ActionListener {
 
 	private static final String TITLE_SEPARATOR = " > ";	
 
@@ -97,7 +97,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
-	
+
 	private JLabel elapsedTimeLabel;
 	private JSlider scroll;
 
@@ -111,7 +111,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final WindowManager windowManager;
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
-	
+
 	private final Timer timer;
 
 	/**
@@ -157,7 +157,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		bindingGroup.addBinding(enabledBinding);
 
 		timer = new Timer(50, this);
-		
+
 		setSlider(new JSlider(JSlider.HORIZONTAL, 0, 1000, 0));
 		getSlider().setPaintTicks(false);
 		getSlider().setPaintLabels(true);
@@ -257,14 +257,16 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = STOP_ENABLED)
-	public void stop() {
+	public Task<?, ?> stop() {
+		Task<?, ?> result = null;
 		setStopEnabled(false);
 		timer.stop();
 		if (isRecording()) {
 			stopRecording();
 		} else {
-			stopPlaying();
+			result = stopPlaying();
 		}
+		return result;
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED, selectedProperty = PLAYING )
@@ -349,33 +351,43 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void slower(ActionEvent event) {
-		setPlayRate(event);
+	public Task<?, ?> slower(ActionEvent event) {
+		return changePlayRate(event);
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void faster(ActionEvent event) {
-		setPlayRate(event);
+	public Task<?, ?> faster(ActionEvent event) {
+		return changePlayRate(event);
 	}
-	
-	private void setPlayRate(ActionEvent event) {
-		for (VideoPlayer player : getPlayers()) {
-			if (!isPlaying()) {
-				// set selectedProperty manually as it won't be set when invoking it from code
-				setPlaying(true);
-				invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
-			} else {
-				float playRate = player.getPlayRate();
-				if (event.getActionCommand().equals(SLOWER_ACTION)) {
-					playRate = player.slower();
-				} else if (event.getActionCommand().equals(FASTER_ACTION)) {
-					playRate = player.faster();
+
+	private Task<?, ?> changePlayRate(final ActionEvent event) {
+		Task<?, ?> result = null;
+		if (!isPlaying()) {
+			// set selectedProperty manually as it won't be set when invoking it from code
+			setPlaying(true);
+			invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
+		} else {
+			result = new AbstractTask<Void, Void>(CHANGE_PLAY_RATE_ACTION) {
+
+				protected Void doInBackground() throws Exception {
+					float playRate = getAppSettings().getPlayRate();
+					for (VideoPlayer player : getPlayers()) {
+						if (event.getActionCommand().equals(SLOWER_ACTION)) {
+							playRate = player.slower();
+						} else if (event.getActionCommand().equals(FASTER_ACTION)) {
+							playRate = player.faster();
+						}
+						// save play rate to settings
+					}
+					getAppSettings().setPlayRate(playRate);
+					message("startMessage", playRate);
+					return null;
 				}
-				// save play rate to settings
-				getAppSettings().setPlayRate(playRate);
-				getApplication().showMessage("Afspelen aan "+ player.getPlayRate() + "x gestart.");
-			}
+				
+			};
+			
 		}
+		return result;
 	}
 
 	@Action
@@ -429,7 +441,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 		};
 	}
-	
+
 	private void setPlayerPosition(VideoPlayer videoPlayer, int position) {
 		videoPlayer.setPosition(position);
 		if (videoPlayer == getFrontMostPlayer()) {
@@ -457,7 +469,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public void previousKeyframe() {
+	public void previousKeyframe(ActionEvent event) {
 		for (VideoPlayer videoPlayer : getPlayers()) {
 			videoPlayer.pauseIfPlaying();
 			String videoPath = videoPlayer.getVideoPath();
@@ -471,7 +483,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					return;
 				}
 			}
-			stop();
+			invokeAction(STOP_ACTION, event.getSource());
 		}
 	}
 
@@ -600,9 +612,10 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		if (recordTask == null && analysis != null) {
 			setRecordingEnabled(false);
 			setStopEnabled(true);
+			timer.restart();
 			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), analysis);
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-		
+
 				@Override
 				public void succeeded(TaskEvent<Boolean> event) {
 					getAnalysisOverviewTablePanel().setCompressionEnabled(event.getValue());
@@ -617,7 +630,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			});
 			recordTask = result;
-			timer.restart();
 		}
 		return result;
 	}
@@ -634,13 +646,19 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		recordTask = null;
 	}
 
-	private void stopPlaying() {
-		for (VideoPlayer player : getPlayers()) {
-			player.stop();
-		}
+	private Task<?, ?> stopPlaying() {
 		setPlaying(false);
 		setStatusInfo(0, getFrontMostPlayer().getDuration());
-		getApplication().showMessage("Afspelen gestopt.");
+		return new AbstractTask<Void, Void>(STOP_PLAYING_ACTION) {
+			
+			protected Void doInBackground() throws Exception {
+				for (VideoPlayer player : getPlayers()) {
+					player.stop();
+				}
+				message("startMessage");
+				return null;
+			}
+		};
 	}
 
 	public void openRecordings(Analysis analysis) {
@@ -651,8 +669,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			final Recording recording = analysis.getRecordings().get(i);
 			if (recording.isRecorded()) {
 				final File videoFile = getVideoFileManager().getVideoFile(recording);
-				if (recordingCount < getPlayers().size()) {
-					videoPlayer = getPlayers().get(recordingCount);
+				if (recordingCount <= getPlayers().size()) {
+					videoPlayer = getPlayers().get(recordingCount-1);
 					// TODO quick and dirty fix for graph rebuilding here.. cleanup please
 					if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
 						//getWindowManager().disposeWindow(player);
@@ -744,7 +762,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		}
 		return result;
 	}
-	
+
 	public void actionPerformed(ActionEvent evt) {
 		if (evt.getSource() instanceof Timer) {
 			if (getFrontMostCapturer() != null && isRecording()) {
@@ -822,7 +840,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		boolean isIdle = isActive && (frontMostComponent == null || frontMostComponent.isIdle());
 		// check whether the component is not idle and if it is of a similar class as the frontmost component
 		boolean isWorkingAndSimilar = frontMostComponent != null && !frontMostComponent.isIdle() && 
-		videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
+				videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
 		if (isIdle || isWorkingAndSimilar) {
 			frontMostComponent = videoComponent;
 			StringBuilder title = new StringBuilder(getTitle());

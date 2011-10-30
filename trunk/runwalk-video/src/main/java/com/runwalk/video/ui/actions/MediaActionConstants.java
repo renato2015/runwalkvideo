@@ -24,7 +24,11 @@ public interface MediaActionConstants {
 	
 	String STOP_ACTION = "stop";
 	
+	String STOP_PLAYING_ACTION = "stopPlaying";
+	
 	String RECORD_ACTION = "record";
+	
+	String CHANGE_PLAY_RATE_ACTION = "changePlayRate";
 	
 	String PREVIOUS_KEYFRAME_ACTION = "previousKeyframe";
 	

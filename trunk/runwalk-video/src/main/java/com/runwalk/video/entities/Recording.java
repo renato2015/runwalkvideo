@@ -195,7 +195,15 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 
 	public int compareTo(Recording o) {
-		return this.equals(o) ? 0 : lastModified.compareTo(o.lastModified);
+		int result = 0;
+		if (!equals(o)) {
+			if (o != null && lastModified != null) {
+				result = lastModified.compareTo(o.lastModified);
+			} else {
+				result = lastModified == null ? -1 : 1;
+			}
+		}
+		return result;
 	}
 
 	@Override
