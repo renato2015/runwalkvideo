@@ -64,8 +64,11 @@ public aspect AppComponentAspect {
 	}
 
 	public ApplicationActionMap IAppComponent.getApplicationActionMap() {
-		Class<?> stopClass = getStopClass(getClass());
-		return getContext().getActionMap(stopClass, this);
+		Class<?> theClass = getClass();
+		while(theClass.getSuperclass() != null) {
+			theClass = theClass.getSuperclass();
+		}
+		return getContext().getActionMap(theClass, this);
 	}
 	
 	/**
@@ -95,13 +98,6 @@ public aspect AppComponentAspect {
 			}*/
 			action.actionPerformed(actionEvent);
 		}
-	}
-	
-	private Class<?> IAppComponent.getStopClass(Class<?> theClass) {
-		while(theClass.getSuperclass() != null) {
-			theClass = theClass.getSuperclass();
-		}
-		return theClass;
 	}
 	
 }
