@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
@@ -44,17 +43,6 @@ public class AppUtil {
 		}
 		return directory;
 	}
-	
-	public static Date granularity(Date date, int precision) {
-		Date result = null;
-		if (date != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			cal.set(precision, 0);
-			result = cal.getTime();
-		}
-		return result;
-	}
 
 	public static float round(float Rval, int Rpl) {
 		float p = (float)Math.pow(10,Rpl);
@@ -72,10 +60,5 @@ public class AppUtil {
 		}
 		return result.toString();
 	}
-	
-	public static String firstLettersToUpperCase(String s) {
-		return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1) : s;
-	}
-	
 
 }

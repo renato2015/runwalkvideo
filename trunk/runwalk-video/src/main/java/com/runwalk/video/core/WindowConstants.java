@@ -1,4 +1,4 @@
-package com.runwalk.video.ui;
+package com.runwalk.video.core;
 
 public interface WindowConstants {
 	

@@ -13,8 +13,8 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import com.runwalk.video.RunwalkVideoApp;
-import com.runwalk.video.ui.AppComponent;
-import com.runwalk.video.ui.IAppComponent;
+import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.core.IAppComponent;
 
 /**
  * This aspect will add common BSAF functionalities to classes implementing the {@link AppComponent} marker interface.

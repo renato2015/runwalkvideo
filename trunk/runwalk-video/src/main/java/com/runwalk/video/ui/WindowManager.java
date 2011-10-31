@@ -15,6 +15,10 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.FullScreenSupport;
+import com.runwalk.video.core.SelfContained;
+import com.runwalk.video.core.WindowConstants;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;

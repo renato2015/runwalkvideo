@@ -54,6 +54,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.FullScreenSupport;
+import com.runwalk.video.core.OnEdt;
+import com.runwalk.video.core.WindowConstants;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Keyframe;
@@ -66,10 +70,6 @@ import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
-import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.FullScreenSupport;
-import com.runwalk.video.ui.OnEdt;
-import com.runwalk.video.ui.WindowConstants;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.MediaActionConstants;
@@ -669,8 +669,8 @@ MediaActionConstants, Containable, ActionListener {
 			final Recording recording = analysis.getRecordings().get(i);
 			if (recording.isRecorded()) {
 				final File videoFile = getVideoFileManager().getVideoFile(recording);
-				if (recordingCount <= getPlayers().size()) {
-					videoPlayer = getPlayers().get(recordingCount-1);
+				if (recordingCount < getPlayers().size()) {
+					videoPlayer = getPlayers().get(recordingCount);
 					// TODO quick and dirty fix for graph rebuilding here.. cleanup please
 					if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
 						//getWindowManager().disposeWindow(player);

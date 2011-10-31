@@ -10,10 +10,10 @@ import javax.swing.ActionMap;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
 
-import com.runwalk.video.ui.AppComponent;
-import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.PropertyChangeSupport;
-import com.runwalk.video.ui.SelfContained;
+import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.PropertyChangeSupport;
+import com.runwalk.video.core.SelfContained;
 
 /**
  * This abstraction allows you to make easy reuse of the common video UI functionality  

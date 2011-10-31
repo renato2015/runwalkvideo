@@ -16,10 +16,10 @@ import javax.swing.filechooser.FileFilter;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
+import com.runwalk.video.core.PropertyChangeSupport;
+import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
-import com.runwalk.video.ui.PropertyChangeSupport;
-import com.runwalk.video.ui.SelfContained;
 import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;

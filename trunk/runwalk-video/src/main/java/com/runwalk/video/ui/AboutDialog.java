@@ -14,6 +14,8 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 
+import com.runwalk.video.core.AppComponent;
+
 @SuppressWarnings("serial")
 @AppComponent
 public class AboutDialog extends JDialog {

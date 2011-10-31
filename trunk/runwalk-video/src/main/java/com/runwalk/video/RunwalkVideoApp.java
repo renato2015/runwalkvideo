@@ -26,6 +26,7 @@ import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
 
 import com.google.common.collect.Maps;
+import com.runwalk.video.core.Containable;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.impl.JpaClientDao;
 import com.runwalk.video.dao.impl.JpaDaoService;
@@ -43,7 +44,6 @@ import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.Containable;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;

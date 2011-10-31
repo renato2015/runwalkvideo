@@ -1,4 +1,4 @@
-package com.runwalk.video.ui;
+package com.runwalk.video.core;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

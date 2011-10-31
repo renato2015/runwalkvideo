@@ -31,9 +31,9 @@ import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
+import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.core.IAppComponent;
 import com.runwalk.video.entities.SerializableEntity;
-import com.runwalk.video.ui.AppComponent;
-import com.runwalk.video.ui.IAppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")

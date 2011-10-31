@@ -14,6 +14,8 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.session.PropertySupport;
 import org.jdesktop.application.session.WindowState;
 
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.SelfContained;
 import com.tomtessier.scrollabledesktop.BaseInternalFrame;
 
 /**

@@ -4,7 +4,7 @@ import javax.swing.Action;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.ui.actions.ApplicationActions;
 
 @AppComponent

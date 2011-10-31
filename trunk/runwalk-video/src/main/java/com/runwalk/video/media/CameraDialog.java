@@ -33,8 +33,8 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.ui.AppComponent;
-import com.runwalk.video.ui.SelfContained;
+import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 

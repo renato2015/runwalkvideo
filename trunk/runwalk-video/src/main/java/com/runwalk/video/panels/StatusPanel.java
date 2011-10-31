@@ -18,7 +18,7 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.log4j.Level;
 import org.jdesktop.application.TaskMonitor;
 
-import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")

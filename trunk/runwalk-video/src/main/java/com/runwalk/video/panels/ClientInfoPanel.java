@@ -45,10 +45,10 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.matchers.TextMatcherEditor;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 
+import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Person.Gender;
-import com.runwalk.video.ui.AppComponent;
 import com.runwalk.video.ui.EnumButtonGroup;
 import com.runwalk.video.util.AppSettings;
 

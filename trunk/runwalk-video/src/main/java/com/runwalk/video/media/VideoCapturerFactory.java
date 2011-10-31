@@ -11,9 +11,9 @@ import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
+import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.media.dsj.DSJCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeCapturerFactory;
-import com.runwalk.video.ui.SelfContained;
 
 public abstract class VideoCapturerFactory {
 
