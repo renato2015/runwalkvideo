@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
-import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 
@@ -85,7 +85,7 @@ public class AppSettings implements Serializable {
 				if (exc.getMessage() != null) {
 					logger.error("Settings file " + settingsFile.getName() + " seems to be corrupt. Attempting to delete..", exc);
 					try {
-						ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+						ApplicationContext appContext = Application.getInstance().getContext();
 						appContext.getLocalStorage().deleteFile(settingsFile.getName());
 						logger.warn("Settings file deleted. Default settings will be applied");
 					} catch (IOException e) {
@@ -121,7 +121,7 @@ public class AppSettings implements Serializable {
 	}
 	
 	public File getLocalStorageDir() {
-		ApplicationContext appContext = RunwalkVideoApp.getApplication().getContext();
+		ApplicationContext appContext = Application.getInstance().getContext();
 		return appContext.getLocalStorage().getDirectory();
 	}
 

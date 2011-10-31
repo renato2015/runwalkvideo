@@ -17,6 +17,9 @@ import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.ApplicationAction;
 
+import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.core.OnEdt;
+import com.runwalk.video.core.WindowConstants;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.util.ResourceInjector;
 

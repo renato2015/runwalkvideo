@@ -1,4 +1,4 @@
-package com.runwalk.video.ui;
+package com.runwalk.video.core;
 
 /**
  * This interface serves as a marker interface. The aspectJ compiler will weave some 

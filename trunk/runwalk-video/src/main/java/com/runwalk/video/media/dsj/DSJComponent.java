@@ -17,13 +17,13 @@ import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.FullScreenSupport;
+import com.runwalk.video.core.OnEdt;
+import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
-import com.runwalk.video.ui.Containable;
-import com.runwalk.video.ui.FullScreenSupport;
-import com.runwalk.video.ui.OnEdt;
-import com.runwalk.video.ui.PropertyChangeSupport;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;

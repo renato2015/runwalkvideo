@@ -14,6 +14,7 @@ import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Property;
 
 import com.google.common.base.Preconditions;
+import com.runwalk.video.core.PropertyChangeSupport;
 
 /**
  * This work is hereby released into the Public Domain.

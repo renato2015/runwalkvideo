@@ -7,7 +7,7 @@ import javax.swing.ActionMap;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 
-import com.runwalk.video.ui.AppComponent;
+import com.runwalk.video.core.AppComponent;
 
 @AppComponent
 public class TaskExecutor<T, V> extends TaskListener.Adapter<T, V> {

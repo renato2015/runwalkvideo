@@ -1,4 +1,4 @@
-package com.runwalk.video.ui;
+package com.runwalk.video.core;
 
 import java.awt.EventQueue;
 import java.lang.annotation.ElementType;

@@ -7,7 +7,7 @@ import java.util.concurrent.FutureTask;
 
 import javax.swing.SwingUtilities;
 
-import com.runwalk.video.ui.OnEdt;
+import com.runwalk.video.core.OnEdt;
 
 public aspect OnEdtAspect {
 	pointcut invokeLater() : execution(@OnEdt+ void *(..));

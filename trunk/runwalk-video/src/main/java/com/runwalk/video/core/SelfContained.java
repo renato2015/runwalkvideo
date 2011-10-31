@@ -1,8 +1,9 @@
-package com.runwalk.video.ui;
+package com.runwalk.video.core;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
+
 
 /**
  * This class will wrap a {@link BaseInternalFrame} or a {@link Window} for use with the application windowing framework.
