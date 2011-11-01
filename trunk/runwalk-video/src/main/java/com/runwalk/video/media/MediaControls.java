@@ -839,16 +839,19 @@ MediaActionConstants, Containable, ActionListener {
 		boolean isActive = videoComponent != null && videoComponent.isActive();
 		boolean isIdle = isActive && (frontMostComponent == null || frontMostComponent.isIdle());
 		// check whether the component is not idle and if it is of a similar class as the frontmost component
-		boolean isWorkingAndSimilar = frontMostComponent != null && !frontMostComponent.isIdle() && 
+		boolean isSimilarAndWorking = frontMostComponent != null && !frontMostComponent.isIdle() && 
 				videoComponent != null && videoComponent.getClass() == frontMostComponent.getClass();
-		if (isIdle || isWorkingAndSimilar) {
+		if (isIdle || isSimilarAndWorking) {
 			frontMostComponent = videoComponent;
 			StringBuilder title = new StringBuilder(getTitle());
 			title.append(TITLE_SEPARATOR).append(videoComponent.getTitle());
 			if (isIdle) {
 				if (videoComponent instanceof VideoCapturer) {
 					clearStatusInfo();
-					setRecordingEnabled(true);
+					// only set if the videoImpl is not a self containing (native) window
+					if (videoComponent.isFocusable()) {
+						setRecordingEnabled(true);
+					}
 					setPlayerControlsEnabled(false);
 					setStopEnabled(false);
 				} else {
@@ -905,9 +908,12 @@ MediaActionConstants, Containable, ActionListener {
 	}
 
 	public void capturersToFront() {
-		// TODO flickering??
-		for (VideoCapturer capturer : getCapturers()) {
-			getWindowManager().toFront(capturer);
+		for (VideoCapturer videoCapturer : getCapturers()) {
+			getWindowManager().toFront(videoCapturer);
+			if (!videoCapturer.isFocusable()) {
+				// atm the only way to request focus for this window type
+				enableVideoComponentControls(videoCapturer);
+			}
 		}
 	}
 

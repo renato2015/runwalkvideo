@@ -47,10 +47,10 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			getDaoService().getDao(Recording.class).persist(recording);
 			getAnalysis().addRecording(recording);
 			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
-			getVideoFileManager().addToCache(recording, videoFile);
 			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
 				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
 			}
+			getVideoFileManager().addToCache(recording, videoFile);
 			File parentDir = videoFile.getParentFile();
 			if (!parentDir.exists()) {
 				boolean mkdirs = parentDir.mkdirs();

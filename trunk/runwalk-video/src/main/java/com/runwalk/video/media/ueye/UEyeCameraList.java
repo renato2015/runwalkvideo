@@ -6,18 +6,18 @@ import com.sun.jna.Structure;
  * a tool written by <a href="http://ochafik.free.fr/">Olivier Chafik</a> that <a href="http://code.google.com/p/jnaerator/wiki/CreditsAndLicense">uses a few opensource projects.</a>.<br>
  * For help, please visit <a href="http://nativelibs4java.googlecode.com/">NativeLibs4Java</a> , <a href="http://rococoa.dev.java.net/">Rococoa</a>, or <a href="http://jna.dev.java.net/">JNA</a>.
  */
-public class UEYE_CAMERA_LIST extends Structure {
+public class UEyeCameraList extends Structure {
 	/// Conversion Error : ULONG
 	public int dwCount;
 	/// C type : UEYE_CAMERA_INFO[1]
-	public UEYE_CAMERA_INFO[] uci = new UEYE_CAMERA_INFO[(1)];
+	public UEyeCameraInfo[] uci = new UEyeCameraInfo[(1)];
 	
-	public UEYE_CAMERA_LIST() {
+	public UEyeCameraList() {
 		super();
 	}
 	
 	/// @param uci C type : UEYE_CAMERA_INFO[1]
-	public UEYE_CAMERA_LIST(UEYE_CAMERA_INFO uci[]) {
+	public UEyeCameraList(UEyeCameraInfo uci[]) {
 		if (uci.length != this.uci.length) 
 			throw new java.lang.IllegalArgumentException("Wrong array size !");
 		this.uci = uci;
@@ -31,15 +31,15 @@ public class UEYE_CAMERA_LIST extends Structure {
 		return new ByValue(); 
 	}
 	
-	protected UEYE_CAMERA_LIST newInstance() { 
-		return new UEYE_CAMERA_LIST(); 
+	protected UEyeCameraList newInstance() { 
+		return new UEyeCameraList(); 
 	}
 	
-	public static class ByReference extends UEYE_CAMERA_LIST implements Structure.ByReference {
+	public static class ByReference extends UEyeCameraList implements Structure.ByReference {
 		
 	}
 	
-	public static class ByValue extends UEYE_CAMERA_LIST implements Structure.ByValue {
+	public static class ByValue extends UEyeCameraList implements Structure.ByValue {
 		
 	}
 }

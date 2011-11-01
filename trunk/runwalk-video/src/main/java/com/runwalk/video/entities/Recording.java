@@ -2,6 +2,7 @@ package com.runwalk.video.entities;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -69,17 +70,22 @@ public class Recording extends SerializableEntity<Recording> {
 	protected Recording() { }
 
 	public Recording(Analysis analysis) {
-		String date = AppUtil.formatDate(analysis.getCreationDate(), AppUtil.FILENAME_DATE_FORMATTER);
 		Client client = analysis.getClient();
 		int totalRecordings = 0;
 		for (Analysis an : client.getAnalyses()) {
 			totalRecordings += an.getRecordingCount();
 		}
-		String prefix = totalRecordings == 0 ? "" : totalRecordings + "_";
-		StringBuilder fileNameBuilder = new StringBuilder(prefix).append(client.getName()).append("_")
-		.append(client.getFirstname()).append("_").append(date).append(Recording.VIDEO_CONTAINER_FORMAT);
-		this.videoFileName = fileNameBuilder.toString().replaceAll(" ", "_");
+		this.videoFileName = buildFileName(analysis.getClient(), analysis.getCreationDate(), totalRecordings);
 		this.analysis = analysis;
+	}
+	
+	private String buildFileName(Client client, Date creationDate, int totalRecordings) {
+		String date = AppUtil.formatDate(creationDate, AppUtil.FILENAME_DATE_FORMATTER);
+		String prefix = totalRecordings == 0 ? "" : totalRecordings + "_";
+		return new StringBuilder(prefix).append(client.getName()).append("_")
+				.append(client.getFirstname()).append("_").append(date)
+				.append(Recording.VIDEO_CONTAINER_FORMAT)
+				.toString().replaceAll(" ", "_");
 	}
 
 	public Long getId() {
@@ -141,7 +147,6 @@ public class Recording extends SerializableEntity<Recording> {
 	 * @see VideoFileManager#getVideoFile(Recording)
 	 */
 	public void setRecordingStatus(RecordingStatus recordingStatus) {
-//		boolean wasRecorded = isRecorded();
 		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE && this.recordingStatus != null) {
 			firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
 			if (!recordingStatus.isErroneous()) {
@@ -151,9 +156,16 @@ public class Recording extends SerializableEntity<Recording> {
 		} else {
 			this.recordingStatus = recordingStatus;
 		}
-//		firePropertyChange(RECORDED, wasRecorded, isRecorded());
 	}
 	
+	public Long getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
+
 	public String getVideoFileName() {
 		return videoFileName;
 	}
@@ -197,10 +209,10 @@ public class Recording extends SerializableEntity<Recording> {
 	public int compareTo(Recording o) {
 		int result = 0;
 		if (!equals(o)) {
-			if (o != null && lastModified != null) {
+			if (lastModified != null && o != null && o.lastModified != null) {
 				result = lastModified.compareTo(o.lastModified);
 			} else {
-				result = lastModified == null ? -1 : 1;
+				result = o != null && getId() != null ? -getId().compareTo(o.getId()) : 1;
 			}
 		}
 		return result;

@@ -38,7 +38,6 @@ import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
 import com.runwalk.video.panels.ClientTablePanel;
 import com.runwalk.video.panels.StatusPanel;
-import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
@@ -50,7 +49,6 @@ import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.ApplicationActions;
 import com.runwalk.video.ui.actions.MediaActionConstants;
 import com.runwalk.video.util.AppSettings;
-import com.runwalk.video.util.TaskExecutor;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 /**
@@ -205,17 +203,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		AppSettings.getInstance().saveSettings();
 	}
 
-	@org.jdesktop.application.Action
-	public Task<Long, Void> checkFreeDiskSpace() {
-		return new CheckFreeDiskSpaceTask(getMainFrame(), getVideoFileManager());
-	}
-
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		RefreshTask refreshTask = new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
-		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), REFRESH_VIDEO_FILES_ACTION, getMainFrame()));
-		refreshTask.addTaskListener(new TaskExecutor<Boolean, Void>(getAnalysisOverviewTablePanel().getApplicationActionMap(), CHECK_FREE_DISK_SPACE_ACTION, getMainFrame()));
-		return refreshTask;
+		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 	}
 
 	@org.jdesktop.application.Action
