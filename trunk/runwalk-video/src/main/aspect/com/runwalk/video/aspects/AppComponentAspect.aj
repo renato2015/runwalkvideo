@@ -11,6 +11,7 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.TaskMonitor;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.core.AppComponent;
@@ -35,6 +36,10 @@ public aspect AppComponentAspect {
 	
 	public ApplicationContext IAppComponent.getContext() {
 		return getApplication().getContext();
+	}
+	
+	public TaskMonitor IAppComponent.getTaskMonitor() {
+		return getContext().getTaskMonitor();
 	}
 
 	public Logger IAppComponent.getLogger() {

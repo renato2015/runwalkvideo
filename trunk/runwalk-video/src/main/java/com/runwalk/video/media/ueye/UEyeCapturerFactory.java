@@ -8,7 +8,7 @@ import org.jdesktop.application.utils.PlatformType;
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.ueye.UEYE_CAMERA_LIST.ByReference;
+import com.runwalk.video.media.ueye.UEyeCameraList.ByReference;
 
 /**
  * This factory can be used as an entry point to communicate with a uEye camera using native code.
@@ -42,7 +42,7 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 		cameraNameIdMap = Maps.newHashMap();
 		ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
-			UEYE_CAMERA_INFO cameraInfo = cameraNames.uci[i];
+			UEyeCameraInfo cameraInfo = cameraNames.uci[i];
 			// cleanly copy the struct's info into this map to prevent memory leaking
 			cameraNameIdMap.put(cameraInfo.getModelInfo(), cameraInfo.dwCameraID);
 		}

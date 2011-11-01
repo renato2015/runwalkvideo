@@ -7,7 +7,7 @@ import com.sun.jna.Native;
  * a tool written by <a href="http://ochafik.free.fr/">Olivier Chafik</a> that <a href="http://code.google.com/p/jnaerator/wiki/CreditsAndLicense">uses a few opensource projects.</a>.<br>
  * For help, please visit <a href="http://nativelibs4java.googlecode.com/">NativeLibs4Java</a> , <a href="http://rococoa.dev.java.net/">Rococoa</a>, or <a href="http://jna.dev.java.net/">JNA</a>.
  */
-public class UEYE_CAMERA_INFO extends Structure {
+public class UEyeCameraInfo extends Structure {
 	/// this is the user definable camera ID
 	public int dwCameraID;
 	/// this is the systems enumeration ID
@@ -31,7 +31,7 @@ public class UEYE_CAMERA_INFO extends Structure {
 	/// C type : DWORD[15]
 	public int[] dwReserved = new int[(15)];
 	
-	public UEYE_CAMERA_INFO() {
+	public UEyeCameraInfo() {
 		super();
 	}
 	/**
@@ -46,7 +46,7 @@ public class UEYE_CAMERA_INFO extends Structure {
 	 * @param dwStatus various flags with camera status<br>
 	 * @param dwReserved C type : DWORD[15]
 	 */
-	public UEYE_CAMERA_INFO(int dwCameraID, int dwDeviceID, int dwSensorID, int dwInUse, byte[] SerNo, byte[] Model, int dwStatus, int dwReserved[]) {
+	public UEyeCameraInfo(int dwCameraID, int dwDeviceID, int dwSensorID, int dwInUse, byte[] SerNo, byte[] Model, int dwStatus, int dwReserved[]) {
 		this.dwCameraID = dwCameraID;
 		this.dwDeviceID = dwDeviceID;
 		this.dwSensorID = dwSensorID;
@@ -72,8 +72,8 @@ public class UEYE_CAMERA_INFO extends Structure {
 		return new ByValue(); 
 	}
 	
-	protected UEYE_CAMERA_INFO newInstance() { 
-		return new UEYE_CAMERA_INFO(); 
+	protected UEyeCameraInfo newInstance() { 
+		return new UEyeCameraInfo(); 
 	
 	}
 	
@@ -81,10 +81,10 @@ public class UEYE_CAMERA_INFO extends Structure {
 		return Structure.newArray(UEYE_CAMERA_INFO.class, arrayLength);
 	}*/
 	
-	public static class ByReference extends UEYE_CAMERA_INFO implements Structure.ByReference {
+	public static class ByReference extends UEyeCameraInfo implements Structure.ByReference {
 		
 	};
-	public static class ByValue extends UEYE_CAMERA_INFO implements Structure.ByValue {
+	public static class ByValue extends UEyeCameraInfo implements Structure.ByValue {
 		
 	};
 }

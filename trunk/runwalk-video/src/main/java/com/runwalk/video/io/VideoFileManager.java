@@ -62,7 +62,7 @@ public class VideoFileManager {
 			File file = recordingFileMap.get(recording);
 			i++;
 			if (videoFile.equals(file)) {
-				Logger.getLogger(VideoFileManager.class).debug("Recording found after " + i + " iterations");
+				LOGGER.debug("Recording found after " + i + " iterations");
 				return recording;
 			}
 		}
@@ -70,16 +70,19 @@ public class VideoFileManager {
 	}
 	
 	public boolean addToCache(Recording recording, File videoFile) {
-		boolean containsKey = recordingFileMap.containsKey(recording);
 		synchronized(recordingFileMap) {
-			if (videoFile != null && !containsKey) {
+			File cachedVideoFile = recordingFileMap.get(recording);
+			if (videoFile != null && cachedVideoFile == null) {
 				// O(log(n)) time complexity for this operation
 				sortedRecordings.add(recording);
 				// O(1) time complexity for this operation
 				return recordingFileMap.put(recording, videoFile) != null;
-			} else if (containsKey) {
-				// for some reason a file is linked twice to a recording..
-				LOGGER.warn("Videofile is already present in cache for filename " + recording.getVideoFileName());
+			} else if (cachedVideoFile != null && !cachedVideoFile.equals(videoFile)) {
+				LOGGER.debug("Videofile was already present in cache for filename " + recording.getVideoFileName());
+				// O(log(n)) time complexity for this operation
+				sortedRecordings.add(recording);
+				// O(1) time complexity for this operation
+				return recordingFileMap.put(recording, videoFile) != null;
 			}
 		}
 		return false;

@@ -1,6 +1,8 @@
 package com.runwalk.video.panels;
 
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +34,22 @@ import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.OrganiseVideoFilesTask;
+import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.ui.DateTableCellRenderer;
+import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
+public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> implements PropertyChangeListener {
 
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
-	
+
 	public static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
 	public static final String CLEANUP_VIDEO_FILES_ACTION = "cleanupVideoFiles";
 	public static final String SELECT_VIDEO_DIR_ACTION = "selectVideoDir";
@@ -75,8 +80,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton());
+		// add a listener to start tasks upon finishing the refresh task
+		getTaskMonitor().addPropertyChangeListener(this);
 	}
-	
+
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
 		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
@@ -86,9 +93,15 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 			public void succeeded(TaskEvent<Boolean> event) {
 				setCompressionEnabled(event.getValue());
 			}
-			
+
 		});
 		return refreshVideoFilesTask;
+	}
+
+	@Action
+	public Task<Long, Void> checkFreeDiskSpace() {
+		Window parentWindow = SwingUtilities.windowForComponent(this);
+		return new CheckFreeDiskSpaceTask(parentWindow, getVideoFileManager());
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -96,7 +109,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		Window parentWindow = SwingUtilities.windowForComponent(this);
 		return new CleanupVideoFilesTask(parentWindow, getVideoFileManager());
 	}
-	
+
 	@Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Void, Void> organiseVideoFiles() {
 		Object formatString = JOptionPane.showInputDialog(
@@ -149,7 +162,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		return result;
 	}
-	
+
 	private File selectDirectory(File chosenDir, String title) {
 		final JFileChooser chooser = chosenDir == null ? new JFileChooser() : new JFileChooser(chosenDir);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -159,7 +172,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 		}
 		return chosenDir;
 	}
-	
+
 	public boolean isCompressionEnabled() {
 		return compressionEnabled;
 	}
@@ -194,14 +207,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 	private EventList<Analysis> getAnalysisList() { 
 		return analysisList;
 	}
-	
+
 	/**
 	 * This setter will make a copy of the given {@link EventList}, which is primarily meant to be used by background {@link Task}s.
 	 *
 	 * @param analysisList The list with analyses
 	 */
 	private void setAnalysisList(EventList<Analysis> analysisList) {
-//		this.analysisList = analysisList;
+		//		this.analysisList = analysisList;
 		this.analysisList = GlazedLists.eventList(analysisList);
 		GlazedLists.syncEventListToList(analysisList, this.analysisList);
 	}
@@ -245,6 +258,18 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> {
 
 	public AppSettings getAppSettings() {
 		return appSettings;
+	}
+
+	public void propertyChange(PropertyChangeEvent evt) {
+		Object source = evt.getSource();
+		if ("done".equals(evt.getPropertyName())) {
+			Window parentComponent = SwingUtilities.windowForComponent(this);
+			if (source.getClass() == RefreshTask.class) {
+				invokeAction(ApplicationActionConstants.REFRESH_VIDEO_FILES_ACTION, parentComponent);
+			} else if (source.getClass() == RefreshVideoFilesTask.class) {
+				invokeAction(ApplicationActionConstants.CHECK_FREE_DISK_SPACE_ACTION, parentComponent);
+			}
+		}
 	}
 
 }

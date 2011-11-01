@@ -5,8 +5,8 @@ import junit.framework.TestCase;
 import org.junit.Ignore;
 
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.ueye.UEYE_CAMERA_INFO;
-import com.runwalk.video.media.ueye.UEYE_CAMERA_LIST;
+import com.runwalk.video.media.ueye.UEyeCameraInfo;
+import com.runwalk.video.media.ueye.UEyeCameraList;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
 import com.runwalk.video.media.ueye.UEyeLibrary;
@@ -25,11 +25,11 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	
 	@Ignore
 	public void testGetCameras() {
-		UEYE_CAMERA_LIST.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
+		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		final IntByReference cameraHandle = new IntByReference(0);
 		char[] windowName = null;
 		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
-			UEYE_CAMERA_INFO ueye_CAMERA_INFO = cameraNames.uci[i];
+			UEyeCameraInfo ueye_CAMERA_INFO = cameraNames.uci[i];
 			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
 			System.out.println("WindowName returned: " + windowName);
 			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);

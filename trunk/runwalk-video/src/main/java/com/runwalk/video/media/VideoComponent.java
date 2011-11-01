@@ -2,6 +2,7 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 
@@ -59,6 +60,15 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		} else {
 			getVideoImpl().startRunning();
 		}
+	}
+	
+	/**
+	 * Return <code>true</code> if the capturer implementation's 
+	 * focus state can be tracked by the {@link KeyboardFocusManager}.
+	 * @return <code>true</code> if the window's focus state can be tracked
+	 */
+	public boolean isFocusable() {
+		return getVideoImpl() instanceof Containable;
 	}
 
 	/**
