@@ -126,10 +126,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		firePropertyChange(IDLE, wasIdle, isIdle());
 	}
 
-	public boolean isStopped() {
-		return getState() == State.STOPPED;
-	}
-
 	public void stopRunning() {
 		getVideoImpl().stopRunning();
 	}
