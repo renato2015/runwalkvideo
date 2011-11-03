@@ -28,6 +28,8 @@ import com.sun.jna.ptr.LongByReference;
 
 public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
 
+	private static final String NO_SETTINGS_FILE = "<default>";
+
 	public static final String UEYE_SETTINGS_PROPERTY = "ueye_settings_file";
 
 	private static final String MJPEG_ENCODER = "MJPEG";
@@ -39,18 +41,18 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	private IntByReference aviHandle;
 
 	private File settingsFile;
-	
+
 	/** This hook can be used by native code to call back into java */
 	private Callback callback = new OnWndShowCallback() {
 
 		public void invoke(final boolean visible) {
 			firePropertyChange(VISIBLE, UEyeCapturer.this.visible, UEyeCapturer.this.visible = visible);
 		}
-		
+
 	};
 
 	private Integer monitorId;
-	
+
 	private boolean visible = false;
 
 	private volatile boolean recording = false;
@@ -67,7 +69,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	public String getTitle() {
 		return cameraName;
 	}
-	
+
 	public void dispose() {
 		stopRunning();
 		// set all handles to null
@@ -94,18 +96,24 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 		LOGGER.debug("Using settings file at " + settingsFilePath);
 		LOGGER.debug("StartRunning result = " + result);
 	}
-	
-	private String getSettingsFilePath() {
-		String result = "<default>";
-		if (settingsFile != null ) {
-			result = settingsFile.getAbsolutePath();
-		} else {
+
+	private File getSettingsFile() {
+		if (settingsFile == null) {
 			String settingsFilePathProperty = System.getProperty(UEYE_SETTINGS_PROPERTY);
 			if (settingsFilePathProperty != null) {
-				if (new File(settingsFilePathProperty).exists()) {
-					result = settingsFilePathProperty;
+				File selectedFile = new File(settingsFilePathProperty);
+				if (selectedFile.exists()) {
+					settingsFile = selectedFile;
 				}
 			}
+		}
+		return settingsFile;
+	}
+
+	private String getSettingsFilePath() {
+		String result = NO_SETTINGS_FILE;
+		if (getSettingsFile() != null ) {
+			result = getSettingsFile().getAbsolutePath();
 		}
 		return result;
 	}
@@ -127,7 +135,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	public void startRecording(String videoPath) {
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, videoPath, 25);
 		System.out.println("startRecording result: "+ result);
-		
+
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				// TODO should only run when recording 
@@ -139,13 +147,13 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						
+
 						// FIXME dont swallow
 					}
 				}
 			}
 
-			
+
 		}, "FrameDropInfoThread");
 		thread.start();
 		setRecording(true);	
@@ -162,12 +170,12 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	 */
 	public void showCaptureSettings() {
 		// nothing to show here
-		if (settingsFile != null && settingsFile.exists()) {
+		if (getSettingsFile() != null) {
 			try {
 				Desktop desktop = null;
 				if (Desktop.isDesktopSupported()) {
 					desktop = Desktop.getDesktop();
-					desktop.edit(settingsFile);
+					desktop.edit(getSettingsFile());
 				}
 			} catch (IOException e) {
 				LOGGER.error("Failed to open settings file with default editor", e);
@@ -187,7 +195,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 			public String getDescription() {
 				return "uEye parameter files";
 			}
-			
+
 		});
 		int returnVal = chooser.showDialog(null, "Kies");
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -218,7 +226,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	public void toFront() {
 		UEyeCapturerLibrary.WndToFront(cameraHandle);
 	}
-	
+
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
 		UEyeCapturerLibrary.SetWndVisibility(cameraHandle, isVisible());
@@ -235,7 +243,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	private void setRecording(boolean recording) {
 		this.recording  = recording;
 	}
-	
+
 	private boolean isRecording() {
 		return recording;
 	}

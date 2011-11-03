@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
@@ -37,57 +37,51 @@ public class VideoFileManager {
 
 	private Map<Recording, File> recordingFileMap = new HashMap<Recording, File>();
 	/** A sorted view on the key set of the cached {@link #recordingFileMap}. */
-	private Set<Recording> sortedRecordings = new TreeSet<Recording>();
-	
+	private Map<String, Recording> fileNameRecordingMap = new HashMap<String, Recording>();
+
 	private final AppSettings appSettings;
 
 	public VideoFileManager(AppSettings appSettings) {
 		this.appSettings = appSettings;
 	}
-	
+
 	/** 
 	 * Get a {@link Recording} from the cache that is associated with the video file on the 
-	 * given path. Will return <code>null</code> if nothing was found. The iteration order 
-	 * is determined by the lastmodified timestamp of the {@link Recording} bean.
+	 * given path. Will return <code>null</code> if nothing was found. 
 	 * 
 	 * @param path The path to get the Recording for
 	 * @return The found recording
 	 */
 	public Recording getRecording(String videoPath) {
-		File videoFile = new File(videoPath);
-		// worst case O(n) complexity for this operation
-		int i = 0;
-		for (Recording recording : sortedRecordings) {
-			// O(1) complexity for this lookup
-			File file = recordingFileMap.get(recording);
-			i++;
-			if (videoFile.equals(file)) {
-				LOGGER.debug("Recording found after " + i + " iterations");
-				return recording;
-			}
+		Recording result = null;
+		String fileName = FilenameUtils.getName(videoPath);
+		// O(1) time complexity for this operation
+		Recording recording = fileNameRecordingMap.get(fileName);
+		if (recording.getVideoFileName().equals(fileName)) {
+			result = recording;
 		}
-		return null;
+		return result;
 	}
-	
+
 	public boolean addToCache(Recording recording, File videoFile) {
 		synchronized(recordingFileMap) {
 			File cachedVideoFile = recordingFileMap.get(recording);
 			if (videoFile != null && cachedVideoFile == null) {
-				// O(log(n)) time complexity for this operation
-				sortedRecordings.add(recording);
+				// O(1) time complexity for this operation
+				fileNameRecordingMap.put(recording.getVideoFileName(), recording);
 				// O(1) time complexity for this operation
 				return recordingFileMap.put(recording, videoFile) != null;
 			} else if (cachedVideoFile != null && !cachedVideoFile.equals(videoFile)) {
 				LOGGER.debug("Videofile was already present in cache for filename " + recording.getVideoFileName());
-				// O(log(n)) time complexity for this operation
-				sortedRecordings.add(recording);
+				// O(1) time complexity for this operation
+				fileNameRecordingMap.put(recording.getVideoFileName(), recording);
 				// O(1) time complexity for this operation
 				return recordingFileMap.put(recording, videoFile) != null;
 			}
 		}
 		return false;
 	}
-	
+
 	private  File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		synchronized(recordingFileMap) {
 			File videoFile = recordingFileMap.get(recording);
@@ -117,7 +111,7 @@ public class VideoFileManager {
 			return videoFile;
 		}
 	}
-	
+
 	/**
 	 * Returns an {@link ImmutableSet} containing all the currently cached {@link Recording}s .
 	 * Best practice is to assign this {@link Set} to a local variable directly, as calls to this method can 
@@ -151,13 +145,14 @@ public class VideoFileManager {
 
 	public void refreshCache(List<Analysis> analyses) {
 		recordingFileMap.clear();
+		fileNameRecordingMap.clear();
 		for (Analysis analysis : analyses) {
 			for (Recording recording : analysis.getRecordings()) {
 				getVideoFile(recording);
 			}
 		}
 	}
-	
+
 	/**
 	 * This method will iterate over the {@link Recording}s of the given {@link Analysis} and 
 	 * clear it's cache entries. The method will return the number of missing video files when done refreshing.
@@ -173,13 +168,14 @@ public class VideoFileManager {
 		}
 		return filesMissing;
 	}
-	
+
 	public File refreshCache(Recording recording) {
 		return refreshCache(getVideoFolderRetrievalStrategy(), recording);
 	}
-	
+
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		recordingFileMap.remove(recording);
+		fileNameRecordingMap.remove(recording.getVideoFileName());
 		return getVideoFile(videoFolderRetrievalStrategy, recording);
 	}
 
@@ -191,12 +187,12 @@ public class VideoFileManager {
 		File videoFile = getVideoFile(recording);
 		return canReadAndExists(videoFile);
 	}
-	
+
 	public File getCompressedVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording)  {
 		File parentFolder = videoFolderRetrievalStrategy.getVideoFolder(getAppSettings().getVideoDir(), recording);
 		return new File(parentFolder, recording.getVideoFileName());
 	}
-	
+
 	public File getCompressedVideoFile(Recording recording) {
 		return getCompressedVideoFile(getVideoFolderRetrievalStrategy(), recording);
 	}
@@ -255,13 +251,13 @@ public class VideoFileManager {
 			LOGGER.debug(videoFile.getAbsolutePath() + " scheduled for deletion.");
 		}
 	}
-	
+
 	public void deleteVideoFiles(Analysis analysis) {
 		for(Recording recording : analysis.getRecordings()) {
 			deleteVideoFile(recording);
 		}
 	}
-	
+
 	public void deleteVideoFiles(Client client) {
 		for (Analysis analysis : client.getAnalyses()) {
 			deleteVideoFiles(analysis);

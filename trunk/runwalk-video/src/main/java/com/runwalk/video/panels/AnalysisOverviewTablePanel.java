@@ -18,6 +18,7 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskMonitor;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
@@ -261,12 +262,13 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		Object source = evt.getSource();
-		if ("done".equals(evt.getPropertyName())) {
+		Object oldValue = evt.getOldValue();
+		if (TaskMonitor.PROP_FOREGROUND_TASK.equals(evt.getPropertyName()) && oldValue != null) {
 			Window parentComponent = SwingUtilities.windowForComponent(this);
-			if (source.getClass() == RefreshTask.class) {
+			Class<? extends Object> taskClass = oldValue.getClass();
+			if (taskClass == RefreshTask.class) {
 				invokeAction(ApplicationActionConstants.REFRESH_VIDEO_FILES_ACTION, parentComponent);
-			} else if (source.getClass() == RefreshVideoFilesTask.class) {
+			} else if (taskClass == RefreshVideoFilesTask.class) {
 				invokeAction(ApplicationActionConstants.CHECK_FREE_DISK_SPACE_ACTION, parentComponent);
 			}
 		}

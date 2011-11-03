@@ -778,7 +778,7 @@ MediaActionConstants, Containable, ActionListener {
 				int position = getFrontMostPlayer().getPosition();
 				if (position == 0 && getFrontMostPlayer().isPlaying()) {
 					getLogger().debug("playback position set to 0");
-					stop();
+					invokeAction(STOP_ACTION, this);
 				}
 				setStatusInfo(position, getFrontMostPlayer().getDuration());
 			}
