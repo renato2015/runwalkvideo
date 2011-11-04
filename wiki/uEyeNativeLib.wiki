@@ -9,7 +9,7 @@ Some thoughts on extending the ueye-nativelib shared library for integrating uEy
 
  * Retrieve the GraphicsDevice instance for a current monitor
  * Create a new Frame and set it using setFullScreenWindow()
- * Add a Canvas to the Frame in fullscreen mode
+ * Add a Canvas to the Frame in fullscreen mode, using setRepaint(false)
  * Get the native handle (HWND) for that Canvas using the Native JNA class
  * Add a parameter to startRunning() accepting a HWND handle
  * At native side, check if parameter is present
