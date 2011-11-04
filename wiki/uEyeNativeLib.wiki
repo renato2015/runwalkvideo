@@ -1,4 +1,4 @@
-#Some thoughts about extending the ueye-nativelib shared library for integrating uEye camera'z
+Some thoughts on extending the ueye-nativelib shared library for integrating uEye camera'z
 
 = Some proposals to improve ueye-nativelib =
 
