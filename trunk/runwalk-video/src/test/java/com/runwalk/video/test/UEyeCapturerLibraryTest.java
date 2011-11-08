@@ -1,13 +1,22 @@
 package com.runwalk.video.test;
 
+import java.awt.Frame;
+import sun.awt.windows.WComponentPeer;
+
+import java.awt.Color;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import junit.framework.TestCase;
 
 import org.junit.Ignore;
 
 import com.runwalk.video.media.VideoCapturerFactory;
+import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCameraInfo;
 import com.runwalk.video.media.ueye.UEyeCameraList;
-import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
 import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.runwalk.video.ui.WindowManager;
@@ -22,6 +31,48 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	public void testUEyeCapturerFactory() {
 		VideoCapturerFactory.getInstance().createCapturer(null, null, null);
 	}
+	
+	public static void main(String[] args) {
+		Thread thread = new Thread();
+		thread.setDaemon(false);
+		thread.start();
+		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
+		final IntByReference cameraHandle = new IntByReference(0);
+		char[] windowName = null;
+		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
+			UEyeCameraInfo ueye_CAMERA_INFO = cameraNames.uci[i];
+			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
+			System.out.println("WindowName returned: " + windowName);
+			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);
+		}
+		cameraNames.clear();
+		String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE3.90.ini";
+		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
+		System.out.println("initCamera result: " + result);
+		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
+		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
+		
+		UEyeCapturerLibrary.OnWndShowCallback onWndShowCallback = new UEyeCapturerLibrary.OnWndShowCallback() {
+				
+				public void invoke(boolean visible) {
+					System.out.println("Window visibility set to " + visible);
+				}
+				
+			};
+			
+			 Frame frame = new Frame(String.valueOf(windowName));
+			 frame.setIgnoreRepaint(true);
+			 frame.setBackground(Color.black);
+			 frame.setSize(1440, 900);
+			 frame.pack();
+			 frame.setVisible(true);
+			 
+			 Pointer windowHandle = Native.getWindowPointer(frame);
+			 
+			result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId, onWndShowCallback, windowHandle);
+			
+	}
+	
 	
 	@Ignore
 	public void testGetCameras() {
@@ -84,6 +135,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		System.out.println("Camera stopped running");
 	}
 
+	@Ignore
 	public void testAviTools() {
 		//		VideoCapturerFactory factory = VideoCapturerFactory.getInstance();
 		//		List<String> capturerNames = factory.getCapturerNames();
