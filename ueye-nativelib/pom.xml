@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<!-- with a multi module project in mind, the groupId can be already appropriate -->
+	<groupId>com.runwalk</groupId>
+	<artifactId>ueye-nativelib</artifactId>
+	<packaging>jar</packaging>
+	<version>0.2-SNAPSHOT</version>
+	<name>Native bindings for the uEye camera</name>
+	<url>http://www.ids-imaging.com</url>
+
+	<!-- Enabling the use of FTP -->
+	<distributionManagement>
+		<repository>
+			<id>runwalk-ftp</id>
+			<url>ftp://ftp.linuxsystems.be/maven2</url>
+		</repository>
+	</distributionManagement>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+				  <classesDirectory>${basedir}/${dllPath}</classesDirectory>
+				  <includes>
+					 <include>*.dll</include>
+				  </includes>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<url>${pom.url}</url>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<configuration>
+					<attach>true</attach>
+					<includes>
+						<include>**/*.h</include>
+						<include>**/*.cpp</include>
+						<include>**/*.lib</include>
+						<include>**/*.vxcproj*</include>
+						<include>**/*.rc*</include>
+						<include>**/*.sln</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>ftp-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy-file</goal>
+						</goals>
+						<configuration>
+							<groupId>${groupId}</groupId>
+							<artifactId>${artifactId}</artifactId>
+							<file>target/${project.build.finalName}.jar</file>
+							<version>${version}</version>
+							<uniqueVersion>false</uniqueVersion>
+							<url>ftp://ftp.linuxsystems.be/maven2</url>
+							<repositoryId>runwalk-ftp</repositoryId>
+							<packaging>jar</packaging>
+							<classifier>natives-win-${architecture}</classifier>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>1.0-alpha-6</version>
+			</extension>
+		</extensions>
+	</build>
+	<profiles>
+		<profile>
+			<id>x86</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<dllPath>Release</dllPath>
+				<architecture>x86</architecture>
+			</properties>
+		</profile>
+		<profile>
+			<id>amd64</id>
+			<properties>
+				<!-- amd64 dll path properties -->
+				<dllPath>x64/Release</dllPath>
+				<architecture>amd64</architecture>
+			</properties>
+		</profile>
+	</profiles>
+</project>
+
+
