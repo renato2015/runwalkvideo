@@ -1,0 +1,39 @@
+<persistence version="1.0"
+	xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+	<persistence-unit name="${jpa.persistenceUnitName}" transaction-type="RESOURCE_LOCAL">
+		<provider>${jpa.persistenceProvider}</provider>
+		<class>com.runwalk.video.entities.ProdSubcategory</class>
+		<class>com.runwalk.video.entities.ProdCategory</class>
+		<class>com.runwalk.video.entities.Client</class>
+		<class>com.runwalk.video.entities.Person</class>
+		<class>com.runwalk.video.entities.City</class>
+		<class>com.runwalk.video.entities.State</class>
+		<class>com.runwalk.video.entities.Article</class>
+		<class>com.runwalk.video.entities.Analysis</class>
+		<class>com.runwalk.video.entities.Recording</class>
+		<class>com.runwalk.video.entities.Keyframe</class>
+		<properties>
+			<property name="hibernate.connection.driver_class" value="${jdbc.driverClass}" />
+			<property name="hibernate.connection.username" value="${jdbc.user}" />
+			<property name="hibernate.connection.password" value="${jdbc.password}" />
+			<property name="hibernate.connection.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8" />
+			<property name="hibernate.max_fetch_depth" value="4" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+			
+ 			<property name="eclipselink.cache.type.City" value="Full"/>
+ 			<!-- need to call the StaticWeave class at build time -->
+ 			<!-- property name="eclipselink.weaving" value="static" -->
+ 			<property name="eclipselink.jdbc.read-connections.max" value="10"/>
+ 			<property name="eclipselink.jdbc.read-connections.min" value="5"/>
+ 			<property name="eclipselink.jdbc.write-connections.max" value="10"/>
+		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
+		    <property name="eclipselink.jdbc.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8&amp;autoReconnectForPools=true" />
+		    <property name="eclipselink.jdbc.user" value="${jdbc.user}" />
+		    <property name="eclipselink.jdbc.password" value="${jdbc.password}" />
+			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$RunwalkLogger"/>
+			<property name="eclipselink.logging.level" value="FINE" />
+		</properties>
+	</persistence-unit>
+</persistence>

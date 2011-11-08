@@ -1,0 +1,626 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.runwalk</groupId>
+	<artifactId>runwalk-video</artifactId>
+	<packaging>jar</packaging>
+	<version>0.3-SNAPSHOT</version>
+	<name>runwalk-video</name>
+	<url>http://www.runwalk.be</url>
+	<description>Beheer van klanten en loopanalyses</description>
+	<inceptionYear>2008</inceptionYear>
+	<scm>
+		<connection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</developerConnection>
+		<url>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</url>
+	</scm>
+	<organization>
+		<name>Runwalk Herentals</name>
+		<url>http://www.runwalk.be</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Jeroen Peelaerts</name>
+			<id>jpeelaerts</id>
+			<roles>
+				<role>Java developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>com/**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>com/**/*.properties</exclude>
+					<exclude>**/*.xml</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<!-- Tell javac not to compile sources for ajc will do it -->
+					<excludes>
+						<exclude>**/*.*</exclude>
+					</excludes>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.3</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal> <!-- use this goal to weave all your main classes -->
+							<goal>test-compile</goal> <!-- use this goal to weave all your test classes -->
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjtools</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.4.2</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<id>eclipselink-weave</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>org.eclipse.persistence.tools.weaving.jpa.StaticWeave</mainClass>
+					<!-- optional -->
+					<arguments>
+						<argument>-loglevel</argument>
+						<argument>FINE</argument>
+						<argument>${project.build.directory}/classes</argument>
+						<argument>${project.build.directory}/classes</argument>
+					</arguments>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo.webstart</groupId>
+				<artifactId>webstart-maven-plugin</artifactId>
+				<version>1.0-alpha-2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jnlp</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputDirectory>${libFolderPath}</outputDirectory>
+					<workDirectory>${project.build.directory}</workDirectory>
+					<excludeTransitive>false</excludeTransitive>
+					<libPath>${libFolder}</libPath>
+					<!-- JNLP generation -->
+					<jnlp>
+						<inputTemplate>src/main/jnlp/jnlptemplate.vm</inputTemplate> <!-- relative to inputTemplateResourcePath -->
+						<outputFile>${jnlpOutputFilename}</outputFile> <!-- defaults to launch.jnlp -->
+						<j2seVersion>1.6+</j2seVersion>
+						<spec>6.0+</spec>
+						<mainClass>${mainClass}</mainClass>
+					</jnlp>
+					<!-- SIGNING -->
+					<sign>
+						<keystore>${keystore.location}</keystore>
+						<keypass>${keystore.password}</keypass>
+						<storepass>${keystore.password}</storepass>
+						<!--storetype>fillme</storetype -->
+						<alias>jdc</alias>
+						<validity>180</validity>
+
+						<!-- only required for generating the keystore -->
+						<!-- <dnameCn>${keystore.dnameCn}</dnameCn> <dnameOu>${keystore.dnameOu}</dnameOu> 
+							<dnameO>${keystore.dnameO}</dnameO> <dnameL>${keystore.dnameL}</dnameL> <dnameSt>${keystore.dnameSt}</dnameSt> 
+							<dnameC>${keystore.dnameC}></dnameC> <keystoreConfig> <delete>false</delete> 
+							<gen>true</gen> </keystoreConfig> <verify>true</verify> -->
+						<!-- KEYSTORE MANAGEMENT -->
+					</sign>
+
+					<!-- BUILDING PROCESS -->
+
+					<pack200>false</pack200>
+					<gzip>false</gzip>
+					<outputJarVersions>false</outputJarVersions>
+					<verbose>false</verbose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>assemble-app</id>
+						<phase>package</phase>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+						<configuration>
+							<programs>
+								<program>
+									<mainClass>${mainClass}</mainClass>
+									<name>${project.name}</name>
+								</program>
+							</programs>
+							<includeConfigurationDirectoryInClasspath>true
+							</includeConfigurationDirectoryInClasspath>
+							<binPrefix>${project.name}</binPrefix>
+							<configurationDirectory>${libFolder}</configurationDirectory>
+							<!-- set alternative assemble directory -->
+							<assembleDirectory>${project.build.directory}</assembleDirectory>
+							<generateRepository>false</generateRepository>
+							<repositoryLayout>flat</repositoryLayout>
+							<repositoryName>${libFolder}</repositoryName>
+							<!-- Extra JVM arguments that will be included in the bin scripts -->
+							<extraJvmArguments>-Djava.library.path="${libFolderPath}"
+							</extraJvmArguments>
+							<!-- Generate bin scripts for windows and unix pr default -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.humatic.dsj</groupId>
+									<artifactId>dsj-nativelib</artifactId>
+									<version>${dsj.version}</version>
+									<classifier>natives-win-${architecture}</classifier>
+									<type>jar</type>
+									<includes>**/*.dll</includes>
+									<outputDirectory>${libFolderPath}</outputDirectory>
+									<overWrite>true</overWrite>
+								</artifactItem>
+								<artifactItem>
+									<groupId>com.sun.javafx.jmc</groupId>
+									<artifactId>javafx-jmc-nativelib</artifactId>
+									<version>1.2</version>
+									<classifier>natives-${platform}</classifier>
+									<type>jar</type>
+									<includes>**/*.dll</includes>
+									<outputDirectory>${libFolderPath}</outputDirectory>
+									<overWrite>true</overWrite>
+								</artifactItem>
+								<artifactItem>
+									<groupId>com.runwalk.runwalk-video</groupId>
+									<artifactId>ueye-nativelib</artifactId>
+									<version>0.1-SNAPSHOT</version>
+									<classifier>natives-win-${architecture}</classifier>
+									<type>jar</type>
+									<includes>**/*.dll</includes>
+									<outputDirectory>${libFolderPath}</outputDirectory>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+							<!-- <overWriteReleases>false</overWriteReleases> <overWriteSnapshots>true</overWriteSnapshots> 
+								<includes>**/*.dll</includes> <outputDirectory>${libFolderPath}</outputDirectory> -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>deploy</phase>
+						<configuration>
+							<tasks>
+								<ftp server="${ftp.url}" remotedir="${ftp.remotedir}" userid="${ftp.user}" password="${ftp.password}" binary="yes" depends="yes" verbose="yes">
+									<fileset dir="${project.build.directory}">
+										<include name="lib/**/*.jar" />
+										<include name="${jnlpOutputFilename}" />
+										<exclude name="lib/**/*.dll" />
+									</fileset>
+								</ftp>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>commons-net</groupId>
+						<artifactId>commons-net</artifactId>
+						<version>1.4.1</version>
+					</dependency>
+					<dependency>
+						<groupId>ant</groupId>
+						<artifactId>ant-commons-net</artifactId>
+						<version>1.6.5</version>
+					</dependency>
+					<dependency>
+						<groupId>ant</groupId>
+						<artifactId>ant-nodeps</artifactId>
+						<version>1.6.5</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+		<!-- extension for using ftp for deployments -->
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>1.0-alpha-6</version>
+			</extension>
+		</extensions>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											exec-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.2,)
+										</versionRange>
+										<goals>
+											<goal>java</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											aspectj-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.3,)
+										</versionRange>
+										<goals>
+											<goal>test-compile</goal>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
+										<goals>
+											<goal>unpack</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Video libraries -->
+		<dependency>
+			<groupId>de.humatic.dsj</groupId>
+			<artifactId>dsj</artifactId>
+			<version>${dsj.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.javafx.jmc</groupId>
+			<artifactId>javafx-jmc</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.runwalk</groupId>
+			<artifactId>ueye-nativelib</artifactId>
+			<version>0.2-SNAPSHOT</version>
+			<classifier>natives-win-x86</classifier>
+			<scope>runtime</scope>
+		</dependency>	
+		<dependency>
+			<groupId>com.runwalk</groupId>
+			<artifactId>ueye-nativelib</artifactId>
+			<version>0.2-SNAPSHOT</version>
+			<classifier>natives-win-amd64</classifier>
+			<scope>runtime</scope>
+		</dependency>	
+		<dependency>
+			<groupId>imagej</groupId>
+			<artifactId>ij</artifactId>
+			<version>1.43</version>
+		</dependency>
+		<!-- Swing libraries -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.java.net.substance</groupId> -->
+		<!-- <artifactId>substance</artifactId> -->
+		<!-- <version>6.0</version> -->
+		<!-- </dependency> -->
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout</artifactId>
+			<version>3.7.4</version>
+			<classifier>swing</classifier>
+		</dependency>
+		<dependency>
+			<groupId>it.tidalwave.betterbeansbinding</groupId>
+			<artifactId>betterbeansbinding-core</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>it.tidalwave.betterbeansbinding</groupId>
+			<artifactId>betterbeansbinding-swingbinding</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jdesktop.bsaf</groupId>
+			<artifactId>bsaf</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.tomtessier</groupId>
+			<artifactId>scrollabledesktop</artifactId>
+			<version>1.02</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.glazedlists</groupId>
+			<artifactId>glazedlists_java15</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+		<!-- Persistence libraries -->
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>eclipselink</artifactId>
+			<version>2.3.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.18</version>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>m2-repo</id>
+			<url>http://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>ibiblio-repo</id>
+			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
+		</repository>
+		<repository>
+			<id>eclipseLink-repo</id>
+			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo
+			</url>
+		</repository>
+		<repository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Repository for Maven</name>
+			<url>http://download.java.net/maven/2/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>nativelibs4java-repo</id>
+			<name>NativeLibs4Java Maven Repository</name>
+			<url>http://nativelibs4java.sourceforge.net/maven</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>codehaus-snapshot</id>
+			<name>Codehaus Snapshot Repo</name>
+			<url>https://nexus.codehaus.org/content/repositories/snapshots/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>Codehaus Snapshots2</id>
+			<url>http://people.apache.org/repo/m2-snapshot-repository</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>runwalk-ftp</id>
+			<name>runwalk-repo</name>
+			<url>ftp://${ftp.url}/maven2</url>
+		</snapshotRepository>
+		<!-- snapshotRepository> <id>local-repo</id> <name>local-repo</name> <url>file:///${user.home}/.m2/repository</url> 
+			</snapshotRepository -->
+	</distributionManagement>
+	<profiles>
+		<!-- This profile could be used for remote deployment -->
+		<profile>
+			<id>remote</id>
+			<activation>
+				<property>
+					<name>remote</name>
+				</property>
+			</activation>
+			<properties>
+				<!-- Remote properties -->
+				<codeBase>${project.url}/${ftp.remotedir}</codeBase>
+			</properties>
+		</profile>
+		<profile>
+            <id>win</id>
+            <properties>
+                <platform>win</platform>
+                <architecture>${os.arch}</architecture>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <properties>
+            	<platform>mac</platform>
+                <architecture>x86</architecture>
+            </properties>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+        </profile>
+	</profiles>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<dsj.version>0.8.63</dsj.version>
+		<aspectj.version>1.6.11</aspectj.version>
+		<!-- Keystore generation properties -->
+		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>
+		<keystore.dnameO>Runwalk Herentals</keystore.dnameO>
+		<keystore.dnameL>Herentals</keystore.dnameL>
+		<keystore.dnameSt>Antwerp</keystore.dnameSt>
+		<keystore.dnameC>Belgium</keystore.dnameC>
+		<keystore.dnameOu>None</keystore.dnameOu>
+		<keystore.location>${basedir}/src/main/jnlp/myKeys</keystore.location>
+		<keystore.password>yourPwd</keystore.password>
+		<!-- JNLP file generation properties -->
+		<mainClass>com.runwalk.video.RunwalkVideoApp</mainClass>
+		<codeBase>file:///${project.build.directory}/</codeBase>
+		<libFolder>lib</libFolder>
+		<libFolderPath>${project.build.directory}/${libFolder}</libFolderPath>
+		<jnlpOutputFilename>runwalk.jnlp</jnlpOutputFilename>
+		<!-- JNLP deployment properties -->
+		<ftp.url>your-ftp-server.com</ftp.url>
+		<ftp.user>ftpUser</ftp.user>
+		<ftp.password>ftpPwd</ftp.password>
+		<ftp.remotedir>ftpDir</ftp.remotedir>
+		<!-- Default JDBC properties -->
+		<jdbc.driverClass>com.mysql.jdbc.Driver</jdbc.driverClass>
+		<!-- JPA properties -->
+		<jpa.persistenceProvider>org.eclipse.persistence.jpa.PersistenceProvider
+		</jpa.persistenceProvider>
+		<!-- jpa.persistenceProvider>org.hibernate.ejb.HibernatePersistence</jpa.persistenceProvider -->
+		<jpa.persistenceUnitName>runwalk-video</jpa.persistenceUnitName>
+		<!-- dsj unlock codes -->
+		<dsj.unlockName>youremail@email.com</dsj.unlockName>
+		<dsj.code1>code1</dsj.code1>
+		<dsj.code2>code2</dsj.code2>
+		<dsj.code3>code3</dsj.code3>
+	</properties>
+</project>
