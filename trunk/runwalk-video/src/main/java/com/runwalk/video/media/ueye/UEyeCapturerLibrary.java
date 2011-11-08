@@ -2,6 +2,7 @@ package com.runwalk.video.media.ueye;
 import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
+import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.win32.StdCallLibrary;
@@ -33,6 +34,8 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	public static native int InitializeCamera(IntByReference cameraHandle);
 	
 	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, final char[] windowName, IntByReference monitorId, Callback onWndShowCallback);
+	
+	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, final char[] windowName, IntByReference monitorId, Callback onWndShowCallback, Pointer windowHandle);
 	
 	public static native int StopRunning(IntByReference cameraHandle);
 	
