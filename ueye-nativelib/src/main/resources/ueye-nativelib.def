@@ -1,0 +1,15 @@
+; ueye-nativelib.def : Declares the module parameters for the DLL.
+
+LIBRARY "ueye-nativelib"
+
+EXPORTS
+    ; Explicit exports can go here
+	GetCameraNames		@1
+	InitializeCamera	@2
+	StartRunning		@3
+	StopRunning			@4
+	StartRecording		@5
+	StopRecording		@6
+	GetFrameDropInfo	@7
+	WndToFront			@8
+	SetWndVisibility	@9

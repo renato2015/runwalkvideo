@@ -1,0 +1,398 @@
+// File: Exports.cpp
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+// This source code is only intended as a supplement to the
+// Microsoft Classes Reference and related electronic
+// documentation provided with the library.
+// See these sources for detailed information regarding the
+// Microsoft C++ Libraries products.
+
+#include "stdafx.h"
+#include "uEyeCapturerApi.h"
+#include "uEyeCapturer.h"
+#include "uEyeRenderThread.h"
+
+INT		m_nColorMode;	// Y8/RGB16/RGB24/REG32
+INT		m_nBitsPerPixel;// number of bits needed store one pixel
+INT		m_lMemoryId;	// grabber memory - buffer ID
+char*	m_pcImageMemory;// grabber memory - pointer to 
+INT		m_nSizeX, m_nSizeY;
+INT*	m_monitorId;
+BOOL    m_bRecording = FALSE;
+BOOL	m_bRunning = FALSE;
+unsigned long* m_frameDropInfo = new unsigned long[2];
+CuEyeRenderThread* m_renderThread;
+
+/* Image size functions */
+INT GetImagePos(HIDS m_hCam, INT &xPos, INT &yPos)
+{ 
+	IS_RECT rectAOI;
+	INT nRet = is_AOI(m_hCam, IS_AOI_IMAGE_GET_AOI, (void*)&rectAOI, sizeof(rectAOI));
+	if (nRet == IS_SUCCESS) {
+		xPos = rectAOI.s32X;
+		yPos = rectAOI.s32Y;
+	}
+	return IS_SUCCESS; 
+}
+
+INT GetImageSize(HIDS m_hCam, INT &xSze, INT &ySze)
+{
+	IS_RECT rectAOI;
+	INT nRet = is_AOI(m_hCam, IS_AOI_IMAGE_GET_AOI, (void*)&rectAOI, sizeof(rectAOI));
+	if (nRet == IS_SUCCESS) {
+		xSze = rectAOI.s32Width;
+		ySze = rectAOI.s32Height;
+	}
+	return IS_SUCCESS;
+}
+
+void GetMaxImageSize(HIDS* m_hCam, INT *pnSizeX, INT *pnSizeY)
+{
+    // Check if the camera supports an arbitrary AOI
+    INT nAOISupported = 0;
+    BOOL bAOISupported = TRUE;
+    if (is_ImageFormat(*m_hCam,
+                       IMGFRMT_CMD_GET_ARBITRARY_AOI_SUPPORTED, 
+                       (void*)&nAOISupported, 
+                       sizeof(nAOISupported)) == IS_SUCCESS) {
+        bAOISupported = (nAOISupported != 0);
+    }
+
+    if (bAOISupported) {
+        // Get maximum image size
+	    SENSORINFO sInfo;
+	    is_GetSensorInfo (*m_hCam, &sInfo);
+	    *pnSizeX = sInfo.nMaxWidth;
+	    *pnSizeY = sInfo.nMaxHeight;
+    }
+    else
+    {
+		GetImageSize(*m_hCam, *pnSizeX, *pnSizeY);
+    }
+}
+
+INT GetColorMode(HIDS m_hCam) {
+	if ( !m_hCam ) {
+		return -1;
+	}
+	INT nRet = is_SetColorMode( m_hCam, IS_GET_COLOR_MODE );  
+	return nRet;
+}
+
+INT GetFrameRate( HIDS hCam, double &fr) { 
+	return is_SetFrameRate( hCam, IS_GET_FRAMERATE, &fr); 
+}
+
+INT WINAPI InitializeCamera(HIDS* m_hCam) {
+	//int* result = new int;
+	//Open camera with ID 1
+	INT result = is_InitCamera (m_hCam, NULL);
+	if (result == IS_STARTER_FW_UPLOAD_NEEDED) {
+        // Time for the firmware upload = 25 seconds by default
+        INT nUploadTime = 25000;
+        is_GetDuration (*m_hCam, IS_STARTER_FW_UPLOAD, &nUploadTime);
+    
+        /*CString Str1, Str2, Str3;
+        Str1 = "This camera requires a new firmware. The upload will take about";
+        Str2 = "seconds. Please wait ...";
+        Str3.Format ("%s %d %s", Str1, nUploadTime / 1000, Str2);
+        AfxMessageBox (Str3, MB_ICONWARNING);*/
+    
+        // Set mouse to hourglass
+	    SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
+
+        // Try again to open the camera. This time we allow the automatic upload of the firmware by
+        // specifying "IS_ALLOW_STARTER_FIRMWARE_UPLOAD"
+        *m_hCam = (HIDS) (((INT)*m_hCam) | IS_ALLOW_STARTER_FW_UPLOAD); 
+        result = is_InitCamera (m_hCam, NULL);
+    }	
+	return result;
+}
+
+INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
+	INT result = IS_NO_SUCCESS;
+	if (settingsFile != NULL && *settingsFile != '\0') {
+		TRACE("Loading settings from %s", settingsFile);
+		result = is_LoadParameters(*m_hCam, settingsFile);
+		if (result == IS_SUCCESS) {
+			// realloc image mem with actual sizes and depth.
+			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
+			GetImageSize( *m_hCam, m_nSizeX, m_nSizeY); 
+			switch( is_SetColorMode( *m_hCam, IS_GET_COLOR_MODE ) )
+			{
+			case IS_SET_CM_RGB32:
+				m_nBitsPerPixel = 32;
+				break;
+			case IS_SET_CM_RGB24:
+				m_nBitsPerPixel = 24;
+				break;
+			case IS_SET_CM_RGB16:
+			case IS_SET_CM_UYVY:
+				m_nBitsPerPixel = 16;
+				break;
+			case IS_SET_CM_RGB15:
+				m_nBitsPerPixel = 15;
+				break;
+			case IS_SET_CM_Y8:
+			case IS_SET_CM_RGB8:
+			case IS_SET_CM_BAYER:
+			default:
+				m_nBitsPerPixel = 8;
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+void WINAPI StopRunning(HIDS* m_hCam) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if( m_bRunning ) {
+		// TODO exit AVI here
+		// Disable messages
+		is_EnableMessage( *m_hCam, IS_FRAME, NULL );
+		// Stop message pump of the rendering thread
+		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, STOP_RUNNING	, 0);
+		// Stop live video
+		is_StopLiveVideo( *m_hCam, IS_WAIT );
+
+		// Free the allocated buffer
+		if( m_pcImageMemory != NULL ) {
+			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
+		}	
+
+		m_pcImageMemory = NULL;
+
+		// Close camera
+		is_ExitCamera(*m_hCam );
+		delete m_frameDropInfo;
+		m_frameDropInfo = NULL;
+		m_hCam = NULL;
+		m_bRunning = FALSE;
+		// Run the render thread destructor
+		delete *m_renderThread;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// METHOD CIdsSimpleLiveDlg::InitDisplayMode() 
+//
+// DESCRIPTION: - initializes the display mode
+//
+///////////////////////////////////////////////////////////////////////////////
+int InitDisplayMode(HIDS* m_hCam)
+{
+    INT result = IS_NO_SUCCESS;
+    
+    if (m_hCam == NULL) {
+		return IS_NO_SUCCESS;
+	}
+	
+	// Get sensor info
+	SENSORINFO m_sInfo;			// sensor information struct
+	is_GetSensorInfo(*m_hCam, &m_sInfo);
+
+    if (m_pcImageMemory != NULL) {
+        is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
+    }
+    m_pcImageMemory = NULL;
+
+	// Set display mode to DIB
+    result = is_SetDisplayMode(*m_hCam, IS_SET_DM_DIB);
+	if (m_sInfo.nColorMode == IS_COLORMODE_BAYER) {
+		// setup the color depth to the current windows setting
+        is_GetColorDepth(*m_hCam, &m_nBitsPerPixel, &m_nColorMode);
+    } else if (m_sInfo.nColorMode == IS_COLORMODE_CBYCRY) {
+        // for color camera models use RGB32 mode
+        m_nColorMode = IS_SET_CM_RGB32;
+        m_nBitsPerPixel = 32;
+    } else {
+        // for monochrome camera models use Y8 mode
+        m_nColorMode = IS_SET_CM_Y8;
+        m_nBitsPerPixel = 8;
+    }
+
+    // allocate an image memory.
+    if (is_AllocImageMem(*m_hCam, m_nSizeX, m_nSizeY, m_nBitsPerPixel, &m_pcImageMemory, &m_lMemoryId ) != IS_SUCCESS) {
+        AfxMessageBox(TEXT("Memory allocation failed!"), MB_ICONWARNING );
+    } else {
+		is_SetImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
+	}
+
+    if (result == IS_SUCCESS) {
+        // set the desired color mode
+        result = is_SetColorMode(*m_hCam, m_nColorMode);
+		// Sets the position and size of the image by using an object of the IS_RECT type.
+		IS_RECT rectAOI;
+		rectAOI.s32X     = 0;
+		rectAOI.s32Y     = 0;
+		rectAOI.s32Width = m_nSizeX;
+		rectAOI.s32Height = m_nSizeY;
+		result = is_AOI(*m_hCam, IS_AOI_IMAGE_SET_AOI, (void*)&rectAOI, sizeof(rectAOI));
+    }   
+    return result;
+}
+
+INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle) { 
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	m_monitorId = monitorId;
+	INT result = IS_NO_SUCCESS;
+	if (!m_bRunning && m_hCam) {
+		if( LoadSettings(m_hCam, settingsFile) != IS_SUCCESS) {
+			// if settings from file cannot be loaded, then use default maximum size for the sensor
+			GetMaxImageSize(m_hCam, &m_nSizeX, &m_nSizeY);
+		}
+		result = InitDisplayMode(m_hCam);
+		if (result == IS_SUCCESS) {
+			// start a new thread that will create a window to show the live video fullscreen
+			m_renderThread = (CuEyeRenderThread *) AfxBeginThread(RUNTIME_CLASS(CuEyeRenderThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+			m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, windowName, monitorId, OnWindowShow, windowHandle);
+			m_renderThread->ResumeThread();
+			m_bRunning = TRUE;
+		}
+	}
+	return result;
+}
+
+/*
+* Camera handle added here as unused argument, considering future multi ueye support
+*/
+void WINAPI WndToFront(HIDS* hCam) 
+{
+	if (m_renderThread != NULL) {
+		// TODO should get the thread associated with the given camera handle here..
+		m_renderThread->WndToFront();
+	}
+}
+
+void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible) 
+{
+	if (m_renderThread != NULL) {
+		// TODO should get the thread associated with the given camera handle here..
+		m_renderThread->SetWndVisibility(visible);
+	}
+}
+
+INT WINAPI StartRecording(HIDS* m_hCam, INT* nAviID, const char* strFilePath) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	INT result = IS_SUCCESS;
+	if (*nAviID == 0) {
+		result = isavi_InitAVI(nAviID, *m_hCam);
+	}
+	if (result == IS_AVI_NO_ERR) {
+		// Query image buffer geometry
+		int nWidth, nHeight, xPos, yPos;
+		int pnX, pnY, pnBits, pnPitch;
+		
+		is_InquireImageMem (*m_hCam, m_pcImageMemory, m_lMemoryId, &pnX,&pnY, &pnBits, &pnPitch);
+		GetImageSize( *m_hCam, nWidth, nHeight );
+		// Derive pixel pitch from buffer byte pitch
+		INT pPitchPx=0;
+		pPitchPx = (pnPitch * 8 ) / pnBits;
+		nWidth =  nWidth /8 * 8; // width has to be a multiple of 8
+		INT LineOffsetPx = pPitchPx - nWidth ;
+
+		// Get actual framerate
+		double newFPS;
+		GetFrameRate(*m_hCam, newFPS);
+		// Get image position 
+		GetImagePos(*m_hCam, xPos, yPos);
+		pnX = pnX == nWidth ? 0 : xPos;
+		pnY = pnY == nHeight ? 0 : yPos;
+		// Get color mode
+		INT cMode = GetColorMode(*m_hCam);
+
+		result &= isavi_SetImageSize( *nAviID, cMode,
+			nWidth, nHeight,
+			pnX, pnY,
+			LineOffsetPx);
+
+		result &= isavi_OpenAVI(*nAviID, strFilePath);
+		// TODO image quality is hard coded to 75 for now
+		result &= isavi_SetImageQuality (*nAviID, 75);
+		result &= isavi_SetFrameRate(*m_hCam, newFPS);
+		result &= isavi_StartAVI(*m_hCam);
+		// Set recording to true
+		m_bRecording = TRUE;
+		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
+		// Send avi id to render thread
+		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, SET_AVI_ID, (LPARAM) nAviID);
+		TRACE("Recording started");
+	}	
+	return result;
+}
+
+INT WINAPI StopRecording(INT nAviID) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if (m_bRecording && nAviID != NULL) {
+		m_bRecording = FALSE;
+		// set recording to false
+		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
+		TRACE("Recording stopped");
+		INT result = isavi_StopAVI(nAviID);
+		result &= isavi_CloseAVI(nAviID);
+		result &= isavi_ResetFrameCounters(nAviID);
+		return result;
+	}
+	return IS_AVI_ERR_INVALID_ID;
+}
+
+unsigned long* WINAPI GetFrameDropInfo(INT nAviID) {
+	if (m_bRecording && nAviID != NULL) {
+		unsigned long compressedFrames;
+		isavi_GetnCompressedFrames(nAviID, &compressedFrames);
+		isavi_GetnLostFrames(nAviID, &m_frameDropInfo[1]);
+		m_frameDropInfo[0] = compressedFrames + m_frameDropInfo[1];	
+	}
+	return m_frameDropInfo;
+}
+
+UEYE_CAMERA_LIST* WINAPI GetCameraNames() {
+	// At least one camera must be available
+	INT nNumCam = 0;
+	UEYE_CAMERA_LIST* pucl;
+	if( is_GetNumberOfCameras( &nNumCam ) == IS_SUCCESS) {
+		// Create new list with suitable size
+		pucl = (UEYE_CAMERA_LIST*) new char [sizeof (DWORD)
+			+ nNumCam
+			* sizeof (UEYE_CAMERA_INFO)];
+		pucl->dwCount = nNumCam;
+		
+			//Retrieve camera info
+		if (nNumCam >= 1 && is_GetCameraList(pucl) == IS_SUCCESS) {
+			TRACE("Camera models found %s", pucl->uci->Model);
+			/*int iCamera;
+			// succeeded..
+			
+			for (iCamera = 0; iCamera < (int)pucl->dwCount; iCamera++) {
+				result[iCamera] = pucl->uci[iCamera].dwCameraID;
+			}*/
+		}
+	} 	
+	return pucl;
+}
+
+BOOL WINAPI FilterDllMsg(LPMSG lpMsg)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	TRY
+	{
+		return AfxGetThread()->PreTranslateMessage(lpMsg);
+	}
+	END_TRY
+	return FALSE;
+}
+
+void WINAPI ProcessDllIdle()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	TRY
+	{
+		// flush it all at once
+		long lCount = 0;
+		while (AfxGetThread()->OnIdle(lCount))
+			lCount++;
+	}
+	END_TRY
+}
