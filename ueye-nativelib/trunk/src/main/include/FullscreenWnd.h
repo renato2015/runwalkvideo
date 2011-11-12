@@ -26,9 +26,6 @@ public:
     COLORREF    m_backColor;
     BOOL        SetFrameRate (double fps);
 
-	void		SetRecording(BOOL recording);
-	void		SetAviId(INT* nAviID);
-
 // Oper
 // Implementation
 	virtual ~CFullscreenWnd();
@@ -50,7 +47,6 @@ private:
   BOOL          m_bShowTime;
   BOOL          m_bShowFPS;
   LRESULT		OnUEyeMessage(WPARAM wParam, LPARAM lParam);
-  LRESULT		OnThreadMessage(WPARAM wParam, LPARAM lParam);
   BOOL			m_bRecording;
   INT*			nAviID;
   HIDS*			m_hCam;

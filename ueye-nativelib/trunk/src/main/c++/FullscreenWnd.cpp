@@ -23,43 +23,14 @@ CFullscreenWnd::CFullscreenWnd(HIDS* hCam, char* pcImageMemory,  INT* lMemoryId,
   m_bShowTime = FALSE;
   m_bShowFPS = FALSE;
   m_bClear = FALSE;
-  m_bRecording = FALSE;
-  nAviID = NULL;
 }
 
 CFullscreenWnd::~CFullscreenWnd()
 {
 	// set all pointers to null
-	nAviID = NULL;
 	m_hCam = NULL;
 	m_pcImageMemory = NULL;
 	m_lMemoryId = NULL;
-}
-
-void CFullscreenWnd::SetRecording(BOOL recording) {
-	this->m_bRecording = recording;
-}
-
-void CFullscreenWnd::SetAviId(INT* nAviID) {
-	this->nAviID = nAviID;
-}
-
-LRESULT CFullscreenWnd::OnThreadMessage(WPARAM wParam, LPARAM lParam) {
-	switch(wParam) {
-		case SET_AVI_ID: {
-			SetAviId((INT*) lParam);
-			break;
-		}
-		case IS_RECORDING: {
-			SetRecording((BOOL) lParam);
-			break;
-		}	
-		case STOP_RUNNING: {
-			PostQuitMessage(0);
-			break;
-		}
-	}
-	return 0;
 }
 
 void CFullscreenWnd::OnShowWindow(BOOL bShow, UINT nStatus) {
@@ -78,7 +49,6 @@ BEGIN_MESSAGE_MAP(CFullscreenWnd, CWnd)
 	ON_WM_PAINT()
 	ON_WM_KEYDOWN()
 	ON_MESSAGE(IS_UEYE_MESSAGE, OnUEyeMessage)
-	ON_MESSAGE(IS_THREAD_MESSAGE, OnThreadMessage)
 	ON_WM_TIMER()
 	ON_WM_ACTIVATE()
 END_MESSAGE_MAP()
