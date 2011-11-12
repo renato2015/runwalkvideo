@@ -17,17 +17,17 @@
 
 #define IS_THREAD_MESSAGE				(WM_APP + 0x0200)
 #define IS_RECORDING                    0x0100
-#define SET_AVI_ID						0x0200
-#define STOP_RUNNING					0x0300
+#define IS_RUNNING						0x0200
+#define SET_AVI_ID						0x0300
 
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */
-	INT WINAPI StartRecording(HIDS* m_hCam, INT* nAviId, const char* strFilePath);
-	INT WINAPI StopRecording(INT nAviID);
+	INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath);
+	INT WINAPI StopRecording(HIDS* m_hCam);
 	UEYE_CAMERA_LIST* WINAPI GetCameraNames();
 	INT WINAPI InitializeCamera(HIDS* m_hCam);
-	unsigned long* WINAPI GetFrameDropInfo(INT nAviId);
+	unsigned long* WINAPI GetFrameDropInfo(HIDS* m_hCam);
 	INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShowCallback)(BOOL), HWND windowHandle);
 	void WINAPI StopRunning(HIDS* m_hCam);
 	void WINAPI WndToFront(HIDS* hCam);

@@ -8,6 +8,8 @@
 // Microsoft C++ Libraries products.
 
 #include "stdafx.h"
+// include for visual leak detector (only for debugging)
+#include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -18,10 +20,12 @@ INT		m_lMemoryId;	// grabber memory - buffer ID
 char*	m_pcImageMemory;// grabber memory - pointer to 
 INT		m_nSizeX, m_nSizeY;
 INT*	m_monitorId;
+INT		m_nAviID = 0;
 BOOL    m_bRecording = FALSE;
 BOOL	m_bRunning = FALSE;
 unsigned long* m_frameDropInfo = new unsigned long[2];
 CuEyeRenderThread* m_renderThread;
+UEYE_CAMERA_LIST* pucl;
 
 /* Image size functions */
 INT GetImagePos(HIDS m_hCam, INT &xPos, INT &yPos)
@@ -91,16 +95,11 @@ INT WINAPI InitializeCamera(HIDS* m_hCam) {
         // Time for the firmware upload = 25 seconds by default
         INT nUploadTime = 25000;
         is_GetDuration (*m_hCam, IS_STARTER_FW_UPLOAD, &nUploadTime);
-    
         /*CString Str1, Str2, Str3;
         Str1 = "This camera requires a new firmware. The upload will take about";
         Str2 = "seconds. Please wait ...";
         Str3.Format ("%s %d %s", Str1, nUploadTime / 1000, Str2);
         AfxMessageBox (Str3, MB_ICONWARNING);*/
-    
-        // Set mouse to hourglass
-	    SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
-
         // Try again to open the camera. This time we allow the automatic upload of the firmware by
         // specifying "IS_ALLOW_STARTER_FIRMWARE_UPLOAD"
         *m_hCam = (HIDS) (((INT)*m_hCam) | IS_ALLOW_STARTER_FW_UPLOAD); 
@@ -112,7 +111,7 @@ INT WINAPI InitializeCamera(HIDS* m_hCam) {
 INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
 	INT result = IS_NO_SUCCESS;
 	if (settingsFile != NULL && *settingsFile != '\0') {
-		TRACE("Loading settings from %s", settingsFile);
+		TRACE("Loading settings from %s\n", settingsFile);
 		result = is_LoadParameters(*m_hCam, settingsFile);
 		if (result == IS_SUCCESS) {
 			// realloc image mem with actual sizes and depth.
@@ -147,30 +146,38 @@ INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
 
 void WINAPI StopRunning(HIDS* m_hCam) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if( m_bRunning ) {
-		// TODO exit AVI here
-		// Disable messages
-		is_EnableMessage( *m_hCam, IS_FRAME, NULL );
-		// Stop message pump of the rendering thread
-		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, STOP_RUNNING	, 0);
-		// Stop live video
+	if( m_bRunning && !m_bRecording) {
+		// stop rendering thread
+		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RUNNING, FALSE);
+		// wait for thread to terminate
+		WaitForSingleObject(m_renderThread->m_hThread, INFINITE);
+		// run rendering thread destructor
+		delete m_renderThread;
+		m_renderThread = NULL;
+		// close AVI handle
+		if (m_nAviID) {
+			isavi_ExitAVI(m_nAviID);
+		}
 		is_StopLiveVideo( *m_hCam, IS_WAIT );
-
 		// Free the allocated buffer
 		if( m_pcImageMemory != NULL ) {
 			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
 		}	
-
 		m_pcImageMemory = NULL;
-
 		// Close camera
 		is_ExitCamera(*m_hCam );
 		delete m_frameDropInfo;
 		m_frameDropInfo = NULL;
 		m_hCam = NULL;
 		m_bRunning = FALSE;
-		// Run the render thread destructor
-		delete *m_renderThread;
+	} else if (m_hCam) {
+		// Close camera
+		is_ExitCamera(*m_hCam );
+		m_hCam = NULL;
+	}
+	if (pucl) {
+		delete [] pucl;
+		pucl = NULL;
 	}
 }
 
@@ -234,7 +241,7 @@ int InitDisplayMode(HIDS* m_hCam)
     return result;
 }
 
-INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle) { 
+INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle) { 
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	m_monitorId = monitorId;
 	INT result = IS_NO_SUCCESS;
@@ -247,7 +254,9 @@ INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowNam
 		if (result == IS_SUCCESS) {
 			// start a new thread that will create a window to show the live video fullscreen
 			m_renderThread = (CuEyeRenderThread *) AfxBeginThread(RUNTIME_CLASS(CuEyeRenderThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-			m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, windowName, monitorId, OnWindowShow, windowHandle);
+			// set to false to prevent uncontrolled m_renderThread pointer invalidation
+			m_renderThread->m_bAutoDelete = FALSE; 
+			m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, monitorId, OnWindowShow, windowHandle);
 			m_renderThread->ResumeThread();
 			m_bRunning = TRUE;
 		}
@@ -274,11 +283,11 @@ void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible)
 	}
 }
 
-INT WINAPI StartRecording(HIDS* m_hCam, INT* nAviID, const char* strFilePath) {
+INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	INT result = IS_SUCCESS;
-	if (*nAviID == 0) {
-		result = isavi_InitAVI(nAviID, *m_hCam);
+	if (!m_nAviID) {
+		result = isavi_InitAVI(&m_nAviID, *m_hCam);
 	}
 	if (result == IS_AVI_NO_ERR) {
 		// Query image buffer geometry
@@ -303,46 +312,46 @@ INT WINAPI StartRecording(HIDS* m_hCam, INT* nAviID, const char* strFilePath) {
 		// Get color mode
 		INT cMode = GetColorMode(*m_hCam);
 
-		result &= isavi_SetImageSize( *nAviID, cMode,
+		result &= isavi_SetImageSize( m_nAviID, cMode,
 			nWidth, nHeight,
 			pnX, pnY,
 			LineOffsetPx);
 
-		result &= isavi_OpenAVI(*nAviID, strFilePath);
+		result &= isavi_OpenAVI(m_nAviID, strFilePath);
 		// TODO image quality is hard coded to 75 for now
-		result &= isavi_SetImageQuality (*nAviID, 75);
+		result &= isavi_SetImageQuality (m_nAviID, 75);
 		result &= isavi_SetFrameRate(*m_hCam, newFPS);
-		result &= isavi_StartAVI(*m_hCam);
+		result &= isavi_StartAVI(m_nAviID);
 		// Set recording to true
 		m_bRecording = TRUE;
-		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
+		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
 		// Send avi id to render thread
-		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, SET_AVI_ID, (LPARAM) nAviID);
-		TRACE("Recording started");
+		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, SET_AVI_ID, (LPARAM) m_nAviID);
+		TRACE("Recording started\n");
 	}	
 	return result;
 }
 
-INT WINAPI StopRecording(INT nAviID) {
+INT WINAPI StopRecording(HIDS* m_hCam) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if (m_bRecording && nAviID != NULL) {
+	if (m_bRecording && m_nAviID) {
 		m_bRecording = FALSE;
 		// set recording to false
-		PostMessage(m_renderThread->m_pMainWnd->m_hWnd, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
-		TRACE("Recording stopped");
-		INT result = isavi_StopAVI(nAviID);
-		result &= isavi_CloseAVI(nAviID);
-		result &= isavi_ResetFrameCounters(nAviID);
+		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
+		("Recording stopped\n");
+		INT result = isavi_StopAVI(m_nAviID);
+		result &= isavi_CloseAVI(m_nAviID);
+		result &= isavi_ResetFrameCounters(m_nAviID);
 		return result;
 	}
 	return IS_AVI_ERR_INVALID_ID;
 }
 
-unsigned long* WINAPI GetFrameDropInfo(INT nAviID) {
-	if (m_bRecording && nAviID != NULL) {
+unsigned long* WINAPI GetFrameDropInfo(HIDS* m_hCam) {
+	if (m_bRecording && m_nAviID) {
 		unsigned long compressedFrames;
-		isavi_GetnCompressedFrames(nAviID, &compressedFrames);
-		isavi_GetnLostFrames(nAviID, &m_frameDropInfo[1]);
+		isavi_GetnCompressedFrames(m_nAviID, &compressedFrames);
+		isavi_GetnLostFrames(m_nAviID, &m_frameDropInfo[1]);
 		m_frameDropInfo[0] = compressedFrames + m_frameDropInfo[1];	
 	}
 	return m_frameDropInfo;
@@ -351,23 +360,19 @@ unsigned long* WINAPI GetFrameDropInfo(INT nAviID) {
 UEYE_CAMERA_LIST* WINAPI GetCameraNames() {
 	// At least one camera must be available
 	INT nNumCam = 0;
-	UEYE_CAMERA_LIST* pucl;
 	if( is_GetNumberOfCameras( &nNumCam ) == IS_SUCCESS) {
+		if (pucl) {
+			delete [] pucl;
+			pucl = NULL;
+		}
 		// Create new list with suitable size
-		pucl = (UEYE_CAMERA_LIST*) new char [sizeof (DWORD)
+		pucl = (UEYE_CAMERA_LIST*) new BYTE [sizeof (DWORD)
 			+ nNumCam
 			* sizeof (UEYE_CAMERA_INFO)];
 		pucl->dwCount = nNumCam;
-		
-			//Retrieve camera info
 		if (nNumCam >= 1 && is_GetCameraList(pucl) == IS_SUCCESS) {
-			TRACE("Camera models found %s", pucl->uci->Model);
-			/*int iCamera;
-			// succeeded..
-			
-			for (iCamera = 0; iCamera < (int)pucl->dwCount; iCamera++) {
-				result[iCamera] = pucl->uci[iCamera].dwCameraID;
-			}*/
+			// camera's found
+			TRACE("Camera models found %s\n", pucl->uci->Model);
 		}
 	} 	
 	return pucl;
