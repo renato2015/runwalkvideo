@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
-#include "vld.h"
+// #include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -144,7 +144,8 @@ INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
 	return result;
 }
 
-void WINAPI StopRunning(HIDS* m_hCam) {
+INT WINAPI StopRunning(HIDS* m_hCam) {
+	INT result = IS_SUCCESS;
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if( m_bRunning && !m_bRecording) {
 		// stop rendering thread
@@ -165,20 +166,21 @@ void WINAPI StopRunning(HIDS* m_hCam) {
 		}	
 		m_pcImageMemory = NULL;
 		// Close camera
-		is_ExitCamera(*m_hCam );
+		result = is_ExitCamera(*m_hCam );
 		delete m_frameDropInfo;
 		m_frameDropInfo = NULL;
 		m_hCam = NULL;
 		m_bRunning = FALSE;
 	} else if (m_hCam) {
 		// Close camera
-		is_ExitCamera(*m_hCam );
+		result = is_ExitCamera(*m_hCam );
 		m_hCam = NULL;
 	}
 	if (pucl) {
 		delete [] pucl;
 		pucl = NULL;
 	}
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

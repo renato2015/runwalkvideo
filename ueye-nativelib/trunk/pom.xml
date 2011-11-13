@@ -5,13 +5,13 @@
 	<groupId>com.runwalk</groupId>
 	<artifactId>ueye-nativelib</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.3-SNAPSHOT</version>
 	<name>Native bindings for the uEye camera</name>
 	<url>http://www.ids-imaging.com</url>
 
 	<!-- Enabling the use of FTP -->
 	<distributionManagement>
-		<repository>
+		<repository>                                
 			<id>runwalk-ftp</id>
 			<url>ftp://ftp.linuxsystems.be/maven2</url>
 		</repository>
@@ -22,7 +22,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-				  <classesDirectory>${basedir}/${dllPath}</classesDirectory>
+				  <finalName>${jarName}</finalName>            
+				  <classesDirectory>${project.build.directory}/${architecture}/${dllPath}</classesDirectory>
 				  <includes>
 					 <include>*.dll</include>
 				  </includes>
@@ -36,22 +37,6 @@
 							<url>${pom.url}</url>
 						</manifestEntries>
 					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
-				<configuration>
-					<attach>true</attach>
-					<includes>
-						<include>**/*.h</include>
-						<include>**/*.cpp</include>
-						<include>**/*.lib</include>
-						<include>**/*.vxcproj*</include>
-						<include>**/*.rc*</include>
-						<include>**/*.sln</include>
-					</includes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -69,7 +54,7 @@
 						<configuration>
 							<groupId>${groupId}</groupId>
 							<artifactId>${artifactId}</artifactId>
-							<file>target/${project.build.finalName}.jar</file>
+							<file>target/${jarName}.jar</file>
 							<version>${version}</version>
 							<uniqueVersion>false</uniqueVersion>
 							<url>ftp://ftp.linuxsystems.be/maven2</url>
@@ -96,19 +81,22 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<dllPath>Release</dllPath>
 				<architecture>x86</architecture>
-			</properties>
+			  <dllPath>Release</dllPath>
+      </properties>
 		</profile>
 		<profile>
 			<id>amd64</id>
 			<properties>
 				<!-- amd64 dll path properties -->
-				<dllPath>x64/Release</dllPath>
 				<architecture>amd64</architecture>
+				<dllPath>Release</dllPath>
 			</properties>
 		</profile>
 	</profiles>
+	<properties>
+  <jarName>${artifactId}-${project.version}-natives-win-${architecture}</jarName>
+	</properties>
 </project>
 
 

@@ -29,7 +29,7 @@ extern "C" {
 	INT WINAPI InitializeCamera(HIDS* m_hCam);
 	unsigned long* WINAPI GetFrameDropInfo(HIDS* m_hCam);
 	INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShowCallback)(BOOL), HWND windowHandle);
-	void WINAPI StopRunning(HIDS* m_hCam);
+	INT WINAPI StopRunning(HIDS* m_hCam);
 	void WINAPI WndToFront(HIDS* hCam);
 	void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible);
 	BOOL WINAPI FilterDllMsg(LPMSG lpMsg);
