@@ -21,9 +21,7 @@ import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.sun.jna.Callback;
-import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
 
 public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
 
@@ -64,7 +62,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	}
 	
 	private String isSuccess(int resultCode) {
-		return resultCode == 0 ? "Success" : "Failure (" + resultCode + ")";
+		return resultCode == 0 ? "succeeded" : "failed (" + resultCode + ")";
 	}
 
 	public String getTitle() {
@@ -135,16 +133,16 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	public void startRecording(String videoPath) {
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, 25);
-		System.out.println("StartRecording " + isSuccess(result));
+		LOGGER.debug("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				// TODO should only run when recording 
 				while(isRecording()) {
-					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle);
-					Pointer p = frameDropInfo.getPointer();
-					LOGGER.debug("captured: " + p.getInt(0) + 
-							" dropped: "+ p.getInt(1));
+					long[] frameDropInfo = {0L, 0L};
+					UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle, frameDropInfo);
+					LOGGER.debug("captured: " + (frameDropInfo[0] & 0xFFFFFFF0L) + 
+							" dropped: " + (frameDropInfo[1] & 0xFFFFFFF0L));
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
