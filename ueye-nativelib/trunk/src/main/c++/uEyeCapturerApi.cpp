@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
-// #include "vld.h"
+#include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -23,7 +23,6 @@ INT*	m_monitorId;
 INT		m_nAviID = 0;
 BOOL    m_bRecording = FALSE;
 BOOL	m_bRunning = FALSE;
-unsigned long* m_frameDropInfo = new unsigned long[2];
 CuEyeRenderThread* m_renderThread;
 UEYE_CAMERA_LIST* pucl;
 
@@ -155,9 +154,10 @@ INT WINAPI StopRunning(HIDS* m_hCam) {
 		// run rendering thread destructor
 		delete m_renderThread;
 		m_renderThread = NULL;
-		// close AVI handle
+		// close AVI handle and reset avi instance ID
 		if (m_nAviID) {
 			isavi_ExitAVI(m_nAviID);
+			m_nAviID = 0;
 		}
 		is_StopLiveVideo( *m_hCam, IS_WAIT );
 		// Free the allocated buffer
@@ -167,8 +167,6 @@ INT WINAPI StopRunning(HIDS* m_hCam) {
 		m_pcImageMemory = NULL;
 		// Close camera
 		result = is_ExitCamera(*m_hCam );
-		delete m_frameDropInfo;
-		m_frameDropInfo = NULL;
 		m_hCam = NULL;
 		m_bRunning = FALSE;
 	} else if (m_hCam) {
@@ -336,27 +334,27 @@ INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath) {
 
 INT WINAPI StopRecording(HIDS* m_hCam) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	INT result = IS_AVI_ERR_INVALID_ID;
 	if (m_bRecording && m_nAviID) {
 		m_bRecording = FALSE;
 		// set recording to false
 		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
-		("Recording stopped\n");
 		INT result = isavi_StopAVI(m_nAviID);
-		result &= isavi_CloseAVI(m_nAviID);
+		result = isavi_CloseAVI(m_nAviID);
 		result &= isavi_ResetFrameCounters(m_nAviID);
-		return result;
+		TRACE("Recording stopped\n");
 	}
-	return IS_AVI_ERR_INVALID_ID;
+	return result;
 }
 
-unsigned long* WINAPI GetFrameDropInfo(HIDS* m_hCam) {
+void WINAPI GetFrameDropInfo(HIDS* m_hCam, unsigned long* frameDropInfo) {
 	if (m_bRecording && m_nAviID) {
 		unsigned long compressedFrames;
 		isavi_GetnCompressedFrames(m_nAviID, &compressedFrames);
-		isavi_GetnLostFrames(m_nAviID, &m_frameDropInfo[1]);
-		m_frameDropInfo[0] = compressedFrames + m_frameDropInfo[1];	
+		frameDropInfo[0] = compressedFrames + frameDropInfo[1];	
+		isavi_GetnLostFrames(m_nAviID, &frameDropInfo[1]);
+		TRACE("Recorded: %d Dropped: %d", frameDropInfo[0], frameDropInfo[1]);
 	}
-	return m_frameDropInfo;
 }
 
 UEYE_CAMERA_LIST* WINAPI GetCameraNames() {

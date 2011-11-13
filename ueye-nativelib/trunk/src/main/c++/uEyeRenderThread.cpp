@@ -142,6 +142,7 @@ void CuEyeRenderThread::ThreadProc()
 		}
 	}
 	while(IsRunning()); 	
+	TRACE("Rendering threadProc stopped\n");
 }
 
 
