@@ -17,7 +17,6 @@ import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public class UEyeCapturerLibraryTest extends TestCase {
@@ -99,10 +98,10 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				while(true) {
-					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle);
-					Pointer p = frameDropInfo.getPointer();
-					System.out.println("captured: " + p.getInt(0) + 
-							" dropped: "+ p.getInt(1));
+					long[] frameDropInfo = {0L, 0L};
+					UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle, frameDropInfo);
+					System.out.println("captured: " + (frameDropInfo[0] & 0xFFFFFFF0L) + 
+							" dropped: "+ (frameDropInfo[1] & 0xFFFFFFF0L));
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -115,7 +114,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		try {
 			// wait for the camera thread to die
 			//cameraThread.join();
-			Thread.sleep(10000);
+			Thread.sleep(100000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
