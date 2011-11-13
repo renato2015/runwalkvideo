@@ -5,6 +5,7 @@ import java.awt.Dialog;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -235,6 +236,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				DisplayMode displayMode = graphicsDevice.getDisplayMode();
+				final Rectangle position = graphicsDevice.getDefaultConfiguration().getBounds();
 				String resolution = displayMode.getWidth() + "x" + displayMode.getHeight();
 				JToggleButton button = new JToggleButton("<html><center>" + monitorIdString + "<br>" + resolution + "</center></html>");
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
@@ -244,6 +246,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 					public void actionPerformed(ActionEvent e) {
 						AbstractButton source = (AbstractButton) e.getSource();
 						String monitorId = source.getActionCommand();
+						// TODO pas position here instead of monitor id..
 						firePropertyChange(SelfContained.MONITOR_ID, selectedMonitorId, selectedMonitorId = monitorId);
 					}
 

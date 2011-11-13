@@ -43,8 +43,10 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 		ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
 			UEyeCameraInfo cameraInfo = cameraNames.uci[i];
-			// cleanly copy the struct's info into this map to prevent memory leaking
-			cameraNameIdMap.put(cameraInfo.getModelInfo(), cameraInfo.dwCameraID);
+			if (!cameraInfo.dwInUse) {
+				// cleanly copy the struct's info into this map to prevent memory leaking
+				cameraNameIdMap.put(cameraInfo.getModelInfo(), cameraInfo.dwCameraID);
+			}
 		}
 		return cameraNameIdMap.keySet();
 	}
