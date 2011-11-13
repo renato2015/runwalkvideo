@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
-#include "vld.h"
+// #include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -353,7 +353,7 @@ void WINAPI GetFrameDropInfo(HIDS* m_hCam, unsigned long* frameDropInfo) {
 		isavi_GetnCompressedFrames(m_nAviID, &compressedFrames);
 		frameDropInfo[0] = compressedFrames + frameDropInfo[1];	
 		isavi_GetnLostFrames(m_nAviID, &frameDropInfo[1]);
-		TRACE("Recorded: %d Dropped: %d", frameDropInfo[0], frameDropInfo[1]);
+		TRACE("Recorded: %d Dropped: %d\n", frameDropInfo[0], frameDropInfo[1]);
 	}
 }
 
