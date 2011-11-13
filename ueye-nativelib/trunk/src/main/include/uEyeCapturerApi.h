@@ -27,7 +27,7 @@ extern "C" {
 	INT WINAPI StopRecording(HIDS* m_hCam);
 	UEYE_CAMERA_LIST* WINAPI GetCameraNames();
 	INT WINAPI InitializeCamera(HIDS* m_hCam);
-	unsigned long* WINAPI GetFrameDropInfo(HIDS* m_hCam);
+	void WINAPI GetFrameDropInfo(HIDS* m_hCam, unsigned long* frameDropInfo);
 	INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShowCallback)(BOOL), HWND windowHandle);
 	INT WINAPI StopRunning(HIDS* m_hCam);
 	void WINAPI WndToFront(HIDS* hCam);
