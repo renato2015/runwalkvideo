@@ -15,7 +15,7 @@ public class UEyeCameraInfo extends Structure {
 	/// this is the sensor ID e.g. IS_SENSOR_UI141X_M
 	public int dwSensorID;
 	/// flag, whether the camera is in use or not
-	public int dwInUse;
+	public boolean dwInUse;
 	/**
 	 * serial number of the camera<br>
 	 * C type : IS_CHAR[16]
@@ -46,7 +46,7 @@ public class UEyeCameraInfo extends Structure {
 	 * @param dwStatus various flags with camera status<br>
 	 * @param dwReserved C type : DWORD[15]
 	 */
-	public UEyeCameraInfo(int dwCameraID, int dwDeviceID, int dwSensorID, int dwInUse, byte[] SerNo, byte[] Model, int dwStatus, int dwReserved[]) {
+	public UEyeCameraInfo(int dwCameraID, int dwDeviceID, int dwSensorID, boolean dwInUse, byte[] SerNo, byte[] Model, int dwStatus, int dwReserved[]) {
 		this.dwCameraID = dwCameraID;
 		this.dwDeviceID = dwDeviceID;
 		this.dwSensorID = dwSensorID;

@@ -1,13 +1,7 @@
 package com.runwalk.video.test;
 
-import java.awt.Frame;
-import sun.awt.windows.WComponentPeer;
-
 import java.awt.Color;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.Frame;
 
 import junit.framework.TestCase;
 
@@ -33,9 +27,6 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	}
 	
 	public static void main(String[] args) {
-		Thread thread = new Thread();
-		thread.setDaemon(false);
-		thread.start();
 		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		final IntByReference cameraHandle = new IntByReference(0);
 		char[] windowName = null;
@@ -69,7 +60,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 			 
 			 Pointer windowHandle = Native.getWindowPointer(frame);
 			 
-			result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId, onWndShowCallback, windowHandle);
+			result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, windowHandle);
 			
 	}
 	
@@ -102,14 +93,13 @@ public class UEyeCapturerLibraryTest extends TestCase {
 			
 		};
 		
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, windowName, monitorId, onWndShowCallback);
-		final IntByReference aviPointer = new IntByReference(0);
-		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, aviPointer, "H:/test2.avi", 66.8);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, Pointer.NULL);
+		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, "C:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				while(true) {
-					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviPointer.getValue());
+					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle);
 					Pointer p = frameDropInfo.getPointer();
 					System.out.println("captured: " + p.getInt(0) + 
 							" dropped: "+ p.getInt(1));
@@ -129,7 +119,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		result = UEyeCapturerLibrary.StopRecording(aviPointer.getValue());
+		result = UEyeCapturerLibrary.StopRecording(cameraHandle);
 		System.out.println("stopRecording result: "+ result);
 		UEyeCapturerLibrary.StopRunning(cameraHandle);
 		System.out.println("Camera stopped running");

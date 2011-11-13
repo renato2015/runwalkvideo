@@ -21,7 +21,6 @@ import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.sun.jna.Callback;
-import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
@@ -38,7 +37,6 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	private final String cameraName;
 	private IntByReference cameraHandle;
-	private IntByReference aviHandle;
 
 	private File settingsFile;
 
@@ -60,10 +58,13 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
 		cameraHandle = new IntByReference(cameraId);
-		aviHandle = new IntByReference(0);
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		LOGGER.debug("InitializeCamera result = " + result);
 		LOGGER.debug("Camera handle value = "  + cameraHandle.getValue());
+	}
+	
+	private String isSuccess(int resultCode) {
+		return resultCode == 0 ? "Success" : "Failure (" + resultCode + ")";
 	}
 
 	public String getTitle() {
@@ -72,10 +73,6 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	public void dispose() {
 		stopRunning();
-		// set all handles to null
-		cameraHandle = null;
-		aviHandle = null;
-		callback = null;
 	}
 
 	public boolean isActive() {
@@ -91,10 +88,9 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 		LOGGER.debug("Opening camera " + getTitle());
 		IntByReference monitorId = new IntByReference(getMonitorId());
 		String settingsFilePath = getSettingsFilePath();
-		char[] windowName = Native.toCharArray(getTitle());
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, windowName, monitorId, callback);
+		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, monitorId, callback, null);
 		LOGGER.debug("Using settings file at " + settingsFilePath);
-		LOGGER.debug("StartRunning result = " + result);
+		LOGGER.debug("StartRunning " + isSuccess(result));
 	}
 
 	private File getSettingsFile() {
@@ -119,8 +115,13 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	}
 
 	public void stopRunning() {
-		int result = UEyeCapturerLibrary.StopRunning(cameraHandle);
-		LOGGER.debug("StopRunning result = " + result);
+		if (cameraHandle != null) {
+			int result = UEyeCapturerLibrary.StopRunning(cameraHandle);
+			// set all handles to null
+			cameraHandle = null;
+			callback = null;
+			LOGGER.debug("StopRunning " + isSuccess(result));
+		}
 	}
 
 	public void setOverlayImage(BufferedImage image, Color alphaColor) {
@@ -133,22 +134,21 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	}
 
 	public void startRecording(String videoPath) {
-		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, aviHandle, videoPath, 25);
-		System.out.println("startRecording result: "+ result);
+		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, 25);
+		System.out.println("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				// TODO should only run when recording 
 				while(isRecording()) {
-					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(aviHandle.getValue());
+					LongByReference frameDropInfo = UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle);
 					Pointer p = frameDropInfo.getPointer();
 					LOGGER.debug("captured: " + p.getInt(0) + 
 							" dropped: "+ p.getInt(1));
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-
-						// FIXME dont swallow
+						LOGGER.error(e);
 					}
 				}
 			}
@@ -160,9 +160,9 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	}
 
 	public void stopRecording() {
-		int result = UEyeCapturerLibrary.StopRecording(aviHandle.getValue());
+		int result = UEyeCapturerLibrary.StopRecording(cameraHandle);
 		setRecording(false);
-		LOGGER.debug("StopRecording result: " + result);
+		LOGGER.debug("StopRecording " + isSuccess(result));
 	}
 
 	/**

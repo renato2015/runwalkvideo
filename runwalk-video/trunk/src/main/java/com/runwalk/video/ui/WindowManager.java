@@ -128,15 +128,15 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				}
 			} else {
 				// TODO NPE at VideoComponent.java:188 when trying to use overloaded version with three args
-				addWindow(selfContainedImpl);
+				addWindow(selfContainedImpl, title);
 			}
 		} else if (isContainable) {
 			addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
 		}
 	}
 
-	public void addWindow(SelfContained selfContained) {
-		addWindow(selfContained, selfContained.getApplicationActionMap(), selfContained.getTitle());
+	public void addWindow(SelfContained selfContained, String title) {
+		addWindow(selfContained, selfContained.getApplicationActionMap(), title);
 	}
 
 	public void addWindow(Containable containable) {
@@ -221,7 +221,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				VideoComponent videoComponent = (VideoComponent) evt.getSource();
 				getMenuBar().removeMenu(videoComponent.getTitle());
 				videoComponent.removePropertyChangeListener(this);
-				disposeWindow(videoComponent);
+				//disposeWindow(videoComponent);
 			}
 		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
 			if (evt.getSource() instanceof Containable) {
