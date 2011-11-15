@@ -171,8 +171,10 @@ void CuEyeRenderThread::WndToFront() {
 
 void CuEyeRenderThread::SetWndVisibility(BOOL visible)
 {
-	INT flags = visible ? SW_SHOW : SW_HIDE;
-	m_pMainWnd->ShowWindow(flags);
+	if (m_pMainWnd) {
+		INT flags = visible ? SW_SHOW : SW_HIDE;
+		m_pMainWnd->ShowWindow(flags);
+	}	
 }
 
 void CuEyeRenderThread::OnThreadMessage(WPARAM wParam, LPARAM lParam) {
