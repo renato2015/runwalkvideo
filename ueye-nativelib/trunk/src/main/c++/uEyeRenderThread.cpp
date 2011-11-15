@@ -53,8 +53,8 @@ BOOL CuEyeRenderThread::ExitInstance()
 	m_hEventThread = NULL;
 
 	CloseHandle(m_hEvent);
-	// clean up window if one was created natively
-	if (m_mainWnd) {
+	// clean up window if it was created by this thread
+	if (m_mainWnd && m_mainWnd->GetSafeHwnd() != m_windowHandle) {
 		// run destructor
 		delete m_mainWnd;
 		m_mainWnd = NULL;
@@ -79,7 +79,7 @@ BOOL CuEyeRenderThread::InitInstance()
 			CMonitor monitor = monitors.GetMonitor(*m_monitorId);
 			monitor.GetMonitorRect(rect);
 		}
-		m_mainWnd = new CFullscreenWnd(m_hCam, m_pcImageMemory, m_lMemoryId, rect.Width(), rect.Height(), m_OnWindowShow);
+		m_pMainWnd = new CFullscreenWnd(m_hCam, m_pcImageMemory, m_lMemoryId, rect.Width(), rect.Height(), m_OnWindowShow);
 		CString csWndClass = AfxRegisterWndClass(CS_HREDRAW|CS_VREDRAW, 0, 0, 0);
 		SENSORINFO sensorInfo;
 		is_GetSensorInfo(*m_hCam, &sensorInfo);
@@ -100,7 +100,6 @@ BOOL CuEyeRenderThread::InitInstance()
 			//ShowWindow(m_pMainWnd->GetSafeHwnd(), SW_MAXIMIZE);
 			//monitor.CenterWindowToMonitor(m_pMainWnd, FALSE);
 		}
-		m_pMainWnd = m_mainWnd;
 		m_windowHandle = m_pMainWnd->GetSafeHwnd();	
 	} 
 	// start event loop here 
@@ -136,7 +135,10 @@ void CuEyeRenderThread::ThreadProc()
 			// event signalled
 				is_RenderBitmap( *m_hCam, *m_lMemoryId, m_windowHandle, IS_RENDER_NORMAL );
 				if (m_bRecording && m_nAviID) {
-					isavi_AddFrame(m_nAviID, m_pcImageMemory);
+					INT result = isavi_AddFrame(m_nAviID, m_pcImageMemory);
+					if (result != IS_AVI_NO_ERR) {
+						TRACE("Adding frame failed (%i)", result);
+					}
 				}
 			}	
 		}
