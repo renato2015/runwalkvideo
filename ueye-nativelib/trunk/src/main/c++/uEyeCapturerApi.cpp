@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
-// #include "vld.h"
+ #include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -336,11 +336,13 @@ INT WINAPI StopRecording(HIDS* m_hCam) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	INT result = IS_AVI_ERR_INVALID_ID;
 	if (m_bRecording && m_nAviID) {
-		m_bRecording = FALSE;
 		// set recording to false
+		m_bRecording = FALSE;
+		// stops the capture thread
+		//subsequent calls to addAviFrame will be ignored
 		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
-		INT result = isavi_StopAVI(m_nAviID);
-		result = isavi_CloseAVI(m_nAviID);
+		result = isavi_StopAVI(m_nAviID);
+		result &= isavi_CloseAVI(m_nAviID);
 		result &= isavi_ResetFrameCounters(m_nAviID);
 		TRACE("Recording stopped\n");
 	}
