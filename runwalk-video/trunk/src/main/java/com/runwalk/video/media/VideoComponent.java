@@ -158,79 +158,27 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	/**
-	 * Merge the {@link ActionMap} of the implementation with the one of this instance..
-	 * TODO {@link ActionMap} hierarchy is not completely correct yet after merging
+	 * Merge the {@link ActionMap} of the implementation with the one of this instance.
+	 * The result will be cached and wrapped using a WeakReference.
+	 * 
+	 * @return The merged ActionMap
 	 */
 	public synchronized ApplicationActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
 			// get the action map of the abstractions
 			ApplicationActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);
-			ApplicationActionMap insertionReference = actionMap;
 			// get the action map of the implementations
-			//Class<?> firstImplementor = getFirstImplementor(getVideoImpl().getClass(), SelfContained.class);
-			ApplicationActionMap videoImplActionMap = null;
-			if (getVideoImpl() instanceof SelfContained) {
-				videoImplActionMap = getApplicationActionMap(SelfContained.class, getVideoImpl());
-			} else {
-				videoImplActionMap = getApplicationActionMap(Containable.class, getVideoImpl());
+			ApplicationActionMap implActionMap = null, parentImplActionMap = null;
+			boolean isSelfContained = getVideoImpl() instanceof SelfContained;
+			Class<?> startClass = isSelfContained ? SelfContained.class : Containable.class;
+			implActionMap = parentImplActionMap = getApplicationActionMap(startClass, getVideoImpl());
+			while (parentImplActionMap.getParent() != null && parentImplActionMap.getParent() != getContext().getActionMap()) {
+				parentImplActionMap = (ApplicationActionMap) implActionMap.getParent();
 			}
-			// the lastImplementor is the class whose hierarchy will be searched for IVideoComponent implementors
-			Class<?> lastImplementor = getVideoImpl().getClass();
-			// loop over all classes derived from VideoComponent
-			while (videoImplActionMap != insertionReference) {
-				// get the next implementor for IVideoComponent in the hierarchy of startClass
-				lastImplementor = getLastImplementor(lastImplementor, IVideoComponent.class);
-				// this loop is necessary if there are more classes in the implementors hierarchy than in that of the abstraction
-				while(videoImplActionMap.getActionsClass() != lastImplementor && IVideoComponent.class.isAssignableFrom(lastImplementor)) {
-					videoImplActionMap = (ApplicationActionMap) videoImplActionMap.getParent();
-				}
-				// now insert the found part of the implementation action map in the action map of the abstraction
-				ApplicationActionMap oldParent = (ApplicationActionMap) insertionReference.getParent();
-				insertionReference.setParent(videoImplActionMap);
-				// save a reference to the parent of the implementation's action map
-				ApplicationActionMap tail = (ApplicationActionMap) videoImplActionMap.getParent();
-				// if the implementation action map's class implements IAppComponent, then we need to add its actionmap
-				videoImplActionMap.setParent(oldParent);
-				// the next insertion point of the abstraction's action map will be it's parent before the insertion
-				if (IVideoComponent.class.isAssignableFrom(videoImplActionMap.getActionsClass())) {
-					insertionReference = oldParent;
-					lastImplementor = lastImplementor.getSuperclass();
-				}
-				// set the implementation's action map to the parent of the action map that was inserted into the abstractions' action map
-				videoImplActionMap = tail;
-			}
-			this.actionMap = new WeakReference<ApplicationActionMap>(actionMap);
+			parentImplActionMap.setParent(actionMap);			
+			this.actionMap = new WeakReference<ApplicationActionMap>(implActionMap);
 		}
 		return actionMap != null ? actionMap.get() : getContext().getActionMap(this);
-	}
-
-	/**
-	 * Check whether a {@link Class} implements the given interface.
-	 * 
-	 * @param theClass The class
-	 * @param interf The interface
-	 * @return <code>true</code> if the {@link Class} implements the interface
-	 */
-	private boolean implementsInterface(Class<?> theClass, Class<?> interf) {
-		for (Class<?> implementedInterface : theClass.getInterfaces()) {
-			if (interf.isAssignableFrom(implementedInterface)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Search a class hierarchy from top to bottom and return the first {@link Class} that implements the given interface.
-	 * 
-	 * @param theClass The {@link Class} whose hierarchy will be searched
-	 * @param interf The interface
-	 * @return The first {@link Class} implementing the given interface
-	 */
-	private Class<?> getLastImplementor(Class<?> theClass, Class<?> interf) {
-		boolean recurse = !implementsInterface(theClass, interf) && theClass.getSuperclass() != null;
-		// if no result here then recurse
-		return recurse ? getLastImplementor(theClass.getSuperclass(), interf) : theClass;
 	}
 
 	public enum State {

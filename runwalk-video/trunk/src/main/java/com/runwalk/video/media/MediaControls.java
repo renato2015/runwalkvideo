@@ -515,7 +515,7 @@ MediaActionConstants, Containable, ActionListener {
 		if (getFrontMostPlayer() != null) {
 			final VideoPlayer selectedPlayer = getFrontMostPlayer();
 			//FIXME pausing before drawing this overlay may result in some trouble
-			selectedPlayer.pauseIfPlaying();
+			final int position = selectedPlayer.getPosition();
 			BufferedImage inputImage = selectedPlayer.getImage();
 			result = new CreateOverlayImageTask(inputImage);
 			result.addTaskListener(new TaskListener.Adapter<BufferedImage, Void>() {
@@ -524,6 +524,10 @@ MediaActionConstants, Containable, ActionListener {
 				public void succeeded(TaskEvent<BufferedImage> event) {
 					BufferedImage image = event.getValue();
 					selectedPlayer.setOverlayImage(image, Color.black);
+					// set selectedProperty manually as it won't be set when invoking it from code
+					setPlaying(false);
+					invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
+					selectedPlayer.setPosition(position);
 				}
 
 			});

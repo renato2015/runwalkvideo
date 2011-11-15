@@ -1,5 +1,6 @@
 package com.runwalk.video.test;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Frame;
 
@@ -20,11 +21,11 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public class UEyeCapturerLibraryTest extends TestCase {
-	
+
 	public void testUEyeCapturerFactory() {
 		VideoCapturerFactory.getInstance().createCapturer(null, null, null);
 	}
-	
+
 	public static void main(String[] args) {
 		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
 		final IntByReference cameraHandle = new IntByReference(0);
@@ -41,29 +42,48 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
-		
+
 		UEyeCapturerLibrary.OnWndShowCallback onWndShowCallback = new UEyeCapturerLibrary.OnWndShowCallback() {
-				
-				public void invoke(boolean visible) {
-					System.out.println("Window visibility set to " + visible);
-				}
-				
-			};
-			
-			 Frame frame = new Frame(String.valueOf(windowName));
-			 frame.setIgnoreRepaint(true);
-			 frame.setBackground(Color.black);
-			 frame.setSize(1440, 900);
-			 frame.pack();
-			 frame.setVisible(true);
-			 
-			 Pointer windowHandle = Native.getWindowPointer(frame);
-			 
-			result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, windowHandle);
-			
+
+			public void invoke(boolean visible) {
+				System.out.println("Window visibility set to " + visible);
+			}
+
+		};
+
+		Frame frame = new Frame(String.valueOf(windowName));
+		Canvas canvas = new Canvas();
+		frame.add(canvas);
+		frame.setIgnoreRepaint(true);
+		frame.setBackground(Color.black);
+		frame.setSize(1440, 900);
+		frame.setVisible(true);
+		frame.pack();
+		Pointer newPointer = Native.getComponentPointer(canvas);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, newPointer);
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		result = UEyeCapturerLibrary.StopRunning(cameraHandle);
+		frame.remove(canvas);
+		frame.validate();
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		frame.add(canvas);
+		frame.validate();
+		Pointer otherPointer = Native.getComponentPointer(canvas);
+		assert(otherPointer.equals(newPointer));
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, newPointer);
 	}
-	
-	
+
+
 	@Ignore
 	public void testGetCameras() {
 		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
@@ -83,15 +103,15 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
-		
+
 		UEyeCapturerLibrary.OnWndShowCallback onWndShowCallback = new UEyeCapturerLibrary.OnWndShowCallback() {
-			
+
 			public void invoke(boolean visible) {
 				System.out.println("Window visibility set to " + visible);
 			}
-			
+
 		};
-		
+
 		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, Pointer.NULL);
 		int aviResult = UEyeCapturerLibrary.StartRecording(cameraHandle, "C:/test2.avi", 66.8);
 		System.out.println("startRecording result: "+ aviResult);
