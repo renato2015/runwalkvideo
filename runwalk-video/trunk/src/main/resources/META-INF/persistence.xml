@@ -23,7 +23,6 @@
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
 			
  			<property name="eclipselink.cache.type.City" value="Full"/>
- 			<property name="eclipselink.cache.shared.default" value="false"/>
  			<!-- need to call the StaticWeave class at build time -->
  			<!-- property name="eclipselink.weaving" value="static" -->
  			<property name="eclipselink.jdbc.read-connections.max" value="10"/>

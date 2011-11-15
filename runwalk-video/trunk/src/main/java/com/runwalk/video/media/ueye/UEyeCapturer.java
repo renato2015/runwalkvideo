@@ -1,29 +1,41 @@
 package com.runwalk.video.media.ueye;
 
+import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
+import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.FullScreenSupport;
 import com.runwalk.video.core.PropertyChangeSupport;
-import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.sun.jna.Callback;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 
-public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, SelfContained  {
+public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Containable, FullScreenSupport, ComponentListener  {
 
 	private static final String NO_SETTINGS_FILE = "<default>";
 
@@ -37,6 +49,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	private IntByReference cameraHandle;
 
 	private File settingsFile;
+	
+	private boolean fullScreen = false;
 
 	/** This hook can be used by native code to call back into java */
 	private Callback callback = new OnWndShowCallback() {
@@ -53,11 +67,15 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	private volatile boolean recording = false;
 
+	private Component videoCanvas;
+
+	private Frame fullScreenFrame;
+
 	UEyeCapturer(int cameraId, String cameraName) {
 		this.cameraName = cameraName;
 		cameraHandle = new IntByReference(cameraId);
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
-		LOGGER.debug("InitializeCamera result = " + result);
+		LOGGER.debug("InitializeCamera " + isSuccess(result));
 		LOGGER.debug("Camera handle value = "  + cameraHandle.getValue());
 	}
 	
@@ -71,6 +89,10 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	public void dispose() {
 		stopRunning();
+		videoCanvas.removeComponentListener(this);
+		fullScreenFrame.dispose();
+		fullScreenFrame = null;
+		videoCanvas = null;
 	}
 
 	public boolean isActive() {
@@ -83,12 +105,14 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 	}
 
 	public void startRunning() {
-		LOGGER.debug("Opening camera " + getTitle());
-		IntByReference monitorId = new IntByReference(getMonitorId());
-		String settingsFilePath = getSettingsFilePath();
-		int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, monitorId, callback, null);
-		LOGGER.debug("Using settings file at " + settingsFilePath);
-		LOGGER.debug("StartRunning " + isSuccess(result));
+		// create canvas and add to frame to start rendering..
+		fullScreenFrame = new Frame(getTitle());
+		videoCanvas = new Canvas();
+		videoCanvas.addComponentListener(this);
+		fullScreenFrame.add(videoCanvas);
+		fullScreenFrame.setIgnoreRepaint(true);
+		fullScreenFrame.setBackground(Color.black);
+		fullScreenFrame.setUndecorated(true);
 	}
 
 	private File getSettingsFile() {
@@ -244,6 +268,74 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Self
 
 	private boolean isRecording() {
 		return recording;
+	}
+
+	public void componentMoved(ComponentEvent e) { }
+	
+	public void componentResized(ComponentEvent e) { }
+
+	public void componentShown(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+
+	public void componentHidden(ComponentEvent e) {
+		setVisible(e.getComponent().isVisible());
+	}
+	
+	private GraphicsDevice getGraphicsDevice() {
+		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice foundDevice = null;
+		for (GraphicsDevice device : graphicsEnvironment.getScreenDevices()) {
+			if (monitorId != null && device.getIDstring().endsWith(monitorId.toString())) {
+				foundDevice = device;
+			}
+		}
+		return foundDevice;
+	}
+
+	public void setFullScreen(boolean fullScreen) {
+		if (!this.fullScreen && !fullScreenFrame.isVisible()) {
+			this.fullScreen = fullScreen;
+			IntByReference monitorId = new IntByReference(getMonitorId());
+			String settingsFilePath = getSettingsFilePath();
+			// get rectangle for the currently selected monitor and position frame
+			Rectangle bounds = getGraphicsDevice().getDefaultConfiguration().getBounds();
+			fullScreenFrame.setBounds(bounds);
+			fullScreenFrame.setVisible(true);
+			fullScreenFrame.pack();
+			// get native handle for the drawing canvas
+			Pointer newPointer = Native.getComponentPointer(videoCanvas);
+			LOGGER.debug("Opening camera " + getTitle());
+			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, monitorId, callback, newPointer);
+			LOGGER.debug("Using settings file at " + settingsFilePath);
+			LOGGER.debug("StartRunning " + isSuccess(result));
+		}
+	}
+
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
+
+	public boolean isToggleFullScreenEnabled() {
+		return true;
+	}
+
+	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
+	public void toggleFullScreen(ActionEvent event) {
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			source.setSelected(true);
+			// toggling is disabled for now..
+		}
+	}
+
+	public Component getComponent() {
+		return videoCanvas;
+	}
+
+	public boolean isResizable() {
+		return false;
 	}
 
 }
