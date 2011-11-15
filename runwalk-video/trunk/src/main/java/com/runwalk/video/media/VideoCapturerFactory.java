@@ -50,7 +50,7 @@ public abstract class VideoCapturerFactory {
 			// at this moment capturing is only available on windows
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) { 
 				// load factories using reflection??
-				String nativeCapturer = System.getProperty("native_capturer");
+				String nativeCapturer = System.getProperty("ueye.enable");
 				if (Boolean.TRUE.toString().equals(nativeCapturer)) {
 					factory = new UEyeCapturerFactory();
 				} else {
