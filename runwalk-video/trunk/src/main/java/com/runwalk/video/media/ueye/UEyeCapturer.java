@@ -9,6 +9,7 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
@@ -37,9 +39,11 @@ import com.sun.jna.ptr.IntByReference;
 
 public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Containable, FullScreenSupport, ComponentListener  {
 
-	private static final String NO_SETTINGS_FILE = "<default>";
+	public static final String SETTINGS_FILE_PROPERTY = "ueye.settings_file";
 
-	public static final String UEYE_SETTINGS_PROPERTY = "ueye_settings_file";
+	private static final String NATIVE_WINDOWING_PROPERTY = "ueye.native_windowing";
+
+	private static final String NO_SETTINGS_FILE = "<default>";
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 
@@ -89,10 +93,12 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	public void dispose() {
 		stopRunning();
-		videoCanvas.removeComponentListener(this);
-		fullScreenFrame.dispose();
-		fullScreenFrame = null;
-		videoCanvas = null;
+		if (!isNativeWindowing()) {
+			videoCanvas.removeComponentListener(this);
+			fullScreenFrame.dispose();
+			fullScreenFrame = null;
+			videoCanvas = null;
+		}
 	}
 
 	public boolean isActive() {
@@ -100,24 +106,32 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public Dimension getDimension() {
-		// TODO eventually read dimensions from settings file??
-		return null;
+		Dimension result = null;
+		if (!isNativeWindowing() && videoCanvas != null) {
+			result = videoCanvas.getSize();
+		} else {
+			// TODO eventually read dimensions from settings file??
+		}
+		return result;
 	}
 
 	public void startRunning() {
 		// create canvas and add to frame to start rendering..
-		fullScreenFrame = new Frame(getTitle());
-		videoCanvas = new Canvas();
-		videoCanvas.addComponentListener(this);
-		fullScreenFrame.add(videoCanvas);
-		fullScreenFrame.setIgnoreRepaint(true);
-		fullScreenFrame.setBackground(Color.black);
-		fullScreenFrame.setUndecorated(true);
+		if (!isNativeWindowing()) {
+			fullScreenFrame = new Frame(getTitle());
+			videoCanvas = new Canvas();
+			videoCanvas.setIgnoreRepaint(true);
+			videoCanvas.addComponentListener(this);
+			fullScreenFrame.add(videoCanvas);
+			fullScreenFrame.setIgnoreRepaint(true);
+			fullScreenFrame.setBackground(Color.black);
+			fullScreenFrame.setUndecorated(true);
+		}
 	}
 
 	private File getSettingsFile() {
 		if (settingsFile == null) {
-			String settingsFilePathProperty = System.getProperty(UEYE_SETTINGS_PROPERTY);
+			String settingsFilePathProperty = System.getProperty(SETTINGS_FILE_PROPERTY);
 			if (settingsFilePathProperty != null) {
 				File selectedFile = new File(settingsFilePathProperty);
 				if (selectedFile.exists()) {
@@ -242,6 +256,16 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void setVisible(boolean visible) {
+		if (isNativeWindowing()) {
+			UEyeCapturerLibrary.SetWndVisibility(cameraHandle, isVisible());
+		} else {
+			if (videoCanvas != null) {
+				Window windowAncestor = SwingUtilities.getWindowAncestor(videoCanvas);
+				if (windowAncestor != null) {
+					windowAncestor.setVisible(visible);
+				}
+			}
+		}
 		firePropertyChange(VISIBLE, this.visible, this.visible = visible);
 	}
 
@@ -251,7 +275,16 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
-		UEyeCapturerLibrary.SetWndVisibility(cameraHandle, isVisible());
+		// check if event is originating from a component that has selected state
+		if (event.getSource() instanceof AbstractButton) {
+			AbstractButton source = (AbstractButton) event.getSource();
+			setVisible(source.isSelected());
+		}
+	}
+	
+	private boolean isNativeWindowing() {
+		String nativeWindowing = System.getProperty(NATIVE_WINDOWING_PROPERTY);
+		return Boolean.TRUE.toString().equals(nativeWindowing);
 	}
 
 	public void setMonitorId(Integer monitorId) {
@@ -313,7 +346,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public boolean isFullScreen() {
-		return fullScreen;
+		return fullScreen || isNativeWindowing();
 	}
 
 	public boolean isToggleFullScreenEnabled() {

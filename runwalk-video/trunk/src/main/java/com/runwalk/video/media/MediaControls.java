@@ -514,7 +514,6 @@ MediaActionConstants, Containable, ActionListener {
 		CreateOverlayImageTask result = null;
 		if (getFrontMostPlayer() != null) {
 			final VideoPlayer selectedPlayer = getFrontMostPlayer();
-			//FIXME pausing before drawing this overlay may result in some trouble
 			final int position = selectedPlayer.getPosition();
 			BufferedImage inputImage = selectedPlayer.getImage();
 			result = new CreateOverlayImageTask(inputImage);

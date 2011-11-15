@@ -173,7 +173,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			Class<?> startClass = isSelfContained ? SelfContained.class : Containable.class;
 			implActionMap = parentImplActionMap = getApplicationActionMap(startClass, getVideoImpl());
 			while (parentImplActionMap.getParent() != null && parentImplActionMap.getParent() != getContext().getActionMap()) {
-				parentImplActionMap = (ApplicationActionMap) implActionMap.getParent();
+				parentImplActionMap = (ApplicationActionMap) parentImplActionMap.getParent();
 			}
 			parentImplActionMap.setParent(actionMap);			
 			this.actionMap = new WeakReference<ApplicationActionMap>(implActionMap);
