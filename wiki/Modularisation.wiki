@@ -3,39 +3,38 @@
 
 ServiceLocator maken voor een AbstractTablePanel toe te voegen naast
 
-ClientInfoPanel
-AnalysisTablePanel
-AnalysisOverviewTablePanel
+ # ClientInfoPanel
+ # AnalysisTablePanel
+ # AnalysisOverviewTablePanel
 
-* gevonden tabs kunnen een voor een aan de tabcontainer toegevoegd worden
-* subclasses gebruken van JPanel ?
-* Toevoegen van @Actions in de menu (this can happen while looping over the added componenots)
-* wat met de lijst van argumenten voor het instantieren van de klassen??
+ * Gevonden tabs kunnen een voor een aan de tabcontainer toegevoegd worden
+ * Subclasses gebruken van JPanel ?
+ * Toevoegen van @Actions in de menu (this can happen while looping over the added componenots)
+ * Wat met de lijst van argumenten voor het instantieren van de klassen??
 
 == RefreshTask Refactoring ==
 
-* Pass a list of installed panels that implement a common refresh method
-* encapsulate logic in a specific DAO to hide its implementation from the Task itself
+ * Pass a list of installed panels that implement a common refresh method
+ * encapsulate logic in a specific DAO to hide its implementation from the Task itself
 
 == Interface Description ==
-* Add a method to load data for the panel from the database, specific for that panel
-* This method is not part of a list pipeline and has no dependencies on the state of an EventList in another panel
-* Add a method to create derived EventLists using a given EventList argument coming from a specific panel
-* This last method will be implemented at two levels:
-** First level will be at the module loading system, all panels that have a dependency on ClientTablePanel should hook up their lists to the main list of clients. These panels can be discovered using the ServiceLoader
-** Second level will be hidden from the first, enabling the programmer to create panels that are dependent on other entity types. This involves creating some kind of recursive panel loading mechanism
-** It is probably a good idea to define a common initialization method for panels depending on other panels, because constructor arguments are unknown using reflection.
-** Instantiation for the first level of panels can be done at the level of the Application. Storage of the dependent panels for the first level can be done in the ClientTablePanel itself. A list of dependent panels should be maintained within each panel exposing the same class capabilities. This list can be injected from the outside again an interface method.
+ * Add a method to load data for the panel from the database, specific for that panel
+ * This method is not part of a list pipeline and has no dependencies on the state of an EventList in another panel
+ * Add a method to create derived EventLists using a given EventList argument coming from a specific panel
+ * This last method will be implemented at two levels:
+ ** First level will be at the module loading system, all panels that have a dependency on ClientTablePanel should hook up their lists to the main list of clients. These panels can be discovered using the ServiceLoader
+ ** Second level will be hidden from the first, enabling the programmer to create panels that are dependent on other entity types. This involves creating some kind of recursive panel loading mechanism
+ ** It is probably a good idea to define a common initialization method for panels depending on other panels, because constructor arguments are unknown using reflection.
+ ** Instantiation for the first level of panels can be done at the level of the Application. Storage of the dependent panels for the first level can be done in the ClientTablePanel itself. A list of dependent panels should be maintained within each panel exposing the same class capabilities. This list can be injected from the outside again an interface method.
 
-= ONTKOPELLEN VIDEO SUBSYSTEM =
+= ONTKOPPELEN VIDEO SUBSYSTEM =
 
 verwijderen van dependencies op DSJ in VideoFIleManager en CompressVideoFilesTask
 uit (maak abstracties voor de common functionaliteit, compressie en duration)
 
-* VideoFileManager (voor getDuration)
-* CompressVideoFilesTask
+ * VideoFileManager (voor getDuration)
+ * CompressVideoFilesTask
 
-= ONTKOPPELEN BLOBS PACKAGE + CreateOverlayImageTask =
-* ServiceLocator maken voor implementaties van Task?
-* Voor elke implementatie kan een ACtion toegevoegd worden (Eerder direct stijl)
-
+= ONTKOPPELEN BLOBS PACKAGE EN ImageOverlayTask =
+ * ServiceLocator maken voor implementaties van Task?
+ * Voor elke implementatie kan een ACtion toegevoegd worden (Eerder direct stijl)
