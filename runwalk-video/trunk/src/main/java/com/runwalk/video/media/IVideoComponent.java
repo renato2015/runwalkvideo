@@ -47,5 +47,12 @@ public interface IVideoComponent {
 	BufferedImage getImage();
 	
 	String getTitle();
+
+	/**
+	 * Returns <code>true</code> if the containing window is created in native code.
+	 * 
+	 * @return <code>true</code> if window creation does not reside in Swing
+	 */
+	boolean isNativeWindowing();
 	
 }

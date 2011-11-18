@@ -112,7 +112,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		String title = videoComponent.getTitle();
 		if (isSelfContained) {
 			SelfContained selfContainedImpl = (SelfContained) videoImpl;
-			if (isFullScreenSupported) {
+			if (isFullScreenSupported && videoComponent.isFocusable()) {
 				FullScreenSupport fsVideoImpl = (FullScreenSupport) videoImpl;
 				boolean toggleFullScreenEnabled = fsVideoImpl.isToggleFullScreenEnabled();
 				if (toggleFullScreenEnabled && !fsVideoImpl.isFullScreen()) {
@@ -281,8 +281,8 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		Iterator<T> iterator = videoComponents.iterator();
 		while(iterator.hasNext() && result == null && component != null) {
 			T videoComponent = iterator.next();
-			IVideoComponent videoImpl = videoComponent.getVideoImpl();
-			if (videoImpl instanceof Containable) {
+			if (videoComponent.isFocusable()) {
+				IVideoComponent videoImpl = videoComponent.getVideoImpl();
 				if (SwingUtilities.isDescendingFrom(((Containable) videoImpl).getComponent(), component)) {
 					result = videoComponent;
 				}
