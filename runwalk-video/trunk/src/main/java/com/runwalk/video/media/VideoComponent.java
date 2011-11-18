@@ -55,7 +55,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	 */
 	@Action(selectedProperty = IDLE)
 	public void togglePreview() {
-		if (isIdle()) {
+		if (!isIdle()) {
 			getVideoImpl().stopRunning();
 		} else {
 			getVideoImpl().startRunning();
@@ -68,7 +68,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	 * @return <code>true</code> if the window's focus state can be tracked
 	 */
 	public boolean isFocusable() {
-		return getVideoImpl() instanceof Containable;
+		return getVideoImpl() instanceof Containable && !getVideoImpl().isNativeWindowing();
 	}
 
 	/**

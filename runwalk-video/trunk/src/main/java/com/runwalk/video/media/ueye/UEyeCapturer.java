@@ -92,12 +92,17 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void dispose() {
-		stopRunning();
-		if (!isNativeWindowing()) {
-			videoCanvas.removeComponentListener(this);
-			fullScreenFrame.dispose();
-			fullScreenFrame = null;
-			videoCanvas = null;
+		if (isActive()) {
+			UEyeCapturerLibrary.Dispose(cameraHandle);
+			// set all handles to null
+			cameraHandle = null;
+			callback = null;
+			if (!isNativeWindowing() && fullScreenFrame != null) {
+				videoCanvas.removeComponentListener(this);
+				fullScreenFrame.dispose();
+				fullScreenFrame = null;
+				videoCanvas = null;
+			}
 		}
 	}
 
@@ -117,15 +122,20 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	public void startRunning() {
 		// create canvas and add to frame to start rendering..
-		if (!isNativeWindowing()) {
+		if (!isNativeWindowing() && fullScreenFrame == null) {
 			fullScreenFrame = new Frame(getTitle());
 			videoCanvas = new Canvas();
 			videoCanvas.setIgnoreRepaint(true);
 			videoCanvas.addComponentListener(this);
 			fullScreenFrame.add(videoCanvas);
-			fullScreenFrame.setIgnoreRepaint(true);
+			//fullScreenFrame.setIgnoreRepaint(true);
 			fullScreenFrame.setBackground(Color.black);
 			fullScreenFrame.setUndecorated(true);
+		} else {
+			IntByReference monitorId = new IntByReference(getMonitorId());
+			Pointer canvasPointer = isNativeWindowing() ? Pointer.NULL : Native.getComponentPointer(videoCanvas);
+			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, getSettingsFilePath(), monitorId, callback, canvasPointer);
+			LOGGER.debug("StartRunning " + isSuccess(result));
 		}
 	}
 
@@ -151,11 +161,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void stopRunning() {
-		if (cameraHandle != null) {
+		if (isActive()) {
 			int result = UEyeCapturerLibrary.StopRunning(cameraHandle);
-			// set all handles to null
-			cameraHandle = null;
-			callback = null;
 			LOGGER.debug("StopRunning " + isSuccess(result));
 		}
 	}
@@ -174,8 +181,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		LOGGER.debug("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
+			
 			public void run() {
-				// TODO should only run when recording 
 				while(isRecording()) {
 					long[] frameDropInfo = {0L, 0L};
 					UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle, frameDropInfo);
@@ -196,9 +203,11 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void stopRecording() {
-		int result = UEyeCapturerLibrary.StopRecording(cameraHandle);
-		setRecording(false);
-		LOGGER.debug("StopRecording " + isSuccess(result));
+		if (isRecording()) {
+			int result = UEyeCapturerLibrary.StopRecording(cameraHandle);
+			setRecording(false);
+			LOGGER.debug("StopRecording " + isSuccess(result));
+		}
 	}
 
 	/**
@@ -270,7 +279,13 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void toFront() {
-		UEyeCapturerLibrary.WndToFront(cameraHandle);
+		if (isActive()) {
+			if (isNativeWindowing()) {
+				UEyeCapturerLibrary.WndToFront(cameraHandle);
+			} else if (fullScreenFrame != null ){
+				fullScreenFrame.toFront();
+			}
+		}
 	}
 
 	@Action(selectedProperty = VISIBLE)
@@ -282,7 +297,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		}
 	}
 	
-	private boolean isNativeWindowing() {
+	@Override
+	public boolean isNativeWindowing() {
 		String nativeWindowing = System.getProperty(NATIVE_WINDOWING_PROPERTY);
 		return Boolean.TRUE.toString().equals(nativeWindowing);
 	}
@@ -327,7 +343,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void setFullScreen(boolean fullScreen) {
-		if (!this.fullScreen && !fullScreenFrame.isVisible()) {
+		if (!this.fullScreen && fullScreenFrame != null && !fullScreenFrame.isVisible()) {
 			this.fullScreen = fullScreen;
 			IntByReference monitorId = new IntByReference(getMonitorId());
 			String settingsFilePath = getSettingsFilePath();

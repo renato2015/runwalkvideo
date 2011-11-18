@@ -35,6 +35,8 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, IntByReference monitorId, Callback onWndShowCallback, Pointer windowHandle);
 	
 	public static native int StopRunning(IntByReference cameraHandle);
+
+	public static native int Dispose(IntByReference cameraHandle);
 	
 	public static native int StartRecording(IntByReference cameraHandle, final String path, double fps);
 	

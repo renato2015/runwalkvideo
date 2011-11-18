@@ -71,7 +71,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		frame.remove(canvas);
 		frame.validate();
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +80,14 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		frame.validate();
 		Pointer otherPointer = Native.getComponentPointer(canvas);
 		assert(otherPointer.equals(newPointer));
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, newPointer);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, otherPointer);
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(UEyeCapturerLibrary.Dispose(cameraHandle));
 	}
 
 

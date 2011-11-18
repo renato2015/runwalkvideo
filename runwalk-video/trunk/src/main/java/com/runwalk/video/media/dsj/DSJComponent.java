@@ -290,4 +290,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		getFiltergraph().getRendererControls().setOverlayImage(image, rectangle, alphaColor, 1f);
 	}
 
+	public boolean isNativeWindowing() {
+		return false;
+	}
+
 }

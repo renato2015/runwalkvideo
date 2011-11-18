@@ -589,7 +589,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dsj.version>0.8.63</dsj.version>
-		<aspectj.version>1.6.11</aspectj.version>
+		<aspectj.version>1.6.12</aspectj.version>
 		<!-- Keystore generation properties -->
 		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>
 		<keystore.dnameO>Runwalk Herentals</keystore.dnameO>

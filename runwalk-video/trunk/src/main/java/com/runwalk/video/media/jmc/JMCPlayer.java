@@ -215,4 +215,9 @@ public class JMCPlayer implements IVideoPlayer, VideoRendererListener {
 		
 	}
 
+	@Override
+	public boolean isNativeWindowing() {
+		return false;
+	}
+
 }
