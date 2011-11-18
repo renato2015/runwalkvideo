@@ -125,10 +125,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		if (!isNativeWindowing() && fullScreenFrame == null) {
 			fullScreenFrame = new Frame(getTitle());
 			videoCanvas = new Canvas();
-			videoCanvas.setIgnoreRepaint(true);
 			videoCanvas.addComponentListener(this);
 			fullScreenFrame.add(videoCanvas);
-			//fullScreenFrame.setIgnoreRepaint(true);
 			fullScreenFrame.setBackground(Color.black);
 			fullScreenFrame.setUndecorated(true);
 		} else {
