@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
- #include "vld.h"
+#include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -87,8 +87,7 @@ INT GetFrameRate( HIDS hCam, double &fr) {
 }
 
 INT WINAPI InitializeCamera(HIDS* m_hCam) {
-	//int* result = new int;
-	//Open camera with ID 1
+	// open camera with the given ID
 	INT result = is_InitCamera (m_hCam, NULL);
 	if (result == IS_STARTER_FW_UPLOAD_NEEDED) {
         // Time for the firmware upload = 25 seconds by default
@@ -147,10 +146,23 @@ INT WINAPI StopRunning(HIDS* m_hCam) {
 	INT result = IS_SUCCESS;
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if( m_bRunning && !m_bRecording) {
+		// stop video event notification
+		result = is_StopLiveVideo( *m_hCam, IS_WAIT );
+		m_bRunning = FALSE;
+	}
+	return result;
+}
+
+INT WINAPI Dispose(HIDS* m_hCam) {
+	INT result = IS_SUCCESS;
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if( m_bRunning && !m_bRecording) {
 		// stop rendering thread
 		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RUNNING, FALSE);
 		// wait for thread to terminate
 		WaitForSingleObject(m_renderThread->m_hThread, INFINITE);
+		// stop video event notification
+		result = is_StopLiveVideo( *m_hCam, IS_WAIT );
 		// run rendering thread destructor
 		delete m_renderThread;
 		m_renderThread = NULL;
@@ -159,14 +171,13 @@ INT WINAPI StopRunning(HIDS* m_hCam) {
 			isavi_ExitAVI(m_nAviID);
 			m_nAviID = 0;
 		}
-		is_StopLiveVideo( *m_hCam, IS_WAIT );
 		// Free the allocated buffer
 		if( m_pcImageMemory != NULL ) {
 			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
 		}	
 		m_pcImageMemory = NULL;
 		// Close camera
-		result = is_ExitCamera(*m_hCam );
+		result &= is_ExitCamera(*m_hCam );
 		m_hCam = NULL;
 		m_bRunning = FALSE;
 	} else if (m_hCam) {
@@ -241,25 +252,32 @@ int InitDisplayMode(HIDS* m_hCam)
     return result;
 }
 
-INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle) { 
+INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	m_monitorId = monitorId;
 	INT result = IS_NO_SUCCESS;
 	if (!m_bRunning && m_hCam) {
-		if( LoadSettings(m_hCam, settingsFile) != IS_SUCCESS) {
-			// if settings from file cannot be loaded, then use default maximum size for the sensor
-			GetMaxImageSize(m_hCam, &m_nSizeX, &m_nSizeY);
+		if (!m_renderThread) {
+			if( LoadSettings(m_hCam, settingsFile) != IS_SUCCESS) {
+				// if settings from file cannot be loaded, then use default maximum size for the sensor
+				GetMaxImageSize(m_hCam, &m_nSizeX, &m_nSizeY);
+			}
+			result = InitDisplayMode(m_hCam);
+			if (result == IS_SUCCESS && !m_renderThread) {
+				// start a new thread that will create a window to show the live video fullscreen
+				m_renderThread = (CuEyeRenderThread *) AfxBeginThread(RUNTIME_CLASS(CuEyeRenderThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+				// set to false to prevent uncontrolled m_renderThread pointer invalidation
+				m_renderThread->m_bAutoDelete = FALSE; 
+				m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, monitorId, OnWindowShow, hWnd);
+				m_renderThread->ResumeThread();
+			}
+		} else if (!m_renderThread->m_pMainWnd && m_renderThread->GetHwnd() != hWnd) {
+			// stop running was called and window handle invalidated
+			PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, SET_HWND, (LPARAM) hWnd);
 		}
-		result = InitDisplayMode(m_hCam);
-		if (result == IS_SUCCESS) {
-			// start a new thread that will create a window to show the live video fullscreen
-			m_renderThread = (CuEyeRenderThread *) AfxBeginThread(RUNTIME_CLASS(CuEyeRenderThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-			// set to false to prevent uncontrolled m_renderThread pointer invalidation
-			m_renderThread->m_bAutoDelete = FALSE; 
-			m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, monitorId, OnWindowShow, windowHandle);
-			m_renderThread->ResumeThread();
-			m_bRunning = TRUE;
-		}
+		// start live video
+		result &= is_CaptureVideo( *m_hCam, IS_DONT_WAIT );
+		m_bRunning = TRUE;
 	}
 	return result;
 }
@@ -269,7 +287,7 @@ INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, 
 */
 void WINAPI WndToFront(HIDS* hCam) 
 {
-	if (m_renderThread != NULL) {
+	if (m_renderThread) {
 		// TODO should get the thread associated with the given camera handle here..
 		m_renderThread->WndToFront();
 	}
@@ -277,7 +295,7 @@ void WINAPI WndToFront(HIDS* hCam)
 
 void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible) 
 {
-	if (m_renderThread != NULL) {
+	if (m_renderThread) {
 		// TODO should get the thread associated with the given camera handle here..
 		m_renderThread->SetWndVisibility(visible);
 	}

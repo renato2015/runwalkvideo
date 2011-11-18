@@ -24,7 +24,7 @@ private:
 	DWORD		m_dwThreadID;
 	
 	INT*		m_monitorId;
-	HWND		m_windowHandle;
+	HWND		m_hWnd;
 	void		(WINAPI*m_OnWindowShow) (BOOL);
 	afx_msg void OnThreadMessage(WPARAM wParam, LPARAM lParam);
 	BOOL		IsRunning();
@@ -32,7 +32,7 @@ private:
 	BOOL		IsRecording();
 	void		SetRecording(BOOL recording);
 	void		SetAviId(INT nAviID);
-	CFullscreenWnd* m_mainWnd;
+	void		SetHwnd(HWND hWnd);
 	// private constructor used by dynamic creation
 	CuEyeRenderThread(); 
 public:
@@ -44,6 +44,7 @@ public:
 	void Initialize(HIDS* m_hCam, char* m_pcImageMemory, INT* m_lMemoryId, INT* m_monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle);
 	void WndToFront();
 	void SetWndVisibility(BOOL visible);
+	HWND GetHwnd();
 	void ThreadProc();
 };
 

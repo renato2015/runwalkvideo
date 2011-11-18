@@ -26,14 +26,14 @@ CuEyeRenderThread::~CuEyeRenderThread()
 	// cleanup moved to ExitInstance
 }
 
-void CuEyeRenderThread::Initialize(HIDS* hCam, char* pcImageMemory, INT* lMemoryId, INT* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND windowHandle)
+void CuEyeRenderThread::Initialize(HIDS* hCam, char* pcImageMemory, INT* lMemoryId, INT* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd)
 {
   m_hCam = hCam;
   m_pcImageMemory = pcImageMemory;
   m_lMemoryId = lMemoryId;
   m_monitorId = monitorId;
   m_OnWindowShow = OnWindowShow;
-  m_windowHandle = windowHandle;
+  m_hWnd = hWnd;
   m_nAviID = 0;
 }
 
@@ -54,16 +54,16 @@ BOOL CuEyeRenderThread::ExitInstance()
 
 	CloseHandle(m_hEvent);
 	// clean up window if it was created by this thread
-	if (m_mainWnd && m_mainWnd->GetSafeHwnd() != m_windowHandle) {
+	if (m_pMainWnd) {
 		// run destructor
-		delete m_mainWnd;
-		m_mainWnd = NULL;
+		delete m_pMainWnd;
+		m_pMainWnd = NULL;
 	}
 	// set all pointers to null
 	m_hCam = NULL;
 	m_pcImageMemory = NULL;
 	m_lMemoryId = NULL;
-	m_windowHandle = NULL;
+	m_hWnd = NULL;
 	return TRUE;
 }
 
@@ -71,7 +71,7 @@ BOOL CuEyeRenderThread::InitInstance()
 {
 	BOOL nRet = 0;
 	// create new window if no handle was initialized
-	if (!m_windowHandle) {
+	if (!m_hWnd) {
 		CRect rect;
 		// if a monitor was selected, then move the window over there
 		if (m_monitorId != NULL) {
@@ -85,7 +85,7 @@ BOOL CuEyeRenderThread::InitInstance()
 		is_GetSensorInfo(*m_hCam, &sensorInfo);
 		CString windowName(sensorInfo.strSensorName);
 		// got rectangle here
-		nRet &= ((*m_mainWnd).CreateEx( WS_EX_LEFT /*| WS_EX_TOPMOST*/,
+		nRet &= ((*m_pMainWnd).CreateEx( WS_EX_LEFT /*| WS_EX_TOPMOST*/,
 			(LPCTSTR)csWndClass,
 			windowName,
 			WS_POPUP | WS_VISIBLE,
@@ -100,7 +100,7 @@ BOOL CuEyeRenderThread::InitInstance()
 			//ShowWindow(m_pMainWnd->GetSafeHwnd(), SW_MAXIMIZE);
 			//monitor.CenterWindowToMonitor(m_pMainWnd, FALSE);
 		}
-		m_windowHandle = m_pMainWnd->GetSafeHwnd();	
+		m_hWnd = m_pMainWnd->GetSafeHwnd();	
 	} 
 	// start event loop here 
 	m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -117,8 +117,6 @@ BOOL CuEyeRenderThread::InitInstance()
 		//AfxMessageBox( "ERROR: Cannot create event tread!" , MB_ICONEXCLAMATION, 0 );
 		return FALSE;
 	}
-	// start live video
-	is_CaptureVideo( *m_hCam, IS_DONT_WAIT );
 	return TRUE;
 }
 
@@ -133,7 +131,7 @@ void CuEyeRenderThread::ThreadProc()
 			// wait timed out
 			} else if (dwRet == WAIT_OBJECT_0) {
 			// event signalled
-				is_RenderBitmap( *m_hCam, *m_lMemoryId, m_windowHandle, IS_RENDER_NORMAL );
+				is_RenderBitmap( *m_hCam, *m_lMemoryId, m_hWnd, IS_RENDER_NORMAL );
 				if (m_bRecording && m_nAviID) {
 					INT result = isavi_AddFrame(m_nAviID, m_pcImageMemory);
 					if (result != IS_AVI_NO_ERR) {
@@ -164,6 +162,14 @@ void CuEyeRenderThread::SetAviId(INT nAviID) {
 	this->m_nAviID = nAviID;
 }
 
+void CuEyeRenderThread::SetHwnd(HWND hWnd) {
+	this->m_hWnd = hWnd;
+}
+
+HWND CuEyeRenderThread::GetHwnd() {
+	return this->m_hWnd;
+}
+
 void CuEyeRenderThread::WndToFront() {
 	SetForegroundWindow(m_pMainWnd->GetSafeHwnd());
 	BringWindowToTop(m_pMainWnd->GetSafeHwnd());
@@ -179,6 +185,10 @@ void CuEyeRenderThread::SetWndVisibility(BOOL visible)
 
 void CuEyeRenderThread::OnThreadMessage(WPARAM wParam, LPARAM lParam) {
 	switch(wParam) {
+		case SET_HWND: {
+			SetHwnd((HWND) lParam);
+			break;
+		}
 		case SET_AVI_ID: {
 			SetAviId((INT) lParam);
 			break;

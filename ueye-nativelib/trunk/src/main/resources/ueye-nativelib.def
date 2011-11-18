@@ -13,3 +13,4 @@ EXPORTS
 	GetFrameDropInfo	@7
 	WndToFront			@8
 	SetWndVisibility	@9
+	Dispose				@10
