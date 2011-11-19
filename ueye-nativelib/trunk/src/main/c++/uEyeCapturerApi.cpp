@@ -14,17 +14,15 @@
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
 
-INT		m_nColorMode;	// Y8/RGB16/RGB24/REG32
 INT		m_nBitsPerPixel;// number of bits needed store one pixel
+INT		m_nSizeX, m_nSizeY;
 INT		m_lMemoryId;	// grabber memory - buffer ID
 char*	m_pcImageMemory;// grabber memory - pointer to 
-INT		m_nSizeX, m_nSizeY;
 INT*	m_monitorId;
 INT		m_nAviID = 0;
 BOOL    m_bRecording = FALSE;
 BOOL	m_bRunning = FALSE;
 CuEyeRenderThread* m_renderThread;
-UEYE_CAMERA_LIST* pucl;
 
 /* Image size functions */
 INT GetImagePos(HIDS m_hCam, INT &xPos, INT &yPos)
@@ -177,17 +175,13 @@ INT WINAPI Dispose(HIDS* m_hCam) {
 		}	
 		m_pcImageMemory = NULL;
 		// Close camera
-		result &= is_ExitCamera(*m_hCam );
+		result |= is_ExitCamera(*m_hCam );
 		m_hCam = NULL;
 		m_bRunning = FALSE;
 	} else if (m_hCam) {
 		// Close camera
 		result = is_ExitCamera(*m_hCam );
 		m_hCam = NULL;
-	}
-	if (pucl) {
-		delete [] pucl;
-		pucl = NULL;
 	}
 	return result;
 }
@@ -202,7 +196,7 @@ INT WINAPI Dispose(HIDS* m_hCam) {
 int InitDisplayMode(HIDS* m_hCam)
 {
     INT result = IS_NO_SUCCESS;
-    
+    INT		nColorMode;	// Y8/RGB16/RGB24/REG32
     if (m_hCam == NULL) {
 		return IS_NO_SUCCESS;
 	}
@@ -220,14 +214,14 @@ int InitDisplayMode(HIDS* m_hCam)
     result = is_SetDisplayMode(*m_hCam, IS_SET_DM_DIB);
 	if (m_sInfo.nColorMode == IS_COLORMODE_BAYER) {
 		// setup the color depth to the current windows setting
-        is_GetColorDepth(*m_hCam, &m_nBitsPerPixel, &m_nColorMode);
+        is_GetColorDepth(*m_hCam, &m_nBitsPerPixel, &nColorMode);
     } else if (m_sInfo.nColorMode == IS_COLORMODE_CBYCRY) {
         // for color camera models use RGB32 mode
-        m_nColorMode = IS_SET_CM_RGB32;
+        nColorMode = IS_SET_CM_RGB32;
         m_nBitsPerPixel = 32;
     } else {
         // for monochrome camera models use Y8 mode
-        m_nColorMode = IS_SET_CM_Y8;
+        nColorMode = IS_SET_CM_Y8;
         m_nBitsPerPixel = 8;
     }
 
@@ -240,21 +234,21 @@ int InitDisplayMode(HIDS* m_hCam)
 
     if (result == IS_SUCCESS) {
         // set the desired color mode
-        result = is_SetColorMode(*m_hCam, m_nColorMode);
+        result = is_SetColorMode(*m_hCam, nColorMode);
 		// Sets the position and size of the image by using an object of the IS_RECT type.
 		IS_RECT rectAOI;
 		rectAOI.s32X     = 0;
 		rectAOI.s32Y     = 0;
 		rectAOI.s32Width = m_nSizeX;
 		rectAOI.s32Height = m_nSizeY;
-		result = is_AOI(*m_hCam, IS_AOI_IMAGE_SET_AOI, (void*)&rectAOI, sizeof(rectAOI));
+		result |= is_AOI(*m_hCam, IS_AOI_IMAGE_SET_AOI, (void*)&rectAOI, sizeof(rectAOI));
     }   
     return result;
 }
 
-INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
+INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* nMonitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	m_monitorId = monitorId;
+	m_monitorId = nMonitorId;
 	INT result = IS_NO_SUCCESS;
 	if (!m_bRunning && m_hCam) {
 		if (!m_renderThread) {
@@ -268,7 +262,7 @@ INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, 
 				m_renderThread = (CuEyeRenderThread *) AfxBeginThread(RUNTIME_CLASS(CuEyeRenderThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
 				// set to false to prevent uncontrolled m_renderThread pointer invalidation
 				m_renderThread->m_bAutoDelete = FALSE; 
-				m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, monitorId, OnWindowShow, hWnd);
+				m_renderThread->Initialize(m_hCam, m_pcImageMemory, &m_lMemoryId, nMonitorId, OnWindowShow, hWnd);
 				m_renderThread->ResumeThread();
 			}
 		} else if (!m_renderThread->m_pMainWnd && m_renderThread->GetHwnd() != hWnd) {
@@ -276,7 +270,7 @@ INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* monitorId, 
 			PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, SET_HWND, (LPARAM) hWnd);
 		}
 		// start live video
-		result &= is_CaptureVideo( *m_hCam, IS_DONT_WAIT );
+		result |= is_CaptureVideo( *m_hCam, IS_DONT_WAIT );
 		m_bRunning = TRUE;
 	}
 	return result;
@@ -330,16 +324,16 @@ INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath) {
 		// Get color mode
 		INT cMode = GetColorMode(*m_hCam);
 
-		result &= isavi_SetImageSize( m_nAviID, cMode,
+		result |= isavi_SetImageSize( m_nAviID, cMode,
 			nWidth, nHeight,
 			pnX, pnY,
 			LineOffsetPx);
 
-		result &= isavi_OpenAVI(m_nAviID, strFilePath);
+		result |= isavi_OpenAVI(m_nAviID, strFilePath);
 		// TODO image quality is hard coded to 75 for now
-		result &= isavi_SetImageQuality (m_nAviID, 75);
-		result &= isavi_SetFrameRate(*m_hCam, newFPS);
-		result &= isavi_StartAVI(m_nAviID);
+		result |= isavi_SetImageQuality (m_nAviID, 75);
+		result |= isavi_SetFrameRate(*m_hCam, newFPS);
+		result |= isavi_StartAVI(m_nAviID);
 		// Set recording to true
 		m_bRecording = TRUE;
 		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
@@ -360,8 +354,8 @@ INT WINAPI StopRecording(HIDS* m_hCam) {
 		//subsequent calls to addAviFrame will be ignored
 		PostThreadMessage(m_renderThread->m_nThreadID, IS_THREAD_MESSAGE, IS_RECORDING, (LPARAM) m_bRecording);
 		result = isavi_StopAVI(m_nAviID);
-		result &= isavi_CloseAVI(m_nAviID);
-		result &= isavi_ResetFrameCounters(m_nAviID);
+		result |= isavi_CloseAVI(m_nAviID);
+		result |= isavi_ResetFrameCounters(m_nAviID);
 		TRACE("Recording stopped\n");
 	}
 	return result;
@@ -377,25 +371,19 @@ void WINAPI GetFrameDropInfo(HIDS* m_hCam, unsigned long* frameDropInfo) {
 	}
 }
 
-UEYE_CAMERA_LIST* WINAPI GetCameraNames() {
-	// At least one camera must be available
+INT WINAPI GetCameraNames(UEYE_CAMERA_LIST* pCameraList) {
 	INT nNumCam = 0;
-	if( is_GetNumberOfCameras( &nNumCam ) == IS_SUCCESS) {
-		if (pucl) {
-			delete [] pucl;
-			pucl = NULL;
-		}
-		// Create new list with suitable size
-		pucl = (UEYE_CAMERA_LIST*) new BYTE [sizeof (DWORD)
-			+ nNumCam
-			* sizeof (UEYE_CAMERA_INFO)];
-		pucl->dwCount = nNumCam;
-		if (nNumCam >= 1 && is_GetCameraList(pucl) == IS_SUCCESS) {
-			// camera's found
-			TRACE("Camera models found %s\n", pucl->uci->Model);
+	INT result = is_GetNumberOfCameras( &nNumCam );
+	if(result == IS_SUCCESS) {
+		pCameraList->dwCount = nNumCam;
+		// At least one camera must be available
+		if (nNumCam >= 1) {
+			result |= is_GetCameraList(pCameraList);
+			// Camera found
+			TRACE("Camera models found %s\n", pCameraList->uci->Model);
 		}
 	} 	
-	return pucl;
+	return result;
 }
 
 BOOL WINAPI FilterDllMsg(LPMSG lpMsg)
