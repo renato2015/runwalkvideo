@@ -25,7 +25,7 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	 * Original signature : <code>int* GetCameraNames()</code><br>
 	 * <i>native declaration : line 14</i>
 	 */
-	public static native UEyeCameraList.ByReference GetCameraNames();
+	public static native int GetCameraNames(Pointer uEyeCameraListPointer);
 	/**
 	 * <i>native declaration : line 15</i><br>
 	 * Conversion Error : LPMSG

@@ -3,12 +3,12 @@ package com.runwalk.video.media.ueye;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.ueye.UEyeCameraList.ByReference;
 
 /**
  * This factory can be used as an entry point to communicate with a uEye camera using native code.
@@ -36,13 +36,26 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * This method will retrieve a {@link Collection} containing the names of
+	 * the two first connected {@link UEyeCapturer}s.
+	 * 
+	 * @return A collection containg the retrieved camera names
 	 */
 	public Collection<String> getCapturerNames() {
 		cameraNameIdMap = Maps.newHashMap();
-		ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
-		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
-			UEyeCameraInfo cameraInfo = cameraNames.uci[i];
+		// create native struct to retrieve 2 camera information from the library
+		UEyeCameraList.ByValue uEyeCameraList = new UEyeCameraList.ByValue();
+		// write struct to native memory
+		uEyeCameraList.write();
+		// get camera information by passing the pointer to the created struct
+		int result = UEyeCapturerLibrary.GetCameraNames(uEyeCameraList.getPointer());
+		String isSuccess = result == 0 ? "succeeded" : "failed (" + result + ")";
+		Logger.getLogger(getClass()).debug("GetCameraNames " + isSuccess);
+		// read struct information back into java
+		uEyeCameraList.read();
+		// enumerate available camera's
+		for (int i = 0 ; i < uEyeCameraList.dwCount; i ++) {
+			UEyeCameraInfo cameraInfo = uEyeCameraList.uci[i];
 			if (!cameraInfo.dwInUse) {
 				// cleanly copy the struct's info into this map to prevent memory leaking
 				cameraNameIdMap.put(cameraInfo.getModelInfo(), cameraInfo.dwCameraID);

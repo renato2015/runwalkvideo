@@ -54,6 +54,7 @@ public class VideoCapturer extends VideoComponent {
 	@Override
 	public void dispose() {
 		super.dispose();
+		setVideoImpl(null);
 		capturerCount++;
 	}
 

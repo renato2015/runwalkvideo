@@ -10,16 +10,14 @@ public class UEyeCameraList extends Structure {
 	/// Conversion Error : ULONG
 	public int dwCount;
 	/// C type : UEYE_CAMERA_INFO[1]
-	public UEyeCameraInfo[] uci = new UEyeCameraInfo[(1)];
+	public UEyeCameraInfo[] uci;
 	
 	public UEyeCameraList() {
-		super();
+		this(new UEyeCameraInfo[(1)]);
 	}
 	
 	/// @param uci C type : UEYE_CAMERA_INFO[1]
 	public UEyeCameraList(UEyeCameraInfo uci[]) {
-		if (uci.length != this.uci.length) 
-			throw new java.lang.IllegalArgumentException("Wrong array size !");
 		this.uci = uci;
 	}
 	
@@ -40,6 +38,31 @@ public class UEyeCameraList extends Structure {
 	}
 	
 	public static class ByValue extends UEyeCameraList implements Structure.ByValue {
+		// create a struct with just one camera info entry
+		public ByValue(int listSize) {
+			super(createArguments(listSize));		
+		}
+		
+		/**
+		 * {@link UEyeCameraInfo} array size for the default constructor is set to 2.
+		 */
+		public ByValue() {
+			this(2);
+		}
+	
+		/**
+		 * Create an array of new {@link UEyeCameraInfo} instances with the given size.
+		 * @param listSize The size of the array to create
+		 * 
+		 * @return The created array
+		 */
+		private static UEyeCameraInfo[] createArguments(int listSize) {
+			UEyeCameraInfo[] result = new UEyeCameraInfo[listSize];
+			for(int i = 0; i < listSize; i++) {
+				result[i] = new UEyeCameraInfo();
+			}
+			return result;
+		}
 		
 	}
 }
