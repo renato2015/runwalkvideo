@@ -93,7 +93,8 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	public void dispose() {
 		if (isActive()) {
-			UEyeCapturerLibrary.Dispose(cameraHandle);
+			int result = UEyeCapturerLibrary.Dispose(cameraHandle);
+			LOGGER.debug("Dispose " + isSuccess(result));
 			// set all handles to null
 			cameraHandle = null;
 			callback = null;

@@ -27,18 +27,25 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	}
 
 	public static void main(String[] args) {
-		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
+		UEyeCameraInfo[] uEyeCameraInfoArray = {new UEyeCameraInfo(), new UEyeCameraInfo()};
+		UEyeCameraList uEyeCameraList = new UEyeCameraList(uEyeCameraInfoArray);
+		// write struct to native memory
+		uEyeCameraList.write();
+		int result = UEyeCapturerLibrary.GetCameraNames(uEyeCameraList.getPointer());
+		System.out.println("GetCameraNames result: " + result);
+		uEyeCameraList.read();
+		
 		final IntByReference cameraHandle = new IntByReference(0);
 		char[] windowName = null;
-		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
-			UEyeCameraInfo ueye_CAMERA_INFO = cameraNames.uci[i];
+		for (int i = 0 ; i < uEyeCameraList.dwCount; i ++) {
+			UEyeCameraInfo ueye_CAMERA_INFO = uEyeCameraList.uci[i];
 			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
 			System.out.println("WindowName returned: " + windowName);
 			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);
 		}
-		cameraNames.clear();
+		uEyeCameraList.clear();
 		String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE3.90.ini";
-		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
+		result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
@@ -91,22 +98,26 @@ public class UEyeCapturerLibraryTest extends TestCase {
 	}
 
 
-	@Ignore
 	public void testGetCameras() {
-		UEyeCameraList.ByReference cameraNames = UEyeCapturerLibrary.GetCameraNames();
+		UEyeCameraList.ByValue uEyeCameraList = new UEyeCameraList.ByValue();
+		// write struct to native memory
+		uEyeCameraList.write();
+		int result = UEyeCapturerLibrary.GetCameraNames(uEyeCameraList.getPointer());
+		System.out.println("GetCameraNames result: " + result);
+		uEyeCameraList.read();
+		
 		final IntByReference cameraHandle = new IntByReference(0);
-		char[] windowName = null;
-		for (int i = 0 ; i < cameraNames.dwCount; i ++) {
-			UEyeCameraInfo ueye_CAMERA_INFO = cameraNames.uci[i];
-			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
+		String windowName = null;
+		for (int i = 0 ; i < uEyeCameraList.dwCount; i ++) {
+			UEyeCameraInfo ueye_CAMERA_INFO = uEyeCameraList.uci[i];
+			windowName = ueye_CAMERA_INFO.getModelInfo();
 			System.out.println("WindowName returned: " + windowName);
 			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);
 		}
-		cameraNames.clear();
-
+		uEyeCameraList.clear();
 		// open camera
-		String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE2.ini";
-		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
+	/*	String settingsFile = "C:/Documents and Settings/Administrator/My Documents/uEye/1495LE2.ini";
+		result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		System.out.println("initCamera result: " + result);
 		System.out.println("Camera handle returned: "  + cameraHandle.getValue());
 		IntByReference monitorId = new IntByReference(WindowManager.getDefaultMonitorId());
@@ -148,7 +159,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		result = UEyeCapturerLibrary.StopRecording(cameraHandle);
 		System.out.println("stopRecording result: "+ result);
 		UEyeCapturerLibrary.StopRunning(cameraHandle);
-		System.out.println("Camera stopped running");
+		System.out.println("Camera stopped running");*/
 	}
 
 	@Ignore
