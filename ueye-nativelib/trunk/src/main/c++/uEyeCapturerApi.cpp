@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 // include for visual leak detector (only for debugging)
-#include "vld.h"
+// #include "vld.h"
 #include "uEyeCapturerApi.h"
 #include "uEyeCapturer.h"
 #include "uEyeRenderThread.h"
@@ -74,10 +74,9 @@ void GetMaxImageSize(HIDS* m_hCam, INT *pnSizeX, INT *pnSizeY)
 
 INT GetColorMode(HIDS m_hCam) {
 	if ( !m_hCam ) {
-		return -1;
+		return IS_NO_SUCCESS;
 	}
-	INT nRet = is_SetColorMode( m_hCam, IS_GET_COLOR_MODE );  
-	return nRet;
+	return is_SetColorMode( m_hCam, IS_GET_COLOR_MODE );  
 }
 
 INT GetFrameRate( HIDS hCam, double &fr) { 
@@ -105,7 +104,7 @@ INT WINAPI InitializeCamera(HIDS* m_hCam) {
 }
 
 INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
-	INT result = IS_NO_SUCCESS;
+	INT result = IS_SUCCESS;
 	if (settingsFile != NULL && *settingsFile != '\0') {
 		TRACE("Loading settings from %s\n", settingsFile);
 		result = is_LoadParameters(*m_hCam, settingsFile);
@@ -195,7 +194,7 @@ INT WINAPI Dispose(HIDS* m_hCam) {
 ///////////////////////////////////////////////////////////////////////////////
 int InitDisplayMode(HIDS* m_hCam)
 {
-    INT result = IS_NO_SUCCESS;
+    INT result = IS_SUCCESS;
     INT		nColorMode;	// Y8/RGB16/RGB24/REG32
     if (m_hCam == NULL) {
 		return IS_NO_SUCCESS;
@@ -249,7 +248,7 @@ int InitDisplayMode(HIDS* m_hCam)
 INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* nMonitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	m_monitorId = nMonitorId;
-	INT result = IS_NO_SUCCESS;
+	INT result = IS_SUCCESS;
 	if (!m_bRunning && m_hCam) {
 		if (!m_renderThread) {
 			if( LoadSettings(m_hCam, settingsFile) != IS_SUCCESS) {
