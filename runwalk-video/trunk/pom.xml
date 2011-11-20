@@ -242,9 +242,9 @@
 									<overWrite>true</overWrite>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.runwalk.runwalk-video</groupId>
+									<groupId>com.runwalk</groupId>
 									<artifactId>ueye-nativelib</artifactId>
-									<version>0.1-SNAPSHOT</version>
+									<version>${ueye.version}</version>
 									<classifier>natives-win-${architecture}</classifier>
 									<type>jar</type>
 									<includes>**/*.dll</includes>
@@ -422,14 +422,14 @@
 		<dependency>
 			<groupId>com.runwalk</groupId>
 			<artifactId>ueye-nativelib</artifactId>
-			<version>0.3-SNAPSHOT</version>
+			<version>${ueye.version}</version>
 			<classifier>natives-win-x86</classifier>
 			<scope>runtime</scope>
 		</dependency>	
 		<dependency>
 			<groupId>com.runwalk</groupId>
 			<artifactId>ueye-nativelib</artifactId>
-			<version>0.3-SNAPSHOT</version>
+			<version>${ueye.version}</version>
 			<classifier>natives-win-amd64</classifier>
 			<scope>runtime</scope>
 		</dependency>	
@@ -588,7 +588,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dsj.version>0.8.63</dsj.version>
-		<aspectj.version>1.6.12</aspectj.version>
+		<ueye.version>0.3-SNAPSHOT</ueye.version>
+		<aspectj.version>1.6.11</aspectj.version>
 		<!-- Keystore generation properties -->
 		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>
 		<keystore.dnameO>Runwalk Herentals</keystore.dnameO>
