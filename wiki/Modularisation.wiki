@@ -1,19 +1,19 @@
 #summary Some design thoughts about the modularizing the project
-= ONTKOPPPELEN VAN TAB PANEL SUBSYSTEM =
+= Panel Subsystem Creation =
 
-The main application class uses a ServiceLocator to load different AppModule instances on the classspath
+The main application class uses a ServiceLocator to load different app module instances on the classspath
 
- # MainAppModule => logic for ClientInfoPanel
- # AnalysisAppModule => logic for AnalysisTablePanel en AnalysisOverviewTablePanel 
+ # main app module => logic for ClientInfoPanel
+ # analysis app module => logic for AnalysisTablePanel and AnalysisOverviewTablePanel 
 
- * An AppModule contains a method to initialize itself, with all the arguments possibly required there (DaoService, VideoFileManager, AppSettings, ClientTablePanel, main application JFrame)
+ * An app module contains a method to initialize itself, with all the arguments possibly required there (DaoService, VideoFileManager, AppSettings, ClientTablePanel, main application JFrame)
  * For adding the table panels to the GUI, a simple getter can be used on the AppModule. This one should be called after initialisation has been done
- * AppModule can contain getters for other dynamically loadable components, as well, like eg. VideoCapturerFactory (and VideoPlayerFactory) implementations
+ * app module can contain getters for other dynamically loadable components, as well, like eg. VideoCapturerFactory (and VideoPlayerFactory) implementations
  * The application will use the panels' ActionMaps and add the contained actions to the application's menu bar
 
 == RefreshTask Refactoring ==
 
- * Pass a list of AppModule objects that implement a common refresh method. The refresh method will pass one argument: the client eventlist, from which other list can be derived
+ * Pass a list of app module objects that implement a common refresh method. The refresh method will pass one argument: the client eventlist, from which other list can be derived
  * encapsulate logic in a specific DAO to hide its implementation from the Task itself
 
 == Interface Description ==
@@ -32,5 +32,4 @@ uit (maak abstracties voor de common functionaliteit, compressie en duration)
  * CompressVideoFilesTask
 
 = ONTKOPPELEN BLOBS PACKAGE EN ImageOverlayTask =
- * ServiceLocator maken voor implementaties van Task?
- * Voor elke implementatie kan een ACtion toegevoegd worden (Eerder direct stijl)
+ * Voor elke implementatie kan een Action toegevoegd worden (Eerder direct stijl)
