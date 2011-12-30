@@ -5,10 +5,28 @@
 	<groupId>com.runwalk</groupId>
 	<artifactId>ueye-nativelib</artifactId>
 	<packaging>jar</packaging>
-	<version>0.3</version>
+	<version>0.3-SNAPSHOT</version>
 	<name>Native bindings for the uEye camera</name>
 	<url>http://www.ids-imaging.com</url>
-
+	<inceptionYear>2010</inceptionYear>
+	<scm>
+		<connection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</developerConnection>
+		<url>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</url>
+	</scm>
+	<organization>
+		<name>Runwalk Herentals</name>
+		<url>http://www.runwalk.be</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Jeroen Peelaerts</name>
+			<id>jpeelaerts</id>
+			<roles>
+				<role>Java developer</role>
+			</roles>
+		</developer>
+	</developers>
 	<!-- Enabling the use of FTP -->
 	<distributionManagement>
 		<repository>                                
