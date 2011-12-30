@@ -10,7 +10,6 @@ import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Sets;
 import com.runwalk.video.media.dsj.DSJPlayer;
-import com.runwalk.video.media.jmc.JMCPlayer;
 
 public class VideoPlayer extends VideoComponent {
 
@@ -41,7 +40,7 @@ public class VideoPlayer extends VideoComponent {
 		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 			result = new DSJPlayer(playRate);
 		} else {
-			result = new JMCPlayer(playRate);
+			throw new UnsupportedOperationException("This feature is not supported on this platform");
 		}
 		return new VideoPlayer(path, result);
 	}

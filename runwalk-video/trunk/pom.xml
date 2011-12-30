@@ -9,9 +9,9 @@
 	<description>Beheer van klanten en loopanalyses</description>
 	<inceptionYear>2008</inceptionYear>
 	<scm>
-		<connection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</developerConnection>
-		<url>scm:svn:https://runwalkvideo.googlecode.com/svn/trunk</url>
+		<connection>scm:svn:https://runwalkvideo.googlecode.com/svn/runwalk-video/trunk</connection>
+		<developerConnection>scm:svn:https://runwalkvideo.googlecode.com/svn/runwalk-video/trunk</developerConnection>
+		<url>scm:svn:https://runwalkvideo.googlecode.com/svn/runwalk-video/trunk</url>
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>
@@ -232,16 +232,6 @@
 									<overWrite>true</overWrite>
 								</artifactItem>
 								<artifactItem>
-									<groupId>com.sun.javafx.jmc</groupId>
-									<artifactId>javafx-jmc-nativelib</artifactId>
-									<version>1.2</version>
-									<classifier>natives-${platform}</classifier>
-									<type>jar</type>
-									<includes>**/*.dll</includes>
-									<outputDirectory>${libFolderPath}</outputDirectory>
-									<overWrite>true</overWrite>
-								</artifactItem>
-								<artifactItem>
 									<groupId>com.runwalk</groupId>
 									<artifactId>ueye-nativelib</artifactId>
 									<version>${ueye.version}</version>
@@ -408,11 +398,6 @@
 			<groupId>de.humatic.dsj</groupId>
 			<artifactId>dsj</artifactId>
 			<version>${dsj.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.javafx.jmc</groupId>
-			<artifactId>javafx-jmc</artifactId>
-			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
