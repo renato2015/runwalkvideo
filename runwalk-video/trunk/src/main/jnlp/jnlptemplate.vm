@@ -19,7 +19,9 @@
   </security>
 #end
 	<resources>
-	  <j2se version="1.6+" java-vm-args="-Dsun.java2d.d3d=false"/>
+	  <property name="ueye.enable" value="true" />
+	  <property name="ueye.settings_file" value="D:\Documents and Settings\Administrator\My Documents\uEye configurations\3.90settingsOpenMP.ini" />
+	  <j2se version="1.6+"/>
 #foreach( $dependency in $fulldependencies )
 #if ( !$dependency.classifier.startsWith('natives') )
 		<jar href="$libFolder/${dependency.file.name}" />
