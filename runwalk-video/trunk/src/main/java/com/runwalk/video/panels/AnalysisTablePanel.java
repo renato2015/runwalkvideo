@@ -50,15 +50,9 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
-	private static final String CLIENT_SELECTED = "clientSelected";
-
 	private static final String SELECTED_ITEM_RECORDED = "selectedItemRecorded";
 
-	private JTextArea comments;
-
-	private Boolean clientSelected = false;
-
-	private EventList<Article> articleList;
+	private final JTextArea comments;
 
 	private final VideoFileManager videoFileManager;
 
@@ -67,6 +61,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	private final DaoService daoService;
 
 	private final AppSettings appSettings;
+
+	private Boolean clientSelected = false;
+	
+	private EventList<Article> articleList;
 
 	private boolean selectedItemRecorded;
 

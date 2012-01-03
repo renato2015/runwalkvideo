@@ -39,11 +39,13 @@ import com.runwalk.video.util.AppSettings;
 @SuppressWarnings("serial")
 @AppComponent
 // TODO why do we need to implement the IAppComponent interface here beside the annotation?
-public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>> extends JPanel implements IAppComponent {
+public abstract class AbstractTablePanel<T extends Comparable<? super T>> extends JPanel implements IAppComponent {
+
+	public static final String ROW_SELECTED = "rowSelected";
+	public static final String CLIENT_SELECTED = "clientSelected";
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
-	protected static final String ROW_SELECTED = "rowSelected";
 
 	private JTable table;
 	private JButton firstButton, secondButton;
@@ -129,7 +131,7 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 	public void setSecondButton(JButton newButton) {
 		this.secondButton = newButton;
 	}
-
+	
 	/**
 	 * The {@link EventList} will be injected from the outside. This method will further prepare it to 
 	 * use it with a {@link JTable}.
@@ -188,7 +190,9 @@ public abstract class AbstractTablePanel<T extends SerializableEntity<? super T>
 	}
 
 	/**
-	 * Specialization hook for the set {@link ObservableElementList}. You can override the exact type of the set {@link EventList} by implementing this method.
+	 * Specialization hook for the set {@link ObservableElementList}. 
+	 * You can override the exact type of the set {@link EventList} by implementing this method.
+	 * 
 	 * @param eventList The observable eventlist
 	 * @return A specialized version of the observable eventlist
 	 */

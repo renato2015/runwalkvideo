@@ -12,7 +12,7 @@ import com.runwalk.video.entities.Recording;
  * @author Jeroen Peelaerts
  */
 @XmlRootElement
-public class DefaultVideoFolderRetrievalStrategy extends MarshallableVideoFolderRetrievalStrategy {
+public class DefaultVideoFolderRetrievalStrategy extends AbstractVideoFolderRetrievalStrategy {
 
 	public File getVideoFolder(File parentFolder, Recording recording) {
 		return parentFolder;

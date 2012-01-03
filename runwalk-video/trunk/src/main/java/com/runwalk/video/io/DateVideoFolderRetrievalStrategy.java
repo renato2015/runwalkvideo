@@ -17,7 +17,7 @@ import com.runwalk.video.entities.Recording;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DateVideoFolderRetrievalStrategy extends MarshallableVideoFolderRetrievalStrategy {
+public class DateVideoFolderRetrievalStrategy extends AbstractVideoFolderRetrievalStrategy {
 
 	private final static String FOLDER_SEPARATOR = "/";
 	

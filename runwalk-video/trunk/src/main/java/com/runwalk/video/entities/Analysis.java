@@ -154,7 +154,11 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public int compareTo(Analysis analysis) {
-		return this.equals(analysis) ? 0 : getCreationDate().compareTo(analysis.getCreationDate());
+		int result = 1;
+		if (analysis != null) {
+			result =equals(analysis) ? 0 : getCreationDate().compareTo(analysis.getCreationDate());
+		}
+		return result;
 	}
 
 	@Override
