@@ -15,7 +15,7 @@ import com.runwalk.video.util.AppSettings;
  * @author Jeroen Peelaerts
  *
  */
-@XmlJavaTypeAdapter(MarshallableVideoFolderRetrievalStrategy.Adapter.class)
+@XmlJavaTypeAdapter(AbstractVideoFolderRetrievalStrategy.Adapter.class)
 public interface VideoFolderRetrievalStrategy {
 
 	/**

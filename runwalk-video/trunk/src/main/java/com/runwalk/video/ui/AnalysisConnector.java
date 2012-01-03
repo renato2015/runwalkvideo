@@ -18,7 +18,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 	private ObservableElementList<? extends Analysis> list;
 
 	/** The PropertyChangeListener to install on each list element. */
-	protected PropertyChangeListener propertyChangeListener = this.createPropertyChangeListener();
+	protected final PropertyChangeListener propertyChangeListener = createPropertyChangeListener();
 
 	public EventListener installListener(Analysis element) {
 		element.addPropertyChangeListener(propertyChangeListener);

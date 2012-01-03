@@ -14,17 +14,17 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @author Jeroen Peelaerts
  */
 @XmlSeeAlso(value={DateVideoFolderRetrievalStrategy.class, DefaultVideoFolderRetrievalStrategy.class})
-public abstract class MarshallableVideoFolderRetrievalStrategy implements VideoFolderRetrievalStrategy {
+public abstract class AbstractVideoFolderRetrievalStrategy implements VideoFolderRetrievalStrategy {
 
-	protected MarshallableVideoFolderRetrievalStrategy() {}
+	protected AbstractVideoFolderRetrievalStrategy() {}
 	
-	public static class Adapter extends XmlAdapter<MarshallableVideoFolderRetrievalStrategy, VideoFolderRetrievalStrategy> {
+	public static class Adapter extends XmlAdapter<AbstractVideoFolderRetrievalStrategy, VideoFolderRetrievalStrategy> {
 
-		public MarshallableVideoFolderRetrievalStrategy marshal(VideoFolderRetrievalStrategy v) throws Exception {
-			return (MarshallableVideoFolderRetrievalStrategy) v;
+		public AbstractVideoFolderRetrievalStrategy marshal(VideoFolderRetrievalStrategy v) throws Exception {
+			return (AbstractVideoFolderRetrievalStrategy) v;
 		}
 
-		public VideoFolderRetrievalStrategy unmarshal(MarshallableVideoFolderRetrievalStrategy v) throws Exception {
+		public VideoFolderRetrievalStrategy unmarshal(AbstractVideoFolderRetrievalStrategy v) throws Exception {
 			return v;
 		}
 		

@@ -64,6 +64,7 @@ import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.VideoComponent.State;
+import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.tasks.AbstractTask;
@@ -78,23 +79,30 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, 
-MediaActionConstants, Containable, ActionListener {
-
-	private static final String TITLE_SEPARATOR = " > ";	
-
-	// selected action properties
-	private static final String PLAYING = "playing";
-	public static final String MUTED = "muted";
-
+	MediaActionConstants, Containable, ActionListener {
+	
 	// enabled action properties
+	public static final String MUTED = "muted";
 	public static final String STOP_ENABLED = "stopEnabled";
 	public static final String RECORDING_ENABLED = "recordingEnabled";
 	public static final String PLAYER_CONTROLS_ENABLED = "playerControlsEnabled";
 
+	// selected action properties
+	private static final String TITLE_SEPARATOR = " > ";	
+	private static final String PLAYING = "playing";
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
-
 	private static final String TITLE = "Media Controls";
 
+	private final AppSettings appSettings;
+	private final AbstractTablePanel<Analysis> analysisTablePanel;
+	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
+
+	private final WindowManager windowManager;
+	private final VideoFileManager videoFileManager;
+	private final DaoService daoService;
+
+	private final Timer timer;
+	
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
 
@@ -103,16 +111,6 @@ MediaActionConstants, Containable, ActionListener {
 
 	private Set<VideoComponent> videoComponents = Sets.newHashSet();
 	private VideoComponent frontMostComponent;
-
-	private final AppSettings appSettings;
-	private final AnalysisTablePanel analysisTablePanel;
-	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
-
-	private final WindowManager windowManager;
-	private final VideoFileManager videoFileManager;
-	private final DaoService daoService;
-
-	private final Timer timer;
 
 	/**
 	 * <code>true</code> if all of the active {@link VideoPlayer}s are in playback mode
@@ -970,7 +968,7 @@ MediaActionConstants, Containable, ActionListener {
 		return appSettings;
 	}
 
-	public AnalysisTablePanel getAnalysisTablePanel() {
+	public AbstractTablePanel<Analysis> getAnalysisTablePanel() {
 		return analysisTablePanel;
 	}
 
