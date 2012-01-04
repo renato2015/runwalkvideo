@@ -33,12 +33,16 @@ public class Client extends Person {
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
+	public static final String REDCORD_SESSION_COUNT = "redcordSessionCount";
 	public static final String ANALYSIS_COUNT = "analysisCount";
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
+	private List<RedcordSession> redcordSessions = new ArrayList<RedcordSession>();
 
 	@Column(name = "account_number")
 	private String taxNumber;
@@ -62,15 +66,48 @@ public class Client extends Person {
 	public void setTaxNumber(String taxNumber) {
 		this.taxNumber = taxNumber;
 	}
-
-	public int getAnalysesCount() {
-		return getAnalyses().size();
+	
+	public List<RedcordSession> getRedcordSessions() {
+		return redcordSessions;
 	}
 	
+	public int getRedcordSessionCount() {
+		return getRedcordSessions().size();
+	}
+	
+	public boolean addRedcordSession(RedcordSession redcordSession) {
+		int oldSize = getRedcordSessionCount();
+		boolean result = getRedcordSessions().add(redcordSession);
+		firePropertyChange(REDCORD_SESSION_COUNT, oldSize, getRedcordSessionCount());
+		return result;
+	}
+	
+	public boolean removeRedcordSession(RedcordSession redcordSession) {
+		boolean result = false;
+		if (redcordSession != null) {
+			int oldSize = getRedcordSessionCount();
+			result = getRedcordSessions().remove(redcordSession);
+			firePropertyChange(REDCORD_SESSION_COUNT, oldSize, getRedcordSessionCount());
+		}
+		return result;
+	}
+
 	public List<Analysis> getAnalyses() {
 		return analyses;
 	}
+	
+	public int getAnalysesCount() {
+		return getAnalyses().size();
+	}
 
+	public boolean addAnalysis(Analysis analysis) {
+		int oldSize = getAnalysesCount();
+		boolean result = getAnalyses().add(analysis);
+		firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
+		setLastAnalysisDate(analysis.getCreationDate());
+		return result;
+	}
+	
 	public boolean removeAnalysis(Analysis analysis) {
 		boolean result = false;
 		if (analysis != null) {
@@ -84,14 +121,6 @@ public class Client extends Person {
 			}
 			setLastAnalysisDate(lastAnalysisDate);
 		}
-		return result;
-	}
-
-	public boolean addAnalysis(Analysis analysis) {
-		int oldSize = getAnalysesCount();
-		boolean result = getAnalyses().add(analysis);
-		firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
-		setLastAnalysisDate(analysis.getCreationDate());
 		return result;
 	}
 

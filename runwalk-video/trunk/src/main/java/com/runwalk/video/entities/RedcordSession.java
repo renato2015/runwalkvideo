@@ -52,6 +52,10 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 		return comments;
 	}
 	
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
 	public String getName() {
 		return name;
 	}

@@ -22,12 +22,24 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		return exerciseType;	
 	}
 	
+	public void setExerciseDirection(ExerciseDirection exerciseDirection) {
+		this.exerciseDirection = exerciseDirection;
+	}
+
 	public ExerciseDirection getExerciseDirection() {
 		return exerciseDirection;
+	}
+	
+	public void setExerciseType(ExerciseType exerciseType) {
+		this.exerciseType = exerciseType;
 	}
 
 	public String getComments() {
 		return comments;
+	}
+	
+	public void setComments(String comments) {
+		this.comments = comments;
 	}
 	
 	public String getName() {
