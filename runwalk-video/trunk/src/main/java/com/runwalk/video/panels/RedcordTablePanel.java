@@ -94,6 +94,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected TreeList<RedcordTableElement> specializeItemList(EventList<RedcordTableElement> eventList) {
 		TreeList.Format<RedcordTableElement> listFormat = new TreeList.Format<RedcordTableElement>() {
 
@@ -110,9 +111,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 			
 		};
-		@SuppressWarnings("unchecked")
-		TreeList<RedcordTableElement> treeList = new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
-		return treeList;
+		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 	
 	/**
@@ -132,9 +131,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		// a combobox renderer, used to set the enum values
 		CustomJTableRenderer comboBoxRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JComboBox.class));
 		// name of the session / exercise
-		getTable().getColumnModel().getColumn(0).setMinWidth(70);
+		getTable().getColumnModel().getColumn(0).setMinWidth(100);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		
 		
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 		// create special table cell editor for selecting exercise type

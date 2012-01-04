@@ -613,7 +613,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		if (recordTask == null && analysis != null) {
 			setRecordingEnabled(false);
 			setStopEnabled(true);
-			timer.restart();
 			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), analysis);
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
@@ -631,6 +630,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 			});
 			recordTask = result;
+			timer.restart();
 		}
 		return result;
 	}

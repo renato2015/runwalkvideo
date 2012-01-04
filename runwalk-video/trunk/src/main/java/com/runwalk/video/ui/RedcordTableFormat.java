@@ -2,7 +2,10 @@ package com.runwalk.video.ui;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
+import com.runwalk.video.entities.RedcordExercise;
 import com.runwalk.video.entities.RedcordTableElement;
+import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
+import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 
 public class RedcordTableFormat implements WritableTableFormat<RedcordTableElement> {
 	
@@ -30,15 +33,21 @@ public class RedcordTableFormat implements WritableTableFormat<RedcordTableEleme
 		}
 	}
 
-	public boolean isEditable(RedcordTableElement baseObject, int column) {
-		return column == 1;
+	public boolean isEditable(RedcordTableElement redcordTableElement, int column) {
+		return column == 2 && redcordTableElement.allowsChildren() ||
+				column == 3 && !redcordTableElement.allowsChildren() || 
+				column == 4 && ! redcordTableElement.allowsChildren();
 	}
 
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
-		/*if (editedValue instanceof ExerciseType) {
-			redcordTableElement.setArticle((Article) editedValue);
-		}*/
-		// TODO handle set values
+		if (column == 2 && redcordTableElement.allowsChildren()) {
+			// TODO handle date setting (using customized datepicker?)
+		//	((RedcordSession) redcordTableElement).setStartDate(Date.);
+		} else if (column == 3 && redcordTableElement.allowsChildren()) {
+			((RedcordExercise) redcordTableElement).setExerciseDirection((ExerciseDirection) editedValue);
+		} else if (column == 4 && redcordTableElement.allowsChildren()) {
+			((RedcordExercise) redcordTableElement).setExerciseType((ExerciseType) editedValue);
+		}
 		return redcordTableElement;
 	}
 	
