@@ -20,6 +20,9 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.RedcordExercise;
+import com.runwalk.video.entities.RedcordSession;
+import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.ui.AnalysisConnector;
@@ -36,14 +39,17 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 	private final AbstractTablePanel<Client> clientTablePanel;
 	private final AnalysisTablePanel analysisTablePanel;
 	private final AbstractTablePanel<Analysis> analysisOverviewTablePanel;
+	private final AbstractTablePanel<RedcordTableElement> redcordTablePanel;
 
 	public RefreshTask(DaoService daoService, AbstractTablePanel<Client> clientTablePanel, 
-			AnalysisTablePanel analysisTablePanel, AbstractTablePanel<Analysis> analysisOverviewTablePanel) {
+			AnalysisTablePanel analysisTablePanel, AbstractTablePanel<Analysis> analysisOverviewTablePanel, 
+			AbstractTablePanel<RedcordTableElement> redcordTablePanel) {
 		super("refresh");
 		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
 		this.analysisTablePanel = analysisTablePanel;
 		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
+		this.redcordTablePanel = redcordTablePanel;
 	}
 
 	protected Boolean doInBackground() {
@@ -76,6 +82,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// get analysis tablepanel and inject data
 					getAnalysisTablePanel().setArticleList(articleList);
 					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
+					// create pipeline for overview tablepanel
 					final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
 					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, new CollectionList.Model<Client, Analysis>() {
 
@@ -90,6 +97,26 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					analysesOverview.addMemberList(deselectedClientAnalyses);
 					// create the overview with unfinished analyses
 					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());
+					// create pipeline for redord tablepanel
+					/*CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
+						new CollectionList.Model<Client, RedcordTableElement>() {
+
+							public List<RedcordTableElement> getChildren(Client parent) {
+								return parent.getRedcordSessions();
+							}
+
+					});
+					CollectionList<RedcordSession, ? extends RedcordTableElement> redcordExerciseList = new CollectionList<RedcordSession, RedcordExercise>(redcordSessionList, 
+						new CollectionList.Model<RedcordSession, RedcordExercise>() {
+
+							public List<RedcordExercise> getChildren(RedcordSession parent) {
+								return parent.getRedcordExercises();
+							}
+							
+						}
+					);
+					
+					getRedcordTablePanel().setItemList(redcordSessionList, RedcordTableElement.class);*/
 				}
 
 			});
@@ -119,4 +146,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return analysisOverviewTablePanel;
 	}
 
+	private AbstractTablePanel<RedcordTableElement> getRedcordTablePanel() {
+		return redcordTablePanel;
+	}
+	
 }

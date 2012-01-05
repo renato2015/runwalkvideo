@@ -210,7 +210,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), 
+				getAnalysisOverviewTablePanel(), getRedcordTablePanel());
 	}
 
 	@org.jdesktop.application.Action
@@ -288,7 +289,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return overviewTablePanel;
 	}
 	
-	private Component getRedcordTablePanel() {
+	private RedcordTablePanel getRedcordTablePanel() {
 		return redcordTablePanel;
 	}
 

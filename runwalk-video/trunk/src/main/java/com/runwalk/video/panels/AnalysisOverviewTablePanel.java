@@ -210,7 +210,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	}
 
 	/**
-	 * This setter will make a copy of the given {@link EventList}, which is primarily meant to be used by background {@link Task}s.
+	 * This setter will make a copy of the given {@link EventList}, 
+	 * which is primarily meant to be used by background {@link Task}s.
 	 *
 	 * @param analysisList The list with analyses
 	 */
@@ -238,7 +239,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	}
 
 	@Override
-	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
+	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<? super Analysis> itemConnector) {
 		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(ImageIcon.class)));
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);

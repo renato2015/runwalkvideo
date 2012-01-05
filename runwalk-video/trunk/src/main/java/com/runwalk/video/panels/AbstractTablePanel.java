@@ -33,7 +33,6 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
-import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
@@ -139,7 +138,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * @param itemList The list
 	 * @param itemConnector The connector that will forward changeEvents to the list.
 	 */
-	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<T> itemConnector) {
+	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<? super T> itemConnector) {
 		if (this.itemList != null) {
 			// dispose the current list, so it can be garbage collected
 			this.itemList.dispose();
