@@ -71,23 +71,23 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, 
 			AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
-		this.videoFileManager = videoFileManager;
-		this.appSettings = appSettings;
-		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
+		this.appSettings = appSettings;
+		this.videoFileManager = videoFileManager;
+		this.daoService = daoService;
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow, height :100:");
 
-		setSecondButton(new JButton(getAction("addAnalysis")));
-		getSecondButton().setFont(AppSettings.MAIN_FONT);
-		add(getSecondButton());
-
-		setFirstButton(new JButton(getAction("deleteAnalysis")));
+		setFirstButton(new JButton(getAction("addAnalysis")));
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
-		add(getFirstButton(), "wrap");
+		add(getFirstButton());
+
+		setSecondButton(new JButton(getAction("deleteAnalysis")));
+		getSecondButton().setFont(AppSettings.MAIN_FONT);
+		add(getSecondButton(), "wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -178,10 +178,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return result;
 	}
 
-	private ClientTablePanel getClientTablePanel() {
-		return clientTablePanel;
-	}
-
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public DeleteTask<Analysis> deleteAnalysis() {		
 		DeleteTask<Analysis> result = null;
@@ -192,6 +188,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
+			final Client owningClient = getSelectedItem().getClient();
 			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, getSelectedItem());
 			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
@@ -202,7 +199,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 						getItemList().remove(analysis);
-						getClientTablePanel().getSelectedItem().removeAnalysis(analysis);
+						owningClient.removeAnalysis(analysis);
 						// delete the video files
 						setSelectedItem(lastSelectedRowIndex - 1);
 						getVideoFileManager().deleteVideoFiles(analysis);
@@ -263,7 +260,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	@Override
-	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<Analysis> itemConnector) {
+	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<? super Analysis> itemConnector) {
 		super.setItemList(itemList, itemConnector);
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
@@ -290,6 +287,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	public void setClientSelected(boolean clientSelected) {
 		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
+	}
+
+	private ClientTablePanel getClientTablePanel() {
+		return clientTablePanel;
 	}
 
 	public AppSettings getAppSettings() {

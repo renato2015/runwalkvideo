@@ -34,7 +34,9 @@ public class Client extends Person {
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
 	public static final String REDCORD_SESSION_COUNT = "redcordSessionCount";
+	
 	public static final String ANALYSIS_COUNT = "analysisCount";
+	
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
