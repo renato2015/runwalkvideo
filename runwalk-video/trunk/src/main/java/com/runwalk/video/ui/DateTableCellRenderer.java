@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 /** 
  * A table cell renderer for the Date class. 
  */
+@SuppressWarnings("serial")
 public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	
 	private DateFormat format;

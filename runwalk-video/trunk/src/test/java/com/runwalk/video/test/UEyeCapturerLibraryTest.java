@@ -3,6 +3,7 @@ package com.runwalk.video.test;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Frame;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
@@ -40,7 +41,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		for (int i = 0 ; i < uEyeCameraList.dwCount; i ++) {
 			UEyeCameraInfo ueye_CAMERA_INFO = uEyeCameraList.uci[i];
 			windowName = Native.toCharArray(ueye_CAMERA_INFO.getModelInfo());
-			System.out.println("WindowName returned: " + windowName);
+			System.out.println("WindowName returned: " + Arrays.toString(windowName));
 			cameraHandle.setValue(ueye_CAMERA_INFO.dwCameraID);
 		}
 		uEyeCameraList.clear();

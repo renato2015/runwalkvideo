@@ -244,7 +244,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			protected Void doInBackground() throws Exception {
 				message("startMessage", videoComponents.size());
 				for (VideoComponent videoComponent : Lists.newArrayList(videoComponents)) {
-					getLogger().debug("Stopping video for " + videoComponent.getTitle());
+					super.getLogger().debug("Stopping video for " + videoComponent.getTitle());
 					videoComponent.dispose();
 				}
 				message("endMessage");
