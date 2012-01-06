@@ -121,7 +121,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 	@OnEdt
 	public void addMenu(String title, ActionMap actionMap) {
 		JMenu menu = new JMenu(title);
-		if (actionMap != null & actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
+		if (actionMap != null && actionMap.allKeys() != null && actionMap.allKeys().length > 0) {
 			Action toggleVisibilityAction = actionMap.get(TOGGLE_VISIBILITY_ACTION);
 			char shortcut = Character.forDigit(windowMenu.getMenuComponentCount(), 9);
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(shortcut, ActionEvent.CTRL_MASK);

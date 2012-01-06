@@ -66,7 +66,6 @@ public class ClientInfoPanel extends JPanel {
 	private final static ELProperty<ClientTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");
 	private final static BeanProperty<JComponent, Boolean> SELECTED = BeanProperty.create("selected");
 	private final static BeanProperty<JTextField, String> TEXT = BeanProperty.create("text");
-	private final static BeanProperty<JTextField, String> TEXT_ON_FOCUS_LOST = BeanProperty.create("text_ON_FOCUS_LOST");
 
 	private EventList<City> itemList;
 
@@ -387,7 +386,7 @@ public class ClientInfoPanel extends JPanel {
 
 			public Object parseObject(String value, ParsePosition pos) {
 				City selectedCity = (City) zipCodeField.getSelectedItem();
-				if (selectedCity != null && !value.equals(selectedCity.getCode())) {
+				if (selectedCity != null && !value.equals(Integer.toString(selectedCity.getCode()))) {
 					matcherEditor.setFilterText(new String[] {value});
 				}
 				return !filterList.isEmpty() ? filterList.get(0) : selectedCity;

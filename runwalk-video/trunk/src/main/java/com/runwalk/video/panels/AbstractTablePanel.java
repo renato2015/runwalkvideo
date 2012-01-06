@@ -158,7 +158,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				while(listChanges.next()) {
 					int changeType = listChanges.getType();
 					if (changeType == ListEvent.DELETE) {
-						if (listChanges.getOldValue() != ListEvent.UNKNOWN_VALUE) {
+						// FIXME needs to be retested !!
+						if (listChanges.getOldValue() != null && !listChanges.getOldValue().equals(ListEvent.UNKNOWN_VALUE)) {
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 //							T oldValue = listChanges.getOldValue();
 //							firePropertyChange(SELECTED_ITEM, oldValue, getSelectedItem());

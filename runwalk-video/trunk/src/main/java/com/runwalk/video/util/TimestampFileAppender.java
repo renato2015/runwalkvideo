@@ -16,12 +16,19 @@ package com.runwalk.video.util;
  * limitations under the License.
  */
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.helpers.LogLog;
+
 /**
  * @author Viktor Bresan
+ * @author Jeroen Peelaerts
  *
  */
 public class TimestampFileAppender extends FileAppender {
@@ -31,23 +38,23 @@ public class TimestampFileAppender extends FileAppender {
 	protected String timestampPattern = null;
 
 	/**
-	 * 
+	 * {@inheritDoc}
 	 */
-	public void setFile(String file) {
+	public void setFile(String fileName) {
+		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
-			file = file.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
-			super.setFile(file);
+			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
+			super.setFile(fileName);
 		} else {
-			super.setFile(file);
+			super.setFile(fileName);
 		}
 	}
 
 	/**
-	 * 
-	 * @param fileName
-	 * @param append
+	 * {@inheritDoc} 
 	 */
 	public synchronized void setFile(String fileName, boolean append, boolean bufferedIO, int bufferSize) throws IOException {
+		
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
 			super.setFile(fileName, append, bufferedIO, bufferSize);		
@@ -56,20 +63,38 @@ public class TimestampFileAppender extends FileAppender {
 		}
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public String getTimestampPattern() {
 		return timestampPattern;
 	}
 
-	/**
-	 * 
-	 * @param timestampPattern
-	 */
 	public void setTimestampPattern(String timestampPattern) {
 		this.timestampPattern = timestampPattern;
+	}
+	
+	/**
+	 * A helper for FileAppenders.
+	 */
+	public static class Helper
+	{
+		public static void makePath(final String filename)
+		{
+			File dir;
+
+			try {
+				URL url = new URL(filename.trim());
+				dir = new File(url.getFile()).getParentFile();
+			}
+			catch (MalformedURLException e) {
+				dir = new File(filename.trim()).getParentFile();
+			}
+
+			if (!dir.exists()) {
+				boolean success = dir.mkdirs();
+				if (!success) {
+					LogLog.error("Failed to create directory structure: " + dir);
+				}
+			}
+		}
 	}
 
 }

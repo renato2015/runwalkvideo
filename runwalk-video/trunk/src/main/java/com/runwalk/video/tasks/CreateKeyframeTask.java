@@ -50,7 +50,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 				result = keyframe;
 			}
 		}
-		Date date = new Date(result.getPosition());
+		Date date = new Date(Long.valueOf(result.getPosition()));
 		String formattedDate = AppUtil.formatDate(date, AppUtil.EXTENDED_DURATION_FORMATTER);
 		message("endMessage", formattedDate);
 		return result;
