@@ -33,6 +33,7 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
+import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
@@ -159,20 +160,23 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 					int changeType = listChanges.getType();
 					if (changeType == ListEvent.DELETE) {
 						// FIXME needs to be retested !!
-						if (listChanges.getOldValue() != null && !listChanges.getOldValue().equals(ListEvent.UNKNOWN_VALUE)) {
+						if (ListEvent.UNKNOWN_VALUE.equals(listChanges.getOldValue()) &&
+								!(listChanges.getOldValue() instanceof SerializableEntity)) {
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 //							T oldValue = listChanges.getOldValue();
 //							firePropertyChange(SELECTED_ITEM, oldValue, getSelectedItem());
 						}
 					} else if (changeType == ListEvent.INSERT) {
-						EventList<T> sourceList = listChanges.getSourceList();
 						T newValue = null;
+						EventList<T> sourceList = listChanges.getSourceList();
 						if (!sourceList.isEmpty()) {
 							newValue = Iterables.getOnlyElement(sourceList);
 						}
-						firePropertyChange(SELECTED_ITEM, selectedItem, selectedItem = newValue);
-						getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
-						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+						if (selectedItem != newValue) {
+							firePropertyChange(SELECTED_ITEM, selectedItem, selectedItem = newValue);
+							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
+							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+						}
 					}
 				}
 			}

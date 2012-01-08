@@ -13,6 +13,8 @@
 		<class>com.runwalk.video.entities.Analysis</class>
 		<class>com.runwalk.video.entities.Recording</class>
 		<class>com.runwalk.video.entities.Keyframe</class>
+		<class>com.runwalk.video.entities.RedcordSession</class>
+		<class>com.runwalk.video.entities.RedcordExercise</class>
 		<properties>
 			<property name="hibernate.connection.driver_class" value="${jdbc.driverClass}" />
 			<property name="hibernate.connection.username" value="${jdbc.user}" />

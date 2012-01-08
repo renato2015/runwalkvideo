@@ -29,8 +29,6 @@ import org.jdesktop.beansbinding.ELProperty;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
@@ -226,25 +224,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			}
 			// TODO show the video file on different platforms?
 		}
-	}
-
-	@Override
-	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
-		eventList.addListEventListener(new ListEventListener<Analysis>() {
-
-			public void listChanged(ListEvent<Analysis> listChanges) {
-				while (listChanges.next()) {
-					final int changeIndex = listChanges.getIndex();
-					final int changeType = listChanges.getType();
-					if (changeType == ListEvent.UPDATE) {
-						getClientTablePanel().setSaveNeeded(true);
-						Analysis changedItem = listChanges.getSourceList().get(changeIndex);
-						changedItem.getClient().setDirty(true);
-					}
-				}
-			}
-		});
-		return eventList;
 	}
 
 	public void setArticleList(EventList<Article> articleList) {

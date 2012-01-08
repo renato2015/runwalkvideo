@@ -17,6 +17,8 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 
 	public static final String ID = "id";
 	
+	public static final String DIRTY = "dirty";
+	
 	@Id
 	@Column(name = ID)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +32,7 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 	}
 
 	public void setDirty(boolean dirty) {
-		this.dirty = dirty;
+		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 	}
 	
 	public boolean isDirty() {

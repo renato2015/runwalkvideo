@@ -33,7 +33,7 @@ public class Client extends Person {
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
-	public static final String REDCORD_SESSION_COUNT = "redcordSessionCount";
+	public static final String REDCORD_TABLE_ELEMENT_COUNT = "redcordTableElementCount";
 	
 	public static final String ANALYSIS_COUNT = "analysisCount";
 	
@@ -48,11 +48,13 @@ public class Client extends Person {
 
 	@Column(name = "account_number")
 	private String taxNumber;
-	
+
 	@Transient
 	private String organization;
 	@Transient
 	private Date lastAnalysisDate;
+	@Transient
+	private Integer redcordTableElementCount = 0;
 
 	public Client() {	}
 	
@@ -60,7 +62,7 @@ public class Client extends Person {
 		setFirstname(firstName);
 		setName(name);
 	}
-
+	
 	public String getTaxNumber() {
 		return this.taxNumber;
 	}
@@ -77,19 +79,25 @@ public class Client extends Person {
 		return getRedcordSessions().size();
 	}
 	
+	public void incrementRedcordTableElementCount() {
+		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, ++this.redcordTableElementCount);
+	}
+	
+	public void decrementRedcordTableElementCount() {
+		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, --this.redcordTableElementCount);
+	}
+	
 	public boolean addRedcordSession(RedcordSession redcordSession) {
-		int oldSize = getRedcordSessionCount();
 		boolean result = getRedcordSessions().add(redcordSession);
-		firePropertyChange(REDCORD_SESSION_COUNT, oldSize, getRedcordSessionCount());
+		incrementRedcordTableElementCount();
 		return result;
 	}
 	
-	public boolean removeRedcordSession(RedcordSession redcordSession) {
+	public boolean removeRedcordSession(RedcordTableElement redcordSession) {
 		boolean result = false;
 		if (redcordSession != null) {
-			int oldSize = getRedcordSessionCount();
 			result = getRedcordSessions().remove(redcordSession);
-			firePropertyChange(REDCORD_SESSION_COUNT, oldSize, getRedcordSessionCount());
+			decrementRedcordTableElementCount();
 		}
 		return result;
 	}

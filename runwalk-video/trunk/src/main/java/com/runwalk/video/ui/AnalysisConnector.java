@@ -25,7 +25,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 		for (Recording recording : element.getRecordings()) {
 			recording.addPropertyChangeListener(propertyChangeListener);
 		}
-		return this.propertyChangeListener;
+		return propertyChangeListener;
 	}
 
 	public void uninstallListener(Analysis element, EventListener listener) {
@@ -51,7 +51,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 	 * This inner class notifies the {@link ObservableElementList} about changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public void propertyChange(PropertyChangeEvent event) {
 			Analysis analysis = null;
 			boolean dirty = true;
@@ -71,7 +71,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 				}
 			}
 			analysis.getClient().setDirty(dirty);
-			((ObservableElementList<Analysis>) list).elementChanged(analysis);
+			((ObservableElementList) list).elementChanged(analysis);
 		}
 	}
 

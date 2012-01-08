@@ -3,11 +3,13 @@ package com.runwalk.video.entities;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -17,6 +19,8 @@ import javax.persistence.TemporalType;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
+@Entity
+@Table(name="redcord_exercises")
 public class RedcordExercise extends SerializableEntity<RedcordTableElement> implements RedcordTableElement {
 	
 	@ManyToOne
@@ -41,6 +45,8 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	@Lob
 	private String comments;
 	
+	public RedcordExercise() {	}
+
 	public RedcordExercise(RedcordSession redcordSession, String name) {
 		this.redcordSession = redcordSession;
 		this.name = name;
@@ -60,7 +66,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public void setExerciseDirection(ExerciseDirection exerciseDirection) {
-		this.exerciseDirection = exerciseDirection;
+		firePropertyChange(EXERCISE_DIRECTION, this.exerciseDirection, this.exerciseDirection = exerciseDirection);
 	}
 
 	public ExerciseDirection getExerciseDirection() {
@@ -68,7 +74,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public void setExerciseType(ExerciseType exerciseType) {
-		this.exerciseType = exerciseType;
+		firePropertyChange(EXERCISE_TYPE, this.exerciseType, this.exerciseType = exerciseType);
 	}
 
 	public String getComments() {
@@ -76,7 +82,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public void setComments(String comments) {
-		this.comments = comments;
+		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
 	
 	public Date getStartTime() {
@@ -103,4 +109,10 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return "RedcordExercise [redcordSession=" + redcordSession + ", name="
+				+ name + "]";
+	}
+	
 }
