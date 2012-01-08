@@ -1,15 +1,18 @@
 package com.runwalk.video.entities;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -17,13 +20,17 @@ import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.JoinFetchType;
 
 @SuppressWarnings("serial")
+@Entity
+@Table(name="redcord_sessions")
 public class RedcordSession extends SerializableEntity<RedcordTableElement> implements RedcordTableElement {
+	
+	public static final String END_DATE = "endDate";
 	
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
 	public static final String REDCORD_EXERCISE_COUNT = "redcordExerciseCount";
-	
+
 	@ManyToOne
 	@JoinColumn(name="person_id", nullable=false )
 	private Client client;
@@ -44,8 +51,11 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "redcordSession")
 	@JoinFetch(JoinFetchType.OUTER)
-	private List<RedcordExercise> redcordExercises;
+	private List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>();
 	
+	
+	public RedcordSession() {	}
+
 	public RedcordSession(Client client) {
 		this(client, "Sessie " + client.getRedcordSessionCount());
 	}
@@ -64,7 +74,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	}
 
 	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+		firePropertyChange(START_DATE, this.startDate, this.startDate = startDate);
 	}
 
 	public Date getEndDate() {
@@ -72,7 +82,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	}
 
 	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
+		firePropertyChange(END_DATE, this.endDate, this.endDate = endDate);
 	}
 
 	public List<RedcordExercise> getRedcordExercises() {
@@ -87,15 +97,17 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 		int oldSize = getRedcordExerciseCount();
 		boolean result = getRedcordExercises().add(redcordExercise);
 		firePropertyChange(REDCORD_EXERCISE_COUNT, oldSize, getRedcordExerciseCount());
+		getClient().incrementRedcordTableElementCount();
 		return result;
 	}
 	
-	public boolean removeRedcordExercise(RedcordExercise redcordExercise) {
+	public boolean removeRedcordExercise(RedcordTableElement redcordExercise) {
 		boolean result = false;
 		if (client != null) {
 			int oldSize = getRedcordExerciseCount();
 			result = getRedcordExercises().remove(redcordExercise);
 			firePropertyChange(REDCORD_EXERCISE_COUNT, oldSize, getRedcordExerciseCount());
+			getClient().decrementRedcordTableElementCount();
 		}
 		return result;
 	}
@@ -103,7 +115,11 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	public int compareTo(RedcordTableElement redcordTableElement) {
 		int result = -1;
 		if (redcordTableElement != null) {
-			result = equals(redcordTableElement) ? 0 : getStartDate().compareTo(redcordTableElement.getStartDate());
+			if (equals(redcordTableElement)) {
+				result = 0;
+			} else if (getStartDate() != null) {
+				result = getStartDate().compareTo(redcordTableElement.getStartDate());
+			}
 		}
 		return result;
 	}
@@ -113,7 +129,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	}
 	
 	public void setComments(String comments) {
-		this.comments = comments;
+		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
 
 	public String getName() {
@@ -142,6 +158,12 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	 */
 	public ExerciseType getExerciseType() {
 		return ExerciseType.NOT_AVAILABLE;
+	}
+
+	@Override
+	public String toString() {
+		return "RedcordSession [client=" + client + ", name=" + name
+				+ ", startDate=" + startDate + "]";
 	}
 
 }

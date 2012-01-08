@@ -1,5 +1,6 @@
 package com.runwalk.video.entities;
 
+import java.beans.PropertyChangeListener;
 import java.util.Date;
 
 /**
@@ -11,6 +12,11 @@ import java.util.Date;
  */
 public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	
+	public static final String EXERCISE_DIRECTION = "exerciseDirection";
+	public static final String EXERCISE_TYPE = "exerciseType";
+	public static final String COMMENTS = "comments";
+	public static final String START_DATE = "startDate";
+
 	Date getStartDate();
 
 	ExerciseDirection getExerciseDirection();
@@ -20,6 +26,10 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	String getComments();
 	
 	String getName();
+	
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 	
 	/**
 	 * Return <code>true</code> if this table element can be a node in a tree table.

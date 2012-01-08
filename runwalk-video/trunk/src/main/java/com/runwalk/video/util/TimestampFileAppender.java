@@ -54,7 +54,7 @@ public class TimestampFileAppender extends FileAppender {
 	 * {@inheritDoc} 
 	 */
 	public synchronized void setFile(String fileName, boolean append, boolean bufferedIO, int bufferSize) throws IOException {
-		
+		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
 			super.setFile(fileName, append, bufferedIO, bufferSize);		

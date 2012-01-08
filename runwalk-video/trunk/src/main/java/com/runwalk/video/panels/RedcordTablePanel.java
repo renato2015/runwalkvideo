@@ -32,6 +32,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
@@ -60,10 +61,10 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	
 	private Boolean clientSelected = false;
 	
-	private Boolean redcordSessionEnabled = false;
+	private Boolean redcordSessionSelected = false;
 	
-	private Boolean redcordExerciseEnabled = false;
-
+	private Boolean redcordExerciseSelected = false;
+	
 	/**
 	 * Create the panel.
 	 */
@@ -90,9 +91,9 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		thirdButton.setFont(AppSettings.MAIN_FONT);
 		add(thirdButton);
 		
-		JButton fourthButton = new JButton(getAction("removeRedcordExercise"));
+		JButton fourthButton = new JButton(getAction("deleteRedcordExercise"));
 		fourthButton.setFont(AppSettings.MAIN_FONT);
-		add(fourthButton);
+		add(fourthButton, "wrap");
 		
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -160,7 +161,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			getLogger().warn("Attempt to insert redcordSession for " + selectedClient + " failed.");
 			return null;
 		}
-		RedcordSession redcordSession = new RedcordSession(selectedClient);
+		RedcordSession redcordSession = new RedcordSession(selectedClient); 
 		PersistTask<RedcordSession> result = new PersistTask<RedcordSession>(getDaoService(), RedcordSession.class, redcordSession);
 		result.addTaskListener(new TaskListener.Adapter<RedcordSession, Void>() {
 
@@ -196,7 +197,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordSession> event) {
-					RedcordSession redcordSession = event.getValue();
+					RedcordTableElement redcordSession = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
@@ -228,6 +229,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
 					selectedRedcordSession.addRedcordExercise(result);
+					//getItemList().add(result);
 					setSelectedItem(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
@@ -255,7 +257,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordExercise> event) {
-					RedcordExercise redcordExercise = event.getValue();
+					RedcordTableElement redcordExercise = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
@@ -276,6 +278,11 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected TreeList<RedcordTableElement> specializeItemList(EventList<RedcordTableElement> eventList) {
+		
+		final Comparator<RedcordTableElement> redcordTableElementComparator = GlazedLists.chainComparators(
+	            GlazedLists.beanPropertyComparator(RedcordTableElement.class, "name")
+	    );
+		
 		TreeList.Format<RedcordTableElement> listFormat = new TreeList.Format<RedcordTableElement>() {
 
 			public void getPath(List<RedcordTableElement> paramList, RedcordTableElement redcordTableElement) {
@@ -283,8 +290,14 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 					RedcordExercise redcordExercise = (RedcordExercise) redcordTableElement;
 					// always add the session up front
 					paramList.add(redcordExercise.getRedcordSession());
+					paramList.add(redcordTableElement);
+				} else {
+					RedcordSession redcordSession = (RedcordSession) redcordTableElement;
+					paramList.add(redcordTableElement);
+					if (!redcordSession.getRedcordExercises().isEmpty()) {
+						paramList.add(Iterables.getLast(redcordSession.getRedcordExercises()));
+					}
 				}
-				paramList.add(redcordTableElement);
 			}
 
 			public boolean allowsChildren(RedcordTableElement redcordTableElement) {
@@ -292,7 +305,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 
 			public Comparator<RedcordTableElement> getComparator(int paramInt) {
-				return null;
+				return redcordTableElementComparator;
 			}
 			
 		};
@@ -325,20 +338,19 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		AutoCompleteCellEditor<ExerciseType> exerciseTypeTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseTypes);
 		getTable().getColumnModel().getColumn(2).setCellRenderer(comboBoxRenderer);
 		getTable().getColumnModel().getColumn(2).setCellEditor(exerciseTypeTableCellEditor);
-		getTable().getColumnModel().getColumn(2).setPreferredWidth(120);
 		
 		EventList<ExerciseDirection> exerciseDirections = GlazedLists.eventListOf(ExerciseDirection.values());
 		AutoCompleteCellEditor<ExerciseDirection> exerciseDirectionTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseDirections);
 		getTable().getColumnModel().getColumn(3).setCellRenderer(comboBoxRenderer);
 		getTable().getColumnModel().getColumn(3).setCellEditor(exerciseDirectionTableCellEditor);
-		getTable().getColumnModel().getColumn(3).setPreferredWidth(20);
+		//getTable().getColumnModel().getColumn(3).setPreferredWidth(20);
 		getTable().getColumnModel().getColumn(3).setResizable(false);
 		// column to show comments
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		addMouseListenerToTable();				
 		// add column info to the table here
 		// install tree table support on the first column of the table
-		TreeTableSupport.install(getTable(), getItemList(), 1);
+		TreeTableSupport.install(getTable(), getItemList(), 0);
 	}
 	
 	public boolean isClientSelected() {
@@ -349,20 +361,20 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
 	}
 	
-	public Boolean getRedcordSessionEnabled() {
-		return redcordSessionEnabled;
+	public Boolean getRedcordSessionSelected() {
+		return redcordSessionSelected;
 	}
 
-	public void setRedcordSessionEnabled(Boolean redcordSessionEnabled) {
-		firePropertyChange(REDCORD_SESSION_SELECTED, this.redcordSessionEnabled, this.redcordSessionEnabled = redcordSessionEnabled);
+	public void setRedcordSessionSelected(Boolean redcordSessionSelected) {
+		firePropertyChange(REDCORD_SESSION_SELECTED, this.redcordSessionSelected, this.redcordSessionSelected = redcordSessionSelected);
 	}
 	
-	public Boolean getRedcordExerciseEnabled() {
-		return redcordExerciseEnabled;
+	public Boolean getRedcordExerciseSelected() {
+		return redcordExerciseSelected;
 	}
 
-	public void setRedcordExerciseEnabled(Boolean redcordExerciseEnabled) {
-		firePropertyChange(REDCORD_EXERCISE_SELECTED, this.redcordExerciseEnabled, this.redcordExerciseEnabled = redcordExerciseEnabled);
+	public void setRedcordExerciseSelected(Boolean redcordExerciseSelected) {
+		firePropertyChange(REDCORD_EXERCISE_SELECTED, this.redcordExerciseSelected, this.redcordExerciseSelected = redcordExerciseSelected);
 	}
 
 	public ClientTablePanel getClientTablePanel() {

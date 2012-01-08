@@ -29,6 +29,10 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 public class Analysis extends SerializableEntity<Analysis> {
 
 	public final static String RECORDING_COUNT = "recordingCount";
+	
+	public final static String COMMENTS = "comments";
+	
+	public final static String ARTICLE = "article";
 		
 	@Id
 	@Column(name="id")
@@ -70,7 +74,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public Article getArticle() {
-		return this.article;
+		return article;
 	}
 	
 	public Date getCreationDate() {
@@ -82,15 +86,15 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public String getComments() {
-		return this.comments;
+		return comments;
 	}
 
 	public void setComments(String comments) {
-		this.firePropertyChange("comments", this.comments, this.comments = comments);
+		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
-
-	public void setArticle(Article art) {
-		this.firePropertyChange("article", this.article, this.article = art);
+	
+	public void setArticle(Article article) {
+		firePropertyChange(ARTICLE, this.article, this.article = article);
 	}
 
 	public List<Recording> getRecordings() {

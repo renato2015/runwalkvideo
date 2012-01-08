@@ -1,6 +1,7 @@
 package com.runwalk.video.tasks;
 
 import java.awt.Robot;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -20,12 +21,12 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.entities.RedcordExercise;
 import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.ui.AnalysisConnector;
+import com.runwalk.video.ui.RedcordTableElementConnector;
 
 /**
  * This {@link Task} handles all database lookups and injects the results in the appropriate application component.
@@ -98,25 +99,26 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// create the overview with unfinished analyses
 					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());
 					// create pipeline for redord tablepanel
-					/*CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
+					CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
 						new CollectionList.Model<Client, RedcordTableElement>() {
 
 							public List<RedcordTableElement> getChildren(Client parent) {
-								return parent.getRedcordSessions();
+								return new ArrayList<RedcordTableElement>(parent.getRedcordSessions());
 							}
 
 					});
-					CollectionList<RedcordSession, ? extends RedcordTableElement> redcordExerciseList = new CollectionList<RedcordSession, RedcordExercise>(redcordSessionList, 
-						new CollectionList.Model<RedcordSession, RedcordExercise>() {
+					CollectionList<RedcordTableElement, RedcordTableElement> redcordExerciseList = new CollectionList<RedcordTableElement, RedcordTableElement>(redcordSessionList, 
+							new CollectionList.Model<RedcordTableElement, RedcordTableElement>() {
 
-							public List<RedcordExercise> getChildren(RedcordSession parent) {
-								return parent.getRedcordExercises();
-							}
-							
+						public List<RedcordTableElement> getChildren(RedcordTableElement parent) {
+							return new ArrayList<RedcordTableElement>(((RedcordSession) parent).getRedcordExercises());
 						}
-					);
-					
-					getRedcordTablePanel().setItemList(redcordSessionList, RedcordTableElement.class);*/
+
+					});
+					CompositeList<RedcordTableElement> redcordTableElements = new CompositeList<RedcordTableElement>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
+					redcordTableElements.addMemberList(redcordSessionList);
+					redcordTableElements.addMemberList(redcordExerciseList);
+					getRedcordTablePanel().setItemList(redcordTableElements, new RedcordTableElementConnector());
 				}
 
 			});

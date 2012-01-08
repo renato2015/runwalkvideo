@@ -2,6 +2,8 @@ package com.runwalk.video.panels;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -25,7 +27,9 @@ import org.jdesktop.application.TaskListener;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.DaoService;
@@ -106,8 +110,27 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 
 	@Override
-	public void setItemList(EventList<Client> itemList, Class<Client> itemClass) {
-		super.setItemList(itemList, itemClass);
+	public void setItemList(EventList<Client> itemList, Connector<? super Client> connector) {
+		super.setItemList(itemList, new BeanConnector<Client>(Client.class) { 
+
+			@Override
+			protected PropertyChangeListener createPropertyChangeListener() {
+				return new PropertyChangeHandler() {
+
+					@Override
+					public void propertyChange(PropertyChangeEvent event) {
+						if (Client.DIRTY.equals(event.getPropertyName())) {
+							if ((Boolean) event.getNewValue()) {
+								setSaveNeeded(true);
+							}
+						} else {
+							super.propertyChange(event);
+						}
+					}
+				};
+			}
+			
+		});
 		getTable().getColumnModel().getColumn(0).setMinWidth(35);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(35);
 		getTable().getColumnModel().getColumn(0).setMaxWidth(35);
