@@ -292,11 +292,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 					paramList.add(redcordExercise.getRedcordSession());
 					paramList.add(redcordTableElement);
 				} else {
-					RedcordSession redcordSession = (RedcordSession) redcordTableElement;
 					paramList.add(redcordTableElement);
-					if (!redcordSession.getRedcordExercises().isEmpty()) {
-						paramList.add(Iterables.getLast(redcordSession.getRedcordExercises()));
-					}
 				}
 			}
 
