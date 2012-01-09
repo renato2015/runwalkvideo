@@ -23,6 +23,7 @@ import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.swingx.table.DatePickerCellEditor;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -32,7 +33,6 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
-import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
@@ -215,10 +215,16 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		return result;
 	}
 	
-	@Action(enabledProperty = REDCORD_SESSION_SELECTED, block = BlockingScope.ACTION)
+	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<RedcordExercise> addRedcordExercise() {
 		// insert a new exercise record
-		final RedcordSession selectedRedcordSession = (RedcordSession) getSelectedItem();
+		RedcordSession selectedRedcordSession = null;
+		if (getSelectedItem() instanceof RedcordSession) {
+			selectedRedcordSession = (RedcordSession) getSelectedItem();
+		} else {
+			selectedRedcordSession = ((RedcordExercise) getSelectedItem()).getRedcordSession();
+		}
+		final RedcordSession finaSelectedRedcordSession = selectedRedcordSession;
 		RedcordExercise redcordExercise = new RedcordExercise(selectedRedcordSession);
 		PersistTask<RedcordExercise> result = new PersistTask<RedcordExercise>(getDaoService(), RedcordExercise.class, redcordExercise);
 		result.addTaskListener(new TaskListener.Adapter<RedcordExercise, Void>() {
@@ -228,7 +234,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				RedcordExercise result = event.getValue();
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					selectedRedcordSession.addRedcordExercise(result);
+					finaSelectedRedcordSession.addRedcordExercise(result);
 					//getItemList().add(result);
 					setSelectedItem(result);
 				} finally {
@@ -329,6 +335,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
+		getTable().getColumnModel().getColumn(1).setCellEditor(new DatePickerCellEditor(AppUtil.EXTENDED_DATE_FORMATTER));
 		// create special table cell editor for selecting exercise type
 		EventList<ExerciseType> exerciseTypes = GlazedLists.eventListOf(ExerciseType.values());
 		AutoCompleteCellEditor<ExerciseType> exerciseTypeTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseTypes);

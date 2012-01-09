@@ -1,8 +1,11 @@
 package com.runwalk.video.ui;
 
+import java.util.Date;
+
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
 import com.runwalk.video.entities.RedcordExercise;
+import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
@@ -34,7 +37,7 @@ public class RedcordTableFormat implements WritableTableFormat<RedcordTableEleme
 	}
 
 	public boolean isEditable(RedcordTableElement redcordTableElement, int column) {
-		return column == 1 && redcordTableElement.allowsChildren() ||
+		return column == 1 && redcordTableElement.allowsChildren() && ((RedcordSession) redcordTableElement).getRedcordExercises().isEmpty() ||
 				column == 2 && !redcordTableElement.allowsChildren() || 
 				column == 3 && ! redcordTableElement.allowsChildren();
 	}
@@ -42,7 +45,7 @@ public class RedcordTableFormat implements WritableTableFormat<RedcordTableEleme
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
 		if (column == 1 && redcordTableElement.allowsChildren()) {
 			// TODO handle date setting (using customized datepicker?)
-		//	((RedcordSession) redcordTableElement).setStartDate(Date.);
+			((RedcordSession) redcordTableElement).setStartDate((Date) editedValue);
 		} else if (column == 2 && !redcordTableElement.allowsChildren()) {
 			((RedcordExercise) redcordTableElement).setExerciseType((ExerciseType) editedValue);
 		} else if (column == 3 && !redcordTableElement.allowsChildren()) {
