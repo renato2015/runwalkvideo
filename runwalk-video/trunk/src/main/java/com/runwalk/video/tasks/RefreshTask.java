@@ -13,7 +13,9 @@ import org.jdesktop.application.Task;
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.dao.DaoService;
@@ -107,6 +109,14 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 							}
 
 					});
+					
+					FilterList<RedcordTableElement> filteredRedcordSessionList = new FilterList<RedcordTableElement>(redcordSessionList, new Matcher<RedcordTableElement>() {
+
+						public boolean matches(RedcordTableElement item) {
+							return item.allowsChildren() && ((RedcordSession) item).getRedcordExercises().isEmpty();
+						}
+						
+					});
 					CollectionList<RedcordTableElement, RedcordTableElement> redcordExerciseList = new CollectionList<RedcordTableElement, RedcordTableElement>(redcordSessionList, 
 							new CollectionList.Model<RedcordTableElement, RedcordTableElement>() {
 
@@ -116,7 +126,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 					});
 					CompositeList<RedcordTableElement> redcordTableElements = new CompositeList<RedcordTableElement>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
-					redcordTableElements.addMemberList(redcordSessionList);
+					
+					redcordTableElements.addMemberList(filteredRedcordSessionList);
 					redcordTableElements.addMemberList(redcordExerciseList);
 					getRedcordTablePanel().setItemList(redcordTableElements, new RedcordTableElementConnector());
 				}
