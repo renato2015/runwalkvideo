@@ -117,7 +117,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 		if (redcordTableElement != null) {
 			if (equals(redcordTableElement)) {
 				result = 0;
-			} else if (getStartDate() != null) {
+			} else if (getStartDate() != null && redcordTableElement.getStartDate() != null) {
 				result = getStartDate().compareTo(redcordTableElement.getStartDate());
 			}
 		}
