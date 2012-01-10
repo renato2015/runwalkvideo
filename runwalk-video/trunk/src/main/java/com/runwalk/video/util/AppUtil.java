@@ -18,6 +18,7 @@ public class AppUtil {
 	public static final SimpleDateFormat FILENAME_DATE_FORMATTER = new SimpleDateFormat("dd-MM-yy");
 	public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy");
 	public static final SimpleDateFormat EXTENDED_DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	public static final SimpleDateFormat HOUR_MINUTE_FORMATTER = new SimpleDateFormat("HH:mm");
 
 	private AppUtil() { }
 	

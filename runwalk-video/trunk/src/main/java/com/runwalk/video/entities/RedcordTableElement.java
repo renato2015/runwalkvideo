@@ -16,6 +16,7 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	public static final String EXERCISE_TYPE = "exerciseType";
 	public static final String COMMENTS = "comments";
 	public static final String START_DATE = "startDate";
+	public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
 
 	Date getStartDate();
 
