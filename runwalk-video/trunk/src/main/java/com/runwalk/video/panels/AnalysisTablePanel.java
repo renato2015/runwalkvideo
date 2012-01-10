@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -246,8 +245,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
-		CustomJTableRenderer comboBoxRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JComboBox.class));
-		getTable().getColumnModel().getColumn(1).setCellRenderer(comboBoxRenderer);
+		getTable().getColumnModel().getColumn(1).setCellRenderer(new JComboBoxRenderer());
 		getTable().getColumnModel().getColumn(1).setCellEditor(createTableCellEditor);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(18);
@@ -255,7 +253,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(4).setResizable(false);
-		CustomJTableRenderer buttonRenderer = new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class));
+		CustomJTableRenderer<?> buttonRenderer = new CustomJTableRenderer<JButton>(JButton.class);
 		getTable().getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
 		addMouseListenerToTable();				
 	}

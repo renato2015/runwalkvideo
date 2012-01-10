@@ -241,14 +241,14 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	@Override
 	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<? super Analysis> itemConnector) {
 		super.setItemList(itemList, itemConnector);
-		getTable().getColumnModel().getColumn(0).setCellRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(ImageIcon.class)));
+		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(80);
 		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
-		getTable().getColumnModel().getColumn(6).setCellRenderer(new CustomJTableRenderer(getTable().getDefaultRenderer(JButton.class)));
+		getTable().getColumnModel().getColumn(6).setCellRenderer(new CustomJTableRenderer<JButton>(JButton.class));
 		getTable().getColumnModel().getColumn(6).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		addMouseListenerToTable();

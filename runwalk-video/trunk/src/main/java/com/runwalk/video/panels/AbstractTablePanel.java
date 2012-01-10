@@ -8,10 +8,14 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -159,12 +163,9 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				while(listChanges.next()) {
 					int changeType = listChanges.getType();
 					if (changeType == ListEvent.DELETE) {
-						// FIXME needs to be retested !!
 						if (ListEvent.UNKNOWN_VALUE.equals(listChanges.getOldValue()) &&
 								!(listChanges.getOldValue() instanceof SerializableEntity)) {
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-//							T oldValue = listChanges.getOldValue();
-//							firePropertyChange(SELECTED_ITEM, oldValue, getSelectedItem());
 						}
 					} else if (changeType == ListEvent.INSERT) {
 						T newValue = null;
@@ -186,6 +187,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
+		
 	}
 
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
@@ -220,11 +222,20 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		return eventSelectionModel;
 	}
 
-	protected class CustomJTableRenderer implements TableCellRenderer {
-		private TableCellRenderer __defaultRenderer;
+	protected class CustomJTableRenderer<V extends Component> implements TableCellRenderer {
+		private final Class<?> rendererClass;
+		
+		private final V component;
 
-		public CustomJTableRenderer(TableCellRenderer renderer) {
-			__defaultRenderer = renderer;
+		public CustomJTableRenderer(Class<?> rendererClass) {
+			this.rendererClass = rendererClass;
+			this.component = null;
+		}
+		
+		public CustomJTableRenderer(V component) {
+			this.rendererClass = component.getClass();
+			this.component = component;
+			component.setFont(AppSettings.MAIN_FONT);
 		}
 
 		public Component getTableCellRendererComponent(JTable table, Object value,
@@ -232,15 +243,71 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				boolean hasFocus,
 				int row, int column)
 		{
-			if(value instanceof Component)
+			if(value instanceof Component ) {
 				return (Component)value;
-			return __defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			} else if ((table.getModel().isCellEditable(row, column)) && component != null) {
+				return prepareComponent(component, value);
+			}
+			return table.getDefaultRenderer(rendererClass).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		}
+		
+		protected V prepareComponent(V component, Object value) {
+			return component;
 		}
 	}
+	
+	protected class JComboBoxRenderer extends CustomJTableRenderer<JComboBox> {
 
+		public JComboBoxRenderer() {
+			super(new JComboBox());
+		}
+
+		@Override
+		protected JComboBox prepareComponent(JComboBox component, Object value) {
+			// add the item to the comboxbox.
+			component.removeAllItems();
+			component.addItem(value);
+			return component;
+		}
+		
+	}
+	
+	protected class JSpinnerRenderer extends CustomJTableRenderer<JSpinner> {
+
+		public JSpinnerRenderer(JSpinner component) {
+			super(component);
+		}
+		
+		@Override
+		protected JSpinner prepareComponent(JSpinner component, Object value) {
+			// set the time value on the spinner
+			component.getModel().setValue(value);
+			return component;
+		}
+		
+	}
+	
+	protected class JSpinnerEditor extends AbstractCellEditor implements TableCellEditor {
+		  private final JSpinner spinner;
+
+		  public JSpinnerEditor(JSpinner spinner) {
+			  this.spinner = spinner;
+		  }
+
+		  public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
+		      int row, int column) {
+		    spinner.setValue(value);
+		    return spinner;
+		  }
+
+		  public Object getCellEditorValue() {
+		    return spinner.getValue();
+		  }
+		}
+	
 	class JTableButtonMouseListener extends MouseAdapter {
 
-		private void __forwardEventToButton(MouseEvent e) {
+		private void forwardEventToButton(MouseEvent e) {
 			TableColumnModel columnModel = getTable().getColumnModel();
 			int column = columnModel.getColumnIndexAtX(e.getX());
 			int row    = e.getY() / getTable().getRowHeight();
@@ -268,7 +335,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 
 		public void mouseClicked(MouseEvent e) {
-			__forwardEventToButton(e);
+			forwardEventToButton(e);
 		}
 
 	}
