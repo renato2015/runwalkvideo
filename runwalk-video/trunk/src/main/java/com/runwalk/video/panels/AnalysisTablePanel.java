@@ -40,7 +40,9 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
-import com.runwalk.video.ui.DateTableCellRenderer;
+import com.runwalk.video.ui.table.DateTableCellRenderer;
+import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
+import com.runwalk.video.ui.table.JComponentTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -244,8 +246,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
+		createTableCellEditor.setClickCountToStart(1);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new JComboBoxRenderer());
+		getTable().getColumnModel().getColumn(1).setCellRenderer(new JComboBoxTableCellRenderer());
 		getTable().getColumnModel().getColumn(1).setCellEditor(createTableCellEditor);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(18);
@@ -253,8 +256,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(4).setResizable(false);
-		CustomJTableRenderer<?> buttonRenderer = new CustomJTableRenderer<JButton>(JButton.class);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
+		getTable().getColumnModel().getColumn(4).setCellRenderer(new JComponentTableCellRenderer<JButton>(JButton.class));
 		addMouseListenerToTable();				
 	}
 

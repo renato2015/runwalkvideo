@@ -38,7 +38,7 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.SaveTask;
-import com.runwalk.video.ui.DateTableCellRenderer;
+import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 

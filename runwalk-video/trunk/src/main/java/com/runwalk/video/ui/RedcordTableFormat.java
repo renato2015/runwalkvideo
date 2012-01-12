@@ -1,5 +1,6 @@
 package com.runwalk.video.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
@@ -40,21 +41,59 @@ public class RedcordTableFormat implements WritableTableFormat<RedcordTableEleme
 	}
 
 	public boolean isEditable(RedcordTableElement redcordTableElement, int column) {
-		return column == 1 && redcordTableElement.allowsChildren() && ((RedcordSession) redcordTableElement).getRedcordExercises().isEmpty() ||
-				column == 3 && !redcordTableElement.allowsChildren() || 
-				column == 4 && ! redcordTableElement.allowsChildren();
+		// true for column 1 and 2 if they are not having children
+		return ((column == 1 || column == 2) && redcordTableElement.allowsChildren() && 
+				((RedcordSession) redcordTableElement).getRedcordExercises().isEmpty()) ||
+			// true for column 3 and 4 if they have children
+			((column == 3 || column == 4) && !redcordTableElement.allowsChildren());
 	}
-
+	
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
-		if (column == 1 && redcordTableElement.allowsChildren()) {
-			// TODO handle date setting (using customized datepicker?)
-			((RedcordSession) redcordTableElement).setStartDate((Date) editedValue);
+		if (column == 1 && redcordTableElement.allowsChildren() && editedValue != null) {
+			// add the date parsed from the datepicker to the one in the spinner
+			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
+			Date startDate = redcordSession.getStartDate();
+			startDate = startDate == null ? new Date() : startDate;
+			Date newStartDate = addToDate(startDate, (Date) editedValue, Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH);
+			redcordSession.setStartDate(newStartDate);
+		} else if (column == 2 && redcordTableElement.allowsChildren()) {
+			// add the date parsed from the spinner to the one in the datepicker
+			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
+			Date startDate = redcordSession.getStartDate();
+			startDate = startDate == null ? new Date() : startDate;
+			Date newStartDate = addToDate(startDate, (Date) editedValue, Calendar.HOUR_OF_DAY, Calendar.MINUTE);
+			redcordSession.setStartDate(newStartDate);
 		} else if (column == 3 && !redcordTableElement.allowsChildren()) {
-			((RedcordExercise) redcordTableElement).setExerciseType((ExerciseType) editedValue);
+			((RedcordExercise) redcordTableElement).setExerciseType(parseEnumValue(ExerciseType.class, editedValue));
 		} else if (column == 4 && !redcordTableElement.allowsChildren()) {
-			((RedcordExercise) redcordTableElement).setExerciseDirection((ExerciseDirection) editedValue);
+			((RedcordExercise) redcordTableElement).setExerciseDirection(parseEnumValue(ExerciseDirection.class, editedValue));
 		}
 		return redcordTableElement;
+	}
+	
+	private Date addToDate(Date date1, Date date2, int... fields) {
+		Calendar date1Calendar = Calendar.getInstance();
+		date1Calendar.setTime(date1);
+		Calendar date2Calendar = Calendar.getInstance();
+		date2Calendar.setTime(date2);
+		for(int field : fields) {
+			date1Calendar.set(field, date2Calendar.get(field));
+		}
+		return date1Calendar.getTime();
+	}
+
+	
+	private <T extends Enum<T>> T parseEnumValue(Class<T> enumClass, Object value) {
+		T result = null;
+		if (value != null) {
+			if (value instanceof String) {
+				String string = value.toString();
+				result = Enum.valueOf(enumClass, string);
+			} else if (enumClass.isAssignableFrom(value.getClass())) {
+				result = enumClass.cast(value);
+			}
+		}
+		return result;
 	}
 	
 }

@@ -1,10 +1,7 @@
 package com.runwalk.video.entities;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -16,10 +13,7 @@ import javax.persistence.Table;
 @NamedQueries(value={
 		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar")
 })
-public class Article implements Serializable {
-	@Id
-	@Column(name="id")
-	private int id;
+public class Article extends SerializableEntity<Article> {
 
 	@Column(name="code")
 	private String code;
@@ -41,14 +35,6 @@ public class Article implements Serializable {
 
 	public Article() {
 		super();
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public String getCode() {
@@ -102,6 +88,11 @@ public class Article implements Serializable {
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	@Override
+	public int compareTo(Article o) {
+		return getId().compareTo(o.getId());
 	}
 
 }

@@ -18,10 +18,10 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskMonitor;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
+import org.jdesktop.application.TaskMonitor;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -41,8 +41,9 @@ import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.RefreshVideoFilesTask;
-import com.runwalk.video.ui.DateTableCellRenderer;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
+import com.runwalk.video.ui.table.DateTableCellRenderer;
+import com.runwalk.video.ui.table.JComponentTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -248,7 +249,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
-		getTable().getColumnModel().getColumn(6).setCellRenderer(new CustomJTableRenderer<JButton>(JButton.class));
+		getTable().getColumnModel().getColumn(6).setCellRenderer(new JComponentTableCellRenderer<JButton>(JButton.class));
 		getTable().getColumnModel().getColumn(6).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		addMouseListenerToTable();

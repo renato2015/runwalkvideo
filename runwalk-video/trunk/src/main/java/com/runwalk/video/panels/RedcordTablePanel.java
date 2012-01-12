@@ -1,8 +1,6 @@
 package com.runwalk.video.panels;
 
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -45,7 +43,10 @@ import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
-import com.runwalk.video.ui.DateTableCellRenderer;
+import com.runwalk.video.ui.table.DatePickerCellRenderer;
+import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
+import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
+import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -148,6 +149,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		bindingGroup.addBinding(selectedRedcordExerciseBinding);
 		
 		bindingGroup.bind();
+		
 	}
 	
 	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
@@ -327,45 +329,58 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	public TreeList<RedcordTableElement> getItemList() {
 		return (TreeList<RedcordTableElement>) super.getItemList();
 	}
-
+	
 	@Override
 	public void setItemList(EventList<RedcordTableElement> itemList, ObservableElementList.Connector<? super RedcordTableElement> itemConnector) {
 		super.setItemList(itemList, itemConnector);
-
-		JComboBoxRenderer comboBoxrenderer = new JComboBoxRenderer();
+		getTable().setRowHeight(20);
+		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
 		// name of the session / exercise
-		getTable().getColumnModel().getColumn(0).setMinWidth(100);
+		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		// date of the session
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.DATE_FORMATTER));
-		getTable().getColumnModel().getColumn(1).setCellEditor(new DatePickerCellEditor(AppUtil.DATE_FORMATTER));
-		getTable().getColumnModel().getColumn(1).setPreferredWidth(60);
+		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
+		datePickerCellEditor.setClickCountToStart(1);
+		getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);
+		getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerCellRenderer(AppUtil.DATE_FORMATTER));
+		getTable().getColumnModel().getColumn(1).setPreferredWidth(70);
 		
-		SpinnerDateModel spinnerDateModel = new SpinnerDateModel(new Date(), null, null, Calendar.MINUTE);
+		SpinnerDateModel spinnerDateModel = new SpinnerDateModel();
 		JSpinner spinner = new JSpinner(spinnerDateModel);
-		getTable().getColumnModel().getColumn(2).setCellRenderer(new JSpinnerRenderer(spinner));
-		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerEditor(spinner));
+		spinner.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
+		
+		JSpinner spinner2 = new JSpinner(spinnerDateModel);
+		spinner2.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
+
+		getTable().getColumnModel().getColumn(2).setCellRenderer(new JSpinnerTableCellRenderer(spinner2, AppUtil.HOUR_MINUTE_FORMATTER));
+		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
+		getTable().getColumnModel().getColumn(2).setPreferredWidth(30);
 		
 		// create special table cell editor for selecting exercise type
 		EventList<ExerciseType> exerciseTypes = GlazedLists.eventListOf(ExerciseType.values());
 		AutoCompleteCellEditor<ExerciseType> exerciseTypeTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseTypes);
+		exerciseTypeTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
 		exerciseTypeTableCellEditor.getAutoCompleteSupport().setStrict(true);
+		exerciseTypeTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
+		exerciseTypeTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
 		exerciseTypeTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(3).setCellRenderer(comboBoxrenderer);
+		getTable().getColumnModel().getColumn(3).setCellRenderer(comboBoxTableCellRenderer);
 		getTable().getColumnModel().getColumn(3).setCellEditor(exerciseTypeTableCellEditor);
+		getTable().getColumnModel().getColumn(3).setPreferredWidth(50);
 		
 		EventList<ExerciseDirection> exerciseDirections = GlazedLists.eventListOf(ExerciseDirection.values());
 		AutoCompleteCellEditor<ExerciseDirection> exerciseDirectionTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseDirections);
+		exerciseDirectionTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
 		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setStrict(true);
+		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
+		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
 		exerciseDirectionTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(comboBoxrenderer);
+		getTable().getColumnModel().getColumn(4).setCellRenderer(comboBoxTableCellRenderer);
 		getTable().getColumnModel().getColumn(4).setCellEditor(exerciseDirectionTableCellEditor);
-		//getTable().getColumnModel().getColumn(3).setPreferredWidth(20);
 		getTable().getColumnModel().getColumn(4).setResizable(false);
+		getTable().getColumnModel().getColumn(4).setPreferredWidth(50);
 		// column to show comments
-		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		addMouseListenerToTable();				
-		// add column info to the table here
 		// install tree table support on the first column of the table
 		TreeTableSupport.install(getTable(), getItemList(), 0);
 	}
