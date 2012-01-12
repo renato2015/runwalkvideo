@@ -1,6 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -63,6 +64,11 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	public RedcordSession(Client client, String name) {
 		this.client = client;
 		this.name = name;
+		// set default starting date to 8 o'clock current day
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.set(Calendar.HOUR_OF_DAY, 8);
+		startDate = calendar.getTime();
 	}
 
 	public Client getClient() {
@@ -141,23 +147,23 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	}
 	
 	/**
-	 * Currently defaulting to {@link ExerciseDirection#NOT_AVAILABLE}.
+	 * Currently returning <code>null</code>.
 	 * Could be changed to show aggregate data later on.
 	 * 
 	 * @return the NOT_AVAILABLE enum constant
 	 */
 	public ExerciseDirection getExerciseDirection() {
-		return ExerciseDirection.NOT_AVAILABLE;
+		return null;
 	}
 
 	/**
-	 * Currently defaulting to {@link ExerciseType#NOT_AVAILABLE}.
+	 * Currently returning <code>null</code>.
 	 * Could be changed to show aggregate data later on.
 	 * 
 	 * @return the NOT_AVAILABLE enum constant
 	 */
 	public ExerciseType getExerciseType() {
-		return ExerciseType.NOT_AVAILABLE;
+		return null;
 	}
 
 	@Override

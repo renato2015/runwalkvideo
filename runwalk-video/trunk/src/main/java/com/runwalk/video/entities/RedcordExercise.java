@@ -68,7 +68,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	public void setExerciseDirection(ExerciseDirection exerciseDirection) {
 		firePropertyChange(EXERCISE_DIRECTION, this.exerciseDirection, this.exerciseDirection = exerciseDirection);
 	}
-
+	
 	public ExerciseDirection getExerciseDirection() {
 		return exerciseDirection;
 	}

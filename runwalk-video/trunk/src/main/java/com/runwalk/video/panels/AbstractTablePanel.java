@@ -1,6 +1,5 @@
 package com.runwalk.video.panels;
 
-import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -8,15 +7,10 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Level;
@@ -50,9 +44,10 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
-
-	private JTable table;
-	private JButton firstButton, secondButton;
+	
+	private final JTable table;
+	
+    private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
@@ -135,7 +130,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public void setSecondButton(JButton newButton) {
 		this.secondButton = newButton;
 	}
-	
+
 	/**
 	 * The {@link EventList} will be injected from the outside. This method will further prepare it to 
 	 * use it with a {@link JTable}.
@@ -187,7 +182,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
-		
+
 	}
 
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
@@ -209,7 +204,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public TableFormat<T> getTableFormat() {
 		return tableFormat;
 	}
-	
+
 	public void setTableFormat(TableFormat<T> tableFormat) {
 		this.tableFormat = tableFormat;
 	}
@@ -222,89 +217,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		return eventSelectionModel;
 	}
 
-	protected class CustomJTableRenderer<V extends Component> implements TableCellRenderer {
-		private final Class<?> rendererClass;
-		
-		private final V component;
-
-		public CustomJTableRenderer(Class<?> rendererClass) {
-			this.rendererClass = rendererClass;
-			this.component = null;
-		}
-		
-		public CustomJTableRenderer(V component) {
-			this.rendererClass = component.getClass();
-			this.component = component;
-			component.setFont(AppSettings.MAIN_FONT);
-		}
-
-		public Component getTableCellRendererComponent(JTable table, Object value,
-				boolean isSelected,
-				boolean hasFocus,
-				int row, int column)
-		{
-			if(value instanceof Component ) {
-				return (Component)value;
-			} else if ((table.getModel().isCellEditable(row, column)) && component != null) {
-				return prepareComponent(component, value);
-			}
-			return table.getDefaultRenderer(rendererClass).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		}
-		
-		protected V prepareComponent(V component, Object value) {
-			return component;
-		}
-	}
-	
-	protected class JComboBoxRenderer extends CustomJTableRenderer<JComboBox> {
-
-		public JComboBoxRenderer() {
-			super(new JComboBox());
-		}
-
-		@Override
-		protected JComboBox prepareComponent(JComboBox component, Object value) {
-			// add the item to the comboxbox.
-			component.removeAllItems();
-			component.addItem(value);
-			return component;
-		}
-		
-	}
-	
-	protected class JSpinnerRenderer extends CustomJTableRenderer<JSpinner> {
-
-		public JSpinnerRenderer(JSpinner component) {
-			super(component);
-		}
-		
-		@Override
-		protected JSpinner prepareComponent(JSpinner component, Object value) {
-			// set the time value on the spinner
-			component.getModel().setValue(value);
-			return component;
-		}
-		
-	}
-	
-	protected class JSpinnerEditor extends AbstractCellEditor implements TableCellEditor {
-		  private final JSpinner spinner;
-
-		  public JSpinnerEditor(JSpinner spinner) {
-			  this.spinner = spinner;
-		  }
-
-		  public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
-		      int row, int column) {
-		    spinner.setValue(value);
-		    return spinner;
-		  }
-
-		  public Object getCellEditorValue() {
-		    return spinner.getValue();
-		  }
-		}
-	
 	class JTableButtonMouseListener extends MouseAdapter {
 
 		private void forwardEventToButton(MouseEvent e) {

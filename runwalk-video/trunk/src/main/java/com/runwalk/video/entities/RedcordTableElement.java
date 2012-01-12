@@ -16,7 +16,6 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	public static final String EXERCISE_TYPE = "exerciseType";
 	public static final String COMMENTS = "comments";
 	public static final String START_DATE = "startDate";
-	public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
 
 	Date getStartDate();
 
@@ -40,11 +39,11 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	boolean allowsChildren();
 
 	public enum ExerciseType {
-		FRONT, SIDE, BACK, SCAPULA, NOT_AVAILABLE;
+		FRONT, SIDE, BACK, SCAPULA;
 	}
 	
 	public enum ExerciseDirection {
-		LEFT, RIGHT, NOT_AVAILABLE;
+		LEFT, RIGHT;
 	}
 	
 }

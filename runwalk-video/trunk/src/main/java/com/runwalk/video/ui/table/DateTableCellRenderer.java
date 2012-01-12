@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.runwalk.video.ui;
+package com.runwalk.video.ui.table;
 
 import java.awt.Component;
 import java.text.DateFormat;
@@ -25,32 +25,15 @@ import javax.swing.table.DefaultTableCellRenderer;
 @SuppressWarnings("serial")
 public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	
-	private DateFormat format;
+	private final DateFormat dateFormat;
 
 	public DateTableCellRenderer(DateFormat format) {
-		this.format = format;
+		this.dateFormat = format;
 	}
 	
-	// TODO: not used
-	public void setAsText(String s) throws java.lang.IllegalArgumentException {
-		if (s.trim().length() == 0) {
-			setValue(null);
-			return;
-		}
-		/*try {
-	            // TODO: setValue(format.parse(s));
-	        } catch (ParseException e) {
-	            String msg = NbBundle.getMessage(DateTableCellRenderer.class,
-	                "IllegalDateValue", new Object[] {s}); //NOI18N
-	            RuntimeException iae = new IllegalArgumentException(msg); 
-	            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, msg,
-	                msg, e, new java.util.Date());
-	            throw iae;
-	        }*/
-	}
-
 	public Component getTableCellRendererComponent(javax.swing.JTable table, 
 			Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+		// call super here to process all usual arguments such as isSelected and hasFocus
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		if (value == null) {
 			setText("");
@@ -61,11 +44,16 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 			} else if (value instanceof Date) {
 				date = (Date) value;
 			}
-			synchronized(format) {
-				setText(date == null ? "<geen>" : format.format(date));
+			synchronized(dateFormat) {
+				setText(date == null ? "<geen>" : dateFormat.format(date));
 			}
 		}
 		return this;
+	}
+
+	public DateFormat getDateFormat() {
+		return dateFormat;
 	}    
+	
 }
 

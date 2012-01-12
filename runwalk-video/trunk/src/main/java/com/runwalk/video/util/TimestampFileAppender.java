@@ -44,7 +44,7 @@ public class TimestampFileAppender extends FileAppender {
 		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
-			super.setFile(fileName);
+			super.setFile(fileName); 
 		} else {
 			super.setFile(fileName);
 		}
