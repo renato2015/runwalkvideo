@@ -10,6 +10,11 @@ import javax.swing.JTable;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This renderer does not work properly.. should be reviewed
+ * 
+ * @author Jeroen Peelaerts
+ */
 @SuppressWarnings("serial")
 public class JSpinnerTableCellRenderer extends DateTableCellRenderer {
 
