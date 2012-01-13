@@ -3,6 +3,8 @@ package com.runwalk.video.ui;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.jdesktop.application.ResourceMap;
+
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
 import com.runwalk.video.entities.RedcordExercise;
@@ -11,20 +13,10 @@ import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 
-public class RedcordTableFormat implements WritableTableFormat<RedcordTableElement> {
+public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement> implements WritableTableFormat<RedcordTableElement> {
 	
-	public int getColumnCount() {
-		return 6;
-	}
-
-	public String getColumnName(int column) {
-		if(column == 0)      return "Sessie/Oefening";
-		else if(column == 1) return "Datum";
-		else if (column == 2) return "Tijdstip";
-		else if(column == 3) return "Type oefening";
-		else if(column == 4) return "Richting";
-		else if(column == 5) return "Commentaar";
-		throw new IllegalStateException();
+	public RedcordTableFormat(ResourceMap resourceMap) {
+		super(resourceMap);
 	}
 
 	public Object getColumnValue(final RedcordTableElement redcordTableElement, int column) {

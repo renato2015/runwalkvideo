@@ -5,7 +5,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 
-import ca.odell.glazedlists.gui.TableFormat;
+import org.jdesktop.application.ResourceMap;
 
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
@@ -15,27 +15,13 @@ import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.ResourceInjector;
 
-public class AnalysisOverviewTableFormat implements TableFormat<Analysis> {
+public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 	
 	private final MediaControls mediaControls;
 
-	public AnalysisOverviewTableFormat(MediaControls mediaControls) {
+	public AnalysisOverviewTableFormat(MediaControls mediaControls, ResourceMap resourceMap) {
+		super(resourceMap);
 		this.mediaControls = mediaControls;
-	}
-
-	public int getColumnCount() {
-		return 7;
-	}
-
-	public String getColumnName(int column) {
-		if(column == 0)      return "#";
-		else if(column == 1) return "Tijdstip analyse";
-		else if(column == 2) return "Naam klant";
-		else if(column == 3) return "Aantal keyframes";
-		else if(column == 4) return "Duur video";
-		else if(column == 5) return "Status";
-		else if(column == 6) return "";
-		throw new IllegalStateException();
 	}
 
 	public Object getColumnValue(final Analysis analysis, int column) {
