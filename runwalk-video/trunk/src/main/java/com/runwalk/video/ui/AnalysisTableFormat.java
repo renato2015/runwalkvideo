@@ -5,6 +5,8 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 
+import org.jdesktop.application.ResourceMap;
+
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
 import com.google.common.collect.Iterables;
@@ -14,27 +16,15 @@ import com.runwalk.video.entities.Recording;
 import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.util.AppSettings;
 
-public class AnalysisTableFormat implements WritableTableFormat<Analysis> {
+public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implements WritableTableFormat<Analysis> {
 	
 	private final MediaControls mediaControls;
-
-	public AnalysisTableFormat(MediaControls mediaControls) {
+	
+	public AnalysisTableFormat(MediaControls mediaControls, ResourceMap resourceMap) {
+		super(resourceMap);
 		this.mediaControls = mediaControls;
 	}
 	
-	public int getColumnCount() {
-		return 5;
-	}
-
-	public String getColumnName(int column) {
-		if(column == 0)      return "Datum";
-		else if(column == 1) return "Gekozen schoen";
-		else if(column == 2) return "Aantal keyframes";
-		else if(column == 3) return "Aantal opnames";
-		else if(column == 4) return "Open video";
-		throw new IllegalStateException();
-	}
-
 	public Object getColumnValue(final Analysis analysis, int column) {
 		final boolean recordingNotNull = analysis.hasRecordings();
 		Recording recording = null;

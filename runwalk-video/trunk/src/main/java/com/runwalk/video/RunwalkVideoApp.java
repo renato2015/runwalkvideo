@@ -63,7 +63,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private ClientTablePanel clientTablePanel;
 	private StatusPanel statusPanel;
 	private AnalysisTablePanel analysisTablePanel;
-	private AnalysisOverviewTablePanel overviewTablePanel;
+	private AnalysisOverviewTablePanel analysisOverviewTablePanel;
 	private RedcordTablePanel redcordTablePanel;
 	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
@@ -135,7 +135,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				AppSettings.getInstance(), getVideoFileManager(), getDaoService());
-		overviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
+		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
 		redcordTablePanel = new RedcordTablePanel(getClientTablePanel(), createUndoableEditListener(), getDaoService());
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();
@@ -151,9 +151,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
-		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls()));
-		overviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(getMediaControls()));
-		redcordTablePanel.setTableFormat(new RedcordTableFormat());
+		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls(), analysisTablePanel.getResourceMap()));
+		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(getMediaControls(), analysisOverviewTablePanel.getResourceMap()));
+		redcordTablePanel.setTableFormat(new RedcordTableFormat(redcordTablePanel.getResourceMap()));
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
 		// add all internal frames from here!!!
@@ -286,7 +286,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	}
 
 	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
-		return overviewTablePanel;
+		return analysisOverviewTablePanel;
 	}
 	
 	private RedcordTablePanel getRedcordTablePanel() {

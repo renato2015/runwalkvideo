@@ -52,12 +52,6 @@ import com.runwalk.video.entities.Person.Gender;
 import com.runwalk.video.ui.EnumButtonGroup;
 import com.runwalk.video.util.AppSettings;
 
-/**
- * TODO validatie met hibernate validators implementeren
- * 
- * @author Jeroen Peelaerts
- *
- */
 @SuppressWarnings("serial")
 @AppComponent
 public class ClientInfoPanel extends JPanel {
