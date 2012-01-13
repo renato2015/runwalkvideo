@@ -44,9 +44,9 @@ import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DatePickerCellRenderer;
+import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
-import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -349,10 +349,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		JSpinner spinner = new JSpinner(spinnerDateModel);
 		spinner.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
 		
-		JSpinner spinner2 = new JSpinner(spinnerDateModel);
-		spinner2.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
-
-		getTable().getColumnModel().getColumn(2).setCellRenderer(new JSpinnerTableCellRenderer(spinner2, AppUtil.HOUR_MINUTE_FORMATTER));
+		getTable().getColumnModel().getColumn(2).setCellRenderer(new DateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
 		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
 		getTable().getColumnModel().getColumn(2).setPreferredWidth(30);
 		
