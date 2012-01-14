@@ -44,6 +44,7 @@ import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
+import com.runwalk.video.ui.ClientTableFormat;
 import com.runwalk.video.ui.RedcordTableFormat;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
@@ -151,6 +152,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
+		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls(), analysisTablePanel.getResourceMap()));
 		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(getMediaControls(), analysisOverviewTablePanel.getResourceMap()));
 		redcordTablePanel.setTableFormat(new RedcordTableFormat(redcordTablePanel.getResourceMap()));

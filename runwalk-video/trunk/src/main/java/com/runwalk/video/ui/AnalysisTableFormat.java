@@ -42,9 +42,12 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 			JButton button = new JButton("open");
     		button.setFont(AppSettings.MAIN_FONT);
     		button.addMouseListener(new MouseAdapter() {
+    			
+    			@Override
     			public void mouseClicked(MouseEvent e) {
 					getMediaControls().openRecordings(analysis);
     			}
+    			
     		});
     		button.setEnabled(analysis.isRecorded());
     		return button;

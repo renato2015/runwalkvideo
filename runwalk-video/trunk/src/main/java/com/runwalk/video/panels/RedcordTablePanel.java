@@ -44,7 +44,6 @@ import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DatePickerCellRenderer;
-import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
 import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;

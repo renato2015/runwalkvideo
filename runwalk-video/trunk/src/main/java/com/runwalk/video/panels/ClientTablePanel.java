@@ -28,7 +28,6 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList.Connector;
-import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
@@ -37,6 +36,7 @@ import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
+import com.runwalk.video.tasks.RefreshEntityTask;
 import com.runwalk.video.tasks.SaveTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
@@ -44,6 +44,14 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class ClientTablePanel extends AbstractTablePanel<Client> {
+
+	private static final String REFRESH_CLIENT_ACTION = "refreshClient";
+
+	private static final String SAVE_CLIENT_ACTION = "save";
+
+	private static final String DELETE_CLIENT_ACTION = "deleteClient";
+
+	private static final String ADD_CLIENT_ACTION = "addClient";
 
 	private static final String SAVE_NEEDED = "saveNeeded";
 
@@ -69,18 +77,22 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow");
 
-		setSecondButton(new JButton(getAction("addClient")));
+		setSecondButton(new JButton(getAction(ADD_CLIENT_ACTION)));
 		getSecondButton().setFont(AppSettings.MAIN_FONT);
 		add(getSecondButton());
 
-		setFirstButton(new JButton(getAction("deleteClient")));
+		setFirstButton(new JButton(getAction(DELETE_CLIENT_ACTION)));
 		getFirstButton().setFont(AppSettings.MAIN_FONT);
 		add(getFirstButton());
 
-		JButton saveButton = new JButton(getAction("save"));
+		JButton refreshClientButton = new JButton(getAction(REFRESH_CLIENT_ACTION));
+		refreshClientButton.setFont(AppSettings.MAIN_FONT);
+		add(refreshClientButton);
+
+		JButton saveButton = new JButton(getAction(SAVE_CLIENT_ACTION));
 		saveButton.setFont(AppSettings.MAIN_FONT);
 		add(saveButton);
-
+		
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
@@ -157,7 +169,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(enabledProperty = SAVE_NEEDED)
 	public Task<List<Client>, Void> save() {
 		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getDaoService(), Client.class, getItemList());
-		// TODO move this to the SaveTask itself??
 		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
@@ -235,13 +246,27 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		});
 		return result;
 	}
+	
+	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
+	public RefreshEntityTask<Client> refreshClient() {
+		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getItemList(), Client.class, getSelectedItem());
+		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Client> event) {
+				Client client = event.getValue();
+				setSelectedItemProperty(client);
+				// refresh file cache for the client
+				getVideoFileManager().refreshCache(client.getAnalyses(), false);
+			}
+			
+		});
+		
+		return result;
+	}
 
 	private void clearSearchField() {
 		searchField.setText("");
-	}
-
-	public TableFormat<Client> getTableFormat() {
-		return new ClientTableFormat();
 	}
 
 	public VideoFileManager getVideoFileManager() {
@@ -250,29 +275,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	public DaoService getDaoService() {
 		return daoService;
-	}
-
-	public class ClientTableFormat implements TableFormat<Client> {
-
-		public int getColumnCount() {
-			return 4;
-		}
-
-		public String getColumnName(int column) {
-			if(column == 0)      return "ID";
-			else if(column == 1) return "Naam";
-			else if(column == 2) return "Voornaam";
-			else if(column == 3) return "Datum laatste analyse";
-			throw new IllegalStateException();
-		}
-
-		public Object getColumnValue(Client client, int column) {
-			if(column == 0)      return client.getId();
-			else if(column == 1) return client.getName();
-			else if(column == 2) return client.getFirstname();
-			else if(column == 3) return client.getLastAnalysisDate();
-			throw new IllegalStateException();
-		}
 	}
 
 }
