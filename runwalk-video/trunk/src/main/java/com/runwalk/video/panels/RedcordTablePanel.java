@@ -47,6 +47,7 @@ import com.runwalk.video.ui.table.DatePickerCellRenderer;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
+import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -206,8 +207,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-						getItemList().remove(redcordSession);
 						selectedClient.removeRedcordSession(redcordSession);
+						getItemList().remove(redcordSession);
 						// set selection on previous item
 						setSelectedItem(lastSelectedRowIndex - 1);
 					} finally {
@@ -349,7 +350,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		JSpinner spinner = new JSpinner(spinnerDateModel);
 		spinner.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
 		
-		getTable().getColumnModel().getColumn(2).setCellRenderer(new DateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
+		//getTable().getColumnModel().getColumn(2).setCellRenderer(new DateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
+		getTable().getColumnModel().getColumn(2).setCellRenderer(JSpinnerTableCellRenderer.dateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
 		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
 		getTable().getColumnModel().getColumn(2).setPreferredWidth(30);
 		

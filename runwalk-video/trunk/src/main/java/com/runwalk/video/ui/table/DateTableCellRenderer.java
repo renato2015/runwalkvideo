@@ -15,9 +15,12 @@ package com.runwalk.video.ui.table;
 
 import java.awt.Component;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 import javax.swing.table.DefaultTableCellRenderer;
+
+import org.apache.log4j.Logger;
 
 /** 
  * A table cell renderer for the Date class. 
@@ -38,20 +41,34 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 		if (value == null) {
 			setText("");
 		} else {
-			Date date = null;
-			if (value instanceof Long) {
-				date  = new Date((Long) value);
-			} else if (value instanceof Date) {
-				date = (Date) value;
-			}
+			Date date = parseDate(value);
 			synchronized(dateFormat) {
 				setText(date == null ? "<geen>" : dateFormat.format(date));
 			}
 		}
 		return this;
 	}
+	
+	protected Date parseDate(Object value) {
+		Date result = new Date();
+		if (value != null) {
+			if (value instanceof Long) {
+				result  = new Date((Long) value);
+			} else if (!(value instanceof Date)) {
+				try {
+					// set the time value on the spinner, should be formatted using a dateformat..
+					result = getDateFormat().parse(value.toString());
+				} catch (ParseException e) {
+					Logger.getLogger(getClass()).debug("Failed to parse date " + value);
+				}
+			} else {
+				result = (Date) value;
+			}
+		}
+		return result;
+	}
 
-	public DateFormat getDateFormat() {
+	private DateFormat getDateFormat() {
 		return dateFormat;
 	}    
 	
