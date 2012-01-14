@@ -1,14 +1,12 @@
 package com.runwalk.video.ui.table;
 
 import java.awt.Component;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JSpinner;
 import javax.swing.JTable;
-
-import org.apache.log4j.Logger;
+import javax.swing.SpinnerDateModel;
+import javax.swing.table.TableCellRenderer;
 
 /**
  * This renderer does not work properly.. should be reviewed
@@ -16,40 +14,59 @@ import org.apache.log4j.Logger;
  * @author Jeroen Peelaerts
  */
 @SuppressWarnings("serial")
-public class JSpinnerTableCellRenderer extends DateTableCellRenderer {
+public class JSpinnerTableCellRenderer extends JSpinner implements TableCellRenderer {
 
-	private final JSpinner spinner;
+	private final TableCellRenderer tableCellRenderer;
+	
+	/**
+	 * Create a {@link TableCellRenderer} that draws a {@link JSpinner} containing
+	 * a date formatted in the specified format.
+	 * 
+	 * @param dateFormat The dateFormat to format the content with
+	 * @return The created renderer
+	 */
+	public static JSpinnerTableCellRenderer dateTableCellRenderer(SimpleDateFormat dateFormat) {
+		DateTableCellRenderer dateTableCellRenderer = new DateTableCellRenderer(dateFormat);
+		JSpinnerTableCellRenderer result = new JSpinnerTableCellRenderer(dateTableCellRenderer) {
 
-	public JSpinnerTableCellRenderer(JSpinner spinner, DateFormat dateFormat) {
-		super(dateFormat);
-		this.spinner = spinner;
+			@Override
+			public Object parseValue(Object value) {
+				return super.parseValue(value);
+			}
+			
+		};
+		result.setModel(new SpinnerDateModel());
+		result.setEditor(new JSpinner.DateEditor(result, dateFormat.toPattern()));
+		return result;
 	}
 
-	@Override
+	private JSpinnerTableCellRenderer(TableCellRenderer tableCellRenderer) {
+		this.tableCellRenderer = tableCellRenderer;
+	}
+
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
 		if (table.isCellEditable(row, column)) {
-			spinner.getModel().setValue(parseDate(value));
-			return spinner;
+			getModel().setValue(value);
+			return this;
 		}
-		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		return tableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	}
+	
+	/**
+	 * Implement this method to handle value parsing for the installed {@link JSpinner}'s model.
+	 * 
+	 * @param value The value to parse
+	 * @return The parsed value
+	 */
+	public Object parseValue(Object value) {
+		return value;
+	}
+	
+	@Override
+	public void repaint(long tm, int x, int y, int width, int height) { }
 
-	private Date parseDate(Object value) {
-		Date result = new Date();
-		if (value != null) {
-			if (!(value instanceof Date)) {
-				try {
-					// set the time value on the spinner, should be formatted using a dateformat..
-					result = getDateFormat().parse(value.toString());
-				} catch (ParseException e) {
-					Logger.getLogger(getClass()).debug("Failed to parse date " + value);
-				}
-			} else {
-				result = (Date) value;
-			}
-		}
-		return result;
-	}
+	@Override
+	public void revalidate() { }
 
 }

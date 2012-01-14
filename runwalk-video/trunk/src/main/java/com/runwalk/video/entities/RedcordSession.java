@@ -68,6 +68,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.set(Calendar.HOUR_OF_DAY, 8);
+		calendar.set(Calendar.MINUTE, 0);
 		startDate = calendar.getTime();
 	}
 
