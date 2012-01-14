@@ -143,9 +143,11 @@ public class VideoFileManager {
 		}
 	}
 
-	public void refreshCache(List<Analysis> analyses) {
-		recordingFileMap.clear();
-		fileNameRecordingMap.clear();
+	public void refreshCache(List<Analysis> analyses, boolean clearCache) {
+		if (clearCache) {
+			recordingFileMap.clear();
+			fileNameRecordingMap.clear();
+		}
 		for (Analysis analysis : analyses) {
 			for (Recording recording : analysis.getRecordings()) {
 				getVideoFile(recording);

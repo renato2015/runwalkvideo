@@ -100,6 +100,20 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			setSelectedItem(getItemList().get(row));
 		}
 	}
+	
+	/**
+	 * Overwrite the selected item field by force and fire a PCE.
+	 * A PCE should almost always be fired, except in the case 
+	 * where both the old and new objects are exactly the same in memory.
+	 * 
+	 * @param selectedItem the selected item 
+	 */
+	protected void setSelectedItemProperty(T selectedItem) {
+		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
+			this.selectedItem = null;
+		}
+		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
+	}
 
 	public JTable getTable() {
 		return table;
@@ -169,7 +183,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 							newValue = Iterables.getOnlyElement(sourceList);
 						}
 						if (selectedItem != newValue) {
-							firePropertyChange(SELECTED_ITEM, selectedItem, selectedItem = newValue);
+							setSelectedItemProperty(newValue);
 							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 						}

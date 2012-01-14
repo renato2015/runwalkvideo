@@ -100,6 +100,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 		EntityTransaction tx = null;
 		EntityManager entityManager = createEntityManager();
 		try {
+			getEntityManagerFactory().getCache().evict(getTypeParameter(), id);
 			tx = entityManager.getTransaction();
 			tx.begin();
 			result = entityManager.find(getTypeParameter(), id);
