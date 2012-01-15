@@ -5,22 +5,24 @@ import java.util.Set;
 
 public interface Dao<E> {
 
-	public List<E> getAll();
+	 List<E> getAll();
 
-	public E getById(long id);
+	E getById(long id);
 
-	public List<E> getByIds(Set<Long> ids);
+	List<E> getByIds(Set<Long> ids);
 
-	public E merge(E e);
+	E merge(E e);
 	
-	public List<E> merge(Iterable<E> items);
+	List<E> merge(Iterable<E> items);
 
-	public void delete(E e);
+	void delete(E e);
 	
-	public void persist(E e);
+	void persist(E e);
 
-	public Class<E> getTypeParameter();
+	Class<E> getTypeParameter();
 
-	public abstract void deleteById(Long id);
+	void deleteById(Long id);
+
+	List<E> getNewEntities(long id);
 
 }
