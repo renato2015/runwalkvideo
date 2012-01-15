@@ -153,6 +153,5 @@ public class Client extends Person {
 	private void setLastAnalysisDate(Date lastAnalysisDate) {
 		firePropertyChange(LAST_ANALYSIS_DATE, this.lastAnalysisDate, this.lastAnalysisDate = lastAnalysisDate);
 	}
-	
 
 }

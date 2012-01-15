@@ -31,6 +31,7 @@ import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
+import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
@@ -250,14 +251,18 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
 		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getItemList(), Client.class, getSelectedItem());
-		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+		result.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
 
 			@Override
-			public void succeeded(TaskEvent<Client> event) {
-				Client client = event.getValue();
-				setSelectedItemProperty(client);
-				// refresh file cache for the client
-				getVideoFileManager().refreshCache(client.getAnalyses(), false);
+			public void succeeded(TaskEvent<List<Client>> event) {
+				List<Client> clientList = event.getValue();
+				// selected client is the last one in the list
+				Client selectedClient = Iterables.getLast(clientList);
+				setSelectedItemProperty(selectedClient);
+				// refresh file cache for newly added clients
+				for (Client client : clientList) {
+					getVideoFileManager().refreshCache(client.getAnalyses(), false);
+				}
 			}
 			
 		});

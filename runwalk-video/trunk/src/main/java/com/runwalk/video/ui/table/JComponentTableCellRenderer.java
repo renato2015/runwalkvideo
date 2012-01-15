@@ -33,7 +33,6 @@ public class JComponentTableCellRenderer<V extends Component> implements TableCe
 		} else if ((table.getModel().isCellEditable(row, column)) && component != null) {
 			Component component = prepareComponent(this.component, value);
 			component.setBackground(table.getSelectionBackground());
-			component.setForeground(table.getSelectionForeground());
 			return component;
 		}
 		return table.getDefaultRenderer(rendererClass).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

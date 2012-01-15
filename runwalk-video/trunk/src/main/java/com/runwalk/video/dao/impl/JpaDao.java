@@ -9,6 +9,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -86,12 +87,17 @@ public class JpaDao<E> extends AbstractDao<E> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<E> getAll() {
 		EntityManager entityManager = createEntityManager();
-		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ")
+		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ", getTypeParameter())
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
+		return query.getResultList();
+	}
+	
+	public List<E> getNewEntities(long id) {
+		EntityManager entityManager = createEntityManager();
+		TypedQuery<E> query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > " + id, getTypeParameter());
 		return query.getResultList();
 	}
 

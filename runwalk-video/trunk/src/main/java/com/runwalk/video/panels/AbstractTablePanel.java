@@ -106,6 +106,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * A PCE should almost always be fired, except in the case 
 	 * where both the old and new objects are exactly the same in memory.
 	 * 
+	 * TODO maybe there is a more elegant way to solve this problem?
+	 * 
 	 * @param selectedItem the selected item 
 	 */
 	protected void setSelectedItemProperty(T selectedItem) {

@@ -1,12 +1,19 @@
 package com.runwalk.video.tasks;
 
-import ca.odell.glazedlists.EventList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+
+import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
 
-public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends AbstractTask<T, Void> {
+public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends AbstractTask<List<T>, Void> {
 
 	private final EventList<T> itemList;
 	
@@ -23,20 +30,38 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		this.item = item;
 		this.itemClass = itemClass;
 	}
+	
+	private long findMaxEntityId() {
+		Comparator<T> idComparator = GlazedLists.beanPropertyComparator(getItemClass(), SerializableEntity.ID);
+		Collections.sort(new ArrayList<T>(getItemList()), idComparator);
+		T lastItem = Iterables.getLast(getItemList());
+		return lastItem.getId();
+	}
 
-	protected T doInBackground() throws Exception {
+	protected List<T> doInBackground() throws Exception {
 		message("startMessage");
+		List<T> result = null;
 		Dao<T> itemDao = getDaoService().getDao(getItemClass());
 		T item = itemDao.getById(getItem().getId());
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
+			// get the five last added entities
+			result = itemDao.getNewEntities(findMaxEntityId() - 5);
+			for (T newItem : result) {
+				if (!getItemList().contains(newItem)) {
+					getItemList().add(newItem);
+				}
+			}
+			// refresh the selected client
 			int itemIndex = getItemList().indexOf(getItem());
 			getItemList().set(itemIndex, item);
+			// add refreshed selected client to the end
+			result.add(item);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 		message("endMessage", getItem().toString());
-		return item;
+		return result;
 	}
 	
 	private DaoService getDaoService() {
