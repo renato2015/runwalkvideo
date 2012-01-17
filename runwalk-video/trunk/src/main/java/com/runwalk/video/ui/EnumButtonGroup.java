@@ -28,7 +28,9 @@ import com.runwalk.video.core.PropertyChangeSupport;
 @SuppressWarnings("serial")
 public class EnumButtonGroup<E extends Enum<E>> extends ButtonGroup implements PropertyChangeSupport
 {
-    public static final Property<EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> SELECTED_ENUM_PROPERTY = BeanProperty.create("selectedEnum");
+    public static final String SELECTED_ENUM = "selectedEnum";
+
+	public static final Property<EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> SELECTED_ENUM_PROPERTY = BeanProperty.create(SELECTED_ENUM);
 	
     private Map<E, AbstractButton> enum2button;
     private Map<ButtonModel, E> buttonModel2enum = new HashMap<ButtonModel, E>();
@@ -112,7 +114,7 @@ public class EnumButtonGroup<E extends Enum<E>> extends ButtonGroup implements P
 
     private void fireSelectedEnumPropertyChange(ButtonModel oldSelection, ButtonModel newSelection)
     {
-        firePropertyChange("selectedEnum", buttonModel2enum.get(oldSelection), buttonModel2enum.get(newSelection));
+        firePropertyChange(SELECTED_ENUM, buttonModel2enum.get(oldSelection), buttonModel2enum.get(newSelection));
     }
     
     public E getSelectedEnum()

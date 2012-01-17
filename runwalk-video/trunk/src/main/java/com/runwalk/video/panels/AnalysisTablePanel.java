@@ -239,21 +239,21 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void initialiseTable() {
-		getTable().getColumnModel().getColumn(0).setMinWidth(70);
+		getTable().getColumnModel().getColumn(0).setMinWidth(60);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
+		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		createTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new JComboBoxTableCellRenderer());
 		getTable().getColumnModel().getColumn(1).setCellEditor(createTableCellEditor);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
+		getTable().getColumnModel().getColumn(2).setPreferredWidth(18);
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(18);
-		getTable().getColumnModel().getColumn(3).setResizable(false);
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
-		getTable().getColumnModel().getColumn(4).setPreferredWidth(40);
-		getTable().getColumnModel().getColumn(4).setResizable(false);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(new JComponentTableCellRenderer<JButton>(JButton.class));
+		getTable().getColumnModel().getColumn(5).setPreferredWidth(40);
+		getTable().getColumnModel().getColumn(5).setResizable(false);
+		getTable().getColumnModel().getColumn(5).setCellRenderer(new JComponentTableCellRenderer<JButton>(JButton.class));
 		addMouseListenerToTable();				
 	}
 
