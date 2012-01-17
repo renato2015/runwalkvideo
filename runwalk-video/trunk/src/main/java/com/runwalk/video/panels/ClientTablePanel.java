@@ -108,7 +108,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			public void mouseClicked(MouseEvent arg0) {
 				theLabel.setIcon(search);
 				clearSearchField();
-				setSelectedItem(getTable().getSelectedRow());
+				setSelectedItemRow(getTable().getSelectedRow());
 			}
 			public void mouseEntered(MouseEvent arg0) {
 				theLabel.setIcon(searchOverlay);
@@ -144,6 +144,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			}
 			
 		});
+	}
+	
+	public void initialiseTable() {
 		getTable().getColumnModel().getColumn(0).setMinWidth(35);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(35);
 		getTable().getColumnModel().getColumn(0).setMaxWidth(35);
@@ -211,7 +214,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			public void succeeded(TaskEvent<Client> event) {
 				Client client = event.getValue();
 				getItemList().add(client);
-				setSelectedItem(client);
+				setSelectedItemRow(client);
 				ClientTablePanel.this.transferFocus();
 				setSaveNeeded(true);
 			}
@@ -240,7 +243,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				getVideoFileManager().deleteVideoFiles(client);
 				getItemList().remove(client);
 				// select previous record
-				setSelectedItem(lastSelectedRowIndex - 1);
+				setSelectedItemRow(lastSelectedRowIndex - 1);
 				setSaveNeeded(true);
 			}
 			
@@ -250,23 +253,27 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
-		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getItemList(), Client.class, getSelectedItem());
-		result.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
+		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getSourceList(), Client.class, getSelectedItem()) {
 
 			@Override
-			public void succeeded(TaskEvent<List<Client>> event) {
-				List<Client> clientList = event.getValue();
-				// selected client is the last one in the list
-				Client selectedClient = Iterables.getLast(clientList);
-				setSelectedItemProperty(selectedClient);
+			protected List<Client> doInBackground() throws Exception {
+				List<Client> clientList = super.doInBackground();
 				// refresh file cache for newly added clients
 				for (Client client : clientList) {
 					getVideoFileManager().refreshCache(client.getAnalyses(), false);
+					setProgress(clientList.indexOf(client), 0, clientList.size() - 1);
 				}
+				return clientList;
+			}
+
+			@Override
+			protected void succeeded(List<Client> clientList) {
+				// selected client is the last one in the list
+				Client selectedClient = Iterables.getLast(clientList);
+				setSelectedItem(selectedClient);
 			}
 			
-		});
-		
+		};
 		return result;
 	}
 

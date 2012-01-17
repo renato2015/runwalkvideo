@@ -49,6 +49,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	
     private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
+	private EventList<T> sourceList;
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
 	private MouseListener jTableMouseListener;
@@ -67,6 +68,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public AbstractTablePanel() {
 		this(null);
 	}
+	
+	abstract void initialiseTable();
 
 	public boolean isRowSelected() {
 		return this.rowSelected;
@@ -83,11 +86,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		getEventSelectionModel().clearSelection();
 	}
 
-	public T getSelectedItem() {
-		return selectedItem;
-	}
-
-	public void setSelectedItem(T selectedItem) {
+	public void setSelectedItemRow(T selectedItem) {
 		int rowIndex = getItemList().indexOf(selectedItem);
 		if (rowIndex > -1) {
 			getEventSelectionModel().getTogglingSelected().add(selectedItem);
@@ -95,9 +94,9 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 	}
 
-	public void setSelectedItem(int row) {
+	public void setSelectedItemRow(int row) {
 		if (row > -1) {
-			setSelectedItem(getItemList().get(row));
+			setSelectedItemRow(getItemList().get(row));
 		}
 	}
 	
@@ -110,11 +109,15 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * 
 	 * @param selectedItem the selected item 
 	 */
-	protected void setSelectedItemProperty(T selectedItem) {
+	protected void setSelectedItem(T selectedItem) {
 		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
 			this.selectedItem = null;
 		}
 		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
+	}
+	
+	public T getSelectedItem() {
+		return selectedItem;
 	}
 
 	public JTable getTable() {
@@ -134,13 +137,13 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public JButton getFirstButton() {
 		return firstButton;
 	}
+	
+	public void setFirstButton(JButton deleteButton) {
+		this.firstButton = deleteButton;
+	}
 
 	public JButton getSecondButton() {
 		return secondButton;
-	}
-
-	public void setFirstButton(JButton deleteButton) {
-		this.firstButton = deleteButton;
 	}
 
 	public void setSecondButton(JButton newButton) {
@@ -155,10 +158,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * @param itemConnector The connector that will forward changeEvents to the list.
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<? super T> itemConnector) {
-		if (this.itemList != null) {
+		if (sourceList != null && itemList != null) {
 			// dispose the current list, so it can be garbage collected
-			this.itemList.dispose();
+			sourceList.dispose();
 		}
+		sourceList = itemList;
 		EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
 		SortedList<T> sortedItems = SortedList.create(observedItems);
 		sortedItems.setMode(SortedList.AVOID_MOVING_ELEMENTS);
@@ -185,7 +189,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 							newValue = Iterables.getOnlyElement(sourceList);
 						}
 						if (selectedItem != newValue) {
-							setSelectedItemProperty(newValue);
+							setSelectedItem(newValue);
 							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
 							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 						}
@@ -198,7 +202,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
-
+		initialiseTable();
 	}
 
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
@@ -227,6 +231,10 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	public EventList<T> getItemList() {
 		return itemList;
+	}
+	
+	public EventList<T> getSourceList() {
+		return sourceList;
 	}
 
 	public EventSelectionModel<T> getEventSelectionModel() {

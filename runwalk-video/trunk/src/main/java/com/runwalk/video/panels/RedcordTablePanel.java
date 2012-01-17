@@ -28,7 +28,6 @@ import org.jdesktop.swingx.table.DatePickerCellEditor;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.TreeList;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
@@ -176,7 +175,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
 					selectedClient.addRedcordSession(result);
-					setSelectedItem(result);
+					setSelectedItemRow(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
@@ -209,7 +208,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 						selectedClient.removeRedcordSession(redcordSession);
 						getItemList().remove(redcordSession);
 						// set selection on previous item
-						setSelectedItem(lastSelectedRowIndex - 1);
+						setSelectedItemRow(lastSelectedRowIndex - 1);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
 					}
@@ -241,7 +240,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				try {
 					finaSelectedRedcordSession.addRedcordExercise(result);
 					//getItemList().add(result);
-					setSelectedItem(result);
+					setSelectedItemRow(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
@@ -275,7 +274,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 						getItemList().remove(redcordExercise);
 						owningRedcordSession.removeRedcordExercise(redcordExercise);
 						// set selection on previous item
-						setSelectedItem(lastSelectedRowIndex - 1);
+						setSelectedItemRow(lastSelectedRowIndex - 1);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
 					}
@@ -316,7 +315,21 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 			
 		};
-		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
+		TreeList<RedcordTableElement> treeList = new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
+		// workaround to set selection back after a TreeTable update
+		/*treeList.addListEventListener(new ListEventListener<RedcordTableElement>() {
+
+			public void listChanged(ListEvent<RedcordTableElement> listChanges) {
+				if (listChanges.hasNext()) {
+					listChanges.next();
+					if (listChanges.getType() == ListEvent.UPDATE) {
+						setSelectedItemRow(getSelectedItem());
+					}
+				}
+			}
+			
+		});*/
+		return treeList;
 	}
 	
 	/**
@@ -330,9 +343,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		return (TreeList<RedcordTableElement>) super.getItemList();
 	}
 	
-	@Override
-	public void setItemList(EventList<RedcordTableElement> itemList, ObservableElementList.Connector<? super RedcordTableElement> itemConnector) {
-		super.setItemList(itemList, itemConnector);
+	public void initialiseTable() {
 		getTable().setRowHeight(20);
 		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
 		// name of the session / exercise
@@ -347,9 +358,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		
 		SpinnerDateModel spinnerDateModel = new SpinnerDateModel();
 		JSpinner spinner = new JSpinner(spinnerDateModel);
-		spinner.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
-		
-		//getTable().getColumnModel().getColumn(2).setCellRenderer(new DateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
+		spinner.setEditor(new JSpinner.DateEditor(spinner, AppUtil.HOUR_MINUTE_FORMATTER.toPattern()));
 		getTable().getColumnModel().getColumn(2).setCellRenderer(JSpinnerTableCellRenderer.dateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
 		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
 		getTable().getColumnModel().getColumn(2).setPreferredWidth(30);

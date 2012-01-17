@@ -28,8 +28,6 @@ public class JpaClientDao extends JpaDao<Client> {
 		EntityManager entityManager = createEntityManager();
 		Query query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e ")
 		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
-		// the cascadeparts hint will make startup much slower, refreshing all cascaded entities
-//		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts)
 		.setHint(QueryHints.REFRESH, "true");
 		return query.getResultList();
 	}
@@ -40,8 +38,5 @@ public class JpaClientDao extends JpaDao<Client> {
 		// remove client from second level cache
 		getEntityManagerFactory().getCache().evict(Client.class, item.getId());
 	}
-	
-	
-	
 	
 }

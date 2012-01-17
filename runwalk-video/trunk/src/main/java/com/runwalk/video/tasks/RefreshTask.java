@@ -75,11 +75,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// get client table panel and inject data
 					getClientTablePanel().setItemList(clientList, Client.class);
 					final EventList<Client> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
-					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, new CollectionList.Model<Client, Analysis>() {
+					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, 
+						new CollectionList.Model<Client, Analysis>() {
 
-						public List<Analysis> getChildren(Client parent) {
-							return parent.getAnalyses();
-						}
+							public List<Analysis> getChildren(Client parent) {
+								return parent.getAnalyses();
+							}
 
 					});
 					// get analysis tablepanel and inject data
@@ -87,11 +88,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
 					// create pipeline for overview tablepanel
 					final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
-					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, new CollectionList.Model<Client, Analysis>() {
+					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, 
+						new CollectionList.Model<Client, Analysis>() {
 
-						public List<Analysis> getChildren(Client parent) {
-							return parent.getAnalyses();
-						}
+							public List<Analysis> getChildren(Client parent) {
+								return parent.getAnalyses();
+							}
 
 					});
 					// get analysis overview tablepanel and inject data
@@ -104,25 +106,25 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
 						new CollectionList.Model<Client, RedcordTableElement>() {
 
-							public List<RedcordTableElement> getChildren(Client parent) {
+							public List<RedcordTableElement> getChildren(final Client parent) {
 								return new ArrayList<RedcordTableElement>(parent.getRedcordSessions());
 							}
 
 					});
-					
-					FilterList<RedcordTableElement> filteredRedcordSessionList = new FilterList<RedcordTableElement>(redcordSessionList, new Matcher<RedcordTableElement>() {
+					FilterList<RedcordTableElement> filteredRedcordSessionList = new FilterList<RedcordTableElement>(redcordSessionList, 
+						new Matcher<RedcordTableElement>() {
 
-						public boolean matches(RedcordTableElement item) {
-							return item.allowsChildren() && ((RedcordSession) item).getRedcordExercises().isEmpty();
-						}
+							public boolean matches(RedcordTableElement item) {
+								return item.allowsChildren() && ((RedcordSession) item).getRedcordExercises().isEmpty();
+							}
 						
 					});
 					CollectionList<RedcordTableElement, RedcordTableElement> redcordExerciseList = new CollectionList<RedcordTableElement, RedcordTableElement>(redcordSessionList, 
-							new CollectionList.Model<RedcordTableElement, RedcordTableElement>() {
+						new CollectionList.Model<RedcordTableElement, RedcordTableElement>() {
 
-						public List<RedcordTableElement> getChildren(RedcordTableElement parent) {
-							return new ArrayList<RedcordTableElement>(((RedcordSession) parent).getRedcordExercises());
-						}
+							public List<RedcordTableElement> getChildren(RedcordTableElement parent) {
+								return new ArrayList<RedcordTableElement>(((RedcordSession) parent).getRedcordExercises());
+							}
 
 					});
 					CompositeList<RedcordTableElement> redcordTableElements = new CompositeList<RedcordTableElement>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());

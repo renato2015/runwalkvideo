@@ -26,7 +26,6 @@ import org.jdesktop.application.TaskMonitor;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.entities.Analysis;
@@ -238,10 +237,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 
 		});
 	}
-
-	@Override
-	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<? super Analysis> itemConnector) {
-		super.setItemList(itemList, itemConnector);
+	
+	public void initialiseTable() {
 		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
