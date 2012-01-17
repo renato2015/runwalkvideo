@@ -39,8 +39,6 @@ public class Client extends Person {
 	
 	public static final String ORGANIZATION = "organization";
 	
-	public static final String REDCORD_SESSIONS_LOADED = "redcordSessionsLoaded";
-	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
@@ -57,8 +55,6 @@ public class Client extends Person {
 	private Date lastAnalysisDate;
 	@Transient
 	private Integer redcordTableElementCount = 0;
-	@Transient
-	private Boolean redcordSessionsLoaded = false;
 
 	public Client() {	}
 	
@@ -76,10 +72,7 @@ public class Client extends Person {
 	}
 	
 	public List<RedcordSession> getRedcordSessions() {
-		List<RedcordSession> result = redcordSessions;
-		// set to true upon first access
-		setRedcordSessionsLoaded(true);
-		return result;
+		return redcordSessions;
 	}
 	
 	public int getRedcordSessionCount() {
@@ -161,12 +154,4 @@ public class Client extends Person {
 		firePropertyChange(LAST_ANALYSIS_DATE, this.lastAnalysisDate, this.lastAnalysisDate = lastAnalysisDate);
 	}
 
-	public boolean getRedcordSessionsLoaded() {
-		return redcordSessionsLoaded;
-	}
-
-	public void setRedcordSessionsLoaded(Boolean redcordSessionsLoaded) {
-		firePropertyChange(REDCORD_SESSIONS_LOADED, this.redcordSessionsLoaded, this.redcordSessionsLoaded = redcordSessionsLoaded);
-	}
-	
 }
