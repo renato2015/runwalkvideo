@@ -8,11 +8,11 @@ import javax.swing.JTable;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 
 @SuppressWarnings("serial")
-public class DatePickerCellRenderer extends DateTableCellRenderer {
+public class DatePickerTableCellRenderer extends DateTableCellRenderer {
 
 	private final DatePickerCellEditor editor;
 
-	public DatePickerCellRenderer(DateFormat dateFormat) {
+	public DatePickerTableCellRenderer(DateFormat dateFormat) {
 		super(dateFormat);
 		this.editor = new DatePickerCellEditor(dateFormat) ;
 	}

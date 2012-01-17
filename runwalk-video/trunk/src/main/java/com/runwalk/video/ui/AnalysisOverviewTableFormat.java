@@ -38,18 +38,18 @@ public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 		case 3: return recordingNotNull ? recording.getKeyframeCount() : 0;
 		case 4: return recordingNotNull ? recording.getDuration() : 0L;
 		case 5: {
-			String result = "<geen>";
+			ResourceInjector resourceInjector = ResourceInjector.getInstance();
+			String result = resourceInjector.injectResources("status.none", RecordingStatus.class);
 			RecordingStatus recordingStatus = recording.getRecordingStatus();
 			if (recordingStatus != null) {
 				String resourceKey = recordingStatus.getResourceKey();
-				ResourceInjector resourceInjector = ResourceInjector.getInstance();
 				result = resourceInjector.injectResources(resourceKey, RecordingStatus.class);
 			}
 			return result;
 		}
 		case 6: {
 			// FIXME could be a possible memory leak..
-			JButton button = new JButton("open");
+			JButton button = new JButton(getResourceString("openButton.text"));
 			button.setFont(AppSettings.MAIN_FONT);
 			button.addMouseListener(new MouseAdapter() {
 				

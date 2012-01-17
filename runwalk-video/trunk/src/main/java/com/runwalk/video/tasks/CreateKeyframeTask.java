@@ -12,6 +12,12 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.VideoPlayer;
 import com.runwalk.video.util.AppUtil;
 
+/**
+ * This {@link Task} will create {@link Keyframe}s for the given {@link VideoPlayer}s.
+ * It will return the created {@link Keyframe} for the given frontMostPlayer.
+ * 
+ * @author Jeroen Peelaerts
+ */
 public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 
 	private final VideoPlayer frontMostPlayer;
@@ -19,13 +25,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 	private final DaoService daoService;
 	private final VideoFileManager videoFileManager;
 
-	/**
-	 * This {@link Task} will create {@link Keyframe}s for the given {@link VideoPlayer}s.
-	 * It will return the created {@link Keyframe} for the given frontMostPlayer.
-	 * 
-	 * @author Jeroen Peelaerts
-	 * @param videoFileManager TODO
-	 */
+
 	public CreateKeyframeTask(VideoFileManager videoFileManager, DaoService daoService, VideoPlayer frontMostPlayer, Collection<VideoPlayer> videoPlayers) {
 		super("createKeyframe");
 		this.daoService = daoService;

@@ -24,7 +24,6 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 		case 0: return redcordTableElement.getName();
 		case 1: return redcordTableElement.getStartDate();
 		case 2: return redcordTableElement.getStartDate();
-		// perhaps return a combobox here??
 		case 3: return redcordTableElement.getExerciseType();
 		case 4: return redcordTableElement.getExerciseDirection();
 		case 5: return redcordTableElement.getComments();
@@ -41,19 +40,14 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 	}
 	
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
-		if (column == 1 && redcordTableElement.allowsChildren() && editedValue != null) {
+		if (column == 1 || column == 2 && redcordTableElement.allowsChildren() && editedValue != null) {
 			// add the date parsed from the datepicker to the one in the spinner
 			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
 			Date startDate = redcordSession.getStartDate();
 			startDate = startDate == null ? new Date() : startDate;
-			Date newStartDate = addToDate(startDate, (Date) editedValue, Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH);
-			redcordSession.setStartDate(newStartDate);
-		} else if (column == 2 && redcordTableElement.allowsChildren()) {
-			// add the date parsed from the spinner to the one in the datepicker
-			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
-			Date startDate = redcordSession.getStartDate();
-			startDate = startDate == null ? new Date() : startDate;
-			Date newStartDate = addToDate(startDate, (Date) editedValue, Calendar.HOUR_OF_DAY, Calendar.MINUTE);
+			int[] calendarConstants = column == 1 ? new int[] {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH} : 
+				new int[] {Calendar.HOUR_OF_DAY, Calendar.MONTH};
+			Date newStartDate = addToDate(startDate, (Date) editedValue, calendarConstants);
 			redcordSession.setStartDate(newStartDate);
 		} else if (column == 3 && !redcordTableElement.allowsChildren()) {
 			((RedcordExercise) redcordTableElement).setExerciseType(parseEnumValue(ExerciseType.class, editedValue));

@@ -10,13 +10,14 @@ import ca.odell.glazedlists.gui.TableFormat;
 public abstract class AbstractTableFormat<T> implements TableFormat<T> {
 
 	private final List<String> columnNames = new ArrayList<String>();
+	
+	private final ResourceMap resourceMap;
 
 	public AbstractTableFormat(ResourceMap resourceMap) {
-		String simpleClassName = getClass().getSimpleName();
-		String resourcePrefix = Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
+		this.resourceMap = resourceMap;
 		String columnTitle = null;
 		for (int i = 1; i == 1 || columnTitle != null; i++) {
-			columnTitle = resourceMap.getString(resourcePrefix + ".columnModel.col" + i);
+			columnTitle = getResourceString("columnModel.col" + i);
 			if (columnTitle != null) {
 				columnNames.add(columnTitle);
 			}
@@ -34,4 +35,10 @@ public abstract class AbstractTableFormat<T> implements TableFormat<T> {
 		return columnNames.get(column);
 	}
 
+	protected String getResourceString(String key, Object... args) {
+		String simpleClassName = getClass().getSimpleName();
+		String resourcePrefix = Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
+		return resourceMap.getString(resourcePrefix + "." + key, args);
+	}
+	
 }

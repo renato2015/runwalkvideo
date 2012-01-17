@@ -44,7 +44,7 @@ import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
-import com.runwalk.video.ui.table.DatePickerCellRenderer;
+import com.runwalk.video.ui.table.DatePickerTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
 import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;
@@ -343,7 +343,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
 		datePickerCellEditor.setClickCountToStart(1);
 		getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerCellRenderer(AppUtil.DATE_FORMATTER));
+		getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerTableCellRenderer(AppUtil.DATE_FORMATTER));
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(70);
 		
 		SpinnerDateModel spinnerDateModel = new SpinnerDateModel();

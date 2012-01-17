@@ -598,7 +598,7 @@
 		<codeBase>file:///${project.build.directory}/</codeBase>
 		<libFolder>lib</libFolder>
 		<libFolderPath>${project.build.directory}/${libFolder}</libFolderPath>
-		<jnlpOutputFilename>runwalk.jnlp</jnlpOutputFilename>
+		<jnlpOutputFilename>runwalk-video-${project.version}.jnlp</jnlpOutputFilename>
 		<!-- JNLP deployment properties -->
 		<ftp.url>your-ftp-server.com</ftp.url>
 		<ftp.user>ftpUser</ftp.user>

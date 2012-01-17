@@ -38,14 +38,17 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 			return recordingNotNull ? recording.getKeyframeCount() : 0;
 		}
 		case 3: return recordingNotNull ? recording.getDuration() : 0L;
-		case 4: {
-			JButton button = new JButton("open");
+		case 4: return analysis.getComments();
+		case 5: {
+			final JButton button = new JButton(getResourceString("openButton.text"));
     		button.setFont(AppSettings.MAIN_FONT);
     		button.addMouseListener(new MouseAdapter() {
     			
     			@Override
     			public void mouseClicked(MouseEvent e) {
-					getMediaControls().openRecordings(analysis);
+    				if (button.isEnabled()) {
+    					getMediaControls().openRecordings(analysis);
+    				}
     			}
     			
     		});
