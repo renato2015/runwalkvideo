@@ -115,8 +115,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	public Task<Void, Void> organiseVideoFiles() {
 		Object formatString = JOptionPane.showInputDialog(
 				SwingUtilities.windowForComponent(this), 
-				"Geef hier een folder structuur op door '/' als separator te gebruiken", 
-				"Organiseer bestanden", JOptionPane.QUESTION_MESSAGE, 
+				getResourceMap().getString("organiseVideoFiles.confirmDialog.text"), 
+				getResourceMap().getString("organiseVideoFiles.Action.text"), JOptionPane.QUESTION_MESSAGE, 
 				null, null, getVideoFileManager().getVideoFolderRetrievalStrategy().getDisplayString());
 		if (formatString != null) {
 			// create a new retrieval strategy using the specified format string
