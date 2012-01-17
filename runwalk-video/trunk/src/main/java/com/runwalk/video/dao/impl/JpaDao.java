@@ -11,13 +11,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
-import com.runwalk.video.entities.SerializableEntity;
 
 /**
  * This is a default {@link Dao} implementation for a J2SE application managed persistence context. 
@@ -30,7 +25,7 @@ import com.runwalk.video.entities.SerializableEntity;
 public class JpaDao<E> extends AbstractDao<E> {
 
 	private final EntityManagerFactory entityManagerFactory;
-
+	
 	public JpaDao(Class<E> typeParameter, EntityManagerFactory entityManagerFactory) {
 		super(typeParameter);
 		this.entityManagerFactory = entityManagerFactory;
@@ -39,7 +34,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 	protected final EntityManagerFactory getEntityManagerFactory() {
 		return entityManagerFactory;
 	}
-
+	
 	public void delete(E item) {
 		EntityTransaction tx = null;
 		EntityManager entityManager = createEntityManager();
@@ -89,7 +84,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public List<E> getAll() {
 		EntityManager entityManager = createEntityManager();
-		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e ", getTypeParameter())
+		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 		return query.getResultList();
@@ -97,7 +92,8 @@ public class JpaDao<E> extends AbstractDao<E> {
 	
 	public List<E> getNewEntities(long id) {
 		EntityManager entityManager = createEntityManager();
-		TypedQuery<E> query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > " + id, getTypeParameter());
+		TypedQuery<E> query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter());
+		query.setParameter("id", id);
 		return query.getResultList();
 	}
 
@@ -126,7 +122,8 @@ public class JpaDao<E> extends AbstractDao<E> {
 	public List<E> getByIds(Set<Long> ids) {
 		EntityManager entityManager = createEntityManager();
 		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
-				"WHERE e.id IN " + Iterables.toString(ids).replace("[", "(").replace("]", ")"))
+				"WHERE e.id IN (:ids)")
+				.setParameter("ids", ids)
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 		return query.getResultList();
@@ -139,17 +136,6 @@ public class JpaDao<E> extends AbstractDao<E> {
 		try {
 			tx = entityManager.getTransaction();
 			tx.begin();
-			if (entity instanceof SerializableEntity<?>) {
-				// do a find first
-				SerializableEntity<?> detachedEntity = (SerializableEntity<?>) entity;
-				if (detachedEntity.getId() != null) {
-					SerializableEntity<?> managedEntity = entityManager.find(detachedEntity.getClass(), detachedEntity.getId());
-					Logger logger = Logger.getLogger(getClass());
-					// dump result to log
-					logger.log(Level.INFO, "Merging " + detachedEntity + " with " + managedEntity);
-					// detach again
-				}
-			}
 			result = entityManager.merge(entity);
 			tx.commit();
 		} catch(PersistenceException e) {
@@ -171,16 +157,6 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx = entityManager.getTransaction();
 			tx.begin();
 			for(E item : items) {
-				if (item instanceof SerializableEntity<?>) {
-					// do a find first
-					SerializableEntity<?> detachedEntity = (SerializableEntity<?>) item;
-					if (detachedEntity.getId() != null) {
-						SerializableEntity<?> managedEntity = entityManager.find(detachedEntity.getClass(), detachedEntity.getId());
-						Logger logger = Logger.getLogger(getClass());
-						// dump result to log
-						logger.log(Level.INFO, "Merging " + detachedEntity.toString() + " with " + managedEntity.toString());
-					}
-				}
 				E mergedItem = entityManager.merge(item);
 				result.add(mergedItem);
 			}

@@ -27,7 +27,6 @@ import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
@@ -167,7 +166,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
 					selectedClient.addAnalysis(result);
-					setSelectedItem(result);
+					setSelectedItemRow(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
@@ -200,7 +199,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 						getItemList().remove(analysis);
 						owningClient.removeAnalysis(analysis);
 						// delete the video files
-						setSelectedItem(lastSelectedRowIndex - 1);
+						setSelectedItemRow(lastSelectedRowIndex - 1);
 						getVideoFileManager().deleteVideoFiles(analysis);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
@@ -239,9 +238,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return this.articleList;
 	}
 
-	@Override
-	public void setItemList(EventList<Analysis> itemList, ObservableElementList.Connector<? super Analysis> itemConnector) {
-		super.setItemList(itemList, itemConnector);
+	public void initialiseTable() {
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		// create special table cell editor for selecting articles

@@ -5,7 +5,7 @@ import java.util.Set;
 
 public interface Dao<E> {
 
-	 List<E> getAll();
+	List<E> getAll();
 
 	E getById(long id);
 
