@@ -72,7 +72,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	abstract void initialiseTable();
 
 	public boolean isRowSelected() {
-		return this.rowSelected;
+		return rowSelected;
 	}
 
 	public void setRowSelected(boolean rowSelected) {
@@ -188,11 +188,9 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 						if (!sourceList.isEmpty()) {
 							newValue = Iterables.getOnlyElement(sourceList);
 						}
-						if (selectedItem != newValue) {
-							setSelectedItem(newValue);
-							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
-							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-						}
+						setSelectedItem(newValue);
+						getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
+						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 					}
 				}
 			}

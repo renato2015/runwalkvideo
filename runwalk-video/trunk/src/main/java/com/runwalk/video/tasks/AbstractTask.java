@@ -2,9 +2,7 @@ package com.runwalk.video.tasks;
 
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 
-import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;

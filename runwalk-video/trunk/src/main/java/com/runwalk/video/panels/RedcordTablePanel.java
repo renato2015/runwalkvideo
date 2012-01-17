@@ -10,6 +10,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.UndoableEditListener;
 
 import net.miginfocom.swing.MigLayout;
@@ -317,18 +319,6 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		};
 		TreeList<RedcordTableElement> treeList = new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 		// workaround to set selection back after a TreeTable update
-		/*treeList.addListEventListener(new ListEventListener<RedcordTableElement>() {
-
-			public void listChanged(ListEvent<RedcordTableElement> listChanges) {
-				if (listChanges.hasNext()) {
-					listChanges.next();
-					if (listChanges.getType() == ListEvent.UPDATE) {
-						setSelectedItemRow(getSelectedItem());
-					}
-				}
-			}
-			
-		});*/
 		return treeList;
 	}
 	
@@ -390,6 +380,17 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		addMouseListenerToTable();				
 		// install tree table support on the first column of the table
 		TreeTableSupport.install(getTable(), getItemList(), 0);
+		// workaround for issue #GLAZEDLISTS-462
+		getEventSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			
+			public void valueChanged(ListSelectionEvent e) {
+				if (isRowSelected() && getSelectedItem() != null &&
+							getEventSelectionModel().getSelected().isEmpty()) {
+						setSelectedItemRow(getSelectedItem()); 
+				}
+			}
+			
+		});
 	}
 	
 	public boolean isClientSelected() {

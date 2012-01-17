@@ -240,8 +240,8 @@ public class ClientInfoPanel extends JPanel {
 				if (inputOK) {
 					return true;
 				}
-				String failedVerificationMessage = "Date must be in the dd/MM/yyyy format. For example: 17/11/2008";
-				JOptionPane.showMessageDialog(null, failedVerificationMessage, "Invalid Date Format", JOptionPane.WARNING_MESSAGE);
+				String failedVerificationMessage = getResourceMap().getString("birthdateField.errorDialog.text");
+				JOptionPane.showMessageDialog(null, failedVerificationMessage, getResourceMap().getString("birthdateField.errorDialog.title"), JOptionPane.WARNING_MESSAGE);
 				//Reinstall the input verifier.
 				input.setInputVerifier(this);
 				return false;
