@@ -1,27 +1,17 @@
 package com.runwalk.video.ui;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JButton;
-
 import org.jdesktop.application.ResourceMap;
 
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.media.MediaControls;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.ResourceInjector;
 
 public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 	
-	private final MediaControls mediaControls;
-
-	public AnalysisOverviewTableFormat(MediaControls mediaControls, ResourceMap resourceMap) {
+	public AnalysisOverviewTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
-		this.mediaControls = mediaControls;
 	}
 
 	public Object getColumnValue(final Analysis analysis, int column) {
@@ -47,27 +37,8 @@ public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 			}
 			return result;
 		}
-		case 6: {
-			// FIXME could be a possible memory leak..
-			JButton button = new JButton(getResourceString("openButton.text"));
-			button.setFont(AppSettings.MAIN_FONT);
-			button.addMouseListener(new MouseAdapter() {
-				
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					getMediaControls().openRecordings(analysis);
-				}
-				
-			});
-			button.setEnabled(analysis.isRecorded());
-			return button;
-		}
+		case 6: return analysis.isRecorded();
 		default: return null;
 		}
 	}
-	
-	private MediaControls getMediaControls() {
-		return mediaControls;
-	}
-
 }

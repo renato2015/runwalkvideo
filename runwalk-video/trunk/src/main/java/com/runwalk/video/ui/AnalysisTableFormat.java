@@ -1,10 +1,5 @@
 package com.runwalk.video.ui;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JButton;
-
 import org.jdesktop.application.ResourceMap;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
@@ -13,16 +8,11 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.media.MediaControls;
-import com.runwalk.video.util.AppSettings;
 
 public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implements WritableTableFormat<Analysis> {
 	
-	private final MediaControls mediaControls;
-	
-	public AnalysisTableFormat(MediaControls mediaControls, ResourceMap resourceMap) {
+	public AnalysisTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
-		this.mediaControls = mediaControls;
 	}
 	
 	public Object getColumnValue(final Analysis analysis, int column) {
@@ -39,22 +29,7 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 		}
 		case 3: return recordingNotNull ? recording.getDuration() : 0L;
 		case 4: return analysis.getComments();
-		case 5: {
-			final JButton button = new JButton(getResourceString("openButton.text"));
-    		button.setFont(AppSettings.MAIN_FONT);
-    		button.addMouseListener(new MouseAdapter() {
-    			
-    			@Override
-    			public void mouseClicked(MouseEvent e) {
-    				if (button.isEnabled()) {
-    					getMediaControls().openRecordings(analysis);
-    				}
-    			}
-    			
-    		});
-    		button.setEnabled(analysis.isRecorded());
-    		return button;
-		}
+		case 5: return analysis.isRecorded();
 		default: return null;
 		}
 	}
@@ -70,7 +45,4 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 		return analysis;
 	}
 	
-	private MediaControls getMediaControls() {
-		return mediaControls;
-	}
 }

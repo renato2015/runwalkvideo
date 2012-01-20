@@ -236,6 +236,18 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		add(button, "gap 0");
 		return button;
 	}
+	
+	public AbstractTablePanel.ClickHandler<Analysis> getClickHandler() {
+		return new AbstractTablePanel.ClickHandler<Analysis>() {
+
+			public void handleClick(Analysis element) {
+				if (element.isRecorded()) {
+					openRecordings(element);
+				}
+			}
+			
+		};
+	}
 
 	@Action(block=BlockingScope.APPLICATION)
 	public Task<Void, Void> disposeVideoComponents() {

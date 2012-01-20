@@ -10,7 +10,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Level;
@@ -46,15 +45,16 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private static final String EVENT_LIST = "itemList";
 	
 	private final JTable table;
+	private final JTableMouseListener jTableMouseListener = new JTableMouseListener();
 	
     private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
 	private EventList<T> sourceList;
 	private EventList<T> itemList;
 	private EventSelectionModel<T> eventSelectionModel;
-	private MouseListener jTableMouseListener;
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
+	private EventTableModel<T> eventTableModel;
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
@@ -62,7 +62,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
 		getTable().setShowGrid(false);
 		getTable().setFont(AppSettings.MAIN_FONT);
-		jTableMouseListener = new JTableButtonMouseListener();
 	}
 
 	public AbstractTablePanel() {
@@ -127,11 +126,12 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	/**
 	 * This method will add a {@link MouseListener} to the contained {@link JTable} in case it wasn't already added.
 	 */
-	public void addMouseListenerToTable() {
+	public void registerClickHandler(ClickHandler<T> clickHandler) {
 		List<MouseListener> mouseListeners = Arrays.asList(getTable().getMouseListeners());
 		if (!mouseListeners.contains(jTableMouseListener)) {
 			getTable().addMouseListener(jTableMouseListener);
 		}
+		jTableMouseListener.setClickHandler(clickHandler);
 	}
 
 	public JButton getFirstButton() {
@@ -195,8 +195,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				}
 			}
 		});
-		EventTableModel<T> dataModel = new EventTableModel<T>(specializedList, getTableFormat());
-		getTable().setModel(dataModel);
+		EventTableModel<T> eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
+		getTable().setModel(eventTableModel);
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
@@ -238,38 +238,41 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
+	
+	protected EventTableModel<T> getEventTableModel() {
+		return eventTableModel;
+	}
 
-	class JTableButtonMouseListener extends MouseAdapter {
+	public interface ClickHandler<E> {
+		
+		void handleClick(E element);
+		
+	}
 
-		private void forwardEventToButton(MouseEvent e) {
+	private class JTableMouseListener extends MouseAdapter {
+		
+		private ClickHandler<T> clickHandler;
+
+		public JTableMouseListener() { }
+		
+		protected void setClickHandler(ClickHandler<T> clickHandler) {
+			this.clickHandler = clickHandler;
+		}
+
+		public void mouseClicked(MouseEvent e) {
 			TableColumnModel columnModel = getTable().getColumnModel();
 			int column = columnModel.getColumnIndexAtX(e.getX());
 			int row    = e.getY() / getTable().getRowHeight();
-			Object value;
-			JButton button;
-			MouseEvent buttonEvent;
 
 			if(row >= getTable().getRowCount() || row < 0 ||
 					column >= getTable().getColumnCount() || column < 0)
 				return;
 
-			value = getTable().getValueAt(row, column);
-
-			if(!(value instanceof JButton))
-				return;
-
-			button = (JButton)value;
-
-			buttonEvent = SwingUtilities.convertMouseEvent(getTable(), e, button);
-			button.dispatchEvent(buttonEvent);
+			clickHandler.handleClick(getEventTableModel().getElementAt(row));
 			// This is necessary so that when a button is pressed and released
 			// it gets rendered properly.  Otherwise, the button may still appear
 			// pressed down when it has been released.
 			getTable().repaint();
-		}
-
-		public void mouseClicked(MouseEvent e) {
-			forwardEventToButton(e);
 		}
 
 	}

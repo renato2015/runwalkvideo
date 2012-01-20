@@ -376,8 +376,6 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		getTable().getColumnModel().getColumn(4).setCellEditor(exerciseDirectionTableCellEditor);
 		getTable().getColumnModel().getColumn(4).setResizable(false);
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(50);
-		// column to show comments
-		addMouseListenerToTable();				
 		// install tree table support on the first column of the table
 		TreeTableSupport.install(getTable(), getItemList(), 0);
 		// workaround for issue #GLAZEDLISTS-462

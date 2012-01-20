@@ -41,7 +41,7 @@ import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
-import com.runwalk.video.ui.table.JComponentTableCellRenderer;
+import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -253,8 +253,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(5).setResizable(false);
-		getTable().getColumnModel().getColumn(5).setCellRenderer(new JComponentTableCellRenderer<JButton>(JButton.class));
-		addMouseListenerToTable();				
+		final String buttonTitle = getResourceMap().getString("analysisTableFormat.openButton.text");
+		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
 	}
 
 	public boolean isClientSelected() {
