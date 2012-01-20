@@ -153,8 +153,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));
-		analysisTablePanel.setTableFormat(new AnalysisTableFormat(getMediaControls(), analysisTablePanel.getResourceMap()));
-		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(getMediaControls(), analysisOverviewTablePanel.getResourceMap()));
+		analysisTablePanel.setTableFormat(new AnalysisTableFormat(analysisTablePanel.getResourceMap()));
+		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
+		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(analysisOverviewTablePanel.getResourceMap()));
+		analysisOverviewTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		redcordTablePanel.setTableFormat(new RedcordTableFormat(redcordTablePanel.getResourceMap()));
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
