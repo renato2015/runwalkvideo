@@ -103,6 +103,17 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private final Timer timer;
 	
+	// open the selected recording
+	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
+
+		public void handleClick(Analysis element, int row, int column) {
+			if (element.isRecorded()) {
+				openRecordings(element);
+			}
+		}
+		
+	};
+	
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
 
@@ -238,15 +249,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 	
 	public AbstractTablePanel.ClickHandler<Analysis> getClickHandler() {
-		return new AbstractTablePanel.ClickHandler<Analysis>() {
-
-			public void handleClick(Analysis element) {
-				if (element.isRecorded()) {
-					openRecordings(element);
-				}
-			}
-			
-		};
+		return clickHandler;
 	}
 
 	@Action(block=BlockingScope.APPLICATION)

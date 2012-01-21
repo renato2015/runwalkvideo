@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Level;
@@ -31,6 +32,7 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
 import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
@@ -195,7 +197,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				}
 			}
 		});
-		EventTableModel<T> eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
+		eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
 		getTable().setModel(eventTableModel);
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
@@ -245,7 +247,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	public interface ClickHandler<E> {
 		
-		void handleClick(E element);
+		void handleClick(E element, int row, int column);
 		
 	}
 
@@ -267,12 +269,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			if(row >= getTable().getRowCount() || row < 0 ||
 					column >= getTable().getColumnCount() || column < 0)
 				return;
-
-			clickHandler.handleClick(getEventTableModel().getElementAt(row));
-			// This is necessary so that when a button is pressed and released
-			// it gets rendered properly.  Otherwise, the button may still appear
-			// pressed down when it has been released.
-			getTable().repaint();
+			// clicks will be handled if a jbutton renderer is installed on the column
+			TableCellRenderer cellRenderer = getTable().getColumnModel().getColumn(column).getCellRenderer();
+			if (cellRenderer instanceof JButtonTableCellRenderer) {
+				clickHandler.handleClick(getEventTableModel().getElementAt(row), row, column);
+			}
 		}
 
 	}

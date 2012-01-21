@@ -476,52 +476,12 @@
 			<version>5.1.18</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-calendar</artifactId>
-			<version>v3-1.3.1-beta</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xpp3</groupId>
-					<artifactId>xpp3</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpclient</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google.code.gson</groupId>
-					<artifactId>gson</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google.protobuf</groupId>
-					<artifactId>protobuf-java</artifactId>
-				</exclusion>
-				<!--<exclusion>
-					<groupId>com.google.oauth-client</groupId>
-					<artifactId>google-oauth-client</artifactId>
-				</exclusion-->
-			</exclusions>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-calendar-2.0</artifactId>
+			<version>1.41.5</version>
 		</dependency>
 	</dependencies>
 	<repositories>
-		<repository>
-			<id>google-api-services</id>
-			<url>http://mavenrepo.google-api-java-client.googlecode.com/hg</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
 		<repository>
 			<id>mandubian-mvn</id>
 			<url>http://mandubian-mvn.googlecode.com/svn/trunk/mandubian-mvn/repository</url>
