@@ -238,7 +238,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		});
 	}
 	
-	public void initialiseTable() {
+	public void initialiseTableColumnModel() {
 		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));

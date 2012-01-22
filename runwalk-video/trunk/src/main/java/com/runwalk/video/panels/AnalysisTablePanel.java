@@ -109,6 +109,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
 		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, 
 				isSelected, comments, jTextAreaEnabled);
+		enableCommentsBinding.setSourceNullValue(false);
 		enableCommentsBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(enableCommentsBinding);
 
@@ -238,7 +239,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return this.articleList;
 	}
 
-	public void initialiseTable() {
+	public void initialiseTableColumnModel() {
 		getTable().getColumnModel().getColumn(0).setMinWidth(60);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
