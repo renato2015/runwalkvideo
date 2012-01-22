@@ -31,7 +31,6 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
-import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 
@@ -70,7 +69,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		this(null);
 	}
 	
-	abstract void initialiseTable();
+	abstract void initialiseTableColumnModel();
 
 	public boolean isRowSelected() {
 		return rowSelected;
@@ -180,10 +179,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				while(listChanges.next()) {
 					int changeType = listChanges.getType();
 					if (changeType == ListEvent.DELETE) {
-						if (ListEvent.UNKNOWN_VALUE.equals(listChanges.getOldValue()) &&
-								!(listChanges.getOldValue() instanceof SerializableEntity)) {
-							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-						}
+						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 					} else if (changeType == ListEvent.INSERT) {
 						T newValue = null;
 						EventList<T> sourceList = listChanges.getSourceList();
@@ -202,7 +198,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
-		initialiseTable();
+		initialiseTableColumnModel();
 	}
 
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {

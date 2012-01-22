@@ -333,7 +333,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		return (TreeList<RedcordTableElement>) super.getItemList();
 	}
 	
-	public void initialiseTable() {
+	public void initialiseTableColumnModel() {
 		getTable().setRowHeight(20);
 		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
 		// name of the session / exercise
