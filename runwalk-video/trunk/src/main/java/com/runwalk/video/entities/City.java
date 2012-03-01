@@ -4,18 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "phppos_cities")
-@NamedQueries(value={
-		@NamedQuery(name="findByZipCode", query="SELECT DISTINCT c from City c WHERE c.code = :zipCode ORDER BY c.code ASC"),
-		@NamedQuery(name="findByName", query="SELECT DISTINCT c from City c WHERE c.name = :name ORDER BY c.code ASC"),
-		@NamedQuery(name="findAllCities", query="SELECT DISTINCT c from City c ORDER BY c.code ASC")
-})
 public class City extends SerializableEntity<City> {
 	
 	@Column(name="code")

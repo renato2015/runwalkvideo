@@ -106,7 +106,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	// open the selected recording
 	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
 
-		public void handleClick(Analysis element, int row, int column) {
+		public void handleClick(Analysis element) {
 			if (element.isRecorded()) {
 				openRecordings(element);
 			}

@@ -3,16 +3,11 @@ package com.runwalk.video.entities;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
 @Table(name = "articles")
-@NamedQueries(value={
-		@NamedQuery(name="findAllArticles", query="SELECT OBJECT(ar) from Article ar")
-})
 public class Article extends SerializableEntity<Article> {
 
 	@Column(name="code")

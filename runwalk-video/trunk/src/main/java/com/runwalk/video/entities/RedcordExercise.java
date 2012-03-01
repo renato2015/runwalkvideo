@@ -54,7 +54,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public RedcordExercise(RedcordSession redcordSession) {
-		this(redcordSession, "Oefening " + redcordSession.getRedcordExerciseCount());
+		this(redcordSession, "Oefening " + (redcordSession.getRedcordExerciseCount() + 1));
 	}
 
 	public RedcordSession getRedcordSession() {

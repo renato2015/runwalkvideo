@@ -7,6 +7,7 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -31,7 +32,6 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
-import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
@@ -95,7 +95,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 
 	public void setSelectedItemRow(int row) {
-		if (row > -1) {
+		T item = getItemList().get(row);
+		if (row > -1 && item != null) {
 			setSelectedItemRow(getItemList().get(row));
 		}
 	}
@@ -173,7 +174,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
 		eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
 
-			@SuppressWarnings("deprecation")
 			public void listChanged(ListEvent<T> listChanges) {
 
 				while(listChanges.next()) {
@@ -243,7 +243,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	public interface ClickHandler<E> {
 		
-		void handleClick(E element, int row, int column);
+		void handleClick(E element);
 		
 	}
 
@@ -267,8 +267,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				return;
 			// clicks will be handled if a jbutton renderer is installed on the column
 			TableCellRenderer cellRenderer = getTable().getColumnModel().getColumn(column).getCellRenderer();
-			if (cellRenderer instanceof JButtonTableCellRenderer) {
-				clickHandler.handleClick(getEventTableModel().getElementAt(row), row, column);
+			if (cellRenderer instanceof AbstractButton) {
+				clickHandler.handleClick(getEventTableModel().getElementAt(row));
 			}
 		}
 

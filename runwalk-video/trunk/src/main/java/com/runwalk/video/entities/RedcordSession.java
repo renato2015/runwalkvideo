@@ -58,7 +58,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	public RedcordSession() {	}
 
 	public RedcordSession(Client client) {
-		this(client, "Sessie " + client.getRedcordSessionCount());
+		this(client, "Sessie " + (client.getRedcordSessionCount() + 1));
 	}
 	
 	public RedcordSession(Client client, String name) {
