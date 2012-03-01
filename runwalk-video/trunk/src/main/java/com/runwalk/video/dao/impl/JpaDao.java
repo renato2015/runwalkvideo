@@ -9,7 +9,10 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
+
+import org.apache.log4j.Logger;
 
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
@@ -180,6 +183,10 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx.begin();
 			entityManager.persist(item);
 			tx.commit();
+		} catch(RollbackException e) {
+			// probably a communication failure.. retry persisting
+			Logger.getLogger(getClass()).info("Retrying persist for " + item, e);
+			persist(item);
 		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
