@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
@@ -39,7 +40,7 @@ public class AppSettings implements Serializable {
 
 	private final static String FILE_APPENDER_NAME = "A1";
 
-	private final static String SETTINGS_XML = "settings.xml";
+	private final static String SETTINGS_FILE_NAME = "settings.xml";
 
 	private final static String UNCOMPRESSED_VIDEO_DIRNAME = "uncompressed";
 
@@ -58,6 +59,21 @@ public class AppSettings implements Serializable {
 	/** The parsed directories for both uncompressed and compressed video's are cached here after lazy initialization */
 	private File videoDir, uncompressedVideoDir;
 	
+	/**
+	 * This method will do the initial log4j configuration using the properties file embedded in the jar.
+	 * You can reconfigure log4j afterwards by adding a log4j.properties file to the {@link #getLocalStorageDir()} directory.
+	 * 
+	 * This file will be loaded when {@link #loadSettings()} is executed.
+	 */
+	public static void configureLog4j() {
+		URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties");
+		PropertyConfigurator.configure(resource);
+		logger = Logger.getLogger(AppSettings.class);
+		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
+		logger.debug("Logging to file with location " + appndr.getFile());
+		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
+	}
+	
 	private AppSettings() {
 		settings = new Settings();
 	}
@@ -67,10 +83,11 @@ public class AppSettings implements Serializable {
 	}
 
 	public void loadSettings() {
+		loadAddtionalLog4JSettings();
 		logger.debug("Initializing ApplicationSettings..");
-		File settingsFile = getSettingsFile();
 		synchronized(this) {
 			try { 
+				File settingsFile = createSettingsFileIfAbsent();
 				if (jaxbContext == null) {
 					logger.debug("Instantiating JAXB context..");
 					jaxbContext = JAXBContext.newInstance( Settings.class );
@@ -81,23 +98,38 @@ public class AppSettings implements Serializable {
 			} catch(JAXBException jaxbExc) {
 				logger.error("Exception while instantiating JAXB context", jaxbExc);
 			} catch(Exception exc) {
-				logger.error("Exception thrown while loading settings from file " + settingsFile.getName(), exc);
+				logger.error("Exception thrown while loading settings file", exc);
 				if (exc.getMessage() != null) {
-					logger.error("Settings file " + settingsFile.getName() + " seems to be corrupt. Attempting to delete..", exc);
+					logger.error("Settings file seems to be corrupt. Attempting to delete..", exc);
 					try {
 						ApplicationContext appContext = Application.getInstance().getContext();
-						appContext.getLocalStorage().deleteFile(settingsFile.getName());
+						appContext.getLocalStorage().deleteFile(SETTINGS_FILE_NAME);
 						logger.warn("Settings file deleted. Default settings will be applied");
 					} catch (IOException e) {
 						logger.error("Removing corrupt settings file failed", e);
 					}
 				}
 			} finally {
-				settings = settings == null ? new Settings() : settings;
+				if (settings == null) {
+					settings = new Settings();
+					saveSettings();
+				}
 			}
 		}
 		logger.debug("Found videodir: " + getVideoDir().getAbsolutePath());
 		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
+	}
+	
+	/**
+	 * Looks for additional log4j files in the user.home directory of the application.
+	 * Use this to store specific appenders that require easy configuration. 
+	 */
+	private void loadAddtionalLog4JSettings() {
+		File resource = new File(getLocalStorageDir(), "log4j.properties");
+		if (resource.exists()) {
+			logger.debug("Loading additional log4J properties from " + resource.getAbsolutePath());
+			PropertyConfigurator.configure(resource.getAbsolutePath());
+		}
 	}
 
 	public void saveSettings() {
@@ -105,19 +137,23 @@ public class AppSettings implements Serializable {
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, FILE_ENCODING);
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			File settingsFile = getSettingsFile();
-			if (!settingsFile.exists() && !settingsFile.getParentFile().mkdirs() && !settingsFile.createNewFile()) {
-				throw new FileNotFoundException("Settings file could not be created by code");
-			}
+			File settingsFile = createSettingsFileIfAbsent();
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
 			marshaller.marshal(settings, settingsFile);
 		} catch (Exception exc) {
-			logger.error("Exception thrown while saving settings to file " + SETTINGS_XML, exc);
+			logger.error("Exception thrown while saving settings to file " + SETTINGS_FILE_NAME, exc);
 		} 
 	}
 	
-	private File getSettingsFile() {
-		return new File(getLocalStorageDir(), SETTINGS_XML);
+	private File createSettingsFileIfAbsent() throws IOException {
+		File settingsFile = new File(getLocalStorageDir(), SETTINGS_FILE_NAME);
+		File settingsFolder = settingsFile.getParentFile();
+		// check if parent folder and settings file exists, create them otherwise
+		if (!(settingsFolder.exists() || settingsFolder.mkdirs()) && 
+			!(settingsFile.exists() || settingsFile.createNewFile())) {
+			throw new FileNotFoundException("Settings file could not be created");
+		}
+		return settingsFile;
 	}
 	
 	public File getLocalStorageDir() {
@@ -206,15 +242,6 @@ public class AppSettings implements Serializable {
 			logFile = new File(fileName);
 		}
 		return logFile;
-	}
-
-	public static void configureLog4j() {
-		URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties");
-		PropertyConfigurator.configure(resource);
-		logger = Logger.getLogger(AppSettings.class);
-		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
-		logger.debug("Logging to file with location " + appndr.getFile());
-		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 
 	public float getSavedVolume() {

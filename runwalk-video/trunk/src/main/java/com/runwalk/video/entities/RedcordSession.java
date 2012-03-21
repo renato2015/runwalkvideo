@@ -54,6 +54,12 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>();
 	
+	@Column(name="last_modified")
+	@Temporal(value=TemporalType.TIMESTAMP)
+	private Date lastModified;
+	
+	@Column(name="ical_uid")
+	private String calendarId;
 	
 	public RedcordSession() {	}
 
@@ -90,6 +96,22 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 
 	public void setEndDate(Date endDate) {
 		firePropertyChange(END_DATE, this.endDate, this.endDate = endDate);
+	}
+	
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public String getCalendarId() {
+		return calendarId;
+	}
+
+	public void setCalendarId(String calendarId) {
+		this.calendarId = calendarId;
 	}
 
 	public List<RedcordExercise> getRedcordExercises() {
