@@ -27,6 +27,8 @@ import com.runwalk.video.dao.Dao;
  */
 public class JpaDao<E> extends AbstractDao<E> {
 
+	public static final int MAX_ROLLBACKS = 2;
+	
 	private final EntityManagerFactory entityManagerFactory;
 	
 	public JpaDao(Class<E> typeParameter, EntityManagerFactory entityManagerFactory) {
@@ -174,8 +176,8 @@ public class JpaDao<E> extends AbstractDao<E> {
 		}
 		return result;
 	}
-
-	public void persist(E item) {
+	
+	private void persist(E item, int retryNumber) {
 		EntityTransaction tx = null;
 		EntityManager entityManager = createEntityManager();
 		try {
@@ -184,9 +186,12 @@ public class JpaDao<E> extends AbstractDao<E> {
 			entityManager.persist(item);
 			tx.commit();
 		} catch(RollbackException e) {
-			// probably a communication failure.. retry persisting
-			Logger.getLogger(getClass()).info("Retrying persist for " + item, e);
-			persist(item);
+			if (retryNumber < MAX_ROLLBACKS) {
+				Logger.getLogger(getClass()).info("Retrying persist for " + item, e);
+				persist(item, ++retryNumber);
+			} else {
+				throw e;
+			}
 		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
@@ -195,6 +200,10 @@ public class JpaDao<E> extends AbstractDao<E> {
 		} finally {
 			entityManager.close();
 		}
+	}
+
+	public void persist(E item) {
+		persist(item, 0);
 	}
 
 }
