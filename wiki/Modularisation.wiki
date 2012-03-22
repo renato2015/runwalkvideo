@@ -1,4 +1,4 @@
-#summary Some design thoughts about the modularizing the project
+#summary Some design thoughts about the modularisation of the project
 #labels Phase-Design
 = Panel Subsystem Creation =
 
