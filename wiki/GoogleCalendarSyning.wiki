@@ -24,9 +24,10 @@ Two options when the dialog is closed
 
  * New items
   * Start date, lastModified, calendarId and decription should be set on the RedcordSession before adding it to the dialog
-   * When there is a clientId set, add it to the list of the client and merge the client
+   * When there is a clientId set, add it to the client's sessions
     * Update the calendar entry by changing the event name 
     * Update the calendar entry by adding the selected client as a participant (EventWho object)
+    * Set the lastmodified field back on the RedcordSession and save it to the db
    * When there is no clientId set, discard the item
 
  * Existing items
