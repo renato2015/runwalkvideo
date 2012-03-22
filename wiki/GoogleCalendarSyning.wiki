@@ -1,25 +1,44 @@
-#summary Some ideas about the google calendar syncing feature
+#summary Some ideas about google calendar syncing
+#labels Featured
 
 = Introduction =
 
 For the redcord module, I will implement a google calendar synchronisation with the application. Some usecases and their realistation are described here below.
 
-= Details =
+= Description =
 
 == Use Cases ==
 
-* Data needs to be synced from google calendar to the db
-* Data needs to be synced from the db to google calendar
+ * Data needs to be synced from google calendar to the db
+ * Data needs to be synced from the db to google calendar
 
-== Realisation ==
+== Implementation ==
 
-* Will show a syncing dialog with a small table inside, listing all the items to be synced from google with the db.
+=== From google calendar to the db ===
+
+ * Will show a syncing dialog with a small table inside, listing all the items to be synced from google with the db.
 
 At this moment there is the CalendarEventEntryDialog that takes care of this. The backing beans for the table will be changed to regular RedcordSessions. The eventlist with all the clients has to be available to relate a client to each event. 
 
 Two options when the dialog is closed
 
- * New items: The date and calendarId are initialized using the CalendarEventEntry data. The clientId will be initialised according to the selection in the AutoCompletionTableCellEditor and their name and email address will be added to the participants of the calendar entry. Also, the description of the entry should be changed to a standard event notation. No new entry can be made if there was no client selected, so the item will be discarded.
-They can take the original text from google calendar as additional description.
+ * New items
+  * Start date, lastModified, calendarId and decription should be set on the RedcordSession before adding it to the dialog
+   * When there is a clientId set, add it to the list of the client and merge the client
+    * Update the calendar entry by changing the event name 
+    * Update the calendar entry by adding the selected client as a participant (EventWho object)
+   * When there is no clientId set, discard the item
 
- * Existing items: Existing CalendarEventEntries already have a linked RedcordSession with a corresponding calendarId. These should be retrieved before dialog construction and passed together with the unsaved items. Just check for these items that the date is synced correctly with the CalendarEventEntry. Other fields should be left as they are.
+ * Existing items
+  * Find the set of RedcordSessions to be updated using the lastModified fields (Query object using the google api?)
+  * See whether the date of the session needs to be adapted
+   * If yes, then add them to the dialog
+   * If no, discard
+  * Update the lastModified field for all found items
+
+=== From the db to google calendar ===
+
+ * Should happen transparently when saving
+  * Query for RedcordSessions that do not have a calendarId yet.
+  * Create a calendar entry (date, decription, participants) for these entries
+  * Set the lastmodified and calendarId fields found on the created calendar entries back on the RedcordSession and save the client
