@@ -1,4 +1,5 @@
 #summary Some design thoughts about the modularizing the project
+#labels Phase-Design
 = Panel Subsystem Creation =
 
 The main application class uses a ServiceLocator to load different app module instances on the classspath
@@ -23,7 +24,7 @@ The main application class uses a ServiceLocator to load different app module in
  * A boolan getter, to check whether the menu added should be top level or added to the default file menu
  * a refresh() method, passing the client event list as an item list. 
 
-= ONTKOPPELEN VIDEO SUBSYSTEM =
+= Decouple Video Subsystem =
 
 verwijderen van dependencies op DSJ in VideoFIleManager en CompressVideoFilesTask
 uit (maak abstracties voor de common functionaliteit, compressie en duration)
@@ -31,5 +32,5 @@ uit (maak abstracties voor de common functionaliteit, compressie en duration)
  * VideoFileManager (voor getDuration)
  * CompressVideoFilesTask
 
-= ONTKOPPELEN BLOBS PACKAGE EN ImageOverlayTask =
+= Decouple Image Analysis =
  * Voor elke implementatie kan een Action toegevoegd worden (Eerder direct stijl)
