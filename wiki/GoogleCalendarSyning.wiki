@@ -6,16 +6,20 @@ For the redcord module, I will implement a google calendar synchronisation with 
 
 = Details =
 
-vier use cases
+== Use Cases ==
 
-1. entries in de calendar zijn geüpdatet op google zelf
-2. nieuwe etnries in de google calendar die niet in db staan
-3, entries in de db zijn geüpdatet en moeten gepushed naar google
-4. nieuwe entries in de db die naar google gepushed moeten worden
+* Data needs to be synced from google calendar to the db
+* Data needs to be synced from the db to google calendar
 
-realisatie
+== Realisation ==
 
-1. kan je doen op de last modified date van de google entry (maak zo'n veld lokaal ook aan)
-2. dit allemaal via de dialoog die je gaat maken: overzicht van de gevonden afspraken + uren => koppelen aan een klant + een velde om aan te tikken of ze genegeerd moeten worden of niet.
-3. enkel voor de klanten die op dat moment een dirty flag hebben.. dan de last modified date checken en vergelijken met die op google (optimistic lokkig?)
-4. enkel voor de klanten die op dat moment een dirty flag hebben… 
+* Will show a syncing dialog with a small table inside, listing all the items to be synced from google with the db.
+
+At this moment there is the CalendarEventEntryDialog that takes care of this. The backing beans for the table will be changed to regular RedcordSessions. The eventlist with all the clients has to be available to relate a client to each event. 
+
+Two options when the dialog is closed
+
+ * New items: The date and calendarId are initialized using the CalendarEventEntry data. The clientId will be initialised according to the selection in the AutoCompletionTableCellEditor and their name and email address will be added to the participants of the calendar entry. Also, the description of the entry should be changed to a standard event notation. No new entry can be made if there was no client selected, so the item will be discarded.
+They can take the original text from google calendar as additional description.
+
+ * Existing items: Existing CalendarEventEntries already have a linked RedcordSession with a corresponding calendarId. These should be retrieved before dialog construction and passed together with the unsaved items. Just check for these items that the date is synced correctly with the CalendarEventEntry. Other fields should be left as they are.
