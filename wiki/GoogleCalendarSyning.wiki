@@ -24,7 +24,7 @@ At this moment there is the CalendarEventEntryDialog that takes care of this. Th
   * Data preparation
    * Filter out the events with a startDate later than today
    * Find the filtered set the calendarIds that do not have an entry in the db yet
-   * startDate, lastModified, calendarId and decription should be set on the RedcordSession before adding it to the dialog
+   * startDate, endDate, lastModified, calendarId and decription should be set on the RedcordSession before adding it to the dialog
   * Data syncing (dialog closed)
    * When there is was a client selected, add the session to the client's sessions collection
     * Update the calendar entry by changing the event name 
@@ -35,16 +35,17 @@ At this moment there is the CalendarEventEntryDialog that takes care of this. Th
  * Existing items
   * Data preparation
    * Find the set of RedcordSessions to be updated using the lastModified fields (Query object using the google api?)
-  * Data syncing (dialog closed)
    * Check whether the startDate of the session needs to be adapted
     * If yes, then add them to the dialog
     * If no, discard
-   * Update the lastModified field for all found items
+  * Data syncing (dialog closed)
+   * Update the startDate/endDate field of the session
+   * Update the lastModified field of the session
 
 === From the db to google calendar ===
 
  * Should happen transparently when saving
   * Query for RedcordSessions that do not have a calendarId yet.
-  * Create a calendar entry (startDate, decription, participants) for these entries
-  * Set the lastmodified and calendarId fields found on the created calendar entries back on the RedcordSession
-  * Save the edited RedcordSession (
+  * Create a calendar entry (startDate, endDate, decription, participants) for this entry
+  * Set the lastModified and calendarId fields found on the created calendar entries back on the RedcordSession
+  * Save the RedcordSession
