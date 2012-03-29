@@ -6,13 +6,13 @@ import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.settings.SettingsManager;
 
 @SuppressWarnings("serial")
 public class JComboBoxTableCellRenderer extends JComboBox implements TableCellRenderer {
 	
 	public JComboBoxTableCellRenderer() {
-		setFont(AppSettings.MAIN_FONT);
+		setFont(SettingsManager.MAIN_FONT);
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,

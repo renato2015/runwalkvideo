@@ -42,13 +42,13 @@ import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DatePickerTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
 import com.runwalk.video.ui.table.JSpinnerTableCellRenderer;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -85,26 +85,26 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		add(scrollPane, "wrap, grow, height :130:");
 		
 		setFirstButton(new JButton(getAction("addRedcordSession")));
-		getFirstButton().setFont(AppSettings.MAIN_FONT);
+		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 		
 		setSecondButton(new JButton(getAction("deleteRedcordSession")));
-		getSecondButton().setFont(AppSettings.MAIN_FONT);
+		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
 		
 		JButton thirdButton = new JButton(getAction("addRedcordExercise"));
-		thirdButton.setFont(AppSettings.MAIN_FONT);
+		thirdButton.setFont(SettingsManager.MAIN_FONT);
 		add(thirdButton);
 		
 		JButton fourthButton = new JButton(getAction("deleteRedcordExercise"));
-		fourthButton.setFont(AppSettings.MAIN_FONT);
+		fourthButton.setFont(SettingsManager.MAIN_FONT);
 		add(fourthButton, "wrap");
 		
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(undoableEditListener);
-		comments.setFont(AppSettings.MAIN_FONT);
+		comments.setFont(SettingsManager.MAIN_FONT);
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
@@ -317,9 +317,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 			
 		};
-		TreeList<RedcordTableElement> treeList = new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 		// workaround to set selection back after a TreeTable update
-		return treeList;
+		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 	
 	/**
@@ -391,6 +390,12 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		});
 	}
 	
+	@Override
+	public boolean save() {
+		// TODO implement syncing code here
+		return super.save();
+	}
+
 	public boolean isClientSelected() {
 		return clientSelected;
 	}

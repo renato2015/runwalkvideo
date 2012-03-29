@@ -19,7 +19,6 @@ import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
@@ -29,34 +28,31 @@ import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
+import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.google.common.collect.Iterables;
+import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.RefreshEntityTask;
-import com.runwalk.video.tasks.SaveTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class ClientTablePanel extends AbstractTablePanel<Client> {
 
-	private static final String REFRESH_CLIENT_ACTION = "refreshClient";
+	private static final String SAVE_ACTION = "save";
 
-	private static final String SAVE_CLIENT_ACTION = "save";
+	private static final String REFRESH_CLIENT_ACTION = "refreshClient";
 
 	private static final String DELETE_CLIENT_ACTION = "deleteClient";
 
 	private static final String ADD_CLIENT_ACTION = "addClient";
-
-	private static final String SAVE_NEEDED = "saveNeeded";
-
-	private boolean saveNeeded = false;
 
 	private final JTextField searchField;
 	private final TextComponentMatcherEditor<Client> matcherEditor;
@@ -71,7 +67,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 		String borderTitle = getResourceMap().getString("borderPanel.border.title");
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
-				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, AppSettings.MAIN_FONT.deriveFont(12))); // NOI18N
+				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, SettingsManager.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
 
 		JScrollPane scrollPane = new JScrollPane();
@@ -79,30 +75,30 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		add(scrollPane, "wrap, grow");
 
 		setSecondButton(new JButton(getAction(ADD_CLIENT_ACTION)));
-		getSecondButton().setFont(AppSettings.MAIN_FONT);
+		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
 
 		setFirstButton(new JButton(getAction(DELETE_CLIENT_ACTION)));
-		getFirstButton().setFont(AppSettings.MAIN_FONT);
+		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 
 		JButton refreshClientButton = new JButton(getAction(REFRESH_CLIENT_ACTION));
-		refreshClientButton.setFont(AppSettings.MAIN_FONT);
+		refreshClientButton.setFont(SettingsManager.MAIN_FONT);
 		add(refreshClientButton);
 
-		JButton saveButton = new JButton(getAction(SAVE_CLIENT_ACTION));
-		saveButton.setFont(AppSettings.MAIN_FONT);
+		JButton saveButton = new JButton(getAction(SAVE_ACTION));
+		saveButton.setFont(SettingsManager.MAIN_FONT);
 		add(saveButton);
 		
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
 		searchField = new JTextField();
-		searchField.setFont(AppSettings.MAIN_FONT);
+		searchField.setFont(SettingsManager.MAIN_FONT);
 		matcherEditor = new TextComponentMatcherEditor<Client>(searchField.getDocument(), GlazedLists.toStringTextFilterator());
 
 		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
-		theLabel.setFont(AppSettings.MAIN_FONT);
+		theLabel.setFont(SettingsManager.MAIN_FONT);
 		theLabel.setIcon(search);
 		theLabel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent arg0) {
@@ -134,7 +130,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					public void propertyChange(PropertyChangeEvent event) {
 						if (Client.DIRTY.equals(event.getPropertyName())) {
 							if ((Boolean) event.getNewValue()) {
-								setSaveNeeded(true);
+								setDirty(true);
 							}
 						} else {
 							super.propertyChange(event);
@@ -170,37 +166,34 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return matcherEditor;
 	}
 
-	@Action(enabledProperty = SAVE_NEEDED)
-	public Task<List<Client>, Void> save() {
-		final Task<List<Client>, Void> saveTask = new SaveTask<Client>(getDaoService(), Client.class, getItemList());
-		saveTask.addTaskListener(new TaskListener.Adapter<List<Client>, Void>() {
+	public boolean save() {
+		getItemList().getReadWriteLock().readLock().lock();
+		try {
+			FilterList<Client> dirtyItems = new FilterList<Client>(getItemList(), new Matcher<Client>() {
 
-			@Override
-			public void succeeded(TaskEvent<List<Client>> event) {
-				setSaveNeeded(event.getValue() == null);
-				for(Client mergedClient : event.getValue()) {
-					// these are the merged client instances
-					int index = getItemList().indexOf(mergedClient);
-					Client client = getItemList().get(index);
-					// set dirty flag to false again
-					client.setDirty(false);
-					// set version field on old client
-					if (mergedClient.getVersion() != client.getVersion()) {
-						client.incrementVersion();
-					}
+				public boolean matches(Client item) {
+					return item.isDirty();
+				}
+				
+			});
+			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
+			Dao<Client> dao = getDaoService().getDao(Client.class);
+			List<Client> result = dao.merge(dirtyItems);
+			for(Client mergedClient : result) {
+				// these are the merged client instances
+				int index = getItemList().indexOf(mergedClient);
+				Client client = getItemList().get(index);
+				// set dirty flag to false again
+				client.setDirty(false);
+				// set version field on old client
+				if (mergedClient.getVersion() != client.getVersion()) {
+					client.incrementVersion();
 				}
 			}
-
-		});
-		return saveTask;
-	}
-
-	public boolean isSaveNeeded() {
-		return saveNeeded;
-	}
-
-	public void setSaveNeeded(boolean saveNeeded) {
-		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
+		} finally {
+			getItemList().getReadWriteLock().readLock().unlock();
+		}
+		return true;
 	}
 
 	@Action(block = BlockingScope.ACTION)
@@ -216,7 +209,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				getItemList().add(client);
 				setSelectedItemRow(client);
 				ClientTablePanel.this.transferFocus();
-				setSaveNeeded(true);
+				setDirty(true);
 			}
 
 		});
@@ -244,7 +237,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				getItemList().remove(client);
 				// select previous record
 				setSelectedItemRow(lastSelectedRowIndex - 1);
-				setSaveNeeded(true);
 			}
 			
 		});

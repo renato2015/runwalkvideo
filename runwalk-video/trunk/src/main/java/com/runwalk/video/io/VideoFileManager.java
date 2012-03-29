@@ -16,7 +16,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.settings.SettingsManager;
 
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
@@ -39,9 +39,9 @@ public class VideoFileManager {
 	/** A sorted view on the key set of the cached {@link #recordingFileMap}. */
 	private Map<String, Recording> fileNameRecordingMap = new HashMap<String, Recording>();
 
-	private final AppSettings appSettings;
+	private final SettingsManager appSettings;
 
-	public VideoFileManager(AppSettings appSettings) {
+	public VideoFileManager(SettingsManager appSettings) {
 		this.appSettings = appSettings;
 	}
 
@@ -203,7 +203,7 @@ public class VideoFileManager {
 		return new File(getAppSettings().getUncompressedVideoDir(), recording.getVideoFileName());
 	}
 
-	public AppSettings getAppSettings() {
+	public SettingsManager getAppSettings() {
 		return appSettings;
 	}
 

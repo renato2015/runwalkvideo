@@ -10,7 +10,7 @@ public interface ApplicationActionConstants {
 	
 	String UPLOAD_LOG_FILES_ACTION = "uploadLogFiles";
 	
-	String SAVE_ENTITIES_ACTION = "save";
+	String SAVE_ACTION = "save";
 	
 	String CHECK_FREE_DISK_SPACE_ACTION = "checkFreeDiskSpace";
 	

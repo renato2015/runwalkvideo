@@ -1,4 +1,4 @@
-package com.runwalk.video.util;
+package com.runwalk.video.settings;
 
 import java.awt.Font;
 import java.io.File;
@@ -22,16 +22,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class AppSettings implements Serializable {
+public class SettingsManager implements Serializable {
 
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
@@ -47,7 +47,7 @@ public class AppSettings implements Serializable {
 	private static Logger logger;
 
 	// this is the only (?) thread safe way to initialize a singleton
-	private final static AppSettings INSTANCE = new AppSettings();
+	private final static SettingsManager INSTANCE = new SettingsManager();
 
 	private File logFile;
 
@@ -68,17 +68,17 @@ public class AppSettings implements Serializable {
 	public static void configureLog4j() {
 		URL resource = Thread.currentThread().getContextClassLoader().getResource("META-INF/log4j.properties");
 		PropertyConfigurator.configure(resource);
-		logger = Logger.getLogger(AppSettings.class);
+		logger = Logger.getLogger(SettingsManager.class);
 		FileAppender appndr = (FileAppender) Logger.getRootLogger().getAppender(FILE_APPENDER_NAME);
 		logger.debug("Logging to file with location " + appndr.getFile());
 		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 	
-	private AppSettings() {
+	private SettingsManager() {
 		settings = new Settings();
 	}
 
-	public static AppSettings getInstance() {
+	public static SettingsManager getInstance() {
 		return INSTANCE;
 	}
 
@@ -276,18 +276,6 @@ public class AppSettings implements Serializable {
 		return getSettings().logFileUploadUrl;
 	}
 	
-	public String getDbUrl() {
-		return getSettings().dbUrl;
-	}
-	
-	public String getDbPassword() {
-		return getSettings().dbPassword;
-	}
-	
-	public String getDbUser() {
-		return getSettings().dbUser;
-	}
-	
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
 		if (getSettings().videoFolderRetrievalStrategy == null) {
 			getSettings().videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
@@ -308,6 +296,22 @@ public class AppSettings implements Serializable {
 		getSettings().vlcPath = vlcPath;
 	}
 	
+	public AuthenticationSettings getCalendarSettings() {
+		return getSettings().calendarSettings;
+	}
+	
+	public void setCalendarSettings(AuthenticationSettings calendarSettings) {
+		getSettings().calendarSettings = calendarSettings;
+	}
+	
+	public AuthenticationSettings getDatabaseSettings() {
+		return getSettings().databaseSettings;
+	}
+	
+	public void setDatabaseSettings(AuthenticationSettings databaseSettings) {
+		getSettings().databaseSettings = databaseSettings;
+	}
+	
 	public List<String> getVideoCapturerFactories() {
 		return Arrays.asList(getSettings().videoCapturerFactories);
 	}
@@ -315,10 +319,6 @@ public class AppSettings implements Serializable {
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
-
-		private String videoDir = "D:\\Video's";
-
-		private String uncompressedVideoDir;
 
 		/**
 		 * The last selected capturer on startup.
@@ -342,15 +342,19 @@ public class AppSettings implements Serializable {
 		 */
 		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
+		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object?
+		private String videoDir = "D:\\Video's";
+		// TODO create a separate strategy object for uncompressed video's, too
+		private String uncompressedVideoDir;
+		
+		@XmlElementRef
+		private AuthenticationSettings calendarSettings = new AuthenticationSettings("user@gmail.com", "password", "http://www.google.com/my/agenda");
+		
+		@XmlElementRef
+		private AuthenticationSettings databaseSettings = new AuthenticationSettings("root", "password", "jdbc:mysql://localhost:3306");
 		
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
 		
-		private String dbUrl = "jdbc:mysql://localhost:3306";
-		
-		private String dbUser = "root";
-		
-		private String dbPassword = "Letmein3";
- 
 	}
 
 }

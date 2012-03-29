@@ -49,8 +49,8 @@ import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Person.Gender;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.ui.EnumButtonGroup;
-import com.runwalk.video.util.AppSettings;
 
 @SuppressWarnings("serial")
 @AppComponent
@@ -112,12 +112,12 @@ public class ClientInfoPanel extends JPanel {
 		}
 
 		JLabel nameLabel = new JLabel();
-		nameLabel.setFont(AppSettings.MAIN_FONT);
+		nameLabel.setFont(SettingsManager.MAIN_FONT);
 		nameLabel.setText(getResourceMap().getString("nameLabel.text")); // NOI18N
 		add(nameLabel);
 
 		firstnameField = new JTextField();
-		firstnameField.setFont(AppSettings.MAIN_FONT);
+		firstnameField.setFont(SettingsManager.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
 
 		BeanProperty<ClientTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
@@ -130,7 +130,7 @@ public class ClientInfoPanel extends JPanel {
 
 		JTextField nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
-		nameField.setFont(AppSettings.MAIN_FONT);
+		nameField.setFont(SettingsManager.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> name = BeanProperty.create("selectedItem.name");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, name, nameField, TEXT, "lastNameBinding");
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
@@ -141,7 +141,7 @@ public class ClientInfoPanel extends JPanel {
 		add(nameField, "wrap");
 
 		JLabel organizationLabel = new JLabel();
-		organizationLabel.setFont(AppSettings.MAIN_FONT);
+		organizationLabel.setFont(SettingsManager.MAIN_FONT);
 		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
 		add(organizationLabel);
 
@@ -153,17 +153,17 @@ public class ClientInfoPanel extends JPanel {
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, organisationField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
-		organisationField.setFont(AppSettings.MAIN_FONT);
+		organisationField.setFont(SettingsManager.MAIN_FONT);
 		add(organisationField);
 
 		JLabel taxLabel = new JLabel();
-		taxLabel.setFont(AppSettings.MAIN_FONT);
+		taxLabel.setFont(SettingsManager.MAIN_FONT);
 		taxLabel.setText(getResourceMap().getString("taxNoLabel.text"));
 		add(taxLabel, "split");
 
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
-		taxField.setFont(AppSettings.MAIN_FONT);
+		taxField.setFont(SettingsManager.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.taxNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, TEXT);
 		valueBinding.setValidator(new Validator<String> () {
@@ -184,13 +184,13 @@ public class ClientInfoPanel extends JPanel {
 		add(taxField, "wrap, grow");
 
 		JLabel emailLabel = new JLabel();
-		emailLabel.setFont(AppSettings.MAIN_FONT);
+		emailLabel.setFont(SettingsManager.MAIN_FONT);
 		emailLabel.setText(getResourceMap().getString("emailLabel.text")); // NOI18N
 		add(emailLabel);
 
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
-		emailField.setFont(AppSettings.MAIN_FONT);
+		emailField.setFont(SettingsManager.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, TEXT);
 		/*valueBinding.setValidator(new Validator() {
@@ -212,7 +212,7 @@ public class ClientInfoPanel extends JPanel {
 		add(emailField, "span, split");
 
 		JLabel mailingListLabel = new JLabel();
-		mailingListLabel.setFont(AppSettings.MAIN_FONT);
+		mailingListLabel.setFont(SettingsManager.MAIN_FONT);
 		mailingListLabel.setText(getResourceMap().getString("mailingListLabel.text")); // NOI18N
 		add(mailingListLabel, "grow 0");
 
@@ -225,7 +225,7 @@ public class ClientInfoPanel extends JPanel {
 		add(mailingListCheckbox, "wrap, grow 0");
 
 		JLabel birthdateLabel = new JLabel();
-		birthdateLabel.setFont(AppSettings.MAIN_FONT);
+		birthdateLabel.setFont(SettingsManager.MAIN_FONT);
 		birthdateLabel.setText(getResourceMap().getString("birthdateLabel.text")); // NOI18N
 		add(birthdateLabel);
 
@@ -266,7 +266,7 @@ public class ClientInfoPanel extends JPanel {
 		add(birthdateField);
 
 		JLabel genderLabel = new JLabel();
-		genderLabel.setFont(AppSettings.MAIN_FONT);
+		genderLabel.setFont(SettingsManager.MAIN_FONT);
 		genderLabel.setText(getResourceMap().getString("genderLabel.text")); // NOI18N
 		add(genderLabel, "split");
 
@@ -293,13 +293,13 @@ public class ClientInfoPanel extends JPanel {
 		bindingGroup.addBinding(genderBinding);
 
 		JLabel addressLabel = new JLabel();
-		addressLabel.setFont(AppSettings.MAIN_FONT);
+		addressLabel.setFont(SettingsManager.MAIN_FONT);
 		addressLabel.setText(getResourceMap().getString("addressLabel.text")); // NOI18N
 		add(addressLabel);
 
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
-		addressField.setFont(AppSettings.MAIN_FONT);
+		addressField.setFont(SettingsManager.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.address.address");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, address, addressField, TEXT);
 		bindingGroup.addBinding(valueBinding);
@@ -308,13 +308,13 @@ public class ClientInfoPanel extends JPanel {
 		add(addressField, "span, wrap");
 
 		JLabel telephoneLabel = new JLabel();
-		telephoneLabel.setFont(AppSettings.MAIN_FONT);
+		telephoneLabel.setFont(SettingsManager.MAIN_FONT);
 		telephoneLabel.setText(getResourceMap().getString("telephoneLabel.text")); // NOI18N
 		add(telephoneLabel);
 
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
-		phoneField.setFont(AppSettings.MAIN_FONT);
+		phoneField.setFont(SettingsManager.MAIN_FONT);
 		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.phoneNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, phone, phoneField, TEXT);
 		bindingGroup.addBinding(valueBinding);
@@ -323,16 +323,16 @@ public class ClientInfoPanel extends JPanel {
 		add(phoneField, "wrap, span");
 
 		JLabel locationLabel = new JLabel();
-		locationLabel.setFont(AppSettings.MAIN_FONT);
+		locationLabel.setFont(SettingsManager.MAIN_FONT);
 		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
 		add(locationLabel);		
 
 		zipCodeField = new JComboBox();
-		zipCodeField.setFont(AppSettings.MAIN_FONT);
+		zipCodeField.setFont(SettingsManager.MAIN_FONT);
 		add(zipCodeField);
 
 		locationField = new JComboBox();
-		locationField.setFont(AppSettings.MAIN_FONT);
+		locationField.setFont(SettingsManager.MAIN_FONT);
 		add(locationField);
 
 		bindingGroup.addBindingListener(changeListener);

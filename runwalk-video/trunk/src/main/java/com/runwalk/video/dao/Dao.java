@@ -7,9 +7,9 @@ public interface Dao<E> {
 
 	List<E> getAll();
 
-	E getById(long id);
+	E getById(Object id);
 
-	List<E> getByIds(Set<Long> ids);
+	List<E> getByIds(Set<?> ids);
 
 	E merge(E e);
 	
@@ -21,8 +21,8 @@ public interface Dao<E> {
 
 	Class<E> getTypeParameter();
 
-	void deleteById(Long id);
+	void deleteById(Object id);
 
-	List<E> getNewEntities(long id);
+	<T> List<E> getNewEntities(T id);
 
 }

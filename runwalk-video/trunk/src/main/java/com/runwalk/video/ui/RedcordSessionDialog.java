@@ -14,19 +14,19 @@ import org.jdesktop.application.Action;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
-import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
+import ca.odell.glazedlists.swing.EventTableModel;
 
-import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class CalendarEventEntryDialog extends JDialog {
+public class RedcordSessionDialog extends JDialog {
 	
 	private static final String DISMISS_ACTION = "dismiss";
 
@@ -34,17 +34,17 @@ public class CalendarEventEntryDialog extends JDialog {
 	
 	private EventList<Client> clientList;
 	
-	private EventTableModel<CalendarEventEntry> calendarEventTableModel;
+	private EventTableModel<RedcordSession> redcordSessionEventTableModel;
 	
-	public CalendarEventEntryDialog(Window parentWindow, EventList<CalendarEventEntry> calendarEntries, EventList<Client> clientList) {
+	public RedcordSessionDialog(Window parentWindow, EventList<RedcordSession> redcordSessions, EventList<Client> clientList) {
 		super(parentWindow);
 		this.clientList = clientList;
 		setLayout(new MigLayout());
 		add(new JLabel("Synchroniseer afspraken met Google Calendar"), "wrap");
 		JTable calendarEventTable = new JTable();
-		CalendarEventEntryTableFormat tableFormat = new CalendarEventEntryTableFormat(getResourceMap());
-		calendarEventTableModel = new EventTableModel<CalendarEventEntry>(calendarEntries, tableFormat);
-		calendarEventTable.setModel(calendarEventTableModel);
+		RedcordSessionTableFormat tableFormat = new RedcordSessionTableFormat(getResourceMap());
+		redcordSessionEventTableModel = new EventTableModel<RedcordSession>(redcordSessions, tableFormat);
+		calendarEventTable.setModel(redcordSessionEventTableModel);
 		initialiseTableColumnModel(calendarEventTable.getColumnModel());
 		add(calendarEventTable, "grow, wrap");
 		JButton cancelButton = new JButton(getAction(DISMISS_ACTION));
@@ -67,12 +67,16 @@ public class CalendarEventEntryDialog extends JDialog {
 	public void dismiss() {
 		clientList = null;
 		setVisible(false);
+		synchronized(this) {
+			notifyAll();
+		}
 	}
 	
+	@Action
 	public void save() {
-		for(int i = 0; i < calendarEventTableModel.getRowCount(); i++) {
-			CalendarEventEntry calendarEventEntry = calendarEventTableModel.getElementAt(i);
-			// so we have the entry here?...? should have a way to retrieve the clint's value..
+		// actual saving should not be done here..
+		synchronized(this) {
+			notifyAll();
 		}
 	}
 

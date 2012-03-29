@@ -34,6 +34,7 @@ import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
@@ -43,7 +44,6 @@ import com.runwalk.video.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -63,9 +63,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	private EventList<Analysis> analysisList = GlazedLists.eventListOf();
 
 	private final VideoFileManager videoFileManager;
-	private final AppSettings appSettings;
+	private final SettingsManager appSettings;
 
-	public AnalysisOverviewTablePanel(AppSettings appSettings, VideoFileManager videoFileManager) {
+	public AnalysisOverviewTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
@@ -76,10 +76,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		add(scrollPane, "wrap, grow");
 
 		JButton cleanupButton = new JButton(getAction(CLEANUP_VIDEO_FILES_ACTION));
-		cleanupButton.setFont(AppSettings.MAIN_FONT);
+		cleanupButton.setFont(SettingsManager.MAIN_FONT);
 		add(cleanupButton);
 		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
-		getSecondButton().setFont(AppSettings.MAIN_FONT);
+		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
 		// add a listener to start tasks upon finishing the refresh task
 		getTaskMonitor().addPropertyChangeListener(this);
@@ -256,7 +256,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		return videoFileManager;
 	}
 
-	public AppSettings getAppSettings() {
+	public SettingsManager getAppSettings() {
 		return appSettings;
 	}
 

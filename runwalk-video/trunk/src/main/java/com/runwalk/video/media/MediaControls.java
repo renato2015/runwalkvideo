@@ -67,6 +67,7 @@ import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
@@ -74,7 +75,6 @@ import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.MediaActionConstants;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -93,7 +93,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private static final String CAPTURER_CONTROLS_ENABLED = "capturerControlsEnabled";
 	private static final String TITLE = "Media Controls";
 
-	private final AppSettings appSettings;
+	private final SettingsManager appSettings;
 	private final AbstractTablePanel<Analysis> analysisTablePanel;
 	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
 
@@ -135,7 +135,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private RecordTask recordTask = null;
 
-	public MediaControls(AppSettings appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
+	public MediaControls(SettingsManager appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
 			DaoService daoService, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
@@ -979,7 +979,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return daoService;
 	}
 
-	public AppSettings getAppSettings() {
+	public SettingsManager getAppSettings() {
 		return appSettings;
 	}
 

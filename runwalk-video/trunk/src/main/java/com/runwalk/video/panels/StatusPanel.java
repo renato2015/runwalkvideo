@@ -19,7 +19,7 @@ import org.apache.log4j.Level;
 import org.jdesktop.application.TaskMonitor;
 
 import com.runwalk.video.core.AppComponent;
-import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.settings.SettingsManager;
 
 @SuppressWarnings("serial")
 @AppComponent
@@ -40,7 +40,7 @@ public class StatusPanel extends JPanel {
 	public StatusPanel() {
 		setLayout(new MigLayout("nogrid, fill", "", "rel[fill]"));
 		statusMessageLabel = new JLabel();
-		statusMessageLabel.setFont(AppSettings.MAIN_FONT);
+		statusMessageLabel.setFont(SettingsManager.MAIN_FONT);
 		statusMessageLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusAnimationLabel = new JLabel();
 		progressBar = new JProgressBar();
