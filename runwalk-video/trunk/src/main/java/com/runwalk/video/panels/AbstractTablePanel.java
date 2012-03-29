@@ -32,7 +32,7 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.IAppComponent;
-import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.settings.SettingsManager;
 
 @SuppressWarnings("serial")
 @AppComponent
@@ -45,6 +45,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
 	
+	private static final String DIRTY = "dirty";
+	
 	private final JTable table;
 	private final JTableMouseListener jTableMouseListener = new JTableMouseListener();
 	
@@ -56,13 +58,15 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
 	private EventTableModel<T> eventTableModel;
+	
+	private Boolean dirty;
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
-		getTable().getTableHeader().setFont(AppSettings.MAIN_FONT);
+		getTable().getTableHeader().setFont(SettingsManager.MAIN_FONT);
 		getTable().setShowGrid(false);
-		getTable().setFont(AppSettings.MAIN_FONT);
+		getTable().setFont(SettingsManager.MAIN_FONT);
 	}
 
 	public AbstractTablePanel() {
@@ -76,7 +80,15 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 
 	public void setRowSelected(boolean rowSelected) {
-		this.firePropertyChange(ROW_SELECTED, this.rowSelected, this.rowSelected = rowSelected);
+		firePropertyChange(ROW_SELECTED, this.rowSelected, this.rowSelected = rowSelected);
+	}
+
+	public Boolean isDirty() {
+		return dirty;
+	}
+
+	public void setDirty(Boolean dirty) {
+		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 	}
 
 	/**
@@ -204,6 +216,15 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
 		Connector<T> beanConnector = new BeanConnector<T>(itemClass);
 		setItemList(itemList, beanConnector);
+	}
+	
+	/**
+	 * Persist the panel's dirty state. Override this method if you need to do something special to 
+	 * have the entities' state persisted to the database.
+	 * @return <code>true</code> if saving succeeded
+	 */
+	public boolean save() {
+		return true;
 	}
 
 	/**

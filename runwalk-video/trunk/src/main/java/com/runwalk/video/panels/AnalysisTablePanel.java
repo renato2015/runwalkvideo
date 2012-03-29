@@ -37,12 +37,12 @@ import com.runwalk.video.entities.Article;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
-import com.runwalk.video.util.AppSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -58,7 +58,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private final DaoService daoService;
 
-	private final AppSettings appSettings;
+	private final SettingsManager appSettings;
 
 	private Boolean clientSelected = false;
 	
@@ -67,7 +67,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	private boolean selectedItemRecorded;
 
 	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, 
-			AppSettings appSettings, VideoFileManager videoFileManager, DaoService daoService) {
+			SettingsManager appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.clientTablePanel = clientTablePanel;
 		this.appSettings = appSettings;
@@ -80,18 +80,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		add(scrollPane, "wrap, grow, height :100:");
 
 		setFirstButton(new JButton(getAction("addAnalysis")));
-		getFirstButton().setFont(AppSettings.MAIN_FONT);
+		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 
 		setSecondButton(new JButton(getAction("deleteAnalysis")));
-		getSecondButton().setFont(AppSettings.MAIN_FONT);
+		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton(), "wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(undoableEditListener);
-		comments.setFont(AppSettings.MAIN_FONT);
+		comments.setFont(SettingsManager.MAIN_FONT);
 		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
@@ -270,7 +270,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return clientTablePanel;
 	}
 
-	public AppSettings getAppSettings() {
+	public SettingsManager getAppSettings() {
 		return appSettings;
 	}
 

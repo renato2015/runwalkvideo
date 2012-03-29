@@ -2,12 +2,13 @@ package com.runwalk.video;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
@@ -25,20 +26,22 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.utils.AppHelper;
 
-import com.google.common.collect.Maps;
 import com.runwalk.video.core.Containable;
+import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.DaoService;
-import com.runwalk.video.dao.impl.JpaClientDao;
-import com.runwalk.video.dao.impl.JpaDaoService;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.dao.gdata.BaseEntryDaoService;
+import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.MediaControls;
+import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
 import com.runwalk.video.panels.ClientTablePanel;
 import com.runwalk.video.panels.RedcordTablePanel;
 import com.runwalk.video.panels.StatusPanel;
+import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisOverviewTableFormat;
@@ -51,7 +54,6 @@ import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.ApplicationActions;
 import com.runwalk.video.ui.actions.MediaActionConstants;
-import com.runwalk.video.util.AppSettings;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 /**
@@ -59,10 +61,19 @@ import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
  */
 public class RunwalkVideoApp extends SingleFrameApplication implements ApplicationActionConstants, MediaActionConstants {
 
+	public static final String APP_VERSION = "Application.version";
+	public static final String APP_TITLE = "Application.title";
+	public static final String APP_NAME = "Application.name";
+	public static final String APP_BUILD_DATE = "Application.build.date";
+
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
 
+	private static final String SAVE_NEEDED = "saveNeeded";
+	
+	private static final String DIRTY = "dirty";
+	
+	private List<AbstractTablePanel<?>> tablePanels = new ArrayList<AbstractTablePanel<?>>();
 	private ClientTablePanel clientTablePanel;
-	private StatusPanel statusPanel;
 	private AnalysisTablePanel analysisTablePanel;
 	private AnalysisOverviewTablePanel analysisOverviewTablePanel;
 	private RedcordTablePanel redcordTablePanel;
@@ -70,10 +81,26 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private MediaControls mediaControls;
 	private Containable clientMainView;
 	private VideoMenuBar menuBar;
+	private StatusPanel statusPanel;
 	private ApplicationActions applicationActions;
 	private JScrollableDesktopPane scrollableDesktopPane;
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
+
+	private boolean saveNeeded = false;
+	
+	/**
+	 * This listener will listen to the table panel's event firing
+	 */
+	private final PropertyChangeListener dirtyListener = new PropertyChangeListener() {
+
+		public void propertyChange(PropertyChangeEvent event) {
+			if (DIRTY.equals(event.getPropertyName())) {
+				setSaveNeeded((Boolean) event.getNewValue() || isSaveNeeded());
+			}
+		}
+		
+	};
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -88,7 +115,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 * After logging has been set up, the application will launch using the swing application framework (SAF).
 	 */
 	public static void main(String[] args) {
-		AppSettings.configureLog4j();
+		SettingsManager.configureLog4j();
 		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
@@ -107,22 +134,15 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	/** {@inheritDoc} */
 	@Override
 	protected void initialize(String[] args) {
-		AppSettings.getInstance().loadSettings();
-		String puName = getContext().getResourceMap().getString("Application.name");
-		// read db connection properties from settings file
-		Map<String, String> connectionProperties = Maps.newHashMap();
-		connectionProperties.put("eclipselink.jdbc.url", AppSettings.getInstance().getDbUrl());
-		connectionProperties.put("eclipselink.jdbc.user", AppSettings.getInstance().getDbUser());
-		connectionProperties.put("eclipselink.jdbc.password", AppSettings.getInstance().getDbPassword());
-		// create entityManagerFactory for default persistence unit
-		EntityManagerFactory emFactory = Persistence.createEntityManagerFactory(puName, connectionProperties);
-		// create specialized dao's
-		JpaClientDao clientDao = new JpaClientDao(Client.class, emFactory);
-		// create daoManager and add specialized dao's
-		daoService = new JpaDaoService(emFactory);
-		getDaoService().addDao(clientDao);
+		LOGGER.log(Level.INFO, "Starting " + getTitle());
+		SettingsManager settingsManager = SettingsManager.getInstance();
+		settingsManager.loadSettings();
+		// create daoServices and add them to the composite
+		DaoService jpaDaoService = new JpaDaoService(settingsManager.getDatabaseSettings(), getName());
+		DaoService baseEntryDaoService = new BaseEntryDaoService(settingsManager.getCalendarSettings(), getVersionString());
+		daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
 		// create video file manager
-		videoFileManager = new VideoFileManager(AppSettings.getInstance());
+		videoFileManager = new VideoFileManager(settingsManager);
 	}
 
 	/**
@@ -133,11 +153,15 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		applicationActions = new ApplicationActions();
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
+		addTablePanel(clientTablePanel);
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
-				AppSettings.getInstance(), getVideoFileManager(), getDaoService());
-		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(AppSettings.getInstance(), getVideoFileManager());
+				SettingsManager.getInstance(), getVideoFileManager(), getDaoService());
+		addTablePanel(analysisTablePanel);
+		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(SettingsManager.getInstance(), getVideoFileManager());
+		addTablePanel(analysisOverviewTablePanel);
 		redcordTablePanel = new RedcordTablePanel(getClientTablePanel(), createUndoableEditListener(), getDaoService());
+		addTablePanel(redcordTablePanel);
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();
 		getMainFrame().add(getScrollableDesktopPane());
@@ -148,7 +172,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create mediaplayer controls
 	//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
 	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
-		mediaControls = new MediaControls(AppSettings.getInstance(), getVideoFileManager(), 
+		mediaControls = new MediaControls(SettingsManager.getInstance(), getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
@@ -186,7 +210,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			//executeAction(getApplicationActionMap(), "uploadLogFiles");
 			executeAction(getApplicationActionMap(), SAVE_SETTINGS_ACTION);
 			if (isSaveNeeded()) {
-				executeAction(getClientTablePanel().getApplicationActionMap(), SAVE_ENTITIES_ACTION);
+				executeAction(getApplicationActionMap(), SAVE_ACTION);
 			}
 			executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
 			LOGGER.debug("Taskservice shutting down...");
@@ -202,6 +226,32 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			super.exit(event);
 		}
 	}
+	
+	public String getTitle() {
+		return getResourceString(APP_TITLE);
+	}
+	
+	public String getName() {
+		return getResourceString(APP_NAME);
+	}
+	
+	public String getVersionString() {
+		return getResourceString(APP_NAME) + "-" + getResourceString(APP_VERSION) + "-" + getResourceString(APP_BUILD_DATE);
+	}
+	
+	private String getResourceString(String resourceName) {
+		return getContext().getResourceMap().getString(resourceName);
+	}
+	
+	/**
+	 * Add the given {@link AbstractTablePanel} to the list of panels so it's dirty state can be tracked.
+	 * Setting a panel's dirty state to <code>true</code> will enable the save action throughout the application.
+	 * @param tablePanel The panel to add to the list
+	 */
+	private void addTablePanel(AbstractTablePanel<?> tablePanel) {
+		tablePanel.addPropertyChangeListener(dirtyListener);
+		tablePanels.add(tablePanel);
+	}
 
 	/*
 	 * Global application actions
@@ -209,7 +259,37 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action
 	public void saveSettings() {
-		AppSettings.getInstance().saveSettings();
+		SettingsManager.getInstance().saveSettings();
+	}
+	
+	public boolean isSaveNeeded() {
+		return saveNeeded;
+	}
+
+	public void setSaveNeeded(boolean saveNeeded) {
+		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
+	}
+	
+	@org.jdesktop.application.Action(enabledProperty=SAVE_NEEDED, block = Task.BlockingScope.APPLICATION)
+	public Task<Boolean, Void> save() {
+		
+		return new AbstractTask<Boolean, Void>(SAVE_ACTION) {
+			
+			protected Boolean doInBackground() throws Exception {
+				boolean result = true;
+				message("startMessage");
+				for(AbstractTablePanel<?> tablePanel : tablePanels) {
+					if (tablePanel.isDirty()) {
+						result &= tablePanel.save();
+						tablePanel.setDirty(false);
+					}
+				}
+				message("endMessage");
+				return result;
+			}
+			
+		};
+		
 	}
 
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
@@ -220,7 +300,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action
 	public Task<Void, Void> uploadLogFiles() {
-		AppSettings appSettings = AppSettings.getInstance();
+		SettingsManager appSettings = SettingsManager.getInstance();
 		return new UploadLogFilesTask(appSettings.getLogFile(), appSettings.getLogFileUploadUrl());
 	}
 
@@ -330,10 +410,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			ActionEvent actionEvent = new ActionEvent(getMainFrame(), ActionEvent.ACTION_PERFORMED, actionKey);
 			action.actionPerformed(actionEvent);
 		}
-	}
-
-	private boolean isSaveNeeded() {
-		return getClientTablePanel().isSaveNeeded();
 	}
 
 	private UndoableEditListener createUndoableEditListener() {

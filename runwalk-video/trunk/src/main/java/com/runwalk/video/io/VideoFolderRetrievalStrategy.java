@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.AppSettings;
+import com.runwalk.video.settings.SettingsManager;
 
 /**
  * This strategy can be implemented to structure the storage of video files within a parent folder.
@@ -20,8 +20,8 @@ public interface VideoFolderRetrievalStrategy {
 
 	/**
 	 * Returns the video folder for a given {@link Recording} and video folder. 
-	 * The video folder {@link AppSettings#getVideoDir()} or 
-	 * {@link AppSettings#getUncompressedVideoDir()} when the recording is 
+	 * The video folder {@link SettingsManager#getVideoDir()} or 
+	 * {@link SettingsManager#getUncompressedVideoDir()} when the recording is 
 	 * in the {@link RecordingStatus#COMPRESSED} or 
 	 * {@link RecordingStatus#UNCOMPRESSED} state respectively.
 	 * 

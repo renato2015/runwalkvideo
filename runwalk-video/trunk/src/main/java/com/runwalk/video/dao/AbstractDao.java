@@ -12,5 +12,5 @@ public abstract class AbstractDao<E> implements Dao<E> {
 	public Class<E> getTypeParameter() {
 		return typeParameter;
 	}
-
+	
 }

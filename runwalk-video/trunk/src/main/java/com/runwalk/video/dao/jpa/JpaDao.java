@@ -1,4 +1,4 @@
-package com.runwalk.video.dao.impl;
+package com.runwalk.video.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
-import javax.persistence.Query;
 import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 
@@ -68,7 +67,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return getEntityManagerFactory().createEntityManager();
 	}
 
-	public void deleteById(Long id) {
+	public void deleteById(Object id) {
 		EntityTransaction tx = null;
 		EntityManager entityManager = createEntityManager();
 		try {
@@ -95,14 +94,14 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return query.getResultList();
 	}
 	
-	public List<E> getNewEntities(long id) {
+	public <T> List<E> getNewEntities(T id) {
 		EntityManager entityManager = createEntityManager();
 		TypedQuery<E> query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter());
 		query.setParameter("id", id);
 		return query.getResultList();
 	}
 
-	public E getById(long id) {
+	public E getById(Object id) {
 		E result = null;
 		EntityTransaction tx = null;
 		EntityManager entityManager = createEntityManager();
@@ -123,11 +122,10 @@ public class JpaDao<E> extends AbstractDao<E> {
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<E> getByIds(Set<Long> ids) {
+	public List<E> getByIds(Set<?> ids) {
 		EntityManager entityManager = createEntityManager();
-		Query query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
-				"WHERE e.id IN (:ids)")
+		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
+				"WHERE e.id IN (:ids)", getTypeParameter())
 				.setParameter("ids", ids)
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");

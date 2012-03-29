@@ -66,7 +66,7 @@ public interface IVideoPlayer extends IVideoComponent {
 	float getVolume();
 	
 	/**
-	 * Set the playback rate. The default rate is <code>1.0f</code>. Some predefined playback rates are defined in {@link AppSettings#PLAY_RATES}
+	 * Set the playback rate. The default rate is <code>1.0f</code>. Some predefined playback rates are defined in {@link SettingsManager#PLAY_RATES}
 	 * 
 	 * @param rate The playback rate
 	 */
