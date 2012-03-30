@@ -55,3 +55,21 @@ Should happen transparently when saving
  * Existing Items
   * Items should be saved first (to have their latest values)
   * Query for dates not found in the calendar event entries
+
+== Technical Implementation == 
+
+=== From google calendar to the db ===
+
+ * Get a set of IDs for the chosen entity type, passed to the contstructor at init time, with a startingDate later than today
+ * Iterate over all the found CalendarEntries later than today and check if their calId is in the Set
+  * If not, create a new CalendarSlot from the entry and add it to the list to be shown in the dialog
+  * If yes, get its corresponding CalendarSlot and check its lastModified date with that of the corresponding CalendarSlot
+   * If lastModified is not the same, then copy startDate and endDate to the entity
+   * If lastModified is the same, discard the item, as it is already synced
+
+After closing the CalendarSlotDialog
+
+ * Check whether a Client was selected for each CalendarSlot
+  * If not, discard the item (set a flag to ignore it)
+  * If yes, check if the CalendarSlot was already persisted
+   * If not, persist the CalendarSlot
