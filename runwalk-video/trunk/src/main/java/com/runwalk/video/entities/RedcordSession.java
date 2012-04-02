@@ -9,13 +9,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import org.eclipse.persistence.annotations.JoinFetch;
 import org.eclipse.persistence.annotations.JoinFetchType;
@@ -23,29 +19,15 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="redcord_sessions")
-public class RedcordSession extends SerializableEntity<RedcordTableElement> implements RedcordTableElement {
-	
-	public static final String END_DATE = "endDate";
+public class RedcordSession extends CalendarSlot<RedcordTableElement> implements RedcordTableElement {
 	
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
 	public static final String REDCORD_EXERCISE_COUNT = "redcordExerciseCount";
-
-	@ManyToOne
-	@JoinColumn(name="person_id", nullable=false )
-	private Client client;
 	
 	@Column
 	private String name;
-	
-	@Column(name="start_date")
-	@Temporal(value=TemporalType.TIMESTAMP)
-	private Date startDate;
-	
-	@Column(name="end_date")
-	@Temporal(value=TemporalType.TIMESTAMP)
-	private Date endDate;
 	
 	@Lob
 	private String comments;
@@ -54,13 +36,6 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>();
 	
-	@Column(name="last_modified")
-	@Temporal(value=TemporalType.TIMESTAMP)
-	private Date lastModified;
-	
-	@Column(name="ical_uid")
-	private String calendarId;
-	
 	public RedcordSession() {	}
 
 	public RedcordSession(Client client) {
@@ -68,50 +43,14 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	}
 	
 	public RedcordSession(Client client, String name) {
-		this.client = client;
 		this.name = name;
 		// set default starting date to 8 o'clock current day
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.set(Calendar.HOUR_OF_DAY, 8);
 		calendar.set(Calendar.MINUTE, 0);
-		startDate = calendar.getTime();
-	}
-
-	public Client getClient() {
-		return client;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		firePropertyChange(START_DATE, this.startDate, this.startDate = startDate);
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		firePropertyChange(END_DATE, this.endDate, this.endDate = endDate);
-	}
-	
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
-	}
-
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	public String getCalendarId() {
-		return calendarId;
-	}
-
-	public void setCalendarId(String calendarId) {
-		this.calendarId = calendarId;
+		setStartDate(calendar.getTime());
+		setClient(client);
 	}
 
 	public List<RedcordExercise> getRedcordExercises() {
@@ -132,7 +71,7 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 	
 	public boolean removeRedcordExercise(RedcordTableElement redcordExercise) {
 		boolean result = false;
-		if (client != null) {
+		if (getClient() != null) {
 			int oldSize = getRedcordExerciseCount();
 			result = getRedcordExercises().remove(redcordExercise);
 			firePropertyChange(REDCORD_EXERCISE_COUNT, oldSize, getRedcordExerciseCount());
@@ -191,8 +130,8 @@ public class RedcordSession extends SerializableEntity<RedcordTableElement> impl
 
 	@Override
 	public String toString() {
-		return "RedcordSession [client=" + client + ", name=" + name
-				+ ", startDate=" + startDate + "]";
+		return "RedcordSession [client=" + getClient() + ", name=" + name
+				+ ", startDate=" + getStartDate() + "]";
 	}
 
 }

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.BaseFeed;
 import com.google.gdata.util.ServiceException;
@@ -23,10 +21,6 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 	
 	public BaseEntryDao(Class<E> typeParameter) {
 		super(typeParameter);
-	}
-	
-	protected void setFeed(BaseFeed<F, E> feed) {
-		this.feed = feed;
 	}
 
 	public List<E> getAll() {
@@ -57,9 +51,9 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 		try {
 			return item.update();
 		} catch (IOException e1) {
-			Logger.getLogger(getClass()).info("Merge failed for " + item, e1);
+			getLogger().info("Merge failed for " + item, e1);
 		} catch (ServiceException e2) {
-			Logger.getLogger(getClass()).info("Merge failed for " + item, e2);
+			getLogger().info("Merge failed for " + item, e2);
 		}
 		return item;
 	}
@@ -76,9 +70,9 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 		try {
 			item.delete();
 		} catch (IOException e1) {
-			Logger.getLogger(getClass()).error("Delete failed for " + item, e1);
+			getLogger().error("Delete failed for " + item, e1);
 		} catch (ServiceException e2) {
-			Logger.getLogger(getClass()).error("Delete failed for " + item, e2);
+			getLogger().error("Delete failed for " + item, e2);
 		}
 	}
 
@@ -86,9 +80,9 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 		try {
 			feed.insert(item);
 		} catch (ServiceException e1) {
-			Logger.getLogger(getClass()).error("Persist failed for " + item, e1);
+			getLogger().error("Persist failed for " + item, e1);
 		} catch (IOException e2) {
-			Logger.getLogger(getClass()).error("Persist failed for " + item, e2);
+			getLogger().error("Persist failed for " + item, e2);
 		}
 	}
 
@@ -104,5 +98,13 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 		return null;
 	}
 	
+	
+	protected BaseFeed<F, E> getFeed() {
+		return feed;
+	}
+
+	protected void setFeed(BaseFeed<F, E> feed) {
+		this.feed = feed;
+	}
 
 }

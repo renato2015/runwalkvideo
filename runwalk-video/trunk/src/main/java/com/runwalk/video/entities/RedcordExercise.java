@@ -38,9 +38,9 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	@Enumerated(EnumType.STRING)
 	private ExerciseDirection exerciseDirection;
 	
-	@Column(name="start_time")
+	@Column(name="start_date")
 	@Temporal(value=TemporalType.TIMESTAMP)
-	private Date startTime;
+	private Date startDate;
 	
 	@Lob
 	private String comments;
@@ -50,7 +50,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	public RedcordExercise(RedcordSession redcordSession, String name) {
 		this.redcordSession = redcordSession;
 		this.name = name;
-		this.startTime = new Date();
+		this.startDate = new Date();
 	}
 	
 	public RedcordExercise(RedcordSession redcordSession) {
@@ -85,16 +85,12 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
 	
-	public Date getStartTime() {
-		return startTime;
-	}
-
 	public String getName() {
 		return name;
 	}
 
 	public Date getStartDate() {
-		return null;
+		return startDate;
 	}
 	
 	public boolean allowsChildren() {

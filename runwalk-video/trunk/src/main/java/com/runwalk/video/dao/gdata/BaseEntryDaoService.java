@@ -27,7 +27,7 @@ public class BaseEntryDaoService extends AbstractDaoService {
 	@Override
 	public <E, D extends Dao<E>> D getDao(Class<E> type) {
 		D result = null;
-		if (type.isAssignableFrom(BaseEventEntry.class)) {
+		if (BaseEventEntry.class.isAssignableFrom(type)) {
 			result = (D) getDaos().get(type);
 		}
 		return result;
