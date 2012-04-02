@@ -54,6 +54,7 @@ import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.actions.ApplicationActions;
 import com.runwalk.video.ui.actions.MediaActionConstants;
+import com.runwalk.video.util.AWTExceptionHandler;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 /**
@@ -135,6 +136,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	@Override
 	protected void initialize(String[] args) {
 		LOGGER.log(Level.INFO, "Starting " + getTitle());
+		// register an exception handler on the EDT
+		AWTExceptionHandler.registerExceptionHandler();
 		SettingsManager settingsManager = SettingsManager.getInstance();
 		settingsManager.loadSettings();
 		// create daoServices and add them to the composite

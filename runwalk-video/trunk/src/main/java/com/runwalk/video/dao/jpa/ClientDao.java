@@ -2,9 +2,8 @@ package com.runwalk.video.dao.jpa;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.eclipse.persistence.config.QueryHints;
 
@@ -16,18 +15,16 @@ import com.runwalk.video.entities.Client;
  * 
  * @author Jeroen Peelaerts
  */
-public class JpaClientDao extends JpaDao<Client> {
+public class ClientDao extends JpaDao<Client> {
 
-	public JpaClientDao(Class<Client> typeParameter, EntityManagerFactory entityManagerFactory) {
+	public ClientDao(Class<Client> typeParameter, EntityManagerFactory entityManagerFactory) {
 		super(typeParameter, entityManagerFactory);
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public List<Client> getAll() {
-		EntityManager entityManager = createEntityManager();
-		Query query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e ")
-		.setHint(QueryHints.LEFT_FETCH, "c.analyses.recordings")
+		TypedQuery<Client> query = createEntityManager().createQuery("SELECT client FROM " + getTypeParameter().getSimpleName() + " client", Client.class)
+		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
 		.setHint(QueryHints.REFRESH, "true");
 		return query.getResultList();
 	}

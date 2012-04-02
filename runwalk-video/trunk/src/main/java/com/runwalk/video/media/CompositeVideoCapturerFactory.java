@@ -27,7 +27,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 			Class<? extends VideoCapturerFactory> theClass = Class.forName(className).asSubclass(VideoCapturerFactory.class);
 			return theClass.newInstance();
 		} catch (Throwable e) {
-			Logger.getLogger(CompositeVideoCapturerFactory.class).error("Class not instantiate factory " + className, e);
+			Logger.getLogger(CompositeVideoCapturerFactory.class).error("Could not instantiate factory " + className, e);
 		}
 		return null;
 	}

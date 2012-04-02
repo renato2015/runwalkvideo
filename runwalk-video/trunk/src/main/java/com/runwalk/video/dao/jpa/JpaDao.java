@@ -87,17 +87,15 @@ public class JpaDao<E> extends AbstractDao<E> {
 	}
 
 	public List<E> getAll() {
-		EntityManager entityManager = createEntityManager();
-		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
+		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 		return query.getResultList();
 	}
 	
 	public <T> List<E> getNewEntities(T id) {
-		EntityManager entityManager = createEntityManager();
-		TypedQuery<E> query = entityManager.createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter());
-		query.setParameter("id", id);
+		TypedQuery<E> query = createEntityManager().createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter())
+		.setParameter("id", id);
 		return query.getResultList();
 	}
 
@@ -123,8 +121,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 	}
 
 	public List<E> getByIds(Set<?> ids) {
-		EntityManager entityManager = createEntityManager();
-		TypedQuery<E> query = entityManager.createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
+		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id IN (:ids)", getTypeParameter())
 				.setParameter("ids", ids)
 		.setHint("toplink.refresh", "true")
