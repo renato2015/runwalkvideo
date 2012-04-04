@@ -576,7 +576,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>dd-MM-yyyy HH:mm</maven.build.timestamp.format>
+		<maven.build.timestamp.format>ddMMyyyy-HHmmss</maven.build.timestamp.format>
 		<dsj.version>0.8.63</dsj.version>
 		<ueye.version>0.3</ueye.version>
 		<aspectj.version>1.6.12</aspectj.version>

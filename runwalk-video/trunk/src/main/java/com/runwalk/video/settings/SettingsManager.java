@@ -22,8 +22,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
@@ -38,20 +36,23 @@ public class SettingsManager implements Serializable {
 
 	public final static String FILE_ENCODING = "UTF-8";
 
-	private final static String FILE_APPENDER_NAME = "A1";
+	public final static String SETTINGS_FILE_NAME = "settings.xml";
 
-	private final static String SETTINGS_FILE_NAME = "settings.xml";
+	private final static String FILE_APPENDER_NAME = "A1";
 
 	private final static String UNCOMPRESSED_VIDEO_DIRNAME = "uncompressed";
 
 	private static Logger logger;
-
-	// this is the only (?) thread safe way to initialize a singleton
-	private final static SettingsManager INSTANCE = new SettingsManager();
-
-	private File logFile;
+	
+	/** The settings directory is stored here */
+	private final File localStorageDir;
+	
+	/** The settings file name is stored here */
+	private final String settingsFileName;
 
 	private transient JAXBContext jaxbContext;
+
+	private File logFile;
 
 	/** This object's fields will be mapped to XML using JaxB */
 	private Settings settings;
@@ -74,39 +75,41 @@ public class SettingsManager implements Serializable {
 		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
 	
-	private SettingsManager() {
-		settings = new Settings();
+	public SettingsManager(File localStorageDir) {
+		this(localStorageDir, SETTINGS_FILE_NAME);
 	}
-
-	public static SettingsManager getInstance() {
-		return INSTANCE;
+	
+	public SettingsManager(File localStorageDir, String settingsFileName) {
+		settings = new Settings();
+		this.localStorageDir = localStorageDir;
+		this.settingsFileName = settingsFileName;
+		logger.debug("Instantiating JAXB context..");
+		try {
+			jaxbContext = JAXBContext.newInstance( Settings.class );
+		} catch (JAXBException e) {
+			logger.error("Exception while instantiating JAXB context", e);
+		}
 	}
 
 	public void loadSettings() {
 		loadAddtionalLog4JSettings();
 		logger.debug("Initializing ApplicationSettings..");
+		File settingsFile = null;
 		synchronized(this) {
 			try { 
-				File settingsFile = createSettingsFileIfAbsent();
-				if (jaxbContext == null) {
-					logger.debug("Instantiating JAXB context..");
-					jaxbContext = JAXBContext.newInstance( Settings.class );
+				settingsFile = createSettingsFileIfAbsent();
+				if (settingsFile.length() > 0) {
+					logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
+					Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+					settings = (Settings) unmarshaller.unmarshal(settingsFile);
 				}
-				logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
-				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-				settings = (Settings) unmarshaller.unmarshal(settingsFile);
-			} catch(JAXBException jaxbExc) {
-				logger.error("Exception while instantiating JAXB context", jaxbExc);
 			} catch(Exception exc) {
 				logger.error("Exception thrown while loading settings file", exc);
 				if (exc.getMessage() != null) {
 					logger.error("Settings file seems to be corrupt. Attempting to delete..", exc);
-					try {
-						ApplicationContext appContext = Application.getInstance().getContext();
-						appContext.getLocalStorage().deleteFile(SETTINGS_FILE_NAME);
+					if (settingsFile != null) {
+						settingsFile.delete();
 						logger.warn("Settings file deleted. Default settings will be applied");
-					} catch (IOException e) {
-						logger.error("Removing corrupt settings file failed", e);
 					}
 				}
 			} finally {
@@ -141,24 +144,23 @@ public class SettingsManager implements Serializable {
 			logger.debug("Saving application settings to file " + settingsFile.getAbsolutePath());
 			marshaller.marshal(settings, settingsFile);
 		} catch (Exception exc) {
-			logger.error("Exception thrown while saving settings to file " + SETTINGS_FILE_NAME, exc);
+			logger.error("Exception thrown while saving settings to file " + settingsFileName, exc);
 		} 
 	}
 	
 	private File createSettingsFileIfAbsent() throws IOException {
-		File settingsFile = new File(getLocalStorageDir(), SETTINGS_FILE_NAME);
+		File settingsFile = new File(getLocalStorageDir(), settingsFileName);
 		File settingsFolder = settingsFile.getParentFile();
 		// check if parent folder and settings file exists, create them otherwise
-		if (!(settingsFolder.exists() || settingsFolder.mkdirs()) && 
-			!(settingsFile.exists() || settingsFile.createNewFile())) {
+		if (!((settingsFolder.exists() || settingsFolder.mkdirs()) && 
+			(settingsFile.exists() || settingsFile.createNewFile()))) {
 			throw new FileNotFoundException("Settings file could not be created");
 		}
 		return settingsFile;
 	}
 	
 	public File getLocalStorageDir() {
-		ApplicationContext appContext = Application.getInstance().getContext();
-		return appContext.getLocalStorage().getDirectory();
+		return localStorageDir;
 	}
 
 	public Settings getSettings() {
@@ -340,17 +342,14 @@ public class SettingsManager implements Serializable {
 		/** 
 		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
 		 */
-		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object?
 		private String videoDir = "D:\\Video's";
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
 		
-		@XmlElementRef
 		private AuthenticationSettings calendarSettings = new AuthenticationSettings("user@gmail.com", "password", "http://www.google.com/my/agenda");
 		
-		@XmlElementRef
 		private AuthenticationSettings databaseSettings = new AuthenticationSettings("root", "password", "jdbc:mysql://localhost:3306");
 		
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";

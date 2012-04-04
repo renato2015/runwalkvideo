@@ -15,13 +15,15 @@ public class AuthenticationSettings {
 	
 	private String password;
 	
-	private String feedUrl;
+	private String url;
+	
+	public AuthenticationSettings() { }
 	
 	public AuthenticationSettings(String userName, String password,
-			String feedUrl) {
+			String url) {
 		this.userName = userName;
 		this.password = password;
-		this.feedUrl = feedUrl;
+		this.url = url;
 	}
 
 	public String getUserName() {
@@ -41,11 +43,11 @@ public class AuthenticationSettings {
 	}
 
 	public String getUrl() {
-		return feedUrl;
+		return url;
 	}
 
-	public void setFeedUrl(String feedUrl) {
-		this.feedUrl = feedUrl;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 	
 }
