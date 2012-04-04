@@ -21,6 +21,7 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
@@ -102,6 +103,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		}
 		
 	};
+	private SettingsManager settingsManager;
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -138,7 +140,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		LOGGER.log(Level.INFO, "Starting " + getTitle());
 		// register an exception handler on the EDT
 		AWTExceptionHandler.registerExceptionHandler();
-		SettingsManager settingsManager = SettingsManager.getInstance();
+		ApplicationContext appContext = Application.getInstance().getContext();
+		settingsManager = new SettingsManager(appContext.getLocalStorage().getDirectory());
 		settingsManager.loadSettings();
 		// create daoServices and add them to the composite
 		DaoService jpaDaoService = new JpaDaoService(settingsManager.getDatabaseSettings(), getName());
@@ -159,9 +162,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		addTablePanel(clientTablePanel);
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
-				SettingsManager.getInstance(), getVideoFileManager(), getDaoService());
+				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
-		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(SettingsManager.getInstance(), getVideoFileManager());
+		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(settingsManager, getVideoFileManager());
 		addTablePanel(analysisOverviewTablePanel);
 		redcordTablePanel = new RedcordTablePanel(getClientTablePanel(), createUndoableEditListener(), getDaoService());
 		addTablePanel(redcordTablePanel);
@@ -175,7 +178,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create mediaplayer controls
 	//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
 	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
-		mediaControls = new MediaControls(SettingsManager.getInstance(), getVideoFileManager(), 
+		mediaControls = new MediaControls(settingsManager, getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
@@ -262,7 +265,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action
 	public void saveSettings() {
-		SettingsManager.getInstance().saveSettings();
+		settingsManager.saveSettings();
 	}
 	
 	public boolean isSaveNeeded() {
@@ -303,8 +306,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action
 	public Task<Void, Void> uploadLogFiles() {
-		SettingsManager appSettings = SettingsManager.getInstance();
-		return new UploadLogFilesTask(appSettings.getLogFile(), appSettings.getLogFileUploadUrl());
+		return new UploadLogFilesTask(settingsManager.getLogFile(), settingsManager.getLogFileUploadUrl());
 	}
 
 	private Containable createMainView() {

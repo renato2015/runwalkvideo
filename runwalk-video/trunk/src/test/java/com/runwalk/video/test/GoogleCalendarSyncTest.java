@@ -1,9 +1,5 @@
 package com.runwalk.video.test;
 
-import junit.framework.TestCase;
-
-import org.apache.log4j.PropertyConfigurator;
-
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 
@@ -15,23 +11,21 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.entities.RedcordSession;
-import com.runwalk.video.settings.AuthenticationSettings;
 import com.runwalk.video.ui.CalendarSyncService;
 
-public class GoogleCalendarSyncTest extends TestCase {
+public class GoogleCalendarSyncTest extends BaseTestCase {
 	
-	private AuthenticationSettings calendarSettings;
-	private AuthenticationSettings databaseSettings;
+	private static final String APP_NAME = "runwalk-video";
 	// dao service declaration
-	
 	private DaoService baseEntryDaoService, jpaDaoService;
 	
 	public void setUp() {
-		PropertyConfigurator.configure(getClass().getClassLoader().getResource("META-INF/log4j.properties"));
-		baseEntryDaoService = new BaseEntryDaoService(calendarSettings, getClass().getSimpleName());
-		jpaDaoService = new JpaDaoService(databaseSettings, getClass().getSimpleName());
+		super.setUp();
+		getSettingsManager().loadSettings();
+		baseEntryDaoService = new BaseEntryDaoService(getSettingsManager().getCalendarSettings(), APP_NAME);
+		jpaDaoService = new JpaDaoService(getSettingsManager().getDatabaseSettings(), APP_NAME);
 	}
-
+	
 	public void testCalendarEventEntryDao() {
 		Dao<CalendarEventEntry> calendarEventEntryDao = baseEntryDaoService.getDao(CalendarEventEntry.class);
 		EventList<CalendarEventEntry> calendarEntries = new BasicEventList<CalendarEventEntry>();

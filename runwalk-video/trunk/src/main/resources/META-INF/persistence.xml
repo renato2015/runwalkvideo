@@ -13,6 +13,7 @@
 		<class>com.runwalk.video.entities.Analysis</class>
 		<class>com.runwalk.video.entities.Recording</class>
 		<class>com.runwalk.video.entities.Keyframe</class>
+		<class>com.runwalk.video.entities.CalendarSlot</class>
 		<class>com.runwalk.video.entities.RedcordSession</class>
 		<class>com.runwalk.video.entities.RedcordExercise</class>
 		<properties>
