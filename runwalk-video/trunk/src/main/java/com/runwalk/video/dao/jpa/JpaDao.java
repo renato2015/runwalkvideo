@@ -122,7 +122,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public List<E> getByIds(Set<?> ids) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
-				"WHERE e.id IN (:ids)", getTypeParameter())
+				"WHERE e.id IN :ids", getTypeParameter())
 				.setParameter("ids", ids)
 		.setHint("toplink.refresh", "true")
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");

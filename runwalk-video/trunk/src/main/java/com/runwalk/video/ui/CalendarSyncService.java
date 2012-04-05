@@ -1,8 +1,10 @@
 package com.runwalk.video.ui;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -23,51 +25,76 @@ public class CalendarSyncService<T extends CalendarSlot<? super T>> {
 	private final Class<T> typeParameter;
 	private final DaoService daoService;
 	private final Logger logger = Logger.getLogger(CalendarSyncService.class);
-
+	
 	public CalendarSyncService(Class<T> typeParameter, DaoService daoService) {
 		this.typeParameter = typeParameter;
 		this.daoService = daoService;
 	}
 
-	public boolean syncToCalendar() {
+	public Map<T, CalendarEventEntry> syncToCalendar() {
+		Map<T, CalendarEventEntry> result = new HashMap<T, CalendarEventEntry>();
 		CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
 		CalendarEventEntryDao calendarEventEntryDao = getDaoService().getDao(CalendarEventEntry.class);
 		List<T> calendarSlots = calendarSlotDao.getFutureSlots();
 		for (CalendarEventEntry calendarEventEntry : calendarEventEntryDao.getFutureSlots()) {
-			T correspondingSlot = null;
+			T foundCalendarSlot = null;
 			for(Iterator<T> iterator = calendarSlots.iterator(); iterator.hasNext(); ) {
 				T calendarSlot = iterator.next();
 				if (calendarEventEntry.getId().equals(calendarSlot.getCalendarId())) {
-					correspondingSlot = calendarSlot;
+					foundCalendarSlot = calendarSlot;
 					// remove the item from the list
 					iterator.remove();
-					// compare start and endDate
-					logger.info("id is the same.. check start and end date here");
+					// compare lastModified property
+					if (calendarEventEntry.getUpdated().getValue() != foundCalendarSlot.getLastModified().getTime()) {
+						mapStartAndEndDate(calendarEventEntry, foundCalendarSlot);
+						logger.info("id is the same.. check start and end date here");
+					}
 				}
 			}
 			// no matching results found, create a new slot
-			if (correspondingSlot == null) {
-				T calendarSlot = mapFromCalendarEventEntry(calendarEventEntry);
-				logger.info("new CalendarSlot created " + calendarSlot);
+			if (foundCalendarSlot == null) {
+				foundCalendarSlot = mapFromCalendarEventEntry(calendarEventEntry);
+				logger.info("new CalendarSlot created " + foundCalendarSlot);
 			}
+			// save the mapping between both for later use
+			result.put(foundCalendarSlot, calendarEventEntry);
 		}
-		return true;
+		return result;
 	}
 	
+	/**
+	 * Map the start and end time of a {@link CalendarEventEntry} to the given {@link CalendarSlot}.
+	 * 
+	 * @param calendarEventEntry The given calendarEventEntry
+	 * @param calendarSlot The calendarSlot to map the start and end times to
+	 */
+	private void mapStartAndEndDate(CalendarEventEntry calendarEventEntry, T calendarSlot) {
+		Iterator<When> iterator = calendarEventEntry.getTimes().iterator();
+		if (iterator.hasNext()) {
+			// set start and end dates..
+			When time = iterator.next();
+			if (time.getStartTime().getValue() != calendarSlot.getStartDate().getTime() ||
+					time.getEndTime().getValue() != calendarSlot.getEndDate().getTime()) {
+				calendarSlot.setStartDate(new Date(time.getStartTime().getValue()));
+				calendarSlot.setEndDate(new Date(time.getEndTime().getValue()));
+			}
+		}
+	}
+	
+	/**
+	 * Map all properties from a {@link CalendarEventEntry} to a newly created {@link CalendarSlot}.
+	 * 
+	 * @param calendarEventEntry The given calendarEventEntry
+	 * @return The mapped calendarSlot
+	 */
 	private T mapFromCalendarEventEntry(CalendarEventEntry calendarEventEntry) {
 		T result = null;
 		try {
 			result = getTypeParameter().newInstance();
 			result.setCalendarId(calendarEventEntry.getId());
 			result.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
-			Iterator<When> iterator = calendarEventEntry.getTimes().iterator();
-			if (iterator.hasNext()) {
-				// set start and end dates..
-				When time = iterator.next();
-				result.setStartDate(new Date(time.getStartTime().getValue()));
-				result.setEndDate(new Date(time.getEndTime().getValue()));
-			}
-			
+			result.setName(calendarEventEntry.getTitle().getPlainText());
+			mapStartAndEndDate(calendarEventEntry, result);
 		} catch (InstantiationException e) {
 			logger.error(e);
 		} catch (IllegalAccessException e) {

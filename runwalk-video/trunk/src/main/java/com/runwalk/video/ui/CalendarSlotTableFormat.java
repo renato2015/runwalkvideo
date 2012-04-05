@@ -2,16 +2,16 @@ package com.runwalk.video.ui;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.runwalk.video.entities.RedcordSession;
+import com.runwalk.video.entities.CalendarSlot;
 
-public class RedcordSessionTableFormat extends AbstractTableFormat<RedcordSession> {
+public class CalendarSlotTableFormat extends AbstractTableFormat<CalendarSlot<?>> {
 
-	public RedcordSessionTableFormat(ResourceMap resourceMap) {
+	public CalendarSlotTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
 		
 	}
 
-	public Object getColumnValue(RedcordSession baseObject, int column) {
+	public Object getColumnValue(CalendarSlot<?> baseObject, int column) {
 		if (column == 0) {
 			return baseObject.getName();
 		} else if (column == 1 || column == 2) {

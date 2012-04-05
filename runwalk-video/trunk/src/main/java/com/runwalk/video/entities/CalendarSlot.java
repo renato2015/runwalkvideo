@@ -40,11 +40,19 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	@ManyToOne
 	@JoinColumn(name="person_id", nullable=false )
 	private Client client;
+
+	@Column
+	protected String name;
 	
-	public CalendarSlot() {
+	protected CalendarSlot() {
+		this("");
+	}
+	
+	protected CalendarSlot(String name) {
 		Date date = new Date();
 		startDate = date;
 		lastModified = date;
+		this.name = name;
 	}
 
 	public Date getStartDate() {
@@ -85,6 +93,14 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 
 	public void setClient(Client client) {
 		this.client = client;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 }
