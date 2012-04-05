@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
@@ -26,9 +25,6 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	 */
 	public static final String REDCORD_EXERCISE_COUNT = "redcordExerciseCount";
 	
-	@Column
-	private String name;
-	
 	@Lob
 	private String comments;
 	
@@ -43,7 +39,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	}
 	
 	public RedcordSession(Client client, String name) {
-		this.name = name;
+		super(name);
 		// set default starting date to 8 o'clock current day
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -100,10 +96,6 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
 
-	public String getName() {
-		return name;
-	}
-	
 	public boolean allowsChildren() {
 		return true;
 	}

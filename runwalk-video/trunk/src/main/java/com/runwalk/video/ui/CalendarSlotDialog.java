@@ -18,15 +18,15 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.EventTableModel;
 
 import com.runwalk.video.core.AppComponent;
+import com.runwalk.video.entities.CalendarSlot;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class RedcordSessionDialog extends JDialog {
+public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDialog {
 	
 	private static final String DISMISS_ACTION = "dismiss";
 
@@ -34,17 +34,17 @@ public class RedcordSessionDialog extends JDialog {
 	
 	private EventList<Client> clientList;
 	
-	private EventTableModel<RedcordSession> redcordSessionEventTableModel;
-	
-	public RedcordSessionDialog(Window parentWindow, EventList<RedcordSession> redcordSessions, EventList<Client> clientList) {
+	private EventTableModel<T> calendarSlotEventTableModel;
+
+	public CalendarSlotDialog(Window parentWindow, EventList<T> calendarSlots, EventList<Client> clientList) {
 		super(parentWindow);
 		this.clientList = clientList;
 		setLayout(new MigLayout());
 		add(new JLabel("Synchroniseer afspraken met Google Calendar"), "wrap");
 		JTable calendarEventTable = new JTable();
-		RedcordSessionTableFormat tableFormat = new RedcordSessionTableFormat(getResourceMap());
-		redcordSessionEventTableModel = new EventTableModel<RedcordSession>(redcordSessions, tableFormat);
-		calendarEventTable.setModel(redcordSessionEventTableModel);
+		CalendarSlotTableFormat tableFormat = new CalendarSlotTableFormat(getResourceMap());
+		calendarSlotEventTableModel = new EventTableModel<T>(calendarSlots, tableFormat);
+		calendarEventTable.setModel(calendarSlotEventTableModel);
 		initialiseTableColumnModel(calendarEventTable.getColumnModel());
 		add(calendarEventTable, "grow, wrap");
 		JButton cancelButton = new JButton(getAction(DISMISS_ACTION));
@@ -58,9 +58,9 @@ public class RedcordSessionDialog extends JDialog {
 		columnModel.getColumn(2).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
 		AutoCompleteCellEditor<Client> clientTableCellEditor = AutoCompleteSupport.createTableCellEditor(getClientList());
 		clientTableCellEditor.setClickCountToStart(1);
-		columnModel.getColumn(1).setCellRenderer(new JComboBoxTableCellRenderer());
-		columnModel.getColumn(1).setCellEditor(clientTableCellEditor);
-		columnModel.getColumn(1).setPreferredWidth(120);
+		columnModel.getColumn(3).setCellRenderer(new JComboBoxTableCellRenderer());
+		columnModel.getColumn(3).setCellEditor(clientTableCellEditor);
+		columnModel.getColumn(3).setPreferredWidth(120);
 	}
 	
 	@Action

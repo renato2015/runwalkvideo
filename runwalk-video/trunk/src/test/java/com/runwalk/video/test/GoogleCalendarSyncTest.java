@@ -1,16 +1,26 @@
 package com.runwalk.video.test;
 
+import java.util.Map;
+
+import org.junit.Ignore;
+
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.extensions.When;
 import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.BaseEntryDaoService;
+import com.runwalk.video.dao.jpa.ClientDao;
 import com.runwalk.video.dao.jpa.JpaDaoService;
+import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordSession;
+import com.runwalk.video.ui.CalendarSlotDialog;
 import com.runwalk.video.ui.CalendarSyncService;
 
 public class GoogleCalendarSyncTest extends BaseTestCase {
@@ -26,6 +36,7 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 		jpaDaoService = new JpaDaoService(getSettingsManager().getDatabaseSettings(), APP_NAME);
 	}
 	
+	@Ignore
 	public void testCalendarEventEntryDao() {
 		Dao<CalendarEventEntry> calendarEventEntryDao = baseEntryDaoService.getDao(CalendarEventEntry.class);
 		EventList<CalendarEventEntry> calendarEntries = new BasicEventList<CalendarEventEntry>();
@@ -48,11 +59,23 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 		}
 	}
 	
-	public void testSyncManager() {
+	public void testSyncManager() throws InterruptedException {
 		// create a composite daoservice ..
 		DaoService daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
 		CalendarSyncService<RedcordSession> service = new CalendarSyncService<RedcordSession>(RedcordSession.class, daoService);
-		assertTrue(service.syncToCalendar());
+		
+		ClientDao clientDao = daoService.getDao(Client.class);
+		EventList<Client> clientList = GlazedLists.eventList(clientDao.getByIds(Sets.newHashSet(120L, 2344L)));
+		
+		Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = service.syncToCalendar();
+		EventList<RedcordSession> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
+		assertNotNull(calendarSlotMapping);
+		assertTrue(calendarSlotMapping.size() > 0);
+		
+		CalendarSlotDialog<RedcordSession> calendarSlotDialog = new CalendarSlotDialog<RedcordSession>(null, calendarSlotList, clientList);
+		synchronized(calendarSlotDialog) {
+			calendarSlotDialog.wait();
+		}
 	}
 	
 }

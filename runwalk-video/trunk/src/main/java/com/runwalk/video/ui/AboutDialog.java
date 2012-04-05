@@ -20,12 +20,12 @@ import com.runwalk.video.core.AppComponent;
 @AppComponent
 public class AboutDialog extends JDialog {
 
-    private JButton closeButton;
+    private JButton dismissButton;
 	
 	public AboutDialog(Window parent) {
         super(parent);
         initComponents();
-        getRootPane().setDefaultButton(closeButton);
+        getRootPane().setDefaultButton(dismissButton);
     }
 
     @Action 
@@ -41,13 +41,13 @@ public class AboutDialog extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
     	setLayout(new MigLayout());
-        closeButton = new javax.swing.JButton();
+        dismissButton = new javax.swing.JButton();
         
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
         setResizable(false);
 
-        closeButton.setAction(getAction("closeAboutBox")); // NOI18N
+        dismissButton.setAction(getAction("dismiss")); // NOI18N
 
         JLabel appTitleLabel = new JLabel();
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
@@ -89,7 +89,7 @@ public class AboutDialog extends JDialog {
         imageLabel.setIcon(getResourceMap().getIcon("imageLabel.icon")); // NOI18N
         add(imageLabel, "wrap, span, align center");
 
-        add(closeButton, "span, align center");
+        add(dismissButton, "span, align center");
         pack();
     }
     

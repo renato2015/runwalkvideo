@@ -7,8 +7,8 @@ import java.util.EventListener;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 
+import com.runwalk.video.entities.CalendarSlot;
 import com.runwalk.video.entities.RedcordExercise;
-import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
 
 public class RedcordTableElementConnector implements Connector<RedcordTableElement> {
@@ -48,11 +48,11 @@ public class RedcordTableElementConnector implements Connector<RedcordTableEleme
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public void propertyChange(PropertyChangeEvent event) {
 			if (event.getSource() instanceof RedcordTableElement) {
-				RedcordSession redcordSession = null;
+				CalendarSlot<RedcordTableElement> redcordSession = null;
 				if (event.getSource() instanceof RedcordExercise) {
 					redcordSession = ((RedcordExercise) event.getSource()).getRedcordSession();
 				} else {
-					redcordSession = (RedcordSession) event.getSource();
+					redcordSession = (CalendarSlot<RedcordTableElement>) event.getSource();
 				}
 				redcordSession.getClient().setDirty(true);
 				((ObservableElementList) list).elementChanged(event.getSource());
