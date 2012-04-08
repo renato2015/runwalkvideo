@@ -102,5 +102,5 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 }
