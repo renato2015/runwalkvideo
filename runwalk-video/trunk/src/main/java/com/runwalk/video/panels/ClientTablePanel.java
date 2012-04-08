@@ -65,7 +65,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoManager;
 
-		String borderTitle = getResourceMap().getString("borderPanel.border.title");
+		String borderTitle = getResourceMap().getString("clientTablePanel.border.title");
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
 				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, SettingsManager.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);

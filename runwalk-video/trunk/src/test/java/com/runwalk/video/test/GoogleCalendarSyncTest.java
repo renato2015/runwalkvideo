@@ -1,6 +1,8 @@
 package com.runwalk.video.test;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 
@@ -8,10 +10,10 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.extensions.When;
+import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
@@ -28,6 +30,8 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 	private static final String APP_NAME = "runwalk-video";
 	// dao service declaration
 	private DaoService baseEntryDaoService, jpaDaoService;
+	
+	private CalendarSlotDialog calendarSlotDialog;
 	
 	public void setUp() {
 		super.setUp();
@@ -62,20 +66,31 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 	public void testSyncManager() throws InterruptedException {
 		// create a composite daoservice ..
 		DaoService daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
-		CalendarSyncService<RedcordSession> service = new CalendarSyncService<RedcordSession>(RedcordSession.class, daoService);
+		CalendarSyncService<RedcordSession> calendarSyncService = new CalendarSyncService<RedcordSession>(RedcordSession.class, daoService);
 		
 		ClientDao clientDao = daoService.getDao(Client.class);
 		EventList<Client> clientList = GlazedLists.eventList(clientDao.getByIds(Sets.newHashSet(120L, 2344L)));
-		
-		Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = service.syncToCalendar();
+		// get data to sync with calendar
+		Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToCalendar();
 		EventList<RedcordSession> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
+		// sort appointments according to date
+		Collections.sort(calendarSlotList);
 		assertNotNull(calendarSlotMapping);
 		assertTrue(calendarSlotMapping.size() > 0);
-		
-		CalendarSlotDialog<RedcordSession> calendarSlotDialog = new CalendarSlotDialog<RedcordSession>(null, calendarSlotList, clientList);
-		synchronized(calendarSlotDialog) {
-			calendarSlotDialog.wait();
-		}
+		// show the sync dialog on screen (invoke on EDT)
+		CountDownLatch endSignal = new CountDownLatch(1);
+		showCalendarSlotDialog(endSignal, calendarSlotList, clientList);
+		endSignal.await();
+		calendarSlotDialog.setVisible(false);
+		// continue to work after notification from the dialog
+		calendarSyncService.syncToCalendar(calendarSlotMapping);
+	}
+
+	@OnEdt
+	private void showCalendarSlotDialog(final CountDownLatch endSignal, final EventList<RedcordSession> calendarSlotList, final EventList<Client> clientList) {
+		calendarSlotDialog = new CalendarSlotDialog<RedcordSession>(null, endSignal, calendarSlotList, clientList);
+		calendarSlotDialog.setVisible(true);
+		calendarSlotDialog.toFront();
 	}
 	
 }

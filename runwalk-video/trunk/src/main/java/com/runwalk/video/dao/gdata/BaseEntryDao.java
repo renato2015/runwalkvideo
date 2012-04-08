@@ -12,10 +12,11 @@ import com.runwalk.video.dao.AbstractDao;
 
 public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> extends AbstractDao<E> {
 
-	private BaseFeed<F, E> feed;
+	private F feed;
 	
-	public BaseEntryDao(BaseFeed<F, E> feed, Class<E> typeParameter) {
+	public BaseEntryDao(F feed, Class<E> typeParameter) {
 		super(typeParameter);
+		feed.setCanPost(true);
 		this.feed = feed;
 	}
 	
@@ -49,6 +50,8 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 
 	public E merge(E item) {
 		try {
+			getFeed().getFeedBatchLink().getHref();
+			String href = item.getEditLink().getHref();
 			return item.update();
 		} catch (IOException e1) {
 			getLogger().info("Merge failed for " + item, e1);
@@ -99,11 +102,11 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 	}
 	
 	
-	protected BaseFeed<F, E> getFeed() {
+	protected F getFeed() {
 		return feed;
 	}
 
-	protected void setFeed(BaseFeed<F, E> feed) {
+	protected void setFeed(F feed) {
 		this.feed = feed;
 	}
 

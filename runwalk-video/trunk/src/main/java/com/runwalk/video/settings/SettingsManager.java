@@ -16,7 +16,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.FileAppender;
@@ -43,10 +42,10 @@ public class SettingsManager implements Serializable {
 	private final static String UNCOMPRESSED_VIDEO_DIRNAME = "uncompressed";
 
 	private static Logger logger;
-	
+
 	/** The settings directory is stored here */
 	private final File localStorageDir;
-	
+
 	/** The settings file name is stored here */
 	private final String settingsFileName;
 
@@ -59,7 +58,7 @@ public class SettingsManager implements Serializable {
 
 	/** The parsed directories for both uncompressed and compressed video's are cached here after lazy initialization */
 	private File videoDir, uncompressedVideoDir;
-	
+
 	/**
 	 * This method will do the initial log4j configuration using the properties file embedded in the jar.
 	 * You can reconfigure log4j afterwards by adding a log4j.properties file to the {@link #getLocalStorageDir()} directory.
@@ -74,11 +73,11 @@ public class SettingsManager implements Serializable {
 		logger.debug("Logging to file with location " + appndr.getFile());
 		org.jdesktop.beansbinding.util.logging.Logger.getLogger(ELProperty.class.getName()).setLevel(Level.SEVERE);
 	}
-	
+
 	public SettingsManager(File localStorageDir) {
 		this(localStorageDir, SETTINGS_FILE_NAME);
 	}
-	
+
 	public SettingsManager(File localStorageDir, String settingsFileName) {
 		settings = new Settings();
 		this.localStorageDir = localStorageDir;
@@ -95,24 +94,24 @@ public class SettingsManager implements Serializable {
 		loadAddtionalLog4JSettings();
 		logger.debug("Initializing ApplicationSettings..");
 		File settingsFile = null;
-		synchronized(this) {
-			try { 
-				settingsFile = createSettingsFileIfAbsent();
-				if (settingsFile.length() > 0) {
-					logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
-					Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-					settings = (Settings) unmarshaller.unmarshal(settingsFile);
+		try { 
+			settingsFile = createSettingsFileIfAbsent();
+			if (settingsFile.length() > 0) {
+				logger.debug("Loading application settings from file " + settingsFile.getAbsolutePath());
+				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+				settings = (Settings) unmarshaller.unmarshal(settingsFile);
+			}
+		} catch(Exception exc) {
+			logger.error("Exception thrown while loading settings file", exc);
+			if (exc.getMessage() != null) {
+				logger.error("Settings file seems to be corrupt. Attempting to delete..", exc);
+				if (settingsFile != null) {
+					settingsFile.delete();
+					logger.warn("Settings file deleted. Default settings will be applied");
 				}
-			} catch(Exception exc) {
-				logger.error("Exception thrown while loading settings file", exc);
-				if (exc.getMessage() != null) {
-					logger.error("Settings file seems to be corrupt. Attempting to delete..", exc);
-					if (settingsFile != null) {
-						settingsFile.delete();
-						logger.warn("Settings file deleted. Default settings will be applied");
-					}
-				}
-			} finally {
+			}
+		} finally {
+			synchronized(this) {
 				if (settings == null) {
 					settings = new Settings();
 					saveSettings();
@@ -122,7 +121,7 @@ public class SettingsManager implements Serializable {
 		logger.debug("Found videodir: " + getVideoDir().getAbsolutePath());
 		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
 	}
-	
+
 	/**
 	 * Looks for additional log4j files in the user.home directory of the application.
 	 * Use this to store specific appenders that require easy configuration. 
@@ -147,18 +146,18 @@ public class SettingsManager implements Serializable {
 			logger.error("Exception thrown while saving settings to file " + settingsFileName, exc);
 		} 
 	}
-	
+
 	private File createSettingsFileIfAbsent() throws IOException {
 		File settingsFile = new File(getLocalStorageDir(), settingsFileName);
 		File settingsFolder = settingsFile.getParentFile();
 		// check if parent folder and settings file exists, create them otherwise
 		if (!((settingsFolder.exists() || settingsFolder.mkdirs()) && 
-			(settingsFile.exists() || settingsFile.createNewFile()))) {
+				(settingsFile.exists() || settingsFile.createNewFile()))) {
 			throw new FileNotFoundException("Settings file could not be created");
 		}
 		return settingsFile;
 	}
-	
+
 	public File getLocalStorageDir() {
 		return localStorageDir;
 	}
@@ -265,19 +264,19 @@ public class SettingsManager implements Serializable {
 	public String getTranscoderName() {
 		return getSettings().transcoderName;
 	}
-	
+
 	public String getCaptureEncoderName() {
 		return getSettings().captureEncoderName;
 	}
-	
+
 	public void setCaptureEncoderName(String captureEncoderName) {
 		getSettings().captureEncoderName = captureEncoderName;
 	}
-	
+
 	public String getLogFileUploadUrl() {
 		return getSettings().logFileUploadUrl;
 	}
-	
+
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
 		if (getSettings().videoFolderRetrievalStrategy == null) {
 			getSettings().videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
@@ -285,35 +284,35 @@ public class SettingsManager implements Serializable {
 		return getSettings().videoFolderRetrievalStrategy;
 	}
 
-	
+
 	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
 		getSettings().videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
-	
+
 	public String getVlcPath() {
 		return getSettings().vlcPath;
 	}
-	
+
 	public void setVlcPath(String vlcPath) {
 		getSettings().vlcPath = vlcPath;
 	}
-	
+
 	public AuthenticationSettings getCalendarSettings() {
 		return getSettings().calendarSettings;
 	}
-	
+
 	public void setCalendarSettings(AuthenticationSettings calendarSettings) {
 		getSettings().calendarSettings = calendarSettings;
 	}
-	
+
 	public AuthenticationSettings getDatabaseSettings() {
 		return getSettings().databaseSettings;
 	}
-	
+
 	public void setDatabaseSettings(AuthenticationSettings databaseSettings) {
 		getSettings().databaseSettings = databaseSettings;
 	}
-	
+
 	public List<String> getVideoCapturerFactories() {
 		return Arrays.asList(getSettings().videoCapturerFactories);
 	}
@@ -332,13 +331,13 @@ public class SettingsManager implements Serializable {
 		private float savedVolume;
 
 		private String transcoderName = "XviD MPEG-4 Codec";
-		
+
 		private String captureEncoderName = "none";
-		
+
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
 		private String[] videoCapturerFactories = new String[] {"com.runwalk.video.media.dsj.DSJCapturerFactory", "com.runwalk.video.media.ueye.UEyeCapturerFactory"};
-		
+
 		/** 
 		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
 		 */
@@ -347,13 +346,13 @@ public class SettingsManager implements Serializable {
 		private String videoDir = "D:\\Video's";
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
-		
+
 		private AuthenticationSettings calendarSettings = new AuthenticationSettings("user@gmail.com", "password", "http://www.google.com/my/agenda");
-		
+
 		private AuthenticationSettings databaseSettings = new AuthenticationSettings("root", "password", "jdbc:mysql://localhost:3306");
-		
+
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
-		
+
 	}
 
 }
