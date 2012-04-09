@@ -21,7 +21,9 @@ public enum RecordingStatus {
 
 	RECORDING(8, "status.recording"),
 
-	COMPRESSING(9,"status.compressing");
+	COMPRESSING(9,"status.compressing"),
+	
+	NONE(10, "status.none");
 	
 	private int code;
 	

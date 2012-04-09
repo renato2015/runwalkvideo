@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
@@ -320,6 +322,15 @@ public class SettingsManager implements Serializable {
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
+		
+		{
+			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
+				videoDir = "D:\\Video's";
+			} else if (AppHelper.getPlatform() == PlatformType.OS_X) {
+				videoDir = System.getProperty("user.home")+ File.separator +"Movies";
+			}
+			
+		}
 
 		/**
 		 * The last selected capturer on startup.
@@ -343,7 +354,7 @@ public class SettingsManager implements Serializable {
 		 */
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object?
-		private String videoDir = "D:\\Video's";
+		private String videoDir;
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
 

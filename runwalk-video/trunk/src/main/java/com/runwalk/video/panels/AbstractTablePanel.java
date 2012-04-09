@@ -4,6 +4,7 @@ import java.awt.LayoutManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -114,11 +115,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 	
 	/**
-	 * Overwrite the selected item field by force and fire a PCE.
-	 * A PCE should almost always be fired, except in the case 
-	 * where both the old and new objects are exactly the same in memory.
+	 * Overwrite the selected item field by force and fire a {@link PropertyChangeEvent}, 
+	 * which should almost always be fired, except in the case where both the old and 
+	 * new objects are exactly the same in memory.
 	 * 
-	 * TODO maybe there is a more elegant way to solve this problem?
+	 * TODO maybe find a more elegant way to solve this problem?
 	 * 
 	 * @param selectedItem the selected item 
 	 */

@@ -14,7 +14,7 @@ public class DatePickerTableCellRenderer extends DateTableCellRenderer {
 
 	public DatePickerTableCellRenderer(DateFormat dateFormat) {
 		super(dateFormat);
-		this.editor = new DatePickerCellEditor(dateFormat) ;
+		this.editor = new DatePickerCellEditor(dateFormat);
 	}
 
 	@Override

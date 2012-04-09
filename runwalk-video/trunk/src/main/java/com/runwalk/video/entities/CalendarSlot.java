@@ -8,6 +8,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 /**
  * Instances of this class can be syned with a calendar.
@@ -42,7 +43,13 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	private Client client;
 
 	@Column
-	protected String name;
+	private String name;
+	
+	@Transient
+	private boolean ignored;
+	
+	@Transient
+	private CalendarSlotStatus calendarSlotStatus = CalendarSlotStatus.NEW;
 	
 	protected CalendarSlot() {
 		this("");
@@ -79,6 +86,22 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 		return lastModified;
 	}
 	
+	public boolean isIgnored() {
+		return ignored;
+	}
+
+	public void setIgnored(boolean ignored) {
+		this.ignored = ignored;
+	}
+	
+	public CalendarSlotStatus getCalendarSlotStatus() {
+		return calendarSlotStatus;
+	}
+
+	public void setCalendarSlotStatus(CalendarSlotStatus calendarSlotStatus) {
+		this.calendarSlotStatus = calendarSlotStatus;
+	}
+
 	public String getCalendarId() {
 		return calendarId;
 	}

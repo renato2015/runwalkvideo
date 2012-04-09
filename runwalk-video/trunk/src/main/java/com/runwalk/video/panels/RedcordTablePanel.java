@@ -167,7 +167,10 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			getLogger().warn("Attempt to insert redcordSession for " + selectedClient + " failed.");
 			return null;
 		}
-		RedcordSession redcordSession = new RedcordSession(selectedClient); 
+		// get session count and set name
+		int sessionCount = selectedClient.getRedcordSessionCount();
+		String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++sessionCount);
+		RedcordSession redcordSession = new RedcordSession(selectedClient, sessionName); 
 		PersistTask<RedcordSession> result = new PersistTask<RedcordSession>(getDaoService(), RedcordSession.class, redcordSession);
 		result.addTaskListener(new TaskListener.Adapter<RedcordSession, Void>() {
 
@@ -231,7 +234,10 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			selectedRedcordSession = ((RedcordExercise) getSelectedItem()).getRedcordSession();
 		}
 		final RedcordSession finaSelectedRedcordSession = selectedRedcordSession;
-		RedcordExercise redcordExercise = new RedcordExercise(selectedRedcordSession);
+		// get exercise count and set name
+		int exerciseCount = selectedRedcordSession.getRedcordExerciseCount();
+		String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++exerciseCount);
+		RedcordExercise redcordExercise = new RedcordExercise(selectedRedcordSession, exerciseName);
 		PersistTask<RedcordExercise> result = new PersistTask<RedcordExercise>(getDaoService(), RedcordExercise.class, redcordExercise);
 		result.addTaskListener(new TaskListener.Adapter<RedcordExercise, Void>() {
 

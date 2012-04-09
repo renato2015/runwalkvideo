@@ -241,9 +241,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	public void initialiseTableColumnModel() {
 		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
+		String defaultValue = getResourceMap().getString("tableFormat.defaultValue");
+		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.EXTENDED_DATE_FORMATTER));
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(80);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
+		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
 		final String buttonTitle = getResourceMap().getString("analysisOverviewTableFormat.openButton.text");
