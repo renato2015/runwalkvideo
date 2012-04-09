@@ -13,17 +13,14 @@ import ca.odell.glazedlists.GlazedLists;
 import com.google.common.collect.Sets;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.extensions.When;
-import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.ClientDao;
 import com.runwalk.video.dao.jpa.JpaDaoService;
-import com.runwalk.video.entities.CalendarSlot;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordSession;
-import com.runwalk.video.ui.CalendarSlotDialog;
 import com.runwalk.video.ui.CalendarSlotSyncService;
 
 public class GoogleCalendarSyncTest extends BaseTestCase {
@@ -31,8 +28,6 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 	private static final String APP_NAME = "runwalk-video";
 	// dao service declaration
 	private DaoService baseEntryDaoService, jpaDaoService;
-	
-	private CalendarSlotDialog<? extends CalendarSlot<?>> calendarSlotDialog;
 	
 	public void setUp() {
 		super.setUp();
@@ -79,19 +74,11 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 		if (!calendarSlotList.isEmpty()) {
 			// show the sync dialog on screen (invoke on EDT)
 			CountDownLatch endSignal = new CountDownLatch(1);
-			showCalendarSlotDialog(endSignal, calendarSlotList, clientList);
+			calendarSyncService.showCalendarSlotDialog(null, endSignal, calendarSlotList, clientList);
 			endSignal.await();
-			calendarSlotDialog.setVisible(false);
 		}
 		// continue to work after notification from the dialog
 		calendarSyncService.syncToDatabase(calendarSlotMapping);
 	}
 
-	@OnEdt
-	private void showCalendarSlotDialog(final CountDownLatch endSignal, final EventList<RedcordSession> calendarSlotList, final EventList<Client> clientList) {
-		calendarSlotDialog = new CalendarSlotDialog<RedcordSession>(null, endSignal, calendarSlotList, clientList);
-		calendarSlotDialog.setVisible(true);
-		calendarSlotDialog.toFront();
-	}
-	
 }

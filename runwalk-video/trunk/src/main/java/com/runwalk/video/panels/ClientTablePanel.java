@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -61,7 +62,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private final DaoService daoService;
 
 	public ClientTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
-		super(new MigLayout("nogrid, fill"));
+		super(new MigLayout("debug, nogrid, fill"));
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoManager;
 
@@ -69,6 +70,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
 				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, SettingsManager.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
+		getTable().setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(getTable());
@@ -150,8 +152,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(1).setMaxWidth(160);
 		getTable().getColumnModel().getColumn(3).setMinWidth(80);
-		getTable().getColumnModel().getColumn(3).setPreferredWidth(100);
-		getTable().getColumnModel().getColumn(3).setMaxWidth(100);
+		getTable().getColumnModel().getColumn(3).setPreferredWidth(130);
+		getTable().getColumnModel().getColumn(3).setMaxWidth(130);
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.EXTENDED_DATE_FORMATTER));
 	}
 

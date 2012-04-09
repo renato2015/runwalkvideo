@@ -5,25 +5,25 @@ public enum RecordingStatus {
 	/**
 	 * All error constants are denoted by negative numbers (except for fileNotFound)
 	 */
-	FILE_NOT_ACCESSIBLE(-2, "status.fileNotAccessible"),
+	FILE_NOT_ACCESSIBLE(-2, "recordingStatus.fileNotAccessible"),
 	
-	DSJ_ERROR(-1, "status.dsjError"),
+	DSJ_ERROR(-1, "recordingStatus.dsjError"),
 	
-	COMPRESSED(0, true, "status.compressed"),
+	COMPRESSED(0, true, "recordingStatus.compressed"),
 	
-	READY (1, "status.ready"),
+	READY (1, "recordingStatus.ready"),
 
-	NON_EXISTANT_FILE(4, "status.fileNotFound"),
+	NON_EXISTANT_FILE(4, "recordingStatus.fileNotFound"),
 	
-	UNCOMPRESSED(6, true, "status.uncompressed"),
+	UNCOMPRESSED(6, true, "recordingStatus.uncompressed"),
 
-	RECORDED(7,"status.recorded"),
+	RECORDED(7,"recordingStatus.recorded"),
 
-	RECORDING(8, "status.recording"),
+	RECORDING(8, "recordingStatus.recording"),
 
-	COMPRESSING(9,"status.compressing"),
+	COMPRESSING(9,"recordingStatus.compressing"),
 	
-	NONE(10, "status.none");
+	NONE(10, "recordingStatus.none");
 	
 	private int code;
 	

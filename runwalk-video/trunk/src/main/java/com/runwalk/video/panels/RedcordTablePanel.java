@@ -1,7 +1,11 @@
 package com.runwalk.video.panels;
 
+import java.awt.Window;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -17,6 +21,7 @@ import javax.swing.event.UndoableEditListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
@@ -35,6 +40,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
+import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
@@ -43,8 +49,10 @@ import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
+import com.runwalk.video.ui.CalendarSlotSyncService;
 import com.runwalk.video.ui.table.DatePickerTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
@@ -55,8 +63,13 @@ import com.runwalk.video.util.AppUtil;
 public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 	private static final String REDCORD_SESSION_SELECTED = "redcordSessionSelected";
-
 	private static final String REDCORD_EXERCISE_SELECTED = "redcordExerciseSelected";
+
+	private static final String SYNC_TO_DATABASE_ACTION = "syncToDatabase";
+	private static final String ADD_REDCORD_EXCERCISE_ACTION = "addRedcordExercise";
+	private static final String DELETE_REDCORD_EXCERCISE_ACTION = "deleteRedcordExercise";
+	private static final String ADD_REDCORD_SESSION_ACTION = "addRedcordSession";
+	private static final String DELETE_REDCORD_SESSION_ACTION = "deleteRedcordSession";
 
 	private final ClientTablePanel clientTablePanel;
 	
@@ -84,22 +97,18 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow, height :130:");
 		
-		setFirstButton(new JButton(getAction("addRedcordSession")));
+		setFirstButton(new JButton(getAction(ADD_REDCORD_SESSION_ACTION)));
 		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 		
-		setSecondButton(new JButton(getAction("deleteRedcordSession")));
+		setSecondButton(new JButton(getAction(DELETE_REDCORD_SESSION_ACTION)));
 		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
 		
-		JButton thirdButton = new JButton(getAction("addRedcordExercise"));
-		thirdButton.setFont(SettingsManager.MAIN_FONT);
-		add(thirdButton);
-		
-		JButton fourthButton = new JButton(getAction("deleteRedcordExercise"));
-		fourthButton.setFont(SettingsManager.MAIN_FONT);
-		add(fourthButton, "wrap");
-		
+		addButton(ADD_REDCORD_EXCERCISE_ACTION);
+		addButton(DELETE_REDCORD_EXCERCISE_ACTION);
+		addButton(SYNC_TO_DATABASE_ACTION, "wrap");
+
 		JScrollPane tscrollPane = new JScrollPane();
 		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
@@ -150,7 +159,16 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		bindingGroup.addBinding(selectedRedcordExerciseBinding);
 		
 		bindingGroup.bind();
-		
+	}
+	
+	private void addButton(String actionName, String layoutConstraints) {
+		JButton button = new JButton(getAction(actionName));
+		button.setFont(SettingsManager.MAIN_FONT);
+		add(button, layoutConstraints);
+	}
+	
+	private void addButton(String actionName) {
+		addButton(actionName, "");
 	}
 	
 	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
@@ -179,7 +197,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				RedcordSession result = event.getValue();
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					selectedClient.addRedcordSession(result);
+				//	selectedClient.addRedcordSession(result);
 					setSelectedItemRow(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
@@ -396,10 +414,33 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		});
 	}
 	
-	@Override
-	public boolean save() {
-		// TODO implement syncing code here
-		return super.save();
+	@Action(block=BlockingScope.ACTION)
+	public Task<?, ?> syncToDatabase() {
+		return new AbstractTask<Void, Void>(SYNC_TO_DATABASE_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				message("startMessage");
+				CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(RedcordSession.class, getDaoService());
+				// get data to sync with calendar
+				Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToDatabase();
+				EventList<RedcordSession> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
+				// sort appointments according to date
+				Collections.sort(calendarSlotList);
+				if (!calendarSlotList.isEmpty()) {
+					// show the sync dialog on screen (invoke on EDT)
+					CountDownLatch endSignal = new CountDownLatch(1);
+					Window parentWindow = SwingUtilities.getWindowAncestor(RedcordTablePanel.this);
+					calendarSyncService.showCalendarSlotDialog(parentWindow, endSignal, calendarSlotList, getClientTablePanel().getItemList());
+					endSignal.await();
+				}
+				// continue to work after notification from the dialog
+				int result = calendarSyncService.syncToDatabase(calendarSlotMapping);
+				message("endMessage", result);
+				return null;
+			}
+		
+		};
+		
 	}
 
 	public boolean isClientSelected() {

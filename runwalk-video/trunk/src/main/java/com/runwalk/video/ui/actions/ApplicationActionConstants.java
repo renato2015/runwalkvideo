@@ -4,6 +4,8 @@ public interface ApplicationActionConstants {
 	
 	String EXIT_ACTION = "exitApplication";
 	
+	String ABOUT_ACTION = "about";
+	
 	String SAVE_SETTINGS_ACTION = "saveSettings";
 	
 	String REFRESH_ACTION = "refresh";
