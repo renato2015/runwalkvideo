@@ -22,19 +22,25 @@ public class CalendarEventEntryDao extends BaseEntryDao<CalendarEventFeed, Calen
 
 	public CalendarEventEntryDao(AuthenticationSettings googleServiceSettings, String applicationName) {
 		super(CalendarEventEntry.class);
-		try {
-			feedUrl = new URL(googleServiceSettings.getUrl());
-			GoogleService googleService = new CalendarService(applicationName);
-			googleService.setUserCredentials(googleServiceSettings.getUserName(), googleServiceSettings.getPassword(), ClientLoginAccountType.GOOGLE);
-			
-			UserToken userToken = (UserToken) googleService.getAuthTokenFactory().getAuthToken();
-			googleService.getRequestFactory().setAuthToken(userToken);
-			
-			// too bad we can't retrieve the generic type parameter back from the subclassed feed
-			setFeed(googleService.getFeed(feedUrl, CalendarEventFeed.class));
-		} catch(Exception e) {
-			// rethrow an unchecked exception
-			getLogger().error("Unable to connect to calendar service.", e);
+		if (googleServiceSettings != AuthenticationSettings.CALENDAR_DEFAULT) {
+			getLogger().info("AuthenticationSettings found for Google calendar service");
+			try {
+				feedUrl = new URL(googleServiceSettings.getUrl());
+				GoogleService googleService = new CalendarService(applicationName);
+				getLogger().info("Connecting as " + googleServiceSettings.getUserName() + " to feed " + feedUrl.toString());
+				googleService.setUserCredentials(googleServiceSettings.getUserName(), googleServiceSettings.getPassword(), ClientLoginAccountType.GOOGLE);
+				
+				UserToken userToken = (UserToken) googleService.getAuthTokenFactory().getAuthToken();
+				googleService.getRequestFactory().setAuthToken(userToken);
+				
+				// too bad we can't retrieve the generic type parameter back from the subclassed feed
+				setFeed(googleService.getFeed(feedUrl, CalendarEventFeed.class));
+			} catch(Exception e) {
+				// rethrow an unchecked exception
+				getLogger().error("Unable to connect to calendar service.", e);
+			}
+		} else {
+			getLogger().warn("No AuthenticationSettings found for Google calendar service");
 		}
 	}
 	

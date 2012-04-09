@@ -14,10 +14,11 @@ public class AWTExceptionHandler {
 
 	public void handle(Throwable t) {
 		try {
+			Logger.getLogger(getClass()).error(t.getMessage(), t.getCause());
 			// insert your exception handling code here
 			// or do nothing to make it go away
 		} catch (Throwable t1) {
-			Logger.getLogger(getClass()).error(t);
+			Logger.getLogger(getClass()).error("Second exception on EDT", t1);
 			// don't let the exception get thrown out, will cause infinite looping!
 		}
 	}

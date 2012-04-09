@@ -32,7 +32,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 	private JDialog aboutBox;
 
 	public VideoMenuBar() {
-
+		// TODO generate file menu using the tablePanels list here!
 		JSeparator separator = new JSeparator();
 		JMenu fileMenu = new  JMenu(getResourceMap().getString("fileMenu.text"));
 		JMenuItem newClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("addClient"));
@@ -77,9 +77,9 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 
 		//the edit menu?
 		JMenu editMenu = new JMenu(getResourceMap().getString("editMenu.text"));
-		JMenuItem undo = new JMenuItem( getApplication().getApplicationActionMap().get("undo"));
+		JMenuItem undo = new JMenuItem( getApplicationActionMap().get("undo"));
 		editMenu.add(undo);
-		JMenuItem redo = new JMenuItem( getApplication().getApplicationActionMap().get("redo"));
+		JMenuItem redo = new JMenuItem( getApplicationActionMap().get("redo"));
 		editMenu.add(redo);
 		editMenu.add(new JSeparator());
 		ResourceInjector resourceInjector = ResourceInjector.getInstance();
@@ -99,7 +99,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		add(windowMenu);
 
 		JMenu helpMenu = new  JMenu(getResourceMap().getString("helpMenu.text"));
-		JMenuItem aboutMenuItem = new JMenuItem( getAction("about"));
+		JMenuItem aboutMenuItem = new JMenuItem( getAction(ABOUT_ACTION));
 		JMenuItem uploadLogFiles = new JMenuItem( getAction(UPLOAD_LOG_FILES_ACTION));
 		helpMenu.add(uploadLogFiles);
 		helpMenu.add(new JSeparator());

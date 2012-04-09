@@ -60,7 +60,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private TableFormat<T> tableFormat;
 	private EventTableModel<T> eventTableModel;
 	
-	private Boolean dirty;
+	private Boolean dirty = Boolean.FALSE;
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);

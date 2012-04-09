@@ -1,19 +1,24 @@
 package com.runwalk.video.ui;
 
+import java.awt.Window;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
+
+import ca.odell.glazedlists.EventList;
 
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.calendar.EventWho;
 import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.When;
+import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.CalendarEventEntryDao;
 import com.runwalk.video.dao.jpa.CalendarSlotDao;
@@ -46,15 +51,18 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	/**
 	 * {@inheritDoc}
 	 */
-	public void syncToDatabase(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
+	public int syncToDatabase(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
+		int result = 0;
 		CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
 		for (Entry<T, CalendarEventEntry> entry : calendarEventEntryMapping.entrySet()) {
 			T calendarSlot = entry.getKey();
 			CalendarEventEntry calendarEventEntry = entry.getValue();
 			updateBaseEntry(calendarEventEntry, calendarSlot);
 			// check if the calendarSlot needs to be updated
-			if (calendarSlot.getCalendarSlotStatus().needsUpdate() && !calendarSlot.isIgnored()) {
+			if (calendarSlot.getCalendarSlotStatus().needsUpdate() && !calendarSlot.isIgnored() && 
+					calendarSlot.getClient() != null) {
 				// get the last modified field back from the updated entry
+				result ++;
 				updateLastModifiedDate(calendarEventEntry, calendarSlot);
 				if (calendarSlot.getId() == null) {
 					// persist entity to database
@@ -64,6 +72,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 				}
 			}
 		}
+		return result;
 	}
 
 	/**
@@ -226,6 +235,13 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			logger.error(e);
 		}
 		return result;
+	}
+	
+	@OnEdt
+	public void showCalendarSlotDialog(Window parentWindow, final CountDownLatch endSignal, final EventList<T> calendarSlotList, final EventList<Client> clientList) {
+		CalendarSlotDialog<T> calendarSlotDialog = new CalendarSlotDialog<T>(parentWindow, endSignal, calendarSlotList, clientList);
+		calendarSlotDialog.setVisible(true);
+		calendarSlotDialog.toFront();
 	}
 
 	private Class<T> getTypeParameter() {

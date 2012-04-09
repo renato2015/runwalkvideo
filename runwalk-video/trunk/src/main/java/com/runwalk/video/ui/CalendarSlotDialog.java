@@ -1,8 +1,6 @@
 package com.runwalk.video.ui;
 
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.BorderFactory;
@@ -42,8 +40,6 @@ import com.runwalk.video.util.AppUtil;
 @AppComponent
 public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDialog {
 	
-	private static final String DISMISS_ACTION = "dismiss";
-
 	private static final String SAVE_ACTION = "save";
 	
 	private EventList<Client> clientList;
@@ -56,7 +52,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		super(parentWindow);
 		this.clientList = clientList;
 		this.dismissSignal = dismissSignal;
-		setLayout(new MigLayout("insets 10 10 10 10"));
+		setLayout(new MigLayout("insets dialog"));
 		setTitle(getResourceMap().getString("calendarSlotDialog.title")); // NOI18N
 		String borderTitle = getResourceMap().getString("calendarSlotDialog.border.title");
 		JPanel calendarSlotTablePane = (JPanel) getContentPane();
@@ -86,20 +82,11 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(calendarSlotTable);
 		add(scrollPane, "wrap, grow");
-/*		JButton cancelButton = new JButton(getAction(DISMISS_ACTION));
-		add(cancelButton, "right align");*/
-		JButton okButton = new JButton(getResourceMap().getString("save.Action.text"));
-		okButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				save();
-			}
-			
-		});
+		JButton okButton = new JButton(getAction(SAVE_ACTION));
 		getRootPane().setDefaultButton(okButton);
 		add(okButton, "right align");
 		pack();
+		setLocationRelativeTo(null);
 	}
 	
 	private void initialiseTableColumnModel(TableColumnModel columnModel) {
@@ -124,6 +111,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 	@Action
 	public void save() {
 		clientList = null;
+		setVisible(false);
 		getDismissSignal().countDown();
 	}
 

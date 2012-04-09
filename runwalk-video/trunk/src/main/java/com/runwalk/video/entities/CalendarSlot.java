@@ -125,5 +125,24 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if (obj != null && getClass() == obj.getClass()) {
+			CalendarSlot<?> other = (CalendarSlot<?>) obj;
+			result &= getCalendarId() != null ? getCalendarId().equals(other.getCalendarId()) : other.getCalendarId() == null;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
+		}
+		return result;
+	}
 
 }

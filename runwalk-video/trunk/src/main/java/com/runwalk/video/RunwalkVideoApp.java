@@ -88,6 +88,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private JScrollableDesktopPane scrollableDesktopPane;
 	private VideoFileManager videoFileManager;
 	private DaoService daoService;
+	private SettingsManager settingsManager;
 
 	private boolean saveNeeded = false;
 	
@@ -103,7 +104,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		}
 		
 	};
-	private SettingsManager settingsManager;
 
 	/**
 	 * A convenient static getter for the application instance.
@@ -142,13 +142,13 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		AWTExceptionHandler.registerExceptionHandler();
 		ApplicationContext appContext = Application.getInstance().getContext();
 		settingsManager = new SettingsManager(appContext.getLocalStorage().getDirectory());
-		settingsManager.loadSettings();
+		getSettingsManager().loadSettings();
 		// create daoServices and add them to the composite
-		DaoService jpaDaoService = new JpaDaoService(settingsManager.getDatabaseSettings(), getName());
-		DaoService baseEntryDaoService = new BaseEntryDaoService(settingsManager.getCalendarSettings(), getVersionString());
+		DaoService jpaDaoService = new JpaDaoService(getSettingsManager().getDatabaseSettings(), getName());
+		DaoService baseEntryDaoService = new BaseEntryDaoService(getSettingsManager().getCalendarSettings(), getVersionString());
 		daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
 		// create video file manager
-		videoFileManager = new VideoFileManager(settingsManager);
+		videoFileManager = new VideoFileManager(getSettingsManager());
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
-		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(settingsManager, getVideoFileManager());
+		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(getSettingsManager(), getVideoFileManager());
 		addTablePanel(analysisOverviewTablePanel);
 		redcordTablePanel = new RedcordTablePanel(getClientTablePanel(), createUndoableEditListener(), getDaoService());
 		addTablePanel(redcordTablePanel);
@@ -178,7 +178,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create mediaplayer controls
 	//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
 	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
-		mediaControls = new MediaControls(settingsManager, getVideoFileManager(), 
+		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startCapturer();
 		// set tableformats for the two last panels
@@ -293,6 +293,11 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				message("endMessage");
 				return result;
 			}
+
+			@Override
+			protected void succeeded(Boolean result) {
+				setSaveNeeded(!result);
+			}
 			
 		};
 		
@@ -321,10 +326,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		tabPanel.addTab(resourceMap.getString("analysisOverviewTablePanel.TabConstraints.tabTitle"),  getAnalysisOverviewTablePanel()); // NOI18N
 		tabPanel.addTab(resourceMap.getString("redcordTablePanel.TabConstraints.tabTitle"),  getRedcordTablePanel()); // NOI18N
 		// set layout and add everything to the frame
-		panel.setLayout(new MigLayout("flowy", "[grow,fill]", "[grow,fill]"));
-		panel.add(getClientTablePanel());
-		panel.add(tabPanel, "height :280:");
-		panel.add(getStatusPanel(), "height 30!");
+		panel.setLayout(new MigLayout("debug, fill, nogrid, flowy, insets 0"));
+		panel.add(getClientTablePanel(), "growx");
+		panel.add(tabPanel, "height :280:, growx");
+		panel.add(getStatusPanel(), "height 30!, gapleft push");
 		return new Containable() {
 
 			public Component getComponent() {
@@ -397,6 +402,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private DaoService getDaoService() {
 		return daoService;
 	}
+	
+	private SettingsManager getSettingsManager() {
+		return settingsManager;
+	}
 
 	/*
 	 * Convenience methods
@@ -430,7 +439,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return getActionMap(getApplicationActions());
 	}
 
-	public static class RunwalkLogger extends org.eclipse.persistence.logging.AbstractSessionLog {
+	public static class EclipseLinkLogger extends org.eclipse.persistence.logging.AbstractSessionLog {
 
 		public void log(org.eclipse.persistence.logging.SessionLogEntry arg0) {
 			LOGGER.log(Level.toLevel(arg0.getLevel()), arg0.getMessage());

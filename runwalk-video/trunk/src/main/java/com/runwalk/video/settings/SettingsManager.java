@@ -358,9 +358,9 @@ public class SettingsManager implements Serializable {
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
 
-		private AuthenticationSettings calendarSettings = new AuthenticationSettings("user@gmail.com", "password", "http://www.google.com/my/agenda");
+		private AuthenticationSettings calendarSettings = AuthenticationSettings.CALENDAR_DEFAULT;
 
-		private AuthenticationSettings databaseSettings = new AuthenticationSettings("root", "password", "jdbc:mysql://localhost:3306");
+		private AuthenticationSettings databaseSettings = AuthenticationSettings.JDBC_DEFAULT;
 
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
 

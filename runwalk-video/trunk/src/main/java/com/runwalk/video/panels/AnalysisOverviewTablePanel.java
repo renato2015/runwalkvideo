@@ -22,6 +22,8 @@ import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.TaskMonitor;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -179,7 +181,9 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	}
 
 	public void setCompressionEnabled(boolean compressionEnabled) {
-		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled);
+		// compression only works on windows atm (dsj)
+		boolean isWindows = AppHelper.getPlatform() == PlatformType.WINDOWS;
+		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled && isWindows);
 	}
 
 	/**
