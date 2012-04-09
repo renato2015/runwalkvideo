@@ -12,7 +12,6 @@ public class CalendarSlotTableFormat extends AbstractTableFormat<CalendarSlot<?>
 
 	public CalendarSlotTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
-		
 	}
 
 	public Object getColumnValue(CalendarSlot<?> baseObject, int column) {

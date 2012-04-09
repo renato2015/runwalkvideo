@@ -56,7 +56,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		super(parentWindow);
 		this.clientList = clientList;
 		this.dismissSignal = dismissSignal;
-		setLayout(new MigLayout("insets 10"));
+		setLayout(new MigLayout("insets 10 10 10 10"));
 		setTitle(getResourceMap().getString("calendarSlotDialog.title")); // NOI18N
 		String borderTitle = getResourceMap().getString("calendarSlotDialog.border.title");
 		JPanel calendarSlotTablePane = (JPanel) getContentPane();

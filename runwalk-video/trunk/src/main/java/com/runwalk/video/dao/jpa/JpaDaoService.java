@@ -10,7 +10,6 @@ import com.google.common.collect.Maps;
 import com.runwalk.video.dao.AbstractDaoService;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.entities.Client;
-import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.settings.AuthenticationSettings;
 
 public class JpaDaoService extends AbstractDaoService {
@@ -34,8 +33,7 @@ public class JpaDaoService extends AbstractDaoService {
 	 */
 	private void addSpecializedDaos(EntityManagerFactory entityManagerFactory) {
 		addDao(new ClientDao(Client.class, entityManagerFactory));
-		// add a generic dao 
-		addDao(new CalendarSlotDao<RedcordSession>(RedcordSession.class, entityManagerFactory));
+		addDao(new RedcordSessionDao(entityManagerFactory));
 	}
 
 	@SuppressWarnings("unchecked")

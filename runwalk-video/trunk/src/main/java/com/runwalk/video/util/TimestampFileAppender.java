@@ -41,6 +41,7 @@ public class TimestampFileAppender extends FileAppender {
 	 * {@inheritDoc}
 	 */
 	public void setFile(String fileName) {
+		fileName = fileName.replace("\\", File.separator);
 		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
@@ -54,6 +55,7 @@ public class TimestampFileAppender extends FileAppender {
 	 * {@inheritDoc} 
 	 */
 	public synchronized void setFile(String fileName, boolean append, boolean bufferedIO, int bufferSize) throws IOException {
+		fileName = fileName.replace("\\", File.separator);
 		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
@@ -76,10 +78,9 @@ public class TimestampFileAppender extends FileAppender {
 	 */
 	public static class Helper
 	{
-		public static void makePath(final String filename)
+		public static void makePath(String filename)
 		{
 			File dir;
-
 			try {
 				URL url = new URL(filename.trim());
 				dir = new File(url.getFile()).getParentFile();

@@ -71,18 +71,20 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 		ClientDao clientDao = daoService.getDao(Client.class);
 		EventList<Client> clientList = GlazedLists.eventList(clientDao.getByIds(Sets.newHashSet(120L, 2344L)));
 		// get data to sync with calendar
-		Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToService();
+		Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToDatabase();
 		EventList<RedcordSession> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
 		// sort appointments according to date
 		Collections.sort(calendarSlotList);
 		assertNotNull(calendarSlotMapping);
-		// show the sync dialog on screen (invoke on EDT)
-		CountDownLatch endSignal = new CountDownLatch(1);
-		showCalendarSlotDialog(endSignal, calendarSlotList, clientList);
-		endSignal.await();
-		calendarSlotDialog.setVisible(false);
+		if (!calendarSlotList.isEmpty()) {
+			// show the sync dialog on screen (invoke on EDT)
+			CountDownLatch endSignal = new CountDownLatch(1);
+			showCalendarSlotDialog(endSignal, calendarSlotList, clientList);
+			endSignal.await();
+			calendarSlotDialog.setVisible(false);
+		}
 		// continue to work after notification from the dialog
-		calendarSyncService.syncToService(calendarSlotMapping);
+		calendarSyncService.syncToDatabase(calendarSlotMapping);
 	}
 
 	@OnEdt

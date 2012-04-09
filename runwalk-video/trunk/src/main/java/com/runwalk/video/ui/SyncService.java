@@ -21,15 +21,15 @@ public interface SyncService<T extends SerializableEntity<? super T>, E extends 
 	 * 
 	 * @return The map of items to synchronize
 	 */
-	Map<T, E> prepareSyncToService();
+	Map<T, E> prepareSyncToDatabase();
 	
 	/**
 	 * Synchronize data with the service implementation.
-	 * The result of {@link #prepareSyncToService()} should be passed as argument here.
+	 * The result of {@link #prepareSyncToDatabase()} should be passed as argument here.
 	 * 
 	 * @param eventEntryMapping A mapping of serializableEntities with their corresponding baseEntries
 	 */
-	void syncToService(Map<T, E> eventEntryMapping);
+	void syncToDatabase(Map<T, E> eventEntryMapping);
 
 	/**
 	 * Map the state of a {@link BaseEntry} to it's corresponding {@link SerializableEntity} derived class.
