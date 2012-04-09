@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.calendar.EventWho;
+import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.When;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.CalendarEventEntryDao;
@@ -30,100 +31,130 @@ import com.runwalk.video.entities.SerializableEntity;
  */
 public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implements SyncService<T, CalendarEventEntry> {
 
+	/** {@link ExtendedProperty} used to store ignore flag */
+	public static final String EXTENDED_IGNORE_PROPERTY = "http://schemas.google.com/g/2005#calendarSlot.ignore";
+	
 	private final Class<T> typeParameter;
 	private final DaoService daoService;
 	private final Logger logger = Logger.getLogger(CalendarSlotSyncService.class);
-	
+
 	public CalendarSlotSyncService(Class<T> typeParameter, DaoService daoService) {
 		this.typeParameter = typeParameter;
 		this.daoService = daoService;
 	}
-	
-	public void syncToService(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void syncToDatabase(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
 		CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
 		for (Entry<T, CalendarEventEntry> entry : calendarEventEntryMapping.entrySet()) {
 			T calendarSlot = entry.getKey();
 			CalendarEventEntry calendarEventEntry = entry.getValue();
-			if (calendarSlot.getClient() != null) {
-				// copy client information to calendarEventEntry first
-				updateBaseEntry(calendarEventEntry, calendarSlot);
+			updateBaseEntry(calendarEventEntry, calendarSlot);
+			// check if the calendarSlot needs to be updated
+			if (calendarSlot.getCalendarSlotStatus().needsUpdate() && !calendarSlot.isIgnored()) {
+				// get the last modified field back from the updated entry
+				updateLastModifiedDate(calendarEventEntry, calendarSlot);
 				if (calendarSlot.getId() == null) {
 					// persist entity to database
 					calendarSlotDao.persist(calendarSlot);
 				} else {
 					calendarSlotDao.merge(calendarSlot);
 				}
-			} else {
-				// TODO set an ignore flag here?
-				// set extended property on the calendarEventEntry
-				/*ExtendedProperty property = new ExtendedProperty();
-				property.setName("http://www.example.com/schemas/2005#mycal.id");
-				property.setValue("true");
-				calendarEventEntry.addExtendedProperty(property);*/
 			}
 		}
 	}
 
 	/**
 	 * Prepare data for synchronization with Google Calendar. This method will get all
-	 * the event entries that are scheduled at a time later than today and compare them with
-	 * type <code>T</code> instances in the database.
+	 * the event entries that are scheduled at a time later than today from the calendar 
+	 * and synchronize their corresponding entities in the database.
 	 * 
 	 * @return A map mapping all calendarSlots to their calendarEventEntry counterparts
 	 */
-	public Map<T, CalendarEventEntry> prepareSyncToService() {
+	public Map<T, CalendarEventEntry> prepareSyncToDatabase() {
 		Map<T, CalendarEventEntry> result = new HashMap<T, CalendarEventEntry>();
 		CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
 		CalendarEventEntryDao calendarEventEntryDao = getDaoService().getDao(CalendarEventEntry.class);
 		List<T> calendarSlots = calendarSlotDao.getFutureSlots();
-		for (CalendarEventEntry calendarEventEntry : calendarEventEntryDao.getFutureSlots()) {
-			T foundCalendarSlot = null;
-			for(Iterator<T> iterator = calendarSlots.iterator(); iterator.hasNext(); ) {
-				T calendarSlot = iterator.next();
-				if (calendarEventEntry.getIcalUID().equals(calendarSlot.getCalendarId())) {
-					foundCalendarSlot = calendarSlot;
-					// remove the item from the list
-					iterator.remove();
-					// compare lastModified property
-					if (calendarEventEntry.getUpdated().getValue() != foundCalendarSlot.getLastModified().getTime()) {
-						// compare start and end dates..
-						if (mapStartAndEndDate(calendarEventEntry, foundCalendarSlot)) {
+		List<CalendarEventEntry> calendarEventEntries = calendarEventEntryDao.getFutureSlots();
+		for(CalendarEventEntry calendarEventEntry : calendarEventEntries) {
+			if (!isIgnored(calendarEventEntry)) {
+				T foundCalendarSlot = null;
+				for(Iterator<T> calendarSlotIt = calendarSlots.iterator(); calendarSlotIt.hasNext(); ) {
+					T calendarSlot = calendarSlotIt.next();
+					if (calendarEventEntry.getIcalUID().equals(calendarSlot.getCalendarId())) {
+						foundCalendarSlot = calendarSlot;
+						// remove the item from the list
+						calendarSlotIt.remove();
+						// compare lastModified property
+						if (calendarEventEntry.getUpdated().getValue() != foundCalendarSlot.getLastModified().getTime()) {
+							// compare start and end dates..
 							foundCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.MODIFIED);
-							logger.info("Start or end date has changed for CalendarSlot " + calendarSlot.getName());
-							result.put(foundCalendarSlot, calendarEventEntry);
+							if (mapStartAndEndDate(calendarEventEntry, foundCalendarSlot)) {
+								logger.info("Start or end date has changed for CalendarSlot " + calendarSlot.getName());
+								result.put(foundCalendarSlot, calendarEventEntry);
+							} else {
+								// something changed.. but is of no interest
+								logger.info("Last modified date has changed for CalendarSlot " + calendarSlot.getName());
+								updateLastModifiedDate(calendarEventEntry, calendarSlot);
+								// just update the last modified date
+								calendarSlotDao.merge(calendarSlot);
+							}
 						} else {
-							// nothing to be done..
+							// everything up to date!
 							foundCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
 						}
-					} 
+					}
 				}
-			}
-			// no matching results found, create a new slot
-			if (foundCalendarSlot == null) {
-				foundCalendarSlot = mapBaseEntry(calendarEventEntry);
-				foundCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.NEW);
-				logger.info("CalendarSlot created " + foundCalendarSlot);
-				result.put(foundCalendarSlot, calendarEventEntry);
+				// no results found, create a new calendarSlot
+				if (foundCalendarSlot == null) {
+					foundCalendarSlot = mapBaseEntry(calendarEventEntry);
+					logger.info("CalendarSlot created " + foundCalendarSlot);
+					result.put(foundCalendarSlot, calendarEventEntry);
+				}
 			}
 		}
 		return result;
 	}
-	
+
+	/**
+	 * Check if the ignore flag is set on the given {@link CalendarEventEntry}.
+	 * 
+	 * @param calendarEventEntry The given calendarEventEntry
+	 * @return <code>true</code> if the ignore flag is set
+	 */
+	private boolean isIgnored(CalendarEventEntry calendarEventEntry) {
+		for(ExtendedProperty extendedProperty : calendarEventEntry.getExtendedProperty()) {
+			if (EXTENDED_IGNORE_PROPERTY.equals(extendedProperty.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 	private String textToUpperCase(String arg0) {
 		return arg0.length() > 0 ? Character.toUpperCase(arg0.charAt(0)) + arg0.substring(1) : arg0;
 	}
-	
+
 	/**
 	 * Copy the {@link CalendarSlot}'s updated information back to the {@link CalendarEventEntry}.
 	 * {@link Client} information will only be copied when synchronizing for the first time.
 	 * 
 	 * @param calendarEventEntry The calendarEventEntry to update
 	 * @param calendarSlot The calendarSlot to take the client information from
+	 * 
+	 * @return <code>true</code> if the baseEntry was updated
 	 */
-	private void updateBaseEntry(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
+	private boolean updateBaseEntry(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
+		boolean result = false;
 		CalendarEventEntryDao calendarEventEntryDao = getDaoService().getDao(CalendarEventEntry.class);
+		// check if we need to update the event entry
 		Client client = calendarSlot.getClient();
-		if (calendarSlot.getCalendarSlotStatus() == CalendarSlotStatus.NEW) {
+		if (!calendarSlot.isIgnored() && client != null && 
+				calendarSlot.getCalendarSlotStatus() == CalendarSlotStatus.NEW) {
 			// add the client as a participant
 			EventWho eventWho = new EventWho();
 			String fullClientName = textToUpperCase(client.getFirstname()) + " " + textToUpperCase(client.getName());
@@ -131,14 +162,26 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			eventWho.setEmail(client.getEmailAddress());
 			calendarEventEntry.addParticipant(eventWho);
 			// update the event's title
-			calendarEventEntry.setTitle(new PlainTextConstruct(fullClientName + " " + calendarSlot.getName()));
-			// save to calendar
+			// TODO it would be nice to have getName() returning the session number
+			calendarEventEntry.setTitle(new PlainTextConstruct(fullClientName));
+			// update base entry
 			calendarEventEntryDao.merge(calendarEventEntry);
-			// get the last modified field back from the entry
+		} else if (calendarSlot.isIgnored()) {
+			// set ignore flag on the calendarEventEntry
+			ExtendedProperty property = new ExtendedProperty();
+			property.setName(EXTENDED_IGNORE_PROPERTY);
+			property.setValue("true");
+			calendarEventEntry.addExtendedProperty(property);
+			// update base entry
+			calendarEventEntryDao.merge(calendarEventEntry);
 		}
+		return result;
+	}
+
+	private void updateLastModifiedDate(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
 		calendarSlot.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
 	}
-	
+
 	/**
 	 * Map the start and end time of a {@link CalendarEventEntry} to the given {@link CalendarSlot}.
 	 * 
@@ -162,7 +205,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Map all properties from a {@link CalendarEventEntry} to a newly created {@link CalendarSlot}.
 	 * 
@@ -174,8 +217,8 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		try {
 			result = getTypeParameter().newInstance();
 			result.setCalendarId(calendarEventEntry.getIcalUID());
-			//result.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
 			result.setName(calendarEventEntry.getTitle().getPlainText());
+			result.setCalendarSlotStatus(CalendarSlotStatus.NEW);
 			mapStartAndEndDate(calendarEventEntry, result);
 		} catch (InstantiationException e) {
 			logger.error(e);

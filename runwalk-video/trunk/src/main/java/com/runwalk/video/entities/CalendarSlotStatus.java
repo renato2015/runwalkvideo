@@ -18,4 +18,8 @@ public enum CalendarSlotStatus {
 		return resourceKey;
 	}
 	
+	public boolean needsUpdate() {
+		return this == NEW || this == MODIFIED;
+	}
+	
 }

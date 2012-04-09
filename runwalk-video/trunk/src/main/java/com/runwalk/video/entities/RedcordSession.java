@@ -84,7 +84,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 		}
 		return result;
 	}
-
+	
 	public String getComments() {
 		return comments;
 	}
