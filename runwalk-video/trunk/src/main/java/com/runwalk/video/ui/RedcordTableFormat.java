@@ -7,7 +7,6 @@ import org.jdesktop.application.ResourceMap;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
-import com.runwalk.video.entities.CalendarSlot;
 import com.runwalk.video.entities.RedcordExercise;
 import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
@@ -43,7 +42,7 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
 		if (column == 1 || column == 2 && redcordTableElement.allowsChildren() && editedValue != null) {
 			// add the date parsed from the datepicker to the one in the spinner
-			CalendarSlot<RedcordTableElement> redcordSession = (CalendarSlot<RedcordTableElement>) redcordTableElement;
+			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
 			Date startDate = redcordSession.getStartDate();
 			startDate = startDate == null ? new Date() : startDate;
 			int[] calendarConstants = column == 1 ? new int[] {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH} : 

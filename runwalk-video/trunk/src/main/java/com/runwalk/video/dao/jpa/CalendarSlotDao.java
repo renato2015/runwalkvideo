@@ -21,7 +21,7 @@ public class CalendarSlotDao<T extends CalendarSlot<? super T>> extends JpaDao<T
 	}
 	
 	public List<T> getFutureSlots() {
-		 TypedQuery<T> query = createEntityManager().createQuery("SELECT calendarSlot FROM " + getTypeParameter().getSimpleName() + " calendarSlot WHERE calendarSlot.startDate <= :date", getTypeParameter())
+		 TypedQuery<T> query = createEntityManager().createQuery("SELECT calendarSlot FROM " + getTypeParameter().getSimpleName() + " calendarSlot WHERE calendarSlot.startDate >= :date", getTypeParameter())
 				.setParameter("date", new Date());
 		 return query.getResultList();
 	}

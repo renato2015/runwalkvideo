@@ -33,22 +33,19 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	private List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>();
 	
 	public RedcordSession() {	}
-
-	public RedcordSession(Client client) {
-		this(client, "Sessie " + (client.getRedcordSessionCount() + 1));
-	}
 	
 	public RedcordSession(Client client, String name) {
-		super(name);
 		// set default starting date to 8 o'clock current day
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
-		calendar.set(Calendar.HOUR_OF_DAY, 8);
 		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 		setStartDate(calendar.getTime());
 		setClient(client);
+		setName(name);
 	}
-
+	
 	public List<RedcordExercise> getRedcordExercises() {
 		return redcordExercises;
 	}
@@ -122,7 +119,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 
 	@Override
 	public String toString() {
-		return "RedcordSession [client=" + getClient() + ", name=" + name
+		return "RedcordSession [client=" + getClient() + ", name=" + getName()
 				+ ", startDate=" + getStartDate() + "]";
 	}
 

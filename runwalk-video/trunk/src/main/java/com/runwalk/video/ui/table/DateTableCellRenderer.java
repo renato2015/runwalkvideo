@@ -29,9 +29,17 @@ import org.apache.log4j.Logger;
 public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	
 	private final DateFormat dateFormat;
-
+	
+	/** Value to show when there is no date to be parsed. */
+	private final String defaultValue;
+	
 	public DateTableCellRenderer(DateFormat format) {
+		this("", format);
+	}
+
+	public DateTableCellRenderer(String emptyDate, DateFormat format) {
 		this.dateFormat = format;
+		this.defaultValue = emptyDate;
 	}
 	
 	public Component getTableCellRendererComponent(javax.swing.JTable table, 
@@ -43,7 +51,7 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 		} else {
 			Date date = parseDate(value);
 			synchronized(dateFormat) {
-				setText(date == null ? "<geen>" : dateFormat.format(date));
+				setText(date == null ? defaultValue : dateFormat.format(date));
 			}
 		}
 		return this;

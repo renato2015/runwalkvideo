@@ -50,9 +50,7 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 
 	public E merge(E item) {
 		try {
-			getFeed().getFeedBatchLink().getHref();
-			String href = item.getEditLink().getHref();
-			return item.update();
+			item.update();
 		} catch (IOException e1) {
 			getLogger().info("Merge failed for " + item, e1);
 		} catch (ServiceException e2) {

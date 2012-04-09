@@ -6,7 +6,6 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
-import com.runwalk.video.util.ResourceInjector;
 
 public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 	
@@ -28,12 +27,10 @@ public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 		case 3: return recordingNotNull ? recording.getKeyframeCount() : 0;
 		case 4: return recordingNotNull ? recording.getDuration() : 0L;
 		case 5: {
-			ResourceInjector resourceInjector = ResourceInjector.getInstance();
-			String result = resourceInjector.injectResources("status.none", RecordingStatus.class);
+			String result = getResourceString(RecordingStatus.NONE.getResourceKey());
 			RecordingStatus recordingStatus = recording.getRecordingStatus();
 			if (recordingStatus != null) {
-				String resourceKey = recordingStatus.getResourceKey();
-				result = resourceInjector.injectResources(resourceKey, RecordingStatus.class);
+				result = getResourceString(recordingStatus.getResourceKey());
 			}
 			return result;
 		}
