@@ -19,6 +19,8 @@ import com.runwalk.video.core.AppComponent;
 @SuppressWarnings("serial")
 @AppComponent
 public class AboutDialog extends JDialog {
+	
+	private static final String DISMISS_ACTION = "dismiss";
 
     private JButton dismissButton;
 	
@@ -29,7 +31,7 @@ public class AboutDialog extends JDialog {
     }
 
     @Action 
-    public void closeAboutBox() {
+    public void dismiss() {
         setVisible(false);
     }
 
@@ -47,11 +49,11 @@ public class AboutDialog extends JDialog {
         setModal(true);
         setResizable(false);
 
-        dismissButton.setAction(getAction("dismiss")); // NOI18N
+        dismissButton.setAction(getAction(DISMISS_ACTION)); // NOI18N
 
         JLabel appTitleLabel = new JLabel();
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
-        appTitleLabel.setText(getResourceMap().getString("Application.title")); // NOI18N
+        appTitleLabel.setText(getResourceMap().getString("Application.name")); // NOI18N
         add(appTitleLabel, "wrap");
         
         JLabel versionLabel = new JLabel();
