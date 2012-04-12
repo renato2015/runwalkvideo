@@ -1,6 +1,7 @@
 package com.runwalk.video.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
@@ -29,6 +30,8 @@ public class AppInternalFrame extends BaseInternalFrame implements SelfContained
 	 */
 	private boolean visible = false;
 	
+	private Dimension minimumSize;
+
 	/**
 	 * Create a new JInternalFrame.
 	 * @param title set the frame's title.
@@ -41,6 +44,21 @@ public class AppInternalFrame extends BaseInternalFrame implements SelfContained
 		setResizable(resizable);
 	}
 	
+	public AppInternalFrame(String title, boolean resizable, final Dimension minimumSize) {
+		this(title, resizable);
+		if (resizable) {
+			this.minimumSize = minimumSize;
+		}
+	}
+	
+	@Override
+	public Dimension getMinimumSize() {
+		if (minimumSize != null) {
+			return minimumSize;
+		}
+		return super.getMinimumSize();
+	}
+
 	@Action(selectedProperty = VISIBLE)
 	public void toggleVisibility(ActionEvent event) {
 		// check if event is originating from a component that has selected state
@@ -49,7 +67,7 @@ public class AppInternalFrame extends BaseInternalFrame implements SelfContained
 			setVisible(source.isSelected());
 		}
 	}
-	
+
 	@Override
 	public void setVisible(boolean visible) {
 		// fire a pce as component does not do this by default
@@ -128,6 +146,6 @@ public class AppInternalFrame extends BaseInternalFrame implements SelfContained
 	public Integer getMonitorId() {
 		return null;
 	}
-	
+
 }
 

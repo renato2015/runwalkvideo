@@ -1,6 +1,7 @@
 package com.runwalk.video;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,6 +35,7 @@ import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.MediaControls;
+import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
@@ -69,12 +71,14 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public static final String APP_BUILD_DATE = "Application.build.date";
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
+	
+	private final static int MAIN_PANEL_MIN_HEIGHT = 600;
 
 	private static final String SAVE_NEEDED = "saveNeeded";
 	
 	private static final String DIRTY = "dirty";
 	
-	private List<AbstractTablePanel<?>> tablePanels = new ArrayList<AbstractTablePanel<?>>();
+	private List<AbstractPanel> panels = new ArrayList<AbstractPanel>();
 	private ClientTablePanel clientTablePanel;
 	private AnalysisTablePanel analysisTablePanel;
 	private AnalysisOverviewTablePanel analysisOverviewTablePanel;
@@ -134,9 +138,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		executeAction(getContext().getActionMap(), REFRESH_ACTION);
 	}
 
-	/** {@inheritDoc} */
+	/** {@inheritDoc} */ 
 	@Override
-	protected void initialize(String[] args) {
+	protected void initialize(String[] args) { 
 		LOGGER.log(Level.INFO, "Starting " + getTitle());
 		// register an exception handler on the EDT
 		AWTExceptionHandler.registerExceptionHandler();
@@ -161,6 +165,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
 		addTablePanel(clientTablePanel);
 		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
+		addTablePanel(clientInfoPanel);
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
@@ -254,9 +259,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 * Setting a panel's dirty state to <code>true</code> will enable the save action throughout the application.
 	 * @param tablePanel The panel to add to the list
 	 */
-	private void addTablePanel(AbstractTablePanel<?> tablePanel) {
-		tablePanel.addPropertyChangeListener(dirtyListener);
-		tablePanels.add(tablePanel);
+	private void addTablePanel(AbstractPanel panel) {
+		panel.addPropertyChangeListener(dirtyListener);
+		panels.add(panel);
 	}
 
 	/*
@@ -284,10 +289,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			protected Boolean doInBackground() throws Exception {
 				boolean result = true;
 				message("startMessage");
-				for(AbstractTablePanel<?> tablePanel : tablePanels) {
-					if (tablePanel.isDirty()) {
-						result &= tablePanel.save();
-						tablePanel.setDirty(false);
+				for(AbstractPanel panel : panels) {
+					if (panel.isDirty()) {
+						result &= panel.save();
+						panel.setDirty(false);
 					}
 				}
 				message("endMessage");
@@ -315,29 +320,36 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	}
 
 	private Containable createMainView() {
-		final JPanel panel = new JPanel();
+		final JPanel mainPanel = new JPanel();
 		ResourceMap resourceMap = getContext().getResourceMap();
-		panel.setName(resourceMap.getString("mainView.title"));
+		mainPanel.setName(resourceMap.getString("mainView.title"));
 		// create the tabpanel
 		JTabbedPane tabPanel = new  JTabbedPane();
 		tabPanel.setName("detailTabbedPane");
-		tabPanel.addTab(resourceMap.getString("clientInfoPanel.TabConstraints.tabTitle"),  getClientInfoPanel()); // NOI18N
-		tabPanel.addTab(resourceMap.getString("analysisTablePanel.TabConstraints.tabTitle"),  getAnalysisTablePanel()); // NOI18N
-		tabPanel.addTab(resourceMap.getString("analysisOverviewTablePanel.TabConstraints.tabTitle"),  getAnalysisOverviewTablePanel()); // NOI18N
-		tabPanel.addTab(resourceMap.getString("redcordTablePanel.TabConstraints.tabTitle"),  getRedcordTablePanel()); // NOI18N
-		// set layout and add everything to the frame
-		panel.setLayout(new MigLayout("debug, fill, nogrid, flowy, insets 0"));
-		panel.add(getClientTablePanel(), "growx");
-		panel.add(tabPanel, "height :280:, growx");
-		panel.add(getStatusPanel(), "height 30!, gapleft push");
-		return new Containable() {
+		int minimumWidth = 0;
+		for(AbstractPanel panel : panels) {
+			String tabTitle = panel.getResourceMap().getString("tabConstraints.tabTitle");
+			if (tabTitle != null) {
+				tabPanel.addTab(tabTitle, panel);
+			}
+			int minimumPanelWidth = panel.getPreferredSize().width;
+			minimumWidth = minimumWidth < minimumPanelWidth ? minimumPanelWidth : minimumWidth;
+		}
 
+		// set layout and add everything to the frame
+		mainPanel.setLayout(new MigLayout("fill, nogrid, flowy, insets 10"));
+		mainPanel.add(getClientTablePanel(), "growx");
+		mainPanel.add(tabPanel, "height :280:, growx");
+		mainPanel.add(getStatusPanel(), "height 30!, gapleft push");
+		mainPanel.setMinimumSize(new Dimension(minimumWidth, MAIN_PANEL_MIN_HEIGHT));
+		return new Containable() {
+			
 			public Component getComponent() {
-				return panel;
+				return mainPanel;
 			}
 
 			public String getTitle() {
-				return "Klanten & Analyses";
+				return getResourceMap().getString("mainView.title");
 			}
 
 			public boolean isResizable() {

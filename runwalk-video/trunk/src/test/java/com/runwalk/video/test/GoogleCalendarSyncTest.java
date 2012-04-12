@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import javax.swing.SwingUtilities;
+
 import org.junit.Ignore;
 
 import ca.odell.glazedlists.BasicEventList;

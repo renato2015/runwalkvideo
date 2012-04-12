@@ -179,7 +179,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	private AppInternalFrame createInternalFrame(Containable containable) {
-		AppInternalFrame internalFrame = new AppInternalFrame(containable.getTitle(), containable.isResizable());
+		AppInternalFrame internalFrame = new AppInternalFrame(containable.getTitle(), containable.isResizable(), containable.getComponent().getMinimumSize());
 		internalFrame.add(containable.getComponent());
 		internalFrame.pack();
 		getPane().add(internalFrame);
