@@ -20,5 +20,19 @@ public class RedcordSessionDao extends CalendarSlotDao<RedcordSession> {
 		}
 	}
 	
+	@Override
+	public RedcordSession merge(RedcordSession item) {
+		// replace the merged session in the client's list
+		Client client = item.getClient();
+		int index = client.getRedcordSessions().indexOf(item);
+		RedcordSession mergedItem = super.merge(item);
+		if (index > -1) {
+			client.getRedcordSessions().set(index, mergedItem);
+		}
+		return mergedItem;
+	}
+	
+	
+	
 	
 }

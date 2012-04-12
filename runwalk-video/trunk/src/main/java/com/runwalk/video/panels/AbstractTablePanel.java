@@ -4,13 +4,11 @@ import java.awt.LayoutManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -31,22 +29,16 @@ import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
-import com.runwalk.video.core.AppComponent;
-import com.runwalk.video.core.IAppComponent;
 import com.runwalk.video.settings.SettingsManager;
 
 @SuppressWarnings("serial")
-@AppComponent
-// TODO why do we need to implement the IAppComponent interface here beside the annotation?
-public abstract class AbstractTablePanel<T extends Comparable<? super T>> extends JPanel implements IAppComponent {
+public abstract class AbstractTablePanel<T extends Comparable<? super T>> extends AbstractPanel {
 
 	public static final String ROW_SELECTED = "rowSelected";
 	public static final String CLIENT_SELECTED = "clientSelected";
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
-	
-	private static final String DIRTY = "dirty";
 	
 	private final JTable table;
 	private final JTableMouseListener jTableMouseListener = new JTableMouseListener();
@@ -60,8 +52,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private TableFormat<T> tableFormat;
 	private EventTableModel<T> eventTableModel;
 	
-	private Boolean dirty = Boolean.FALSE;
-
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
@@ -82,14 +72,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	public void setRowSelected(boolean rowSelected) {
 		firePropertyChange(ROW_SELECTED, this.rowSelected, this.rowSelected = rowSelected);
-	}
-
-	public Boolean isDirty() {
-		return dirty;
-	}
-
-	public void setDirty(Boolean dirty) {
-		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 	}
 
 	/**
@@ -115,18 +97,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 	
 	/**
-	 * Overwrite the selected item field by force and fire a {@link PropertyChangeEvent}, 
-	 * which should almost always be fired, except in the case where both the old and 
-	 * new objects are exactly the same in memory.
-	 * 
-	 * TODO maybe find a more elegant way to solve this problem?
+	 * Set the currently selected item for the table.
 	 * 
 	 * @param selectedItem the selected item 
 	 */
 	protected void setSelectedItem(T selectedItem) {
-		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
-			this.selectedItem = null;
-		}
 		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
 	}
 	
@@ -219,15 +194,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		setItemList(itemList, beanConnector);
 	}
 	
-	/**
-	 * Persist the panel's dirty state. Override this method if you need to do something special to 
-	 * have the entities' state persisted to the database.
-	 * @return <code>true</code> if saving succeeded
-	 */
-	public boolean save() {
-		return true;
-	}
-
 	/**
 	 * Specialization hook for the set {@link ObservableElementList}. 
 	 * You can override the exact type of the set {@link EventList} by implementing this method.

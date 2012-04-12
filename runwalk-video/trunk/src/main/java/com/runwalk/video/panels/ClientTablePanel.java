@@ -62,7 +62,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	private final DaoService daoService;
 
 	public ClientTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
-		super(new MigLayout("debug, nogrid, fill"));
+		super(new MigLayout("nogrid, fill"));
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoManager;
 
@@ -171,7 +171,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public boolean save() {
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			FilterList<Client> dirtyItems = new FilterList<Client>(getItemList(), new Matcher<Client>() {
+			FilterList<Client> dirtyClients = new FilterList<Client>(getItemList(), new Matcher<Client>() {
 
 				public boolean matches(Client item) {
 					return item.isDirty();
@@ -180,17 +180,16 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			});
 			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
 			Dao<Client> dao = getDaoService().getDao(Client.class);
-			List<Client> result = dao.merge(dirtyItems);
-			for(Client mergedClient : result) {
-				// these are the merged client instances
-				int index = getItemList().indexOf(mergedClient);
-				Client client = getItemList().get(index);
+			for(Client dirtyClient : dirtyClients) {
+				Client mergedClient = dao.merge(dirtyClient);
 				// set dirty flag to false again
-				client.setDirty(false);
+				dirtyClient.setDirty(false);
 				// set version field on old client
-				if (mergedClient.getVersion() != client.getVersion()) {
-					client.incrementVersion();
+				dirtyClient.incrementVersion();
+				if (!mergedClient.equals(dirtyClient)) {
+					getLogger().warn("Merged client does not equal original dirty one!");
 				}
+				
 			}
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();

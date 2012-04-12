@@ -11,7 +11,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 /**
- * Instances of this class can be syned with a calendar.
+ * Instances of this class can be synced with a calendar.
  * 
  * @author Jeroen Peelaerts
  */

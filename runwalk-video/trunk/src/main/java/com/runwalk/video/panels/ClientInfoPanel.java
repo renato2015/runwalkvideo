@@ -18,7 +18,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.UndoableEditListener;
@@ -45,7 +44,6 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.matchers.TextMatcherEditor;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 
-import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Person.Gender;
@@ -53,8 +51,7 @@ import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.ui.EnumButtonGroup;
 
 @SuppressWarnings("serial")
-@AppComponent
-public class ClientInfoPanel extends JPanel {
+public class ClientInfoPanel extends AbstractPanel {
 
 	private final static BeanProperty<JComponent, Boolean> ENABLED = BeanProperty.create("enabled");
 	private final static ELProperty<ClientTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");

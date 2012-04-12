@@ -48,6 +48,10 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
+	private static final String DELETE_ANALYSIS_ACTION = "deleteAnalysis";
+
+	private static final String ADD_ANALYSIS_ACTION = "addAnalysis";
+
 	private static final String SELECTED_ITEM_RECORDED = "selectedItemRecorded";
 
 	private final JTextArea comments;
@@ -79,11 +83,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow, height :100:");
 
-		setFirstButton(new JButton(getAction("addAnalysis")));
+		setFirstButton(new JButton(getAction(ADD_ANALYSIS_ACTION)));
 		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 
-		setSecondButton(new JButton(getAction("deleteAnalysis")));
+		setSecondButton(new JButton(getAction(DELETE_ANALYSIS_ACTION)));
 		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton(), "wrap");
 
@@ -92,7 +96,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(undoableEditListener);
 		comments.setFont(SettingsManager.MAIN_FONT);
-		comments.setColumns(20);
 		comments.setRows(3);
 		tscrollPane.setViewportView(comments);
 		add(tscrollPane, "grow, height :60:");
