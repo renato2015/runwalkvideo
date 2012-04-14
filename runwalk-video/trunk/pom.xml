@@ -490,7 +490,7 @@
 				</property>
 			</activation>
 			<properties>
-				<timestamp>built-by-m2e</timestamp>
+				<timestamp>incremental</timestamp>
 			</properties>
 		</profile>
 		<profile>

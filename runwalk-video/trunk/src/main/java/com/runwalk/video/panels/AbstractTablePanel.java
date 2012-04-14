@@ -97,11 +97,15 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 	
 	/**
-	 * Set the currently selected item for the table.
+	 * Overwrite the selected item field by force and fire a {@link PropertyChangeEvent}
+	 * if both the old and new objects are not exactly the same in memory.
 	 * 
 	 * @param selectedItem the selected item 
 	 */
 	protected void setSelectedItem(T selectedItem) {
+		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
+			this.selectedItem = null;
+		}
 		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
 	}
 	

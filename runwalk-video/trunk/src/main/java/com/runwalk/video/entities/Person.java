@@ -136,7 +136,6 @@ public abstract class Person extends SerializableEntity<Person> {
 			result = getFirstname() != null ? getFirstname().equals(other.getFirstname()) : other.getFirstname() == null;
 			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
 			result &= getId() != null ? getId().equals(other.getId()) : result;
-			result &= getVersion() == other.getVersion();
 		}
 		return result;
 	}

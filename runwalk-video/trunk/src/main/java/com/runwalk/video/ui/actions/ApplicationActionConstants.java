@@ -2,7 +2,7 @@ package com.runwalk.video.ui.actions;
 
 public interface ApplicationActionConstants {
 	
-	String EXIT_ACTION = "exitApplication";
+	String QUIT_ACTION = "quit";
 	
 	String ABOUT_ACTION = "about";
 	

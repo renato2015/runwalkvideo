@@ -1,7 +1,9 @@
 package com.runwalk.video;
 
+import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -26,6 +28,7 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskService;
 import org.jdesktop.application.utils.AppHelper;
 
 import com.runwalk.video.core.Containable;
@@ -206,36 +209,55 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		show(getMainFrame());
 	}
 
-	@org.jdesktop.application.Action
-	public void exitApplication() {
-		exit();
-	}
-
 	@Override
-	public void exit(EventObject event) {
-		ResourceMap resourceMap = getContext().getResourceMap();
-		int result = JOptionPane.showConfirmDialog(getMainFrame(), 
-				resourceMap.getString("exitApplication.confirmDialog.text"), 
-				resourceMap.getString("exitApplication.Action.text"), JOptionPane.OK_CANCEL_OPTION);
-		if (result == JOptionPane.OK_OPTION) {
-			//executeAction(getApplicationActionMap(), "uploadLogFiles");
-			executeAction(getApplicationActionMap(), SAVE_SETTINGS_ACTION);
-			if (isSaveNeeded()) {
-				executeAction(getApplicationActionMap(), SAVE_ACTION);
-			}
-			executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
-			LOGGER.debug("Taskservice shutting down...");
-			
-			try {
-				getContext().getTaskService().shutdown();
-				getContext().getTaskService().awaitTermination(10, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				LOGGER.error(e);
-			} finally {
-				getDaoService().shutdown();
-			}
+	public void exit(final EventObject event) {
+		if (getContext().getTaskService().isTerminated()) {
+			LOGGER.debug("Taskservice terminated. byebye...");
 			super.exit(event);
+		} else {
+			ResourceMap resourceMap = getContext().getResourceMap();
+			int result = JOptionPane.showConfirmDialog(getMainFrame(), 
+					resourceMap.getString("quit.confirmDialog.text"), 
+					resourceMap.getString("quit.Action.text"), JOptionPane.OK_CANCEL_OPTION);
+			if (result == JOptionPane.OK_OPTION) {
+				//executeAction(getApplicationActionMap(), "uploadLogFiles");
+				executeAction(getApplicationActionMap(), SAVE_SETTINGS_ACTION);
+				if (isSaveNeeded()) {
+					executeAction(getApplicationActionMap(), SAVE_ACTION);
+				}
+				executeAction(getMediaControls().getApplicationActionMap(), DISPOSE_VIDEO_COMPONENTS_ACTION);
+				awaitShutdown(event);
+			}
 		}
+	}
+	
+	/**
+	 * Start a new {@link Thread} and wait until the {@link TaskService} is completely 
+	 * terminated before exiting the application.
+	 */
+	private void awaitShutdown(final EventObject event) {
+		new Thread(new Runnable() {
+			
+			public void run() {
+				LOGGER.debug("Taskservice shutting down...");
+				getContext().getTaskService().shutdown();
+				while(!getContext().getTaskService().getTasks().isEmpty()) {
+					try {
+						getContext().getTaskService().awaitTermination(10, TimeUnit.SECONDS);
+						LOGGER.debug("Waiting for tasks on EDT to end...");
+						new Robot().waitForIdle();
+					} catch (AWTException e) {
+						LOGGER.error(e);
+					} catch (InterruptedException e) {
+						LOGGER.error(e);
+					}
+				}
+				LOGGER.debug("DaoService shutting down...");
+				getDaoService().shutdown();
+				exit(event);
+			}
+			
+		}, "AwaitShutdownThread").start();
 	}
 	
 	public String getTitle() {

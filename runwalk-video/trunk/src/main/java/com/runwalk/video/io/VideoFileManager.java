@@ -150,6 +150,8 @@ public class VideoFileManager {
 		}
 		for (Analysis analysis : analyses) {
 			for (Recording recording : analysis.getRecordings()) {
+				recordingFileMap.remove(recording);
+				fileNameRecordingMap.remove(recording.getVideoFileName());
 				getVideoFile(recording);
 			}
 		}

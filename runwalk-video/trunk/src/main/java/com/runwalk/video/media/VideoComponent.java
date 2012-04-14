@@ -13,6 +13,7 @@ import org.jdesktop.application.ApplicationActionMap;
 
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.Containable;
+import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.core.SelfContained;
 
@@ -130,6 +131,15 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		getVideoImpl().stopRunning();
 	}
 
+	/**
+	 * Dispose the current video implementation and remove the component from the
+	 * application's windowing system. This method should be called on the Event Dispatching
+	 * Thread, as it will fire a couple of listeners that need to be executed synchronously. 
+	 * 
+	 * Be aware that you will need to use the {@link OnEdt} annotation on this method again 
+	 * when overriding.
+	 */
+	@OnEdt
 	@Action(enabledProperty = IDLE)
 	public void dispose() {
 		if (getVideoImpl() != null) {			
@@ -140,7 +150,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		// fire a PCE after disposing the implementation
 		setState(State.DISPOSED);
 	}
-
+	
 	public String getTitle() {
 		return getVideoImpl().getTitle();
 	}
