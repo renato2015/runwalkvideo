@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import org.jdesktop.application.Action;
 
 import com.google.common.collect.Iterables;
+import com.runwalk.video.core.OnEdt;
 
 public class VideoCapturer extends VideoComponent {
 
@@ -51,11 +52,12 @@ public class VideoCapturer extends VideoComponent {
 		this.videoImpl = videoImpl;
 	}
 
+	@OnEdt
 	@Override
 	public void dispose() {
 		super.dispose();
 		setVideoImpl(null);
-		capturerCount++;
+		capturerCount--;
 	}
 
 	public void startRecording(String videoPath) {

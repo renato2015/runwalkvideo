@@ -105,7 +105,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		add(buttonPanel, "wrap, grow, hidemode 3");
 
 		if (enableExitAction) {
-			javax.swing.Action exitAction = getAction(EXIT_ACTION);
+			javax.swing.Action exitAction = getAction(QUIT_ACTION);
 			JButton cancelButton = new JButton(exitAction); // NOI18N
 			add(cancelButton, "grow");
 		}

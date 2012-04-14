@@ -71,7 +71,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		fileMenu.add(organiseVideoFiles);
 
 		fileMenu.add(new JSeparator());
-		JMenuItem exitMenuItem = new JMenuItem( getAction(EXIT_ACTION) );
+		JMenuItem exitMenuItem = new JMenuItem( getAction(QUIT_ACTION) );
 		fileMenu.add(exitMenuItem);
 		add(fileMenu);
 

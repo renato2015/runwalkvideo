@@ -9,6 +9,7 @@ import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Sets;
+import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.media.dsj.DSJPlayer;
 
 public class VideoPlayer extends VideoComponent {
@@ -185,11 +186,12 @@ public class VideoPlayer extends VideoComponent {
 		this.playerImpl = playerImpl;
 	}
 
+	@OnEdt
 	@Override
 	public void dispose() {
 		super.dispose();
-		playerCount--;
 		setVideoImpl(null);
+		playerCount--;
 	}
 
 	public boolean isPlaying() {

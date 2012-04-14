@@ -246,6 +246,15 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
+		if (getSelectedItem().isDirty() && isDirty()) {
+			int n = JOptionPane.showConfirmDialog(
+					SwingUtilities.windowForComponent(this),
+					getResourceMap().getString("refreshClient.confirmDialog.text"),
+					getResourceMap().getString("refreshClient.Action.text"),
+					JOptionPane.WARNING_MESSAGE,
+					JOptionPane.OK_CANCEL_OPTION);
+			if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
+		}
 		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getSourceList(), Client.class, getSelectedItem()) {
 
 			@Override
@@ -263,6 +272,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			protected void succeeded(List<Client> clientList) {
 				// selected client is the last one in the list
 				Client selectedClient = Iterables.getLast(clientList);
+				// fire propertyChangeEvent and notify all listeners
 				setSelectedItem(selectedClient);
 			}
 			

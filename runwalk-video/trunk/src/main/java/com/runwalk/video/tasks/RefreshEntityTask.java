@@ -49,7 +49,7 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 			// get the five last added entities
 			result = itemDao.getNewEntities(findMaxEntityId() - 5);
 			for (T newItem : result) {
-				if (!getItemList().contains(newItem)) {
+				if (!getItemList().contains(newItem) && !newItem.getId().equals(getItem().getId())) {
 					getItemList().add(newItem);
 				}
 			}
