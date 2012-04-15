@@ -12,6 +12,7 @@ import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
+import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
@@ -95,7 +96,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 	
 	public <T> List<E> getNewEntities(T id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter())
-		.setParameter("id", id);
+		.setParameter("id", id).setHint(QueryHints.REFRESH, Boolean.TRUE.toString());
 		return query.getResultList();
 	}
 
