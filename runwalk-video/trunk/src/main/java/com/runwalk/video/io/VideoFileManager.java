@@ -145,16 +145,23 @@ public class VideoFileManager {
 
 	public void refreshCache(List<Analysis> analyses, boolean clearCache) {
 		if (clearCache) {
-			recordingFileMap.clear();
-			fileNameRecordingMap.clear();
+			clearCaches();
 		}
 		for (Analysis analysis : analyses) {
 			for (Recording recording : analysis.getRecordings()) {
-				recordingFileMap.remove(recording);
-				fileNameRecordingMap.remove(recording.getVideoFileName());
+				File removedFile = recordingFileMap.remove(recording);
+				Recording removedFileName = fileNameRecordingMap.remove(recording.getVideoFileName());
+				if (removedFile != null && removedFileName != null) {
+					LOGGER.info("Recording " + recording.getVideoFileName() + " removed from VideoFileManager's cache");
+				}
 				getVideoFile(recording);
 			}
 		}
+	}
+	
+	private void clearCaches() {
+		recordingFileMap.clear();
+		fileNameRecordingMap.clear();
 	}
 
 	/**

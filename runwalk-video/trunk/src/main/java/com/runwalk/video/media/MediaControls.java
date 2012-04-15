@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -262,6 +263,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					getLogger().debug("Stopping video for " + videoComponent.getTitle());
 					videoComponent.dispose();
 				}
+				new Robot().waitForIdle();
 				message("endMessage");
 				return null;
 			}

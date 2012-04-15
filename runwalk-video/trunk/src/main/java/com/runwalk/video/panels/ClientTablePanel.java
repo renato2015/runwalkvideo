@@ -263,7 +263,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				// refresh file cache for newly added clients
 				for (Client client : clientList) {
 					getVideoFileManager().refreshCache(client.getAnalyses(), false);
-					setProgress(clientList.indexOf(client), 0, clientList.size() - 1);
+					setProgress(clientList.indexOf(client) + 1, 0, clientList.size());
 				}
 				return clientList;
 			}

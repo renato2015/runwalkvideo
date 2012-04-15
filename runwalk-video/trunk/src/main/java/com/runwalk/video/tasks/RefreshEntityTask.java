@@ -43,21 +43,21 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		message("startMessage");
 		List<T> result = null;
 		Dao<T> itemDao = getDaoService().getDao(getItemClass());
-		T item = itemDao.getById(getItem().getId());
+		T selectedItem = itemDao.getById(getItem().getId());
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
-			// get the five last added entities
-			result = itemDao.getNewEntities(findMaxEntityId() - 5);
+			// get the last added entities
+			result = itemDao.getNewEntities(findMaxEntityId());
 			for (T newItem : result) {
-				if (!getItemList().contains(newItem) && !newItem.getId().equals(getItem().getId())) {
+				if (!getItemList().contains(newItem)) {
 					getItemList().add(newItem);
 				}
 			}
-			// refresh the selected client
+			// refresh the selected entity
 			int itemIndex = getItemList().indexOf(getItem());
-			getItemList().set(itemIndex, item);
-			// add refreshed selected client to the end
-			result.add(item);
+			getItemList().set(itemIndex, selectedItem);
+			// add selected client to the end
+			result.add(selectedItem);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
