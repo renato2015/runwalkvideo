@@ -28,18 +28,20 @@ import org.apache.log4j.Logger;
 @SuppressWarnings("serial")
 public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	
+	private final static String DEFAULT_VALUE = "";
+	
 	private final DateFormat dateFormat;
 	
 	/** Value to show when there is no date to be parsed. */
 	private final String defaultValue;
 	
 	public DateTableCellRenderer(DateFormat format) {
-		this("", format);
+		this(DEFAULT_VALUE, format);
 	}
 
-	public DateTableCellRenderer(String emptyDate, DateFormat format) {
+	public DateTableCellRenderer(String defaultValue, DateFormat format) {
 		this.dateFormat = format;
-		this.defaultValue = emptyDate;
+		this.defaultValue = defaultValue;
 	}
 	
 	public Component getTableCellRendererComponent(javax.swing.JTable table, 
@@ -47,7 +49,7 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 		// call super here to process all usual arguments such as isSelected and hasFocus
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		if (value == null) {
-			setText("");
+			setText(defaultValue);
 		} else {
 			Date date = parseDate(value);
 			synchronized(dateFormat) {

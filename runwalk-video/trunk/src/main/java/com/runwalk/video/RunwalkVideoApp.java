@@ -17,6 +17,7 @@ import javax.swing.ActionMap;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import javax.swing.event.UndoableEditListener;
 
 import net.miginfocom.swing.MigLayout;
@@ -129,6 +130,23 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
+	
+	/**
+	 *  sets the default font for all Swing components.
+	 *   ex. 
+	 *     setUIFont (new javax.swing.plaf.FontUIResource
+	 *        ("Serif",Font.ITALIC,12));
+	 * @param f the font resource
+	 */
+	public static void setUIFont (javax.swing.plaf.FontUIResource f){
+		java.util.Enumeration<?> keys = UIManager.getDefaults().keys();
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			Object value = UIManager.get (key);
+			if (value instanceof javax.swing.plaf.FontUIResource)
+				UIManager.put (key, f);
+		}
+	}    
 
 	/*
 	 * Application lifecycle methods
