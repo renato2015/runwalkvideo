@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.helpers.LogLog;
@@ -41,7 +42,7 @@ public class TimestampFileAppender extends FileAppender {
 	 * {@inheritDoc}
 	 */
 	public void setFile(String fileName) {
-		fileName = fileName.replace("\\", File.separator);
+		fileName = fileName.replaceAll("(?<!^)(\\\\|/){1,}", Matcher.quoteReplacement(File.separator));
 		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));
@@ -55,7 +56,7 @@ public class TimestampFileAppender extends FileAppender {
 	 * {@inheritDoc} 
 	 */
 	public synchronized void setFile(String fileName, boolean append, boolean bufferedIO, int bufferSize) throws IOException {
-		fileName = fileName.replace("\\", File.separator);
+		fileName = fileName.replaceAll("(?<!^)(\\\\|/){1,}", Matcher.quoteReplacement(File.separator));
 		TimestampFileAppender.Helper.makePath(fileName);
 		if (timestampPattern != null) {
 			fileName = fileName.replaceAll(TARGET, new SimpleDateFormat(timestampPattern).format(Calendar.getInstance().getTime()));

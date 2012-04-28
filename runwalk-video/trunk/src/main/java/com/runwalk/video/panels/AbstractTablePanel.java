@@ -45,8 +45,12 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	
     private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
-	private EventList<T> sourceList;
+	/** The observable source list */
+	private ObservableElementList<T> observableElementList;
+	/** The transformed list */
 	private EventList<T> itemList;
+	/** The original, unfiltered list */
+	private EventList<T> sourceList;
 	private EventSelectionModel<T> eventSelectionModel;
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
@@ -96,12 +100,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 	}
 	
-	/**
-	 * Overwrite the selected item field by force and fire a {@link PropertyChangeEvent}
-	 * if both the old and new objects are not exactly the same in memory.
-	 * 
-	 * @param selectedItem the selected item 
-	 */
 	protected void setSelectedItem(T selectedItem) {
 		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
 			this.selectedItem = null;
@@ -157,8 +155,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			sourceList.dispose();
 		}
 		sourceList = itemList;
-		EventList<T> observedItems = new ObservableElementList<T>(itemList, itemConnector);
-		SortedList<T> sortedItems = SortedList.create(observedItems);
+		observableElementList = new ObservableElementList<T>(itemList, itemConnector);
+		SortedList<T> sortedItems = SortedList.create(observableElementList);
 		sortedItems.setMode(SortedList.AVOID_MOVING_ELEMENTS);
 		EventList<T> specializedList = specializeItemList(sortedItems);
 		firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
@@ -221,8 +219,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		return itemList;
 	}
 	
-	public EventList<T> getSourceList() {
-		return sourceList;
+	public ObservableElementList<T> getObservableElementList() {
+		return observableElementList;
 	}
 
 	public EventSelectionModel<T> getEventSelectionModel() {

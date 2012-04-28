@@ -255,25 +255,22 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
 		}
-		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getSourceList(), Client.class, getSelectedItem()) {
+		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getObservableElementList(), Client.class, getSelectedItem()) {
 
 			@Override
 			protected List<Client> doInBackground() throws Exception {
 				List<Client> clientList = super.doInBackground();
 				// refresh file cache for newly added clients
 				for (Client client : clientList) {
+					int index = clientList.indexOf(client);
+					if (index == clientList.size()) {
+						getObservableElementList().elementChanged(client);
+						setSelectedItem(client);
+					}
 					getVideoFileManager().refreshCache(client.getAnalyses(), false);
-					setProgress(clientList.indexOf(client) + 1, 0, clientList.size());
+					setProgress(index + 1, 0, clientList.size());
 				}
 				return clientList;
-			}
-
-			@Override
-			protected void succeeded(List<Client> clientList) {
-				// selected client is the last one in the list
-				Client selectedClient = Iterables.getLast(clientList);
-				// fire propertyChangeEvent and notify all listeners
-				setSelectedItem(selectedClient);
 			}
 			
 		};
