@@ -61,7 +61,7 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
-		message("endMessage", result.size() - 1);
+		message("endMessage", result.size());
 		return result;
 	}
 	

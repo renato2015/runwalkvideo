@@ -143,27 +143,14 @@ public class VideoFileManager {
 		}
 	}
 
-	public void refreshCache(List<Analysis> analyses, boolean clearCache) {
-		if (clearCache) {
-			clearCaches();
-		}
+	public int refreshCache(List<Analysis> analyses) {
+		int filesMissing = 0;
 		for (Analysis analysis : analyses) {
-			for (Recording recording : analysis.getRecordings()) {
-				File removedFile = recordingFileMap.remove(recording);
-				Recording removedFileName = fileNameRecordingMap.remove(recording.getVideoFileName());
-				if (removedFile != null && removedFileName != null) {
-					LOGGER.info("Recording " + recording.getVideoFileName() + " removed from VideoFileManager's cache");
-				}
-				getVideoFile(recording);
-			}
+			filesMissing += refreshCache(analysis);
 		}
+		return filesMissing;
 	}
 	
-	private void clearCaches() {
-		recordingFileMap.clear();
-		fileNameRecordingMap.clear();
-	}
-
 	/**
 	 * This method will iterate over the {@link Recording}s of the given {@link Analysis} and 
 	 * clear it's cache entries. The method will return the number of missing video files when done refreshing.
@@ -185,9 +172,16 @@ public class VideoFileManager {
 	}
 
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
-		recordingFileMap.remove(recording);
-		fileNameRecordingMap.remove(recording.getVideoFileName());
+		if (!removeRecording(recording)) {
+			LOGGER.info("Recording " + recording.getVideoFileName() + " not found in cache");
+		}
 		return getVideoFile(videoFolderRetrievalStrategy, recording);
+	}
+	
+	private boolean removeRecording(Recording recording) {
+		File removedFile = recordingFileMap.remove(recording);
+		Recording removedRecording = fileNameRecordingMap.remove(recording.getVideoFileName());
+		return removedFile != null && removedRecording != null;
 	}
 
 	public boolean canReadAndExists(File videoFile) {
