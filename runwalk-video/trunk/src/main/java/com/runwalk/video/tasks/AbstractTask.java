@@ -47,11 +47,24 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		getLogger().error(throwable.getMessage(), throwable);
 		JOptionPane.showMessageDialog(
 				activeWindow, 
-				throwable,
+				getErrorMessage(throwable),
 				getResourceString(ERROR_MESSAGE), 
 				JOptionPane.ERROR_MESSAGE);
 	}
-
+	
+	/**
+	 * Fetch a human readable error description from the {@link Task}'s property file.
+	 * 
+	 * @param throwable The throwable to find an error description for
+	 * @return The error description
+	 */
+	private Object getErrorMessage(Throwable throwable) {
+		String simpleClassName = throwable.getClass().getSimpleName();
+		String resourceSuffix = Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
+		String errorMessage = getResourceString(resourceName(resourceSuffix));
+		return errorMessage == null ? throwable : errorMessage;
+	}
+	
 	public Logger getLogger() {
 		return logger;
 	}

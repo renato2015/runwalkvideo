@@ -32,7 +32,6 @@ import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
-import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
@@ -185,9 +184,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				// set dirty flag to false again
 				dirtyClient.setDirty(false);
 				// set version field on old client
-				dirtyClient.incrementVersion();
-				if (!mergedClient.equals(dirtyClient)) {
-					getLogger().warn("Merged client does not equal original dirty one!");
+				if (mergedClient.getVersion() != dirtyClient.getVersion()) {
+					dirtyClient.incrementVersion();
 				}
 				
 			}
@@ -263,11 +261,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				// refresh file cache for newly added clients
 				for (Client client : clientList) {
 					int index = clientList.indexOf(client);
-					if (index == clientList.size()) {
+					if (index == clientList.size() - 1) {
 						getObservableElementList().elementChanged(client);
 						setSelectedItem(client);
 					}
-					getVideoFileManager().refreshCache(client.getAnalyses(), false);
+					getVideoFileManager().refreshCache(client.getAnalyses());
 					setProgress(index + 1, 0, clientList.size());
 				}
 				return clientList;

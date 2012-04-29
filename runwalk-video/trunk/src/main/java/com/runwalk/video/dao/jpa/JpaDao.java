@@ -12,6 +12,7 @@ import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
+import org.eclipse.persistence.config.CascadePolicy;
 import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.AbstractDao;
@@ -23,7 +24,7 @@ import com.runwalk.video.dao.Dao;
  * 
  * @author Jeroen Peelaerts
  *
- * @param <E> class which this DAO will serve
+ * @param <E> class which this Dao will serve
  */
 public class JpaDao<E> extends AbstractDao<E> {
 
@@ -89,7 +90,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public List<E> getAll() {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
-		.setHint("toplink.refresh", "true")
+		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
 		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
 		return query.getResultList();
 	}
@@ -101,32 +102,20 @@ public class JpaDao<E> extends AbstractDao<E> {
 	}
 
 	public E getById(Object id) {
-		E result = null;
-		EntityTransaction tx = null;
-		EntityManager entityManager = createEntityManager();
-		try {
-			getEntityManagerFactory().getCache().evict(getTypeParameter(), id);
-			tx = entityManager.getTransaction();
-			tx.begin();
-			result = entityManager.find(getTypeParameter(), id);
-			tx.commit();
-		} catch(PersistenceException e) {
-			if (tx != null && tx.isActive()) {
-				tx.rollback();
-			}
-			throw e;
-		} finally {
-			entityManager.close();
-		}
-		return result;
+		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
+				"WHERE e.id = :id", getTypeParameter())
+		.setParameter("id", id)
+		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadePrivateParts);
+		return query.getSingleResult();
 	}
 
 	public List<E> getByIds(Set<?> ids) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id IN :ids", getTypeParameter())
 				.setParameter("ids", ids)
-		.setHint("toplink.refresh", "true")
-		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
+		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadePrivateParts);
 		return query.getResultList();
 	}
 

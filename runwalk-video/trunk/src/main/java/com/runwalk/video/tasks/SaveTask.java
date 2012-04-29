@@ -2,6 +2,10 @@ package com.runwalk.video.tasks;
 
 import java.util.List;
 
+import javax.persistence.OptimisticLockException;
+
+import org.jdesktop.application.Task;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.matchers.Matcher;
@@ -45,7 +49,7 @@ public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractT
 		// dirty flag should be set back to false by a task listener
 		return result;
 	}
-
+	
 	private DaoService getDaoService() {
 		return daoService;
 	}

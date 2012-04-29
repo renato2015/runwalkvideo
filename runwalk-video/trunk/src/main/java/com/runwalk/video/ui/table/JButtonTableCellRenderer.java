@@ -6,14 +6,11 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import com.runwalk.video.settings.SettingsManager;
-
 @SuppressWarnings("serial")
 public class JButtonTableCellRenderer extends JButton implements TableCellRenderer {
 
 	public JButtonTableCellRenderer(String buttonTitle) {	
 		super(buttonTitle);
-		setFont(SettingsManager.MAIN_FONT);
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,

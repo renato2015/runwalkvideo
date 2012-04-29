@@ -73,6 +73,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public static final String APP_TITLE = "Application.title";
 	public static final String APP_NAME = "Application.name";
 	public static final String APP_BUILD_DATE = "Application.build.date";
+	public static final String APP_MAIN_FONT = "Application.mainFont";
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
 	
@@ -139,7 +140,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 * @param f the font resource
 	 */
 	public static void setUIFont (javax.swing.plaf.FontUIResource f){
-		java.util.Enumeration<?> keys = UIManager.getDefaults().keys();
+		java.util.Enumeration<?> keys = UIManager.getLookAndFeelDefaults().keys();
 		while (keys.hasMoreElements()) {
 			Object key = keys.nextElement();
 			Object value = UIManager.get (key);
@@ -166,8 +167,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// register an exception handler on the EDT
 		AWTExceptionHandler.registerExceptionHandler();
 		ApplicationContext appContext = Application.getInstance().getContext();
+		//setUIFont(new FontUIResource(appContext.getResourceMap().getFont(APP_MAIN_FONT)));
 		settingsManager = new SettingsManager(appContext.getLocalStorage().getDirectory());
 		getSettingsManager().loadSettings();
+		// set application default font
 		// create daoServices and add them to the composite
 		DaoService jpaDaoService = new JpaDaoService(getSettingsManager().getDatabaseSettings(), getName());
 		DaoService baseEntryDaoService = new BaseEntryDaoService(getSettingsManager().getCalendarSettings(), getVersionString());
