@@ -262,7 +262,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				for (Client client : clientList) {
 					int index = clientList.indexOf(client);
 					if (index == clientList.size() - 1) {
-						getObservableElementList().elementChanged(client);
 						setSelectedItem(client);
 					}
 					getVideoFileManager().refreshCache(client.getAnalyses());

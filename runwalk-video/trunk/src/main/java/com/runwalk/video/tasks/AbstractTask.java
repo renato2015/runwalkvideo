@@ -39,7 +39,6 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 	
 	@Override
 	protected void failed(Throwable throwable) {
-		super.failed(throwable);
 		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		if (activeWindow == null || !activeWindow.getName().equals("mainFrame")) {
 			activeWindow = null;
