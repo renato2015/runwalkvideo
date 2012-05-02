@@ -75,12 +75,12 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 		getFiltergraph().setPreview();
 	}
 
-	public void showCaptureSettings() {
-		getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_DEVICE);
+	public boolean showCaptureSettings() {
+		return getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_DEVICE) > -1;
 	}
 
-	public void showCameraSettings() {
-		getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_CAPTURE);
+	public boolean showCameraSettings() {
+		return getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_CAPTURE) > -1;
 	}
 	
 	private DSFilterInfo getCaptureEncoder() {

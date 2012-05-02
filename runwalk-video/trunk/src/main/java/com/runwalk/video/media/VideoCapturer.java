@@ -74,7 +74,7 @@ public class VideoCapturer extends VideoComponent {
 		getVideoImpl().stopRecording();
 		setIdle(true);
 	}
-
+	
 	/**
 	 * Return the currently used capture encoder name.
 	 * @return The name of the encoder
@@ -85,12 +85,16 @@ public class VideoCapturer extends VideoComponent {
 	
 	@Action
 	public void showCapturerSettings() {
-		getVideoImpl().showCaptureSettings();
+		if (getVideoImpl().showCaptureSettings()) {
+			setIdle(true);
+		}
 	}
 
 	@Action
 	public void showCameraSettings() {
-		getVideoImpl().showCameraSettings();
+		if (getVideoImpl().showCameraSettings()) {
+			setIdle(true);
+		}
 	}
 
 	public boolean isRecording() {

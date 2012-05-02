@@ -171,28 +171,34 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public BufferedImage getImage() {
-		// TODO can be implemented later on
+		// TODO currently not implemented
 		return null;
 	}
 
 	public void startRecording(String videoPath) {
+		// TODO check if the fps parameters is used somewhere?
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, 25);
 		LOGGER.debug("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
 			
 			public void run() {
+				long startTime = System.currentTimeMillis();
+				long capturedFrames = 0L, droppedFrames = 0L;
 				while(isRecording()) {
 					long[] frameDropInfo = {0L, 0L};
 					UEyeCapturerLibrary.GetFrameDropInfo(cameraHandle, frameDropInfo);
-					LOGGER.debug("captured: " + (frameDropInfo[0] & 0xFFFFFFF0L) + 
-							" dropped: " + (frameDropInfo[1] & 0xFFFFFFF0L));
+					capturedFrames = frameDropInfo[0] & 0xFFFFFFF0L;
+					droppedFrames = frameDropInfo[1] & 0xFFFFFFF0L;
+					LOGGER.debug("captured: " + capturedFrames + " dropped: " + droppedFrames);
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						LOGGER.error(e);
 					}
 				}
+				long secondsRecorded = (System.currentTimeMillis() - startTime) / 1000;
+				LOGGER.debug("Average recording fps: " + secondsRecorded / capturedFrames);
 			}
 
 
@@ -212,7 +218,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	/**
 	 * This implementation will open the .ini settings file for the selected camera.
 	 */
-	public void showCaptureSettings() {
+	public boolean showCaptureSettings() {
 		// nothing to show here
 		if (getSettingsFile() != null) {
 			try {
@@ -225,9 +231,10 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 				LOGGER.error("Failed to open settings file with default editor", e);
 			}
 		}
+		return false;
 	}
 
-	public void showCameraSettings() {
+	public boolean showCameraSettings() {
 		// show a filechooser dialog which enables you to select a settings file
 		final JFileChooser chooser = settingsFile == null ? new JFileChooser() : new JFileChooser(settingsFile);
 		chooser.setFileFilter(new FileFilter() {
@@ -245,6 +252,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
 			settingsFile = chooser.getSelectedFile();
 		}
+		return false;
 	}
 
 	public String getCaptureEncoderName() {

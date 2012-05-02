@@ -15,9 +15,19 @@ public interface IVideoCapturer extends IVideoComponent {
 	
 	void stopRecording();
 
-	void showCaptureSettings();
-
-	void showCameraSettings();
+	/**
+	 * Show a settings dialog box. Will return <code>true</code>
+	 * if the component's state was changed to running.
+	 * @return <code>true</code> if the component is running
+	 */
+	boolean showCaptureSettings();
+	
+	/**
+	 * Show a camera settings dialog box. Will return <code>true</code>
+	 * if the component's state was changed to running.
+	 * @return <code>true</code> if the component is running
+	 */
+	boolean showCameraSettings();
 
 	/**
 	 * Return the name of the currently chosen encoder for capturing video with.

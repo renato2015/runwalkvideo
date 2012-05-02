@@ -38,9 +38,6 @@ public abstract class VideoCapturerFactory {
 	 */
 	public abstract Collection<String> getCapturerNames();
 	
-	//TODO this logic will probably be moved to some entity outside of this class
-	//protected abstract boolean isPlatformSupported(PlatformType platformType);
-
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
 	 * @return The factory instance
@@ -65,7 +62,8 @@ public abstract class VideoCapturerFactory {
 
 	/** 
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
-	 * At this time capturing is only available for {@link PlatformType#WINDOWS}.
+	 * At this time capturing is only available for {@link PlatformType#WINDOWS}. This method will always run 
+	 * on the Event Dispatching Thread
 	 * 
 	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link CameraDialog}, can be <code>null</code>
 	 * @param defaultCapturerName The name of the last chosen capturer
@@ -73,71 +71,62 @@ public abstract class VideoCapturerFactory {
 	 * @return The created capturer instance or null if no capturer devices were found
 	 */
 	public VideoCapturer createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
-		final VideoCapturer capturer = new VideoCapturer();
+		final VideoCapturer videoCapturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(parentComponent, capturer.getApplicationActionMap(), 
-				capturer.getComponentId(), defaultCapturerName);
-		dialog.setLocationRelativeTo(null);
+		CameraDialog dialog = new CameraDialog(parentComponent, videoCapturer.getApplicationActionMap(), 
+				videoCapturer.getComponentId(), defaultCapturerName);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURER_NAME)) {
 					// user changed capture device selection, dispose only if there was something running
-					if (capturer.getVideoImpl() != null) {
+					if (videoCapturer.getVideoImpl() != null) {
 						// dispose capturer from a different thread
 						new Thread(new Runnable() {
 
 							public void run() {
-								capturer.getVideoImpl().dispose();
+								videoCapturer.getVideoImpl().dispose();
 							}
 							
-						}, capturer.getVideoImpl().getTitle() + " Disposer").start();
+						}, videoCapturer.getVideoImpl().getTitle() + " Disposer").start();
 					}
 					// initialize the selected capturer
 					String selectedCapturerName = evt.getNewValue().toString();
 					try {
-						IVideoCapturer capturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
-						capturer.setVideoImpl(capturerImpl);
+						IVideoCapturer videoCapturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
+						videoCapturer.setVideoImpl(videoCapturerImpl);
+						videoCapturer.invokeAction(VideoComponent.DISPOSE_ON_EXIT_ACTION, videoCapturerImpl);
 					} catch(RuntimeException e) {
 						//TODO show appropriate error dialog here, in this case the creation will prolly return null
 						Logger.getLogger(VideoCapturerFactory.class).error(e);
 					}
 				} else if (evt.getPropertyName().equals(SelfContained.MONITOR_ID)) {
-					if (capturer.getVideoImpl() instanceof SelfContained) {
+					if (videoCapturer.getVideoImpl() instanceof SelfContained) {
 						// user clicked a monitor button, set it on the capturer
 						int monitorId = Integer.parseInt(evt.getNewValue().toString());
-						((SelfContained) capturer.getVideoImpl()).setMonitorId(monitorId);
+						((SelfContained) videoCapturer.getVideoImpl()).setMonitorId(monitorId);
 					}
-				} /*else if (evt.getPropertyName().equals(CameraDialog.CAPTURER_INITIALIZED)) {
-					// prepare the capturer for showing live video
-					capturer.getVideoImpl().startCapturer();
-				}*/
+				}
 			}
 		};
 		dialog.addPropertyChangeListener(changeListener);
 		// populate dialog with capture devices and look for connected monitors
 		if (dialog.refreshCapturers()) {
 			// show the dialog on screen
-			dialog.pack();
 			dialog.setVisible(true);
 			dialog.toFront();
-			if (!dialog.isCancelled()) {
-				// implementation can be null here if returned by the dummy factory
-				if (capturer.getVideoImpl() != null) {
-					// prepare the capturer for showing live video
-					capturer.getVideoImpl().startRunning();
-				}
-			} else {
-				// dispose chosen capturer if canceled
-				capturer.dispose();
+			// implementation can be null here if returned by the dummy factory
+			if (!dialog.isAborted() && videoCapturer.getVideoImpl() != null) {
+				// prepare the capturer for showing live video
+				videoCapturer.startRunning();
 			}
 		} 
 		// remove the listener to avoid memory leaking
 		dialog.removePropertyChangeListener(changeListener);
 		// if the video implementation is null then the created capturer is useless
-		return capturer.getVideoImpl() != null ? capturer : null;
+		return videoCapturer.getVideoImpl() != null ? videoCapturer : null;
 	}
-
+	
 	/**
 	 * A dummy factory that doesn't do anything.
 	 * 
