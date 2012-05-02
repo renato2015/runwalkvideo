@@ -3,19 +3,21 @@ package com.runwalk.video.media;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.Robot;
 import java.awt.image.BufferedImage;
-import java.lang.ref.WeakReference;
 
 import javax.swing.ActionMap;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
+import org.jdesktop.application.Task;
 
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.Containable;
 import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.core.SelfContained;
+import com.runwalk.video.tasks.AbstractTask;
 
 /**
  * This abstraction allows you to make easy reuse of the common video UI functionality  
@@ -27,11 +29,15 @@ import com.runwalk.video.core.SelfContained;
 @AppComponent
 public abstract class VideoComponent implements PropertyChangeSupport {
 
-	public static final String IDLE = "idle";
 	public static final String STATE = "state";
+	// different states for the component
+	public static final String IDLE = "idle";
 	public static final String DISPOSED = "disposed";
+	public static final String STOPPED = "stopped";
+	
+	public static final String DISPOSE_ON_EXIT_ACTION = "disposeOnExit";
 
-	private WeakReference<ApplicationActionMap> actionMap;
+	private ApplicationActionMap actionMap;
 	private volatile State state;
 	private boolean overlayed;
 	
@@ -45,7 +51,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	protected VideoComponent(int componentId) {
 		this.componentId = componentId;
-		setIdle(true);
+		setIdle(false);
 	}
 
 	public abstract IVideoComponent getVideoImpl();
@@ -57,9 +63,9 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	@Action(selectedProperty = IDLE)
 	public void togglePreview() {
 		if (!isIdle()) {
-			getVideoImpl().stopRunning();
+			stopRunning();
 		} else {
-			getVideoImpl().startRunning();
+			startRunning();
 		}
 	}
 	
@@ -126,9 +132,27 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		setState(idle ? State.IDLE : State.STOPPED);
 		firePropertyChange(IDLE, wasIdle, isIdle());
 	}
+	
+	public boolean isDisposed() {
+		return getState() == State.DISPOSED;
+	}
+	
+	public boolean isStopped() {
+		return getState() == State.STOPPED;
+	}
+	
+	public void startRunning() {
+		if (getVideoImpl() != null) {
+			getVideoImpl().startRunning();
+			setIdle(true);
+		}
+	}
 
 	public void stopRunning() {
-		getVideoImpl().stopRunning();
+		if (getVideoImpl() != null) {
+			getVideoImpl().stopRunning();
+			setIdle(false);
+		}
 	}
 
 	/**
@@ -142,13 +166,16 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	@OnEdt
 	@Action(enabledProperty = IDLE)
 	public void dispose() {
-		if (getVideoImpl() != null) {			
-			// dispose on the video implementation will dispose resources for the full screen frame
-			getVideoImpl().dispose();
+		if (!isDisposed()) {
+			if (getVideoImpl() != null) {			
+				// dispose on the video implementation will dispose resources for the full screen frame
+				getVideoImpl().dispose();
+			}
+			setVideoPath(null);
+			// fire a PCE after disposing the implementation
+			setState(State.DISPOSED);
+			actionMap = null;
 		}
-		setVideoPath(null);
-		// fire a PCE after disposing the implementation
-		setState(State.DISPOSED);
 	}
 	
 	public String getTitle() {
@@ -165,6 +192,28 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 
 	public void setVideoPath(String videoPath) {
 		this.videoPath = videoPath;
+	}
+	
+	@Action
+	public Task<Void, Void> disposeOnExit() {
+		return new AbstractTask<Void, Void>(DISPOSE_ON_EXIT_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				String componentTitle = VideoComponent.this.getTitle();
+				getLogger().info("Waiting for " + componentTitle + " to become active..");
+				while(isStopped()) {
+					// continue waiting for component activation or disposal
+					if (getTaskService() != null && getTaskService().isShutdown()) {
+						dispose();
+						new Robot().waitForIdle();
+					}
+					Thread.yield();
+				}
+				getLogger().info("Waiting for " + componentTitle + " has ended. State is now " + VideoComponent.this.getState());
+				return null;
+			}
+			
+		};
 	}
 
 	/**
@@ -186,13 +235,13 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 				parentImplActionMap = (ApplicationActionMap) parentImplActionMap.getParent();
 			}
 			parentImplActionMap.setParent(actionMap);			
-			this.actionMap = new WeakReference<ApplicationActionMap>(implActionMap);
+			this.actionMap = implActionMap;
 		}
-		return actionMap != null ? actionMap.get() : getContext().getActionMap(this);
+		return actionMap != null ? actionMap : getContext().getActionMap(VideoComponent.class, this);
 	}
 
 	public enum State {
-		PLAYING, RECORDING, IDLE, DISPOSED, STOPPED
+		PLAYING, RECORDING, IDLE, DISPOSED, STOPPED;
 	}
 
 }

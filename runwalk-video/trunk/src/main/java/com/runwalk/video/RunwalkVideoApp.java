@@ -241,6 +241,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 					resourceMap.getString("quit.confirmDialog.text"), 
 					resourceMap.getString("quit.Action.text"), JOptionPane.OK_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
+				LOGGER.debug("Shutdown initiated...");
 				//executeAction(getApplicationActionMap(), "uploadLogFiles");
 				executeAction(getApplicationActionMap(), SAVE_SETTINGS_ACTION);
 				if (isSaveNeeded()) {

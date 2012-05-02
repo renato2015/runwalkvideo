@@ -77,9 +77,9 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 
 		//the edit menu?
 		JMenu editMenu = new JMenu(getResourceMap().getString("editMenu.text"));
-		JMenuItem undo = new JMenuItem( getApplicationActionMap().get("undo"));
+		JMenuItem undo = new JMenuItem( getApplication().getApplicationActionMap().get("undo"));
 		editMenu.add(undo);
-		JMenuItem redo = new JMenuItem( getApplicationActionMap().get("redo"));
+		JMenuItem redo = new JMenuItem( getApplication().getApplicationActionMap().get("redo"));
 		editMenu.add(redo);
 		editMenu.add(new JSeparator());
 		ResourceInjector resourceInjector = ResourceInjector.getInstance();

@@ -5,7 +5,6 @@ import java.awt.Dialog;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +45,8 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 	// bound class properties
 	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";
 
+	public static final String ABORTED = "aborted";
+
 	private JComboBox capturerComboBox;
 
 	private String selectedCapturerName;
@@ -58,7 +59,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 
 	private JPanel buttonPanel;
 	
-	private boolean cancelled = false;
+	private boolean aborted = false;
 
 	/**
 	 * Create a dialog that allows the user to start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
@@ -77,13 +78,13 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		this.defaultCapturerName = defaultCapturerName;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
-		final boolean enableExitAction = parent == null;
+		final boolean enableQuitAction = parent == null;
 		addWindowListener(new WindowAdapter() {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				if (enableExitAction) {
-					Runtime.getRuntime().exit(0);
+				if (enableQuitAction) {
+					invokeAction(QUIT_ACTION, e.getSource());
 				} else {
 					dismissDialog();
 				}
@@ -104,10 +105,10 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		buttonPanel.setVisible(false);
 		add(buttonPanel, "wrap, grow, hidemode 3");
 
-		if (enableExitAction) {
-			javax.swing.Action exitAction = getAction(QUIT_ACTION);
-			JButton cancelButton = new JButton(exitAction); // NOI18N
-			add(cancelButton, "grow");
+		if (enableQuitAction) {
+			javax.swing.Action quitAction = getAction(QUIT_ACTION);
+			JButton quitButton = new JButton(quitAction); // NOI18N
+			add(quitButton, "grow");
 		}
 		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURER_ACTION)); // NOI18N
 		add(refreshButton, "align right");
@@ -143,7 +144,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 			}
 		}
 	}
-
+	
 	public void setSelectedCapturerName(String selectedCapturerName) {
 		firePropertyChange(SELECTED_CAPTURER_NAME, this.selectedCapturerName, this.selectedCapturerName = selectedCapturerName);
 	}
@@ -153,23 +154,23 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 	}
 	
 	public void dismissDialog() {
-		dismissDialog(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "cancelled"));
+		dismissDialog(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ABORTED));
 	}
 
 	@Action
 	public void dismissDialog(ActionEvent actionEvent) {
-		setCancelled(actionEvent.getActionCommand().equals("cancelled"));
+		setAborted(actionEvent.getActionCommand().equals(ABORTED));
 		setVisible(false);
 		// release native screen resources
 		dispose();
 	}
 	
-	public void setCancelled(boolean cancelled) {
-		this.cancelled = cancelled;
+	public void setAborted(boolean aborted) {
+		firePropertyChange(ABORTED, this.aborted, this.aborted = aborted);
 	}
 	
-	public boolean isCancelled() {
-		return cancelled;
+	public boolean isAborted() {
+		return aborted;
 	}
 	
 	/**
@@ -191,6 +192,8 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		addCapturers(capturerNames);
 		// add some extra gui elements depending on the number of connected monitors
 		addMonitors();
+		pack();
+		setLocationRelativeTo(null);
 		return true;
 	}
 	
@@ -236,7 +239,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				DisplayMode displayMode = graphicsDevice.getDisplayMode();
-				final Rectangle position = graphicsDevice.getDefaultConfiguration().getBounds();
+				// final Rectangle position = graphicsDevice.getDefaultConfiguration().getBounds();
 				String resolution = displayMode.getWidth() + "x" + displayMode.getHeight();
 				JToggleButton button = new JToggleButton("<html><center>" + monitorIdString + "<br>" + resolution + "</center></html>");
 				monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
