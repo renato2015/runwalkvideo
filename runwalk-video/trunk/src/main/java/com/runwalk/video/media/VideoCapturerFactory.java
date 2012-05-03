@@ -86,6 +86,7 @@ public abstract class VideoCapturerFactory {
 
 							public void run() {
 								videoCapturer.getVideoImpl().dispose();
+								videoCapturer.setVideoImpl(null);
 							}
 							
 						}, videoCapturer.getVideoImpl().getTitle() + " Disposer").start();
@@ -95,6 +96,7 @@ public abstract class VideoCapturerFactory {
 					try {
 						IVideoCapturer videoCapturerImpl = initializeCapturer(selectedCapturerName, defaultCaptureEncoderName);
 						videoCapturer.setVideoImpl(videoCapturerImpl);
+						// track object life cycle and release resources if needed
 						videoCapturer.invokeAction(VideoComponent.DISPOSE_ON_EXIT_ACTION, videoCapturerImpl);
 					} catch(RuntimeException e) {
 						//TODO show appropriate error dialog here, in this case the creation will prolly return null
