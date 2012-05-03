@@ -63,7 +63,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 					calendarSlot.getClient() != null) {
 				// get the last modified field back from the updated entry
 				result ++;
-				updateLastModifiedDate(calendarEventEntry, calendarSlot);
+				mapLastModifiedDate(calendarEventEntry, calendarSlot);
 				if (calendarSlot.getId() == null) {
 					// persist entity to database
 					calendarSlotDao.persist(calendarSlot);
@@ -107,7 +107,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 							} else {
 								// something changed.. but is of no interest
 								logger.info("Last modified date has changed for CalendarSlot " + calendarSlot.getName());
-								updateLastModifiedDate(calendarEventEntry, calendarSlot);
+								mapLastModifiedDate(calendarEventEntry, calendarSlot);
 								// just update the last modified date
 								calendarSlotDao.merge(calendarSlot);
 							}
@@ -186,8 +186,14 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		}
 		return result;
 	}
-
-	private void updateLastModifiedDate(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
+	
+	/**
+	 * Map the last modified time of a {@link CalendarEventEntry} to the given {@link CalendarSlot}.
+	 * 
+	 * @param calendarEventEntry The given calendarEventEntry
+	 * @param calendarSlot The calendarSlot to map the start and end times to
+	 */
+	private void mapLastModifiedDate(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
 		calendarSlot.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
 	}
 

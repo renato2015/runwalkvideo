@@ -16,6 +16,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.FileAppender;
@@ -25,6 +26,7 @@ import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
 
+import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.util.AppUtil;
@@ -280,9 +282,6 @@ public class SettingsManager implements Serializable {
 	}
 
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
-		if (getSettings().videoFolderRetrievalStrategy == null) {
-			getSettings().videoFolderRetrievalStrategy = new DefaultVideoFolderRetrievalStrategy();
-		}
 		return getSettings().videoFolderRetrievalStrategy;
 	}
 
@@ -352,8 +351,9 @@ public class SettingsManager implements Serializable {
 		/** 
 		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
 		 */
-		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
-		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object?
+		@XmlElementRef
+		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy("yyyy/MM - MMM/dd");
+		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object? 
 		private String videoDir;
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
