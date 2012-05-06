@@ -326,7 +326,7 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		zipCodeField = new JComboBox();
 		zipCodeField.setFont(SettingsManager.MAIN_FONT);
-		add(zipCodeField, "wmax 40%, wmin 35%");
+		add(zipCodeField, "wmax 40%, wmin 40%");
 
 		locationField = new JComboBox();
 		locationField.setFont(SettingsManager.MAIN_FONT);

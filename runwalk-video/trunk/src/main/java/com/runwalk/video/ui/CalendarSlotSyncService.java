@@ -1,6 +1,7 @@
 package com.runwalk.video.ui;
 
 import java.awt.Window;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,8 +52,8 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	/**
 	 * {@inheritDoc}
 	 */
-	public int syncToDatabase(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
-		int result = 0;
+	public List<T> syncToDatabase(Map<T, CalendarEventEntry> calendarEventEntryMapping) {
+		List<T> result = new ArrayList<T>();
 		CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
 		for (Entry<T, CalendarEventEntry> entry : calendarEventEntryMapping.entrySet()) {
 			T calendarSlot = entry.getKey();
@@ -62,7 +63,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			if (calendarSlot.getCalendarSlotStatus().needsUpdate() && !calendarSlot.isIgnored() && 
 					calendarSlot.getClient() != null) {
 				// get the last modified field back from the updated entry
-				result ++;
+				result.add(calendarSlot);
 				mapLastModifiedDate(calendarEventEntry, calendarSlot);
 				if (calendarSlot.getId() == null) {
 					// persist entity to database
@@ -70,6 +71,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 				} else {
 					calendarSlotDao.merge(calendarSlot);
 				}
+				calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
 			}
 		}
 		return result;
