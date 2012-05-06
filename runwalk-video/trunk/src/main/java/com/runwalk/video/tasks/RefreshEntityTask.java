@@ -16,7 +16,7 @@ import com.runwalk.video.entities.SerializableEntity;
 public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends AbstractTask<List<T>, Void> {
 
 	private final EventList<T> itemList;
-	
+
 	private final T item;
 
 	private final DaoService daoService;
@@ -30,7 +30,7 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		this.item = item;
 		this.itemClass = itemClass;
 	}
-	
+
 	private long findMaxEntityId() {
 		Comparator<T> idComparator = GlazedLists.beanPropertyComparator(getItemClass(), SerializableEntity.ID);
 		ArrayList<T> sortedList = new ArrayList<T>(getItemList());
@@ -44,27 +44,14 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		List<T> result = null;
 		Dao<T> itemDao = getDaoService().getDao(getItemClass());
 		T selectedItem = itemDao.getById(getItem().getId());
-		getItemList().getReadWriteLock().writeLock().lock();
-		try {
-			// get the last added entities
-			result = itemDao.getNewEntities(findMaxEntityId());
-			for (T newItem : result) {
-				if (!getItemList().contains(newItem)) {
-					getItemList().add(newItem);
-				}
-			}
-			// refresh the selected entity
-			int itemIndex = getItemList().indexOf(getItem());
-			getItemList().set(itemIndex, selectedItem);
-			// add selected client to the end
-			result.add(selectedItem);
-		} finally {
-			getItemList().getReadWriteLock().writeLock().unlock();
-		}
+		// get the last added entities
+		result = itemDao.getNewEntities(findMaxEntityId());
+		// add selected client to the end
+		result.add(selectedItem);
 		message("endMessage", result.size());
 		return result;
 	}
-	
+
 	private DaoService getDaoService() {
 		return daoService;
 	}
@@ -80,5 +67,5 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 	private Class<T> getItemClass() {
 		return itemClass;
 	}
-	
+
 }

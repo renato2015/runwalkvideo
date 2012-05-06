@@ -110,13 +110,49 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public T getSelectedItem() {
 		return selectedItem;
 	}
+	
+	/**
+	 * Find an item using the identity of the given item
+	 * and replace it.
+	 * 
+	 * Calling this method implies that the result of 
+	 * {@link #equals(Object)} is the same for the item 
+	 * already in the list and the given item.
+	 * 
+	 * @param newItem The item to be replaced
+	 * @return The old item if successful, otherwise <code>null</code>
+	 */
+	public T refreshItem(T newItem) {
+		return refreshItem(newItem, newItem);
+	}
+	
+	/**
+	 * Replace the old item with the given new one.
+	 * Use this method or the one argument version depending
+	 * on how the {@link #equals(Object)} is implemented 
+	 * for the {@link Class} at hand.
+	 * 
+	 * @param oldItem The old item to replace
+	 * @param newItem The new item
+	 * @return The old item if successful, otherwise <code>null</code>
+	 * 
+	 * @see #refreshItem(Comparable)
+	 */
+	public T refreshItem(T oldItem, T newItem) {
+		T result = null;
+		int itemIndex = getItemList().indexOf(oldItem);
+		if (itemIndex != -1) {
+			result = getItemList().set(itemIndex, newItem);
+		}
+		return result;
+	}
 
 	public JTable getTable() {
 		return table;
 	}
 
 	/**
-	 * This method will add a {@link MouseListener} to the contained {@link JTable} in case it wasn't already added.
+	 * This method will add a {@link MouseListener} to the contained {@link JTable} in case it wasn't already there.
 	 */
 	public void registerClickHandler(ClickHandler<T> clickHandler) {
 		List<MouseListener> mouseListeners = Arrays.asList(getTable().getMouseListeners());

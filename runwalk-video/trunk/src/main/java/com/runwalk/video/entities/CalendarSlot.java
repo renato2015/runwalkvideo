@@ -139,7 +139,7 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 		boolean result = false;
 		if (obj != null && getClass() == obj.getClass()) {
 			CalendarSlot<?> other = (CalendarSlot<?>) obj;
-			result &= getCalendarId() != null ? getCalendarId().equals(other.getCalendarId()) : other.getCalendarId() == null;
+			result = getCalendarId() != null ? getCalendarId().equals(other.getCalendarId()) : other.getCalendarId() == null;
 			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;

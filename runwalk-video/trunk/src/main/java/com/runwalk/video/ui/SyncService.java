@@ -1,5 +1,6 @@
 package com.runwalk.video.ui;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.gdata.data.BaseEntry;
@@ -30,7 +31,7 @@ public interface SyncService<T extends SerializableEntity<? super T>, E extends 
 	 * @param eventEntryMapping A mapping of serializableEntities with their corresponding baseEntries
 	 * @return The number of items that were synchronized
 	 */
-	int syncToDatabase(Map<T, E> eventEntryMapping);
+	List<T> syncToDatabase(Map<T, E> eventEntryMapping);
 
 	/**
 	 * Map the state of a {@link BaseEntry} to it's corresponding {@link SerializableEntity} derived class.

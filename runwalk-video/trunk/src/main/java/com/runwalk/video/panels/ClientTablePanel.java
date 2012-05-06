@@ -242,6 +242,14 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return result;
 	}
 	
+	public Client refreshItem(Client client) {
+		Client result = super.refreshItem(client);
+		if (result != null) {
+			getVideoFileManager().refreshCache(client.getAnalyses());
+		}
+		return result;
+	}
+	
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
 		if (getSelectedItem().isDirty() && isDirty()) {
@@ -253,25 +261,32 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
 		}
-		RefreshEntityTask<Client> result = new RefreshEntityTask<Client>(getDaoService(), getObservableElementList(), Client.class, getSelectedItem()) {
+		return new RefreshEntityTask<Client>(getDaoService(), getObservableElementList(), Client.class, getSelectedItem()) {
 
 			@Override
 			protected List<Client> doInBackground() throws Exception {
 				List<Client> clientList = super.doInBackground();
 				// refresh file cache for newly added clients
-				for (Client client : clientList) {
-					int index = clientList.indexOf(client);
-					if (index == clientList.size() - 1) {
-						setSelectedItem(client);
+				getItemList().getReadWriteLock().writeLock().lock();
+				try {
+					for (Client client : clientList) {
+						int index = clientList.indexOf(client);
+						if (index == -1) {
+							getItemList().add(client);
+						} else if (index == clientList.size() - 1) {
+							// selected item is always the last in the list
+							refreshItem(getSelectedItem(), client);
+							setSelectedItem(client);
+						}
+						setProgress(index + 1, 0, clientList.size());
 					}
-					getVideoFileManager().refreshCache(client.getAnalyses());
-					setProgress(index + 1, 0, clientList.size());
+				} finally {
+					getItemList().getReadWriteLock().writeLock().unlock();
 				}
 				return clientList;
 			}
 			
 		};
-		return result;
 	}
 
 	private void clearSearchField() {

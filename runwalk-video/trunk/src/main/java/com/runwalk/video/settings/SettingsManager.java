@@ -348,9 +348,6 @@ public class SettingsManager implements Serializable {
 
 		private String[] videoCapturerFactories = new String[] {"com.runwalk.video.media.dsj.DSJCapturerFactory", "com.runwalk.video.media.ueye.UEyeCapturerFactory"};
 
-		/** 
-		 * The video folder retrieval strategy is cached here after lazy initialization with its stored format string 
-		 */
 		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy("yyyy/MM - MMM/dd");
 		// TODO eventually merge videoDir and uncompressedVideoDir in the strategy object? 
