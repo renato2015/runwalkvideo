@@ -31,10 +31,6 @@ public enum RecordingStatus {
 	
 	private String resourceKey; 
 
-	public String getResourceKey() {
-		return resourceKey;
-	}
-
 	private RecordingStatus(int code, String resourceKey) {
 		this.code = code;
 		this.resourceKey = resourceKey;
@@ -43,6 +39,10 @@ public enum RecordingStatus {
 	private RecordingStatus(int code, boolean refreshNeeded, String resourceKey) {
 		this(code, resourceKey);
 		this.refreshNeeded = refreshNeeded;
+	}
+	
+	public String getResourceKey() {
+		return resourceKey;
 	}
 	
 	public int getCode() {

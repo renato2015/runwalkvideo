@@ -8,7 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
-import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
@@ -28,7 +27,7 @@ import com.runwalk.video.dao.Dao;
  */
 public class JpaDao<E> extends AbstractDao<E> {
 
-	public static final int MAX_ROLLBACKS = 2;
+	public static final int MAX_ROLLBACKS = 1;
 	
 	private final EntityManagerFactory entityManagerFactory;
 	
@@ -170,18 +169,16 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx.begin();
 			entityManager.persist(item);
 			tx.commit();
-		} catch(RollbackException e) {
+		} catch(RuntimeException e) {
+			if (tx != null && tx.isActive()) {
+				tx.rollback();
+			}
 			if (retryNumber < MAX_ROLLBACKS) {
-				Logger.getLogger(getClass()).info("Retrying persist for " + item, e);
+				Logger.getLogger(getClass()).info("Retrying persist for " + item + " (" + e.getClass().getSimpleName() + ")" , e);
 				persist(item, ++retryNumber);
 			} else {
 				throw e;
 			}
-		} catch(PersistenceException e) {
-			if (tx != null && tx.isActive()) {
-				tx.rollback();
-			}
-			throw e;
 		} finally {
 			entityManager.close();
 		}

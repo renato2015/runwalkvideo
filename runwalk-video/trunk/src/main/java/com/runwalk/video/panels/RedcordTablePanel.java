@@ -1,6 +1,5 @@
 package com.runwalk.video.panels;
 
-import java.awt.Robot;
 import java.awt.Window;
 import java.util.Collections;
 import java.util.Comparator;
@@ -417,9 +416,9 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncToDatabase() {
-		return new AbstractTask<Void, Void>(SYNC_TO_DATABASE_ACTION) {
+		return new AbstractTask<List<RedcordSession>, Void>(SYNC_TO_DATABASE_ACTION) {
 
-			protected Void doInBackground() throws Exception {
+			protected List<RedcordSession> doInBackground() throws Exception {
 				message("startMessage");
 				CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(RedcordSession.class, getDaoService());
 				// get data to sync with calendar
@@ -436,17 +435,19 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				}
 				// continue to work after notification from the dialog
 				List<RedcordSession> redcordSessions = calendarSyncService.syncToDatabase(calendarSlotMapping);
-				refreshClientList(redcordSessions);
-				// wait until EDT is done updating
-				new Robot().waitForIdle();
 				message("endMessage", redcordSessions.size());
-				return null;
+				return redcordSessions;
 			}
-
-			protected void refreshClientList(List<RedcordSession> redcordSessions) {
+			
+			@Override
+			protected void succeeded(List<RedcordSession> redcordSessions) {
 				// refresh clients with updated session data
 				for(RedcordSession redcordSession : redcordSessions) {
-					getClientTablePanel().refreshItem(redcordSession.getClient());
+					Client client = redcordSession.getClient();
+					getClientTablePanel().refreshItem(client);
+					if (redcordSession.getCalendarSlotStatus().isRemoved()) {
+						client.removeRedcordSession(redcordSession);
+					}
 				}
 			}
 

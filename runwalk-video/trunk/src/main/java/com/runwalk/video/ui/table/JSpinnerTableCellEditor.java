@@ -5,9 +5,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.JFormattedTextField;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 
@@ -18,7 +18,8 @@ public class JSpinnerTableCellEditor extends AbstractCellEditor implements Table
 
 	public JSpinnerTableCellEditor(JSpinner spinner) {
 		this.spinner = spinner;
-		final JTextField editor = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+		final JFormattedTextField editor = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+		editor.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		editor.addFocusListener(new FocusAdapter() {
 
 			@Override
@@ -49,5 +50,7 @@ public class JSpinnerTableCellEditor extends AbstractCellEditor implements Table
 	public Object getCellEditorValue() {
 		return spinner.getValue();
 	}
+
+	
 
 }
