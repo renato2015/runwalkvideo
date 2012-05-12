@@ -1,6 +1,8 @@
 package com.runwalk.video.ui;
 
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.BorderFactory;
@@ -50,6 +52,14 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 
 	public CalendarSlotDialog(Window parentWindow, CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<Client> clientList) {
 		super(parentWindow);
+		addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				save();
+			}
+
+		});
 		this.clientList = clientList;
 		this.dismissSignal = dismissSignal;
 		setLayout(new MigLayout("insets dialog"));

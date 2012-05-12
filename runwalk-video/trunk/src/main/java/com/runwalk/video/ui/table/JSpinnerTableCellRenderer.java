@@ -27,14 +27,7 @@ public class JSpinnerTableCellRenderer extends JSpinner implements TableCellRend
 	 */
 	public static JSpinnerTableCellRenderer dateTableCellRenderer(SimpleDateFormat dateFormat) {
 		DateTableCellRenderer dateTableCellRenderer = new DateTableCellRenderer(dateFormat);
-		JSpinnerTableCellRenderer result = new JSpinnerTableCellRenderer(dateTableCellRenderer) {
-
-			@Override
-			public Object parseValue(Object value) {
-				return super.parseValue(value);
-			}
-			
-		};
+		JSpinnerTableCellRenderer result = new JSpinnerTableCellRenderer(dateTableCellRenderer);
 		result.setModel(new SpinnerDateModel());
 		result.setEditor(new JSpinner.DateEditor(result, dateFormat.toPattern()));
 		return result;

@@ -6,7 +6,9 @@ public enum CalendarSlotStatus {
 	
 	MODIFIED("calendarSlotStatus.modified"),
 	
-	SYNCHRONIZED("calendarSlotStatus.synchronized");
+	SYNCHRONIZED("calendarSlotStatus.synchronized"),
+	
+	REMOVED("calendarSlotStatus.removed");
 	
 	private final String resourceKey;
 	
@@ -20,6 +22,10 @@ public enum CalendarSlotStatus {
 	
 	public boolean needsUpdate() {
 		return this == NEW || this == MODIFIED;
+	}
+	
+	public boolean isRemoved() {
+		return this == REMOVED;
 	}
 	
 }

@@ -2,6 +2,7 @@ package com.runwalk.video.entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -38,7 +39,7 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	@Column(name="cal_id")
 	private String calendarId;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name="person_id", nullable=false )
 	private Client client;
 

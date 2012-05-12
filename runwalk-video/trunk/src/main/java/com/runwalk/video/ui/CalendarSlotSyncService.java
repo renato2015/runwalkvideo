@@ -60,18 +60,22 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			CalendarEventEntry calendarEventEntry = entry.getValue();
 			updateBaseEntry(calendarEventEntry, calendarSlot);
 			// check if the calendarSlot needs to be updated
-			if (calendarSlot.getCalendarSlotStatus().needsUpdate() && !calendarSlot.isIgnored() && 
-					calendarSlot.getClient() != null) {
-				// get the last modified field back from the updated entry
-				result.add(calendarSlot);
-				mapLastModifiedDate(calendarEventEntry, calendarSlot);
-				if (calendarSlot.getId() == null) {
-					// persist entity to database
-					calendarSlotDao.persist(calendarSlot);
-				} else {
-					calendarSlotDao.merge(calendarSlot);
+			if (!calendarSlot.isIgnored() && calendarSlot.getClient() != null) {
+				if (calendarSlot.getCalendarSlotStatus().needsUpdate()) {
+					// get the last modified field back from the updated entry
+					result.add(calendarSlot);
+					mapLastModifiedDate(calendarEventEntry, calendarSlot);
+					if (calendarSlot.getId() == null) {
+						// persist entity to database
+						calendarSlotDao.persist(calendarSlot);
+					} else {
+						calendarSlotDao.merge(calendarSlot);
+					}
+					calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
+				} else if (calendarSlot.getCalendarSlotStatus().isRemoved()) {
+					result.add(calendarSlot);
+					calendarSlotDao.delete(calendarSlot);
 				}
-				calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
 			}
 		}
 		return result;
@@ -99,35 +103,59 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 						foundCalendarSlot = calendarSlot;
 						// remove the item from the list
 						calendarSlotIt.remove();
-						// compare lastModified property
-						if (calendarEventEntry.getUpdated().getValue() != foundCalendarSlot.getLastModified().getTime()) {
-							// compare start and end dates..
-							foundCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.MODIFIED);
-							if (mapStartAndEndDate(calendarEventEntry, foundCalendarSlot)) {
-								logger.info("Start or end date has changed for CalendarSlot " + calendarSlot.getName());
-								result.put(foundCalendarSlot, calendarEventEntry);
-							} else {
-								// something changed.. but is of no interest
-								logger.info("Last modified date has changed for CalendarSlot " + calendarSlot.getName());
-								mapLastModifiedDate(calendarEventEntry, calendarSlot);
-								// just update the last modified date
-								calendarSlotDao.merge(calendarSlot);
-							}
-						} else {
-							// everything up to date!
-							foundCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
-						}
+						prepareModifiedSlot(result, calendarSlot, calendarEventEntry);
 					}
 				}
 				// no results found, create a new calendarSlot
-				if (foundCalendarSlot == null) {
-					foundCalendarSlot = mapBaseEntry(calendarEventEntry);
-					logger.info("CalendarSlot created " + foundCalendarSlot);
-					result.put(foundCalendarSlot, calendarEventEntry);
+				prepareNewSlot(result, foundCalendarSlot, calendarEventEntry);
+			}
+		}
+		// check for removed items
+		prepareRemovedSlots(result, calendarSlots);
+		return result;
+	}
+	
+	private void prepareNewSlot(Map<T, CalendarEventEntry> calendarSlotMapping, T calendarSlot, 
+			CalendarEventEntry calendarEventEntry) {
+		if (calendarSlot == null) {
+			calendarSlot = mapBaseEntry(calendarEventEntry);
+			logger.info("CalendarSlot created " + calendarSlot);
+			calendarSlotMapping.put(calendarSlot, calendarEventEntry);
+		}
+	}
+	
+	private void prepareModifiedSlot(Map<T, CalendarEventEntry> calendarSlotMapping, T calendarSlot, 
+			CalendarEventEntry calendarEventEntry) {
+		// compare lastModified property
+		if (calendarEventEntry.getUpdated().getValue() != calendarSlot.getLastModified().getTime()) {
+			// compare start and end dates..
+			calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.MODIFIED);
+			if (mapStartAndEndDate(calendarEventEntry, calendarSlot)) {
+				logger.info("Start or end date has changed for CalendarSlot " + calendarSlot.getName());
+				calendarSlotMapping.put(calendarSlot, calendarEventEntry);
+			} else {
+				// something changed.. but is of no interest
+				logger.info("Last modified date has changed for CalendarSlot " + calendarSlot.getName());
+				mapLastModifiedDate(calendarEventEntry, calendarSlot);
+				// just update the last modified date
+				CalendarSlotDao<T> calendarSlotDao = getDaoService().getDao(getTypeParameter());
+				calendarSlotDao.merge(calendarSlot);
+			}
+		} else {
+			// everything up to date!
+			calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
+		}
+	}
+	
+	private void prepareRemovedSlots(Map<T, ?> calendarSlotMapping, List<T> calendarSlots) {
+		if (!calendarSlots.isEmpty()) {
+			for(T removedCalendarSlot : calendarSlots) {
+				if (removedCalendarSlot.getCalendarId() != null) {
+					calendarSlotMapping.put(removedCalendarSlot, null);
+					removedCalendarSlot.setCalendarSlotStatus(CalendarSlotStatus.REMOVED);
 				}
 			}
 		}
-		return result;
 	}
 
 	/**
@@ -181,7 +209,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			// set ignore flag on the calendarEventEntry
 			ExtendedProperty property = new ExtendedProperty();
 			property.setName(EXTENDED_IGNORE_PROPERTY);
-			property.setValue("true");
+			property.setValue(Boolean.toString(calendarSlot.isIgnored()));
 			calendarEventEntry.addExtendedProperty(property);
 			// update base entry
 			calendarEventEntryDao.merge(calendarEventEntry);
@@ -196,7 +224,9 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	 * @param calendarSlot The calendarSlot to map the start and end times to
 	 */
 	private void mapLastModifiedDate(CalendarEventEntry calendarEventEntry, CalendarSlot<?> calendarSlot) {
-		calendarSlot.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
+		if (calendarSlot != null && calendarEventEntry != null) {
+			calendarSlot.setLastModified(new Date(calendarEventEntry.getUpdated().getValue()));
+		}
 	}
 
 	/**
