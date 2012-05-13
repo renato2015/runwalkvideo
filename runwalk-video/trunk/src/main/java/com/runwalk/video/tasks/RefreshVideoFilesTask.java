@@ -28,7 +28,7 @@ public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 		try {
 			for (Analysis analysis : getAnalysisList()) {
 				for (Recording recording  : analysis.getRecordings()) {
-					File videoFile = getVideoFileManager().refreshCache(recording);
+					File videoFile = getVideoFileManager().getVideoFile(recording);
 					compressable |= recording.isCompressable();
 					filesMissing = videoFile == null ? ++filesMissing : filesMissing;
 				}

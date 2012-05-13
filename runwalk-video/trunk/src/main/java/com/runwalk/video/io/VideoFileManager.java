@@ -173,7 +173,7 @@ public class VideoFileManager {
 
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		if (!removeRecording(recording)) {
-			LOGGER.info("Recording " + recording.getVideoFileName() + " not found in cache");
+			LOGGER.info("Cache miss for " + recording.getVideoFileName());
 		}
 		return getVideoFile(videoFolderRetrievalStrategy, recording);
 	}
