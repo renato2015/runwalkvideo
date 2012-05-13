@@ -61,7 +61,7 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 	public void testSyncManager() throws InterruptedException {
 		// create a composite daoservice ..
 		DaoService daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
-		CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(RedcordSession.class, daoService);
+		CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(daoService, RedcordSession.class);
 		
 		ClientDao clientDao = daoService.getDao(Client.class);
 		EventList<Client> clientList = GlazedLists.eventList(clientDao.getByIds(Sets.newHashSet(120L, 2344L)));

@@ -50,6 +50,7 @@ public class VideoPlayer extends VideoComponent {
 		super(playerCount);
 		this.playerImpl = playerImpl;
 		loadVideo(path);
+		setIdle(true);
 	}
 
 	public boolean loadVideo(String videoPath) {
@@ -201,6 +202,33 @@ public class VideoPlayer extends VideoComponent {
 	@Override
 	public String getTitle() {
 		return getResourceMap().getString("windowTitle.text", getComponentId());
+	}
+
+	/**
+	 * This method simply invokes {@link #startRunning()} if the video component is stopped 
+	 * or {@link #stopRunning()} if the component is running at invocation time.
+	 */
+	@Action(selectedProperty = IDLE)
+	public void togglePreview() {
+		if (!isIdle()) {
+			stopRunning();
+		} else {
+			startRunning();
+		}
+	}
+
+	public void startRunning() {
+		if (getVideoImpl() != null) {
+			getVideoImpl().startRunning();
+			setIdle(true);
+		}
+	}
+
+	public void stopRunning() {
+		if (getVideoImpl() != null) {
+			getVideoImpl().stopRunning();
+			setIdle(false);
+		}
 	}
 
 }

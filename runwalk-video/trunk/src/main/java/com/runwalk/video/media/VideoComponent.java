@@ -3,21 +3,18 @@ package com.runwalk.video.media;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
-import java.awt.Robot;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ActionMap;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.application.Task;
 
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.Containable;
 import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.core.SelfContained;
-import com.runwalk.video.tasks.AbstractTask;
 
 /**
  * This abstraction allows you to make easy reuse of the common video UI functionality  
@@ -55,19 +52,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	public abstract IVideoComponent getVideoImpl();
-	
-	/**
-	 * This method simply invokes {@link #startRunning()} if the video component is stopped 
-	 * or {@link #stopRunning()} if the component is running at invocation time.
-	 */
-	@Action(selectedProperty = IDLE)
-	public void togglePreview() {
-		if (!isIdle()) {
-			stopRunning();
-		} else {
-			startRunning();
-		}
-	}
 	
 	/**
 	 * Return <code>true</code> if the capturer implementation's 
@@ -116,7 +100,11 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	protected void setState(State state) {
+		boolean wasIdle = isIdle();
 		firePropertyChange(STATE, this.state, this.state = state);
+		if (isIdle() != wasIdle) {
+			firePropertyChange(IDLE, wasIdle, isIdle());
+		}
 	}
 
 	public State getState() {
@@ -128,9 +116,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	public void setIdle(boolean idle) {
-		boolean wasIdle = isIdle();
 		setState(idle ? State.IDLE : State.STOPPED);
-		firePropertyChange(IDLE, wasIdle, isIdle());
 	}
 	
 	public boolean isDisposed() {
@@ -141,20 +127,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		return getState() == State.STOPPED;
 	}
 	
-	public void startRunning() {
-		if (getVideoImpl() != null) {
-			getVideoImpl().startRunning();
-			setIdle(true);
-		}
-	}
-
-	public void stopRunning() {
-		if (getVideoImpl() != null) {
-			getVideoImpl().stopRunning();
-			setIdle(false);
-		}
-	}
-
 	/**
 	 * Dispose the current video implementation and remove the component from the
 	 * application's windowing system. This method should be called on the Event Dispatching
@@ -194,28 +166,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 		this.videoPath = videoPath;
 	}
 	
-	@Action
-	public Task<Void, Void> disposeOnExit() {
-		return new AbstractTask<Void, Void>(DISPOSE_ON_EXIT_ACTION) {
-
-			protected Void doInBackground() throws Exception {
-				String componentTitle = VideoComponent.this.getTitle();
-				getLogger().info("Waiting for " + componentTitle + " to become active..");
-				while(isStopped()) {
-					// continue waiting for component activation or disposal
-					if (getTaskService() != null && getTaskService().isShutdown()) {
-						dispose();
-						new Robot().waitForIdle();
-					}
-					Thread.yield();
-				}
-				getLogger().info("Waiting for " + componentTitle + " has ended. State is now " + VideoComponent.this.getState());
-				return null;
-			}
-			
-		};
-	}
-
 	/**
 	 * Merge the {@link ActionMap} of the implementation with the one of this instance.
 	 * The result will be cached and wrapped using a WeakReference.
@@ -238,6 +188,33 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 			this.actionMap = implActionMap;
 		}
 		return actionMap != null ? actionMap : getContext().getActionMap(VideoComponent.class, this);
+	}
+
+	public void startRunning() {
+		if (getVideoImpl() != null) {
+			getVideoImpl().startRunning();
+			setIdle(true);
+		}
+	}
+
+	public void stopRunning() {
+		if (getVideoImpl() != null) {
+			getVideoImpl().stopRunning();
+			setIdle(false);
+		}
+	}
+
+	/**
+	 * This method simply invokes {@link #startRunning()} if the video component is stopped 
+	 * or {@link #stopRunning()} if the component is running at invocation time.
+	 */
+	@Action(selectedProperty = IDLE)
+	public void togglePreview() {
+		if (!isIdle()) {
+			stopRunning();
+		} else {
+			startRunning();
+		}
 	}
 
 	public enum State {

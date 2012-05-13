@@ -25,7 +25,7 @@ public class ClientDao extends JpaDao<Client> {
 	public List<Client> getAll() {
 		TypedQuery<Client> query = createEntityManager().createQuery("SELECT client FROM " + getTypeParameter().getSimpleName() + " client", Client.class)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
-		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString());
+		.setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getResultList();
 	}
 

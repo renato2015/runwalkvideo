@@ -1,11 +1,8 @@
 package com.runwalk.video.panels;
 
 import java.awt.Window;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -40,7 +37,6 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
-import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
@@ -49,10 +45,9 @@ import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.tasks.AbstractTask;
+import com.runwalk.video.tasks.CalendarSlotSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
-import com.runwalk.video.ui.CalendarSlotSyncService;
 import com.runwalk.video.ui.table.DatePickerTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.ui.table.JSpinnerTableCellEditor;
@@ -197,7 +192,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				RedcordSession result = event.getValue();
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					//	selectedClient.addRedcordSession(result);
+					selectedClient.addRedcordSession(result);
 					setSelectedItemRow(result);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
@@ -416,43 +411,27 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncToDatabase() {
-		return new AbstractTask<List<RedcordSession>, Void>(SYNC_TO_DATABASE_ACTION) {
+		Window parentWindow = SwingUtilities.getWindowAncestor(RedcordTablePanel.this);
+		Task<List<RedcordSession>, Void> result = new CalendarSlotSyncTask<RedcordSession>(parentWindow, getDaoService(), 
+				RedcordSession.class, getClientTablePanel().getObservableElementList());
+		result.addTaskListener(new TaskListener.Adapter<List<RedcordSession>, Void>() {
 
-			protected List<RedcordSession> doInBackground() throws Exception {
-				message("startMessage");
-				CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(RedcordSession.class, getDaoService());
-				// get data to sync with calendar
-				Map<RedcordSession, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToDatabase();
-				EventList<RedcordSession> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
-				// sort appointments according to date
-				Collections.sort(calendarSlotList);
-				if (!calendarSlotList.isEmpty()) {
-					// show the sync dialog on screen (invoke on EDT)
-					CountDownLatch endSignal = new CountDownLatch(1);
-					Window parentWindow = SwingUtilities.getWindowAncestor(RedcordTablePanel.this);
-					calendarSyncService.showCalendarSlotDialog(parentWindow, endSignal, calendarSlotList, getClientTablePanel().getItemList());
-					endSignal.await();
-				}
-				// continue to work after notification from the dialog
-				List<RedcordSession> redcordSessions = calendarSyncService.syncToDatabase(calendarSlotMapping);
-				message("endMessage", redcordSessions.size());
-				return redcordSessions;
-			}
-			
 			@Override
-			protected void succeeded(List<RedcordSession> redcordSessions) {
+			public void succeeded(TaskEvent<List<RedcordSession>> event) {
 				// refresh clients with updated session data
-				for(RedcordSession redcordSession : redcordSessions) {
+				for(RedcordSession redcordSession : event.getValue()) {
 					Client client = redcordSession.getClient();
 					getClientTablePanel().refreshItem(client);
-					if (redcordSession.getCalendarSlotStatus().isRemoved()) {
+					if (redcordSession.getCalendarSlotStatus().isNew()) {
+						client.addRedcordSession(redcordSession);
+					} else if (redcordSession.getCalendarSlotStatus().isRemoved()) {
 						client.removeRedcordSession(redcordSession);
 					}
 				}
 			}
 
-		};
-
+		});
+		return result;
 	}
 
 	public boolean isClientSelected() {

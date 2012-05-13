@@ -44,7 +44,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	private final DaoService daoService;
 	private final Logger logger = Logger.getLogger(CalendarSlotSyncService.class);
 
-	public CalendarSlotSyncService(Class<T> typeParameter, DaoService daoService) {
+	public CalendarSlotSyncService(DaoService daoService, Class<T> typeParameter) {
 		this.typeParameter = typeParameter;
 		this.daoService = daoService;
 	}
@@ -71,7 +71,6 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 					} else {
 						calendarSlotDao.merge(calendarSlot);
 					}
-					calendarSlot.setCalendarSlotStatus(CalendarSlotStatus.SYNCHRONIZED);
 				} else if (calendarSlot.getCalendarSlotStatus().isRemoved()) {
 					result.add(calendarSlot);
 					calendarSlotDao.delete(calendarSlot);

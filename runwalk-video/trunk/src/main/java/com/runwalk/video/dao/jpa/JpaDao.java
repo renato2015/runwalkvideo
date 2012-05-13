@@ -11,8 +11,6 @@ import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
-import org.eclipse.persistence.config.CascadePolicy;
-import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
@@ -89,32 +87,27 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public List<E> getAll() {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
-		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
-		.setHint("oracle.toplink.essentials.config.CascadePolicy", "CascadePrivateParts");
+		.setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getResultList();
 	}
 	
 	public <T> List<E> getNewEntities(T id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter())
-		.setParameter("id", id).setHint(QueryHints.REFRESH, Boolean.TRUE.toString());
+		.setParameter("id", id).setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getResultList();
 	}
 
 	public E getById(Object id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id = :id", getTypeParameter())
-		.setParameter("id", id)
-		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
-		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadePrivateParts);
+		.setParameter("id", id).setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getSingleResult();
 	}
 
 	public List<E> getByIds(Set<?> ids) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id IN :ids", getTypeParameter())
-				.setParameter("ids", ids)
-		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString())
-		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadePrivateParts);
+		.setParameter("ids", ids).setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getResultList();
 	}
 
