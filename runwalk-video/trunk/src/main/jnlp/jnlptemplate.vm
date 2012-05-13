@@ -17,6 +17,7 @@
   <security>
      <all-permissions/>
   </security>
+  <update check="always" policy="prompt-update" />
 #end
 	<resources>
 	  <property name="ueye.enable" value="true" />
