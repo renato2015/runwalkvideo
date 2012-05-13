@@ -11,16 +11,16 @@ public class RedcordSessionDao extends CalendarSlotDao<RedcordSession> {
 		super(RedcordSession.class, entityManagerFactory);
 	}
 
-	@Override
+/*	@Override
 	public void persist(RedcordSession item) {
 		super.persist(item);
 		Client client = item.getClient();
 		if (!client.getRedcordSessions().contains(item)) {
 			client.addRedcordSession(item);
 		}
-	}
+	}*/
 	
-	@Override
+	/*@Override
 	public RedcordSession merge(RedcordSession item) {
 		// replace the merged session in the client's list
 		Client client = item.getClient();
@@ -30,7 +30,7 @@ public class RedcordSessionDao extends CalendarSlotDao<RedcordSession> {
 			client.getRedcordSessions().set(index, mergedItem);
 		}
 		return mergedItem;
-	}
+	}*/
 	
 	
 	

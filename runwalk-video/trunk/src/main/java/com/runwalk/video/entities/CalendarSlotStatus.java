@@ -28,4 +28,8 @@ public enum CalendarSlotStatus {
 		return this == REMOVED;
 	}
 	
+	public boolean isNew() {
+		return this == NEW;
+	}
+	
 }

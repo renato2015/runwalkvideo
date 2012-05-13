@@ -1,13 +1,16 @@
 package com.runwalk.video.media;
 
+import java.awt.Robot;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.OnEdt;
+import com.runwalk.video.tasks.AbstractTask;
 
 public class VideoCapturer extends VideoComponent {
 
@@ -59,6 +62,28 @@ public class VideoCapturer extends VideoComponent {
 		setVideoImpl(null);
 		capturerCount--;
 	}
+	
+	@Action
+	public Task<Void, Void> disposeOnExit() {
+		return new AbstractTask<Void, Void>(DISPOSE_ON_EXIT_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				String componentTitle = VideoCapturer.this.getTitle();
+				getLogger().info("Waiting for " + componentTitle + " to become active..");
+				while(isStopped()) {
+					// continue waiting for component activation or disposal
+					if (getTaskService() != null && getTaskService().isShutdown()) {
+						dispose();
+						new Robot().waitForIdle();
+					}
+					Thread.yield();
+				}
+				getLogger().info("Waiting for " + componentTitle + " has ended. State is now " + VideoCapturer.this.getState());
+				return null;
+			}
+			
+		};
+	}
 
 	public void startRecording(String videoPath) {
 		if (videoPath == null) {
@@ -105,6 +130,5 @@ public class VideoCapturer extends VideoComponent {
 	public String getTitle() {
 		return getResourceMap().getString("windowTitle.text", super.getTitle());
 	}
-
 
 }

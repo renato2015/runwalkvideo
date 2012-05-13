@@ -70,7 +70,7 @@ public abstract class VideoCapturerFactory {
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
 	 */
-	public VideoCapturer createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
+	public VideoComponent createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer videoCapturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
 		CameraDialog dialog = new CameraDialog(parentComponent, videoCapturer.getApplicationActionMap(), 

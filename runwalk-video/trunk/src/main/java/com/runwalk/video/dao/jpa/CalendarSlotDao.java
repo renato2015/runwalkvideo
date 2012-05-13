@@ -6,8 +6,6 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
-import org.eclipse.persistence.config.QueryHints;
-
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.entities.CalendarSlot;
 
@@ -24,8 +22,7 @@ public class CalendarSlotDao<T extends CalendarSlot<? super T>> extends JpaDao<T
 	
 	public List<T> getFutureSlots() {
 		 TypedQuery<T> query = createEntityManager().createQuery("SELECT calendarSlot FROM " + getTypeParameter().getSimpleName() + " calendarSlot WHERE calendarSlot.startDate >= :date", getTypeParameter())
-				.setParameter("date", new Date())
-				.setHint(QueryHints.REFRESH, Boolean.TRUE.toString());
+		.setParameter("date", new Date()).setHint("javax.persistence.cache.storeMode", "REFRESH");
 		 return query.getResultList();
 	}
 	

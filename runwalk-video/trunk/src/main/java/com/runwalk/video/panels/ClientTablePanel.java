@@ -242,10 +242,11 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		return result;
 	}
 	
-	public Client refreshItem(Client client) {
-		Client result = super.refreshItem(client);
+	@Override
+	public Client refreshItem(Client oldClient, Client newClient) {
+		Client result = super.refreshItem(oldClient, newClient);
 		if (result != null) {
-			getVideoFileManager().refreshCache(client.getAnalyses());
+			getVideoFileManager().refreshCache(newClient.getAnalyses());
 		}
 		return result;
 	}
@@ -273,10 +274,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 						int index = clientList.indexOf(client);
 						if (index == -1) {
 							getItemList().add(client);
-						} else if (index == clientList.size() - 1) {
+						} else {
 							// selected item is always the last in the list
 							refreshItem(getSelectedItem(), client);
-							setSelectedItem(client);
 						}
 						setProgress(index + 1, 0, clientList.size());
 					}

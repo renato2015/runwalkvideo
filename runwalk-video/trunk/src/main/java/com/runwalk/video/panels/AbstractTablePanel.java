@@ -119,11 +119,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * {@link #equals(Object)} is the same for the item 
 	 * already in the list and the given item.
 	 * 
-	 * @param newItem The item to be replaced
+	 * @param item The item to be replaced
 	 * @return The old item if successful, otherwise <code>null</code>
 	 */
-	public T refreshItem(T newItem) {
-		return refreshItem(newItem, newItem);
+	public T refreshItem(T item) {
+		return refreshItem(item, item);
 	}
 	
 	/**
@@ -143,6 +143,9 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		int itemIndex = getItemList().indexOf(oldItem);
 		if (itemIndex != -1) {
 			result = getItemList().set(itemIndex, newItem);
+			if (newItem.equals(getSelectedItem())) {
+				setSelectedItem(newItem);
+			}
 		}
 		return result;
 	}
