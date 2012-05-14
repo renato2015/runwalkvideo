@@ -49,7 +49,7 @@ public class ClientDao extends JpaDao<Client> {
 				"WHERE e.id = :id", getTypeParameter())
 				.setParameter("id", id)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
-		.setHint(QueryHints.REFRESH, Boolean.TRUE.toString());
+		.setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getSingleResult();
 	}
 	

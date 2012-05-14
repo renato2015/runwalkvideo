@@ -112,6 +112,20 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 	
 	/**
+	 * Find an item with the same object identity as the given item
+	 * @param item The item's object identitty to look for
+	 * @return The found item or <code>null</code> if not in the list
+	 */
+	public T findItem(T item) {
+		T result = null;
+		int index = getItemList().indexOf(item); 
+		if (index > -1) {
+			result = getItemList().get(index);
+		}
+		return result;
+	}
+	
+	/**
 	 * Find an item using the identity of the given item
 	 * and replace it.
 	 * 

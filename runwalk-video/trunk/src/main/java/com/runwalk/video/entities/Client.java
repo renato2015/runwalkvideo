@@ -93,11 +93,20 @@ public class Client extends Person {
 		return result;
 	}
 	
-	public boolean removeRedcordSession(RedcordTableElement redcordSession) {
+	public boolean removeRedcordSession(RedcordSession redcordSession) {
 		boolean result = false;
 		if (redcordSession != null) {
 			result = getRedcordSessions().remove(redcordSession);
 			decrementRedcordTableElementCount();
+		}
+		return result;
+	}
+	
+	public boolean replaceRedcordSession(RedcordSession redcordSession) {
+		boolean result = false;
+		int index = getRedcordSessions().indexOf(redcordSession);
+		if (index > -1) {
+			result = getRedcordSessions().set(index, redcordSession) != null;
 		}
 		return result;
 	}

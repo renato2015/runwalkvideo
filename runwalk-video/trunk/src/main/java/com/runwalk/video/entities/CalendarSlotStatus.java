@@ -32,4 +32,8 @@ public enum CalendarSlotStatus {
 		return this == NEW;
 	}
 	
+	public boolean isModified() {
+		return this == MODIFIED;
+	}
+	
 }
