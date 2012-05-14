@@ -219,7 +219,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordSession> event) {
-					RedcordTableElement redcordSession = event.getValue();
+					RedcordSession redcordSession = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
@@ -421,13 +421,16 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				// refresh clients with updated session data
 				for(RedcordSession redcordSession : event.getValue()) {
 					Client client = redcordSession.getClient();
-					getClientTablePanel().refreshItem(client);
+					client = getClientTablePanel().findItem(client);
 					if (redcordSession.getCalendarSlotStatus().isNew()) {
 						client.addRedcordSession(redcordSession);
 					} else if (redcordSession.getCalendarSlotStatus().isRemoved()) {
 						client.removeRedcordSession(redcordSession);
+					} else if (redcordSession.getCalendarSlotStatus().isModified()) {
+						client.replaceRedcordSession(redcordSession);
+						getClientTablePanel().getObservableElementList().elementChanged(client);
 					}
-				}
+ 				}
 			}
 
 		});
