@@ -33,7 +33,6 @@ public class JpaDaoService extends AbstractDaoService {
 	 */
 	private void addSpecializedDaos(EntityManagerFactory entityManagerFactory) {
 		addDao(new ClientDao(Client.class, entityManagerFactory));
-		addDao(new RedcordSessionDao(entityManagerFactory));
 	}
 
 	@SuppressWarnings("unchecked")
