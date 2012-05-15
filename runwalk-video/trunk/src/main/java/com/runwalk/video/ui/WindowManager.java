@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.swing.ActionMap;
+import javax.swing.JDesktopPane;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.ApplicationAction;
@@ -322,6 +324,14 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				selfContained.toFront();
 			}
 		}
+	}
+	
+	/**
+	 * A call to this method will ask the {@link RepaintManager} to redraw the whole {@link JDesktopPane}.
+	 * This might be useful when mixing light- and heavyweight components over different screens.
+	 */
+	public void refreshScreen() {
+		getPane().repaint();
 	}
 
 	public boolean isToggleFullScreenEnabled(VideoComponent videoComponent) {
