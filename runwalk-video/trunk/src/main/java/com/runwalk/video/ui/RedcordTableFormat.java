@@ -15,6 +15,10 @@ import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 
 public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement> implements WritableTableFormat<RedcordTableElement> {
 	
+	private static final int[] CALENDAR_DATE_FIELDS = new int[] {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH};
+	
+	private final static int[] CALENDAR_TIME_FIELDS = new int[] {Calendar.HOUR_OF_DAY, Calendar.MINUTE};
+	
 	public RedcordTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
 	}
@@ -45,8 +49,7 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
 			Date startDate = redcordSession.getStartDate();
 			startDate = startDate == null ? new Date() : startDate;
-			int[] calendarConstants = column == 1 ? new int[] {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH} : 
-				new int[] {Calendar.HOUR_OF_DAY, Calendar.MONTH};
+			int[] calendarConstants = column == 1 ? CALENDAR_DATE_FIELDS : CALENDAR_TIME_FIELDS;				;
 			Date newStartDate = addToDate(startDate, (Date) editedValue, calendarConstants);
 			redcordSession.setStartDate(newStartDate);
 		} else if (column == 3 && !redcordTableElement.allowsChildren()) {

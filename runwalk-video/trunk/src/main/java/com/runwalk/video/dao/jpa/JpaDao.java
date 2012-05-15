@@ -165,9 +165,10 @@ public class JpaDao<E> extends AbstractDao<E> {
 		} catch(RuntimeException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
+				Logger.getLogger(getClass()).warn("Transaction was rolled back!");
 			}
 			if (retryNumber < MAX_ROLLBACKS) {
-				Logger.getLogger(getClass()).info("Retrying persist for " + item + " (" + e.getClass().getSimpleName() + ")" , e);
+				Logger.getLogger(getClass()).info("Retrying persist for " + item , e);
 				persist(item, ++retryNumber);
 			} else {
 				throw e;
