@@ -46,16 +46,6 @@ public class JSpinnerTableCellRenderer extends JSpinner implements TableCellRend
 		return tableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	}
 	
-	/**
-	 * Implement this method to handle value parsing for the installed {@link JSpinner}'s model.
-	 * 
-	 * @param value The value to parse
-	 * @return The parsed value
-	 */
-	public Object parseValue(Object value) {
-		return value;
-	}
-	
 	@Override
 	public void repaint(long tm, int x, int y, int width, int height) { }
 

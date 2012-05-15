@@ -16,6 +16,8 @@ import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 
@@ -176,7 +178,6 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void startRecording(String videoPath) {
-		// TODO check if the fps parameters is used somewhere?
 		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, 25);
 		LOGGER.debug("StartRecording " + isSuccess(result));
 
@@ -197,8 +198,11 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 						LOGGER.error(e);
 					}
 				}
-				long secondsRecorded = (System.currentTimeMillis() - startTime) / 1000;
-				LOGGER.debug("Average recording fps: " + secondsRecorded / capturedFrames);
+				long recordedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+				BigDecimal secondsRecorded = BigDecimal.valueOf (recordedSeconds);
+				BigDecimal framesCaptured = BigDecimal.valueOf(capturedFrames);
+				BigDecimal fps = secondsRecorded.divide(framesCaptured, 2, RoundingMode.FLOOR);
+				LOGGER.debug("Average recording fps: " + fps.toPlainString());
 			}
 
 
