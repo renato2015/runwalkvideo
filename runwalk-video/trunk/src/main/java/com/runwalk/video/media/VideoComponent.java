@@ -100,31 +100,37 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	protected void setState(State state) {
-		boolean wasIdle = isIdle();
 		firePropertyChange(STATE, this.state, this.state = state);
-		if (isIdle() != wasIdle) {
-			firePropertyChange(IDLE, wasIdle, isIdle());
-		}
 	}
 
 	public State getState() {
 		return state;
 	}
 
+	public void setIdle(boolean idle) {
+		State oldState = state;
+		state = idle ? State.IDLE : State.STOPPED;
+		firePropertyChange(IDLE, oldState == State.IDLE, isIdle());
+		firePropertyChange(STOPPED, oldState == State.STOPPED, isStopped());
+	}
+	
 	public boolean isIdle() {
 		return getState() == State.IDLE;
 	}
 
-	public void setIdle(boolean idle) {
-		setState(idle ? State.IDLE : State.STOPPED);
-	}
-	
-	public boolean isDisposed() {
-		return getState() == State.DISPOSED;
+	public void setStopped(boolean stopped) {
+		State oldState = state;
+		state = stopped ? State.STOPPED : State.IDLE;
+		firePropertyChange(STOPPED, oldState == State.STOPPED, isStopped());
+		firePropertyChange(IDLE, oldState == State.IDLE, isIdle());
 	}
 	
 	public boolean isStopped() {
 		return getState() == State.STOPPED;
+	}
+
+	public boolean isDisposed() {
+		return getState() == State.DISPOSED;
 	}
 	
 	/**
@@ -200,7 +206,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public void stopRunning() {
 		if (getVideoImpl() != null) {
 			getVideoImpl().stopRunning();
-			setIdle(false);
+			setStopped(true);
 		}
 	}
 

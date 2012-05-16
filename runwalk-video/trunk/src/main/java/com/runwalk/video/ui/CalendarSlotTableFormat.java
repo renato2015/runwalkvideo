@@ -44,11 +44,8 @@ public class CalendarSlotTableFormat extends AbstractTableFormat<CalendarSlot<?>
 			Object editedValue, int column) {
 		if (column == 4) {
 			baseObject.setIgnored((Boolean) editedValue);
-		} else if (column == 5) {
-			Client client = (Client) editedValue;
-			if (client != null) {
-				baseObject.setClient(client);
-			}
+		} else if (column == 5 && editedValue instanceof Client) {
+			baseObject.setClient((Client) editedValue);
 		}
 		return baseObject;
 	}

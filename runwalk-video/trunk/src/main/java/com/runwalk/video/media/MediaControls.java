@@ -2,6 +2,7 @@ package com.runwalk.video.media;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
@@ -104,12 +105,16 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private final Timer timer;
 	
+	private Analysis clickedAnalysis;
+	
 	// open the selected recording
 	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
 
 		public void handleClick(Analysis element) {
 			if (element.isRecorded()) {
-				openRecordings(element);
+				clickedAnalysis = element;
+				Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+				invokeAction(OPEN_RECORDINGS_ACTION, activeWindow);
 			}
 		}
 		
@@ -409,26 +414,29 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public Task<VideoPlayer, Void> openRecording(javax.swing.Action action) {
 		Object value = action.getValue(javax.swing.Action.LONG_DESCRIPTION);
 		final String url = JOptionPane.showInputDialog(value == null ? "" : value.toString()); 
-		AbstractTask<VideoPlayer, Void> result = new AbstractTask<VideoPlayer, Void>(OPEN_RECORDING_ACTION) {
-
-			protected VideoPlayer doInBackground() throws Exception {
-				message("startMessage", url);
-				return url != null && url.length() > 0 ? VideoPlayer.createInstance(url, 1.0f) : null;
-			}
-
-		};
-		result.addTaskListener(new TaskListener.Adapter<VideoPlayer, Void>() {
-
-			public void succeeded(TaskEvent<VideoPlayer> event) {
-				VideoPlayer videoPlayer = event.getValue();
-				if (videoPlayer != null) {
-					int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
-					getWindowManager().addWindow(videoPlayer, monitorId);
+		AbstractTask<VideoPlayer, Void> result = null;
+		if (url != null) {
+			result = new AbstractTask<VideoPlayer, Void>(OPEN_RECORDING_ACTION) {
+				
+				protected VideoPlayer doInBackground() throws Exception {
+					message("startMessage", url);
+					return url.length() > 0 ? VideoPlayer.createInstance(url, 1.0f) : null;
 				}
-			}
-
-
-		});
+				
+			};
+			result.addTaskListener(new TaskListener.Adapter<VideoPlayer, Void>() {
+				
+				public void succeeded(TaskEvent<VideoPlayer> event) {
+					VideoPlayer videoPlayer = event.getValue();
+					if (videoPlayer != null) {
+						int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
+						getWindowManager().addWindow(videoPlayer, monitorId);
+					}
+				}
+				
+				
+			});
+		}
 		return result;
 	}
 
@@ -604,7 +612,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action
-	public void startCapturer() {
+	public void startVideoCapturer() {
 		// TODO create task here
 		String capturerName = getAppSettings().getCapturerName();
 		String captureEncoderName = getAppSettings().getCaptureEncoderName();
@@ -679,43 +687,61 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		};
 	}
 
-	public void openRecordings(Analysis analysis) {
-		VideoPlayer videoPlayer = null;
-		int recordingCount = 0;
-		// FIXME this will only work when an analysis is selected in the AnalysisTablePanel
-		for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
-			final Recording recording = analysis.getRecordings().get(i);
-			if (recording.isRecorded()) {
-				final File videoFile = getVideoFileManager().getVideoFile(recording);
-				if (recordingCount < getPlayers().size()) {
-					videoPlayer = getPlayers().get(recordingCount);
-					// TODO quick and dirty fix for graph rebuilding here.. cleanup please
-					if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
-						//getWindowManager().disposeWindow(player);
-						//getWindowManager().addWindow(player);
-						IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
-						((FullScreenSupport) videoImpl).setFullScreen(true);
-					}
-					// if loading fails, rebuild and show again
-				} else {
-					final float playRate = getAppSettings().getPlayRate();
-					videoPlayer = VideoPlayer.createInstance(videoFile.getAbsolutePath(), playRate);
-					videoPlayer.addPropertyChangeListener(MediaControls.this);
-					videoComponents.add(videoPlayer);
-					getWindowManager().addWindow(videoPlayer);
-				} 
+	@Action(block=BlockingScope.COMPONENT)
+	public Task<?, ?> openRecordings() {
+		final Analysis analysis = clickedAnalysis;
+		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
+			protected Void doInBackground() throws Exception {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				message("startMessage");
+				VideoPlayer videoPlayer = null;
+				int recordingCount = 0;
+				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
+					final Recording recording = analysis.getRecordings().get(i);
+					if (recording.isRecorded()) {
+						final File videoFile = getVideoFileManager().getVideoFile(recording);
+						if (recordingCount < getPlayers().size()) {
+							videoPlayer = getPlayers().get(recordingCount);
+							loadVideo(videoPlayer, videoFile);
+						} else {
+							startVideoPlayer(videoFile);
+						} 
+
+					}
+					setSliderLabels(recording);
+					recordingCount++;
+				}
+				setSliderPosition(0);
+				getWindowManager().refreshScreen();
+				message("endMessage", recordingCount, analysis.getClient());
+	            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				return null;
 			}
-			setSliderLabels(recording);
-			recordingCount++;
+			
+		};
+	}
+	
+	@OnEdt
+	public void loadVideo(final VideoPlayer videoPlayer, final File videoFile) {
+		// TODO quick and dirty fix for graph rebuilding here.. cleanup please
+		// if loading fails, rebuild and show again
+		if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
+			//getWindowManager().disposeWindow(player);
+			//getWindowManager().addWindow(player);
+			IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
+			((FullScreenSupport) videoImpl).setFullScreen(true);
 		}
-		// show black overlay for players that don't show any opened file
-		// TODO check whether this is needed??
-		/*for (int i = recordingCount; i < getPlayers().size(); i++) {
-					VideoPlayer videoPlayer = getPlayers().get(i);
-					videoPlayer.setBlackOverlayImage();
-				}*/
-		setSliderPosition(0);
+		getWindowManager().toFront(videoPlayer);
+	}
+	
+	@OnEdt
+	public void startVideoPlayer(final File videoFile) {
+		final float playRate = getAppSettings().getPlayRate();
+		VideoPlayer videoPlayer = VideoPlayer.createInstance(videoFile.getAbsolutePath(), playRate);
+		videoPlayer.addPropertyChangeListener(MediaControls.this);
+		videoComponents.add(videoPlayer);
+		getWindowManager().addWindow(videoPlayer);
 		getWindowManager().toFront(videoPlayer);
 	}
 

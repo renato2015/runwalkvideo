@@ -1,6 +1,8 @@
 package com.runwalk.video.media;
 
+import java.awt.KeyboardFocusManager;
 import java.awt.Robot;
+import java.awt.Window;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -32,10 +34,11 @@ public class VideoCapturer extends VideoComponent {
 	@Action
 	public void setCaptureEncoder() {
 		List<String> captureEncoderNames = getVideoImpl().getCaptureEncoderNames();
+		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		String captureEncoderName =  (String) JOptionPane.showInputDialog(
-				null,
-				"Kies een video encoder: ",
-				"Video encoder wijzigen..",
+				activeWindow,
+				getResourceMap().getString("setCaptureEncoder.dialog.text"),
+				getResourceMap().getString("setCaptureEncoder.dialog.title"),
 				JOptionPane.PLAIN_MESSAGE,
 				null,
 				Iterables.toArray(captureEncoderNames, String.class),
@@ -63,7 +66,7 @@ public class VideoCapturer extends VideoComponent {
 		capturerCount--;
 	}
 	
-	@Action
+	@Action(enabledProperty=STOPPED)
 	public Task<Void, Void> disposeOnExit() {
 		return new AbstractTask<Void, Void>(DISPOSE_ON_EXIT_ACTION) {
 
@@ -108,14 +111,14 @@ public class VideoCapturer extends VideoComponent {
 		return getVideoImpl().getCaptureEncoderName();
 	}
 	
-	@Action
+	@Action(enabledProperty=STOPPED)
 	public void showCapturerSettings() {
 		if (getVideoImpl().showCaptureSettings()) {
 			setIdle(true);
 		}
 	}
 
-	@Action
+	@Action(enabledProperty=STOPPED)
 	public void showCameraSettings() {
 		if (getVideoImpl().showCameraSettings()) {
 			setIdle(true);

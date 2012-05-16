@@ -15,7 +15,7 @@ public class OpenMJPEGStream extends TestCase {
 	
  	public void testOpenStream() throws Exception {
 		DSEnvironment.setDebugLevel(4);
-		MJPGNetworkSource source = new MJPGNetworkSource("http://runwalk.dyndns.org:8081/videostream.cgi", "visitor", "run01", null);
+		MJPGNetworkSource source = new MJPGNetworkSource("http://runwalk-cam2.runwalk.be/videostream.cgi?user=visitor&pwd=run01", null);
 		DSGraph createGraph = source.createGraph(0);
 		createGraph.play();
 		JFrame frame = new JFrame();

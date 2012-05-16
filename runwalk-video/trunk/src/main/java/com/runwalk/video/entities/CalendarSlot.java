@@ -145,5 +145,22 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 		}
 		return result;
 	}
+	
+	public boolean needsUpdate() {
+		return getCalendarSlotStatus() == CalendarSlotStatus.NEW || 
+				getCalendarSlotStatus() == CalendarSlotStatus.MODIFIED;
+	}
+	
+	public boolean isRemoved() {
+		return getCalendarSlotStatus() == CalendarSlotStatus.REMOVED;
+	}
+	
+	public boolean isNew() {
+		return getCalendarSlotStatus() == CalendarSlotStatus.NEW;
+	}
+	
+	public boolean isModified() {
+		return getCalendarSlotStatus() == CalendarSlotStatus.MODIFIED;
+	}
 
 }
