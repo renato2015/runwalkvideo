@@ -209,7 +209,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
-		mediaControls.startCapturer();
+		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(analysisTablePanel.getResourceMap()));

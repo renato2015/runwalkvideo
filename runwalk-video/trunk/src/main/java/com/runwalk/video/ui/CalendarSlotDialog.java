@@ -49,6 +49,8 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 	private EventTableModel<T> calendarSlotEventTableModel;
 	
 	private final CountDownLatch dismissSignal;
+	
+	private boolean aborted = false;
 
 	public CalendarSlotDialog(Window parentWindow, CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<Client> clientList) {
 		super(parentWindow);
@@ -56,6 +58,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 
 			@Override
 			public void windowClosing(WindowEvent e) {
+				setAborted(true);
 				save();
 			}
 
@@ -86,7 +89,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		calendarSlotTable.setSelectionModel(eventSelectionModel);
 		// install sorters on the table
 		TableComparatorChooser.install(calendarSlotTable, sortedCalendarSlots, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
-		// initialise column models
+		// initialize column models
 		initialiseTableColumnModel(calendarSlotTable.getColumnModel());
 		// add components to the dialog's container
 		JScrollPane scrollPane = new JScrollPane();
@@ -123,6 +126,14 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		clientList = null;
 		setVisible(false);
 		getDismissSignal().countDown();
+	}
+	
+	public boolean isAborted() {
+		return aborted;
+	}
+
+	public void setAborted(boolean aborted) {
+		this.aborted = aborted;
 	}
 
 	private EventList<Client> getClientList() {

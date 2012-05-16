@@ -39,6 +39,6 @@ public interface SyncService<T extends SerializableEntity<? super T>, E extends 
 	 * @param baseEntry The baseEntry to map
 	 * @return The mapped serializableEntity
 	 */
-	T mapBaseEntry(E baseEntry);
+	T mapToSerializableEntity(E baseEntry);
 
 }

@@ -422,12 +422,13 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				for(RedcordSession redcordSession : event.getValue()) {
 					Client client = redcordSession.getClient();
 					client = getClientTablePanel().findItem(client);
-					if (redcordSession.getCalendarSlotStatus().isNew()) {
+					if (redcordSession.isNew()) {
 						client.addRedcordSession(redcordSession);
-					} else if (redcordSession.getCalendarSlotStatus().isRemoved()) {
+					} else if (redcordSession.isRemoved()) {
 						client.removeRedcordSession(redcordSession);
-					} else if (redcordSession.getCalendarSlotStatus().isModified()) {
+					} else if (redcordSession.isModified()) {
 						client.replaceRedcordSession(redcordSession);
+						// refresh manually instead of firing a pce
 						getClientTablePanel().getObservableElementList().elementChanged(client);
 					}
  				}

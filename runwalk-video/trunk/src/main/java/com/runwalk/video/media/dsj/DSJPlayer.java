@@ -1,5 +1,7 @@
 package com.runwalk.video.media.dsj;
 
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
@@ -82,20 +84,24 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	@Action
 	public void setCustomFramerate() {
+		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		try {
 			if (getFiltergraph() != null && getFiltergraph().getActive()) {
 				setCustomFramerateEnabled(true);
-				String prefferredRate = JOptionPane.showInputDialog(null, 
-						"Geef een framerate in..", "Set framerate op capture device", JOptionPane.PLAIN_MESSAGE);
+				String prefferredRate = JOptionPane.showInputDialog(activeWindow, 
+						getResourceMap().getString("setCustomFramerate.dialog.title"), 
+						getResourceMap().getString("setCustomFramerate.dialog.text"), 
+						JOptionPane.PLAIN_MESSAGE);
 				framerate = Float.parseFloat(prefferredRate);
 				getFiltergraph().setMasterFrameRate(framerate);
 			} else {
-				JOptionPane.showMessageDialog(null, 
-				"Geen actieve filtergraph gevonden..");
+				JOptionPane.showMessageDialog(activeWindow, 
+					getResourceMap().getString("setCustomFramerate.invalidFpsDialog.text"));
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, 
-					"Framerate was ongeldig: " + e.getMessage());
+			JOptionPane.showMessageDialog(activeWindow, 
+					getResourceMap().getString("setCustomFramerate.noActiveGraphDialog.text", 
+							e.getMessage()));
 		}
 	}
 

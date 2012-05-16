@@ -20,20 +20,4 @@ public enum CalendarSlotStatus {
 		return resourceKey;
 	}
 	
-	public boolean needsUpdate() {
-		return this == NEW || this == MODIFIED;
-	}
-	
-	public boolean isRemoved() {
-		return this == REMOVED;
-	}
-	
-	public boolean isNew() {
-		return this == NEW;
-	}
-	
-	public boolean isModified() {
-		return this == MODIFIED;
-	}
-	
 }

@@ -162,7 +162,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 			tx.begin();
 			entityManager.persist(item);
 			tx.commit();
-		} catch(RuntimeException e) {
+		} catch(PersistenceException e) {
 			if (tx != null && tx.isActive()) {
 				tx.rollback();
 				Logger.getLogger(getClass()).warn("Transaction was rolled back!");

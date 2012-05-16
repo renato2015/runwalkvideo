@@ -61,7 +61,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			updateBaseEntry(calendarEventEntry, calendarSlot);
 			// check if the calendarSlot needs to be updated
 			if (!calendarSlot.isIgnored() && calendarSlot.getClient() != null) {
-				if (calendarSlot.getCalendarSlotStatus().needsUpdate()) {
+				if (calendarSlot.needsUpdate()) {
 					// get the last modified field back from the updated entry
 					result.add(calendarSlot);
 					mapLastModifiedDate(calendarEventEntry, calendarSlot);
@@ -71,7 +71,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 					} else {
 						calendarSlotDao.merge(calendarSlot);
 					}
-				} else if (calendarSlot.getCalendarSlotStatus().isRemoved()) {
+				} else if (calendarSlot.isRemoved()) {
 					result.add(calendarSlot);
 					calendarSlotDao.delete(calendarSlot);
 				}
@@ -117,7 +117,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	private void prepareNewSlot(Map<T, CalendarEventEntry> calendarSlotMapping, T calendarSlot, 
 			CalendarEventEntry calendarEventEntry) {
 		if (calendarSlot == null) {
-			calendarSlot = mapBaseEntry(calendarEventEntry);
+			calendarSlot = mapToSerializableEntity(calendarEventEntry);
 			logger.info("CalendarSlot created " + calendarSlot);
 			calendarSlotMapping.put(calendarSlot, calendarEventEntry);
 		}
@@ -258,7 +258,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 	 * @param calendarEventEntry The given calendarEventEntry
 	 * @return The mapped calendarSlot
 	 */
-	public T mapBaseEntry(CalendarEventEntry calendarEventEntry) {
+	public T mapToSerializableEntity(CalendarEventEntry calendarEventEntry) {
 		T result = null;
 		try {
 			result = getTypeParameter().newInstance();
