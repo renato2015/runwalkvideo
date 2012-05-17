@@ -96,12 +96,11 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 				getFiltergraph().setMasterFrameRate(framerate);
 			} else {
 				JOptionPane.showMessageDialog(activeWindow, 
-					getResourceMap().getString("setCustomFramerate.invalidFpsDialog.text"));
+						getResourceMap().getString("setCustomFramerate.noActiveGraphDialog.text"));
 			}
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog(activeWindow, 
-					getResourceMap().getString("setCustomFramerate.noActiveGraphDialog.text", 
-							e.getMessage()));
+					getResourceMap().getString("setCustomFramerate.invalidFpsDialog.text", e.getMessage()));
 		}
 	}
 
