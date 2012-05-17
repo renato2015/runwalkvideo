@@ -13,6 +13,7 @@ import org.jdesktop.application.Task;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.tasks.AbstractTask;
+import com.runwalk.video.ui.actions.ApplicationActionConstants;
 
 public class VideoCapturer extends VideoComponent {
 
@@ -111,18 +112,34 @@ public class VideoCapturer extends VideoComponent {
 		return getVideoImpl().getCaptureEncoderName();
 	}
 	
-	@Action(enabledProperty=STOPPED)
-	public void showCapturerSettings() {
-		if (getVideoImpl().showCaptureSettings()) {
-			setIdle(true);
-		}
+	@Action
+	public Task<?, ?> showCapturerSettings() {
+		return new AbstractTask<Void, Void>(ApplicationActionConstants.SHOW_CAPTURER_SETTINGS_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				message("startMessage");
+				if (getVideoImpl().showCaptureSettings()) {
+					setIdle(true);
+				}
+				return null;
+			}
+		};
 	}
 
-	@Action(enabledProperty=STOPPED)
-	public void showCameraSettings() {
-		if (getVideoImpl().showCameraSettings()) {
-			setIdle(true);
-		}
+	@Action
+	public Task<?, ?> showCameraSettings() {
+		return new AbstractTask<Void, Void>(ApplicationActionConstants.SHOW_CAMERA_SETTINGS_ACTION) {
+
+			protected Void doInBackground() throws Exception {
+				message("startMessage");
+				if (getVideoImpl().showCameraSettings()) {
+					setIdle(true);
+				}
+				return null;
+			}
+
+		};
+		
 	}
 
 	public boolean isRecording() {

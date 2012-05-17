@@ -81,8 +81,8 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, 
-	MediaActionConstants, Containable, ActionListener {
-	
+MediaActionConstants, Containable, ActionListener {
+
 	// enabled action properties
 	public static final String MUTED = "muted";
 	public static final String STOP_ENABLED = "stopEnabled";
@@ -104,9 +104,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final DaoService daoService;
 
 	private final Timer timer;
-	
+
 	private Analysis clickedAnalysis;
-	
+
 	// open the selected recording
 	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
 
@@ -117,9 +117,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				invokeAction(OPEN_RECORDINGS_ACTION, activeWindow);
 			}
 		}
-		
+
 	};
-	
+
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
 
@@ -253,7 +253,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		add(button, "gap 0");
 		return button;
 	}
-	
+
 	public AbstractTablePanel.ClickHandler<Analysis> getClickHandler() {
 		return clickHandler;
 	}
@@ -392,20 +392,20 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				protected Void doInBackground() throws Exception {
 					float playRate = getAppSettings().getPlayRate();
 					for (VideoPlayer player : getPlayers()) {
-						if (event.getActionCommand().equals(SLOWER_ACTION)) {
+						if (SLOWER_ACTION.equals(event.getActionCommand())) {
 							playRate = player.slower();
-						} else if (event.getActionCommand().equals(FASTER_ACTION)) {
+						} else if (FASTER_ACTION.equals(event.getActionCommand())) {
 							playRate = player.faster();
 						}
-						// save play rate to settings
 					}
+					// save play rate to settings
 					getAppSettings().setPlayRate(playRate);
-					message("startMessage", playRate);
+					message("endMessage", playRate);
 					return null;
 				}
-				
+
 			};
-			
+
 		}
 		return result;
 	}
@@ -415,56 +415,43 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		Object value = action.getValue(javax.swing.Action.LONG_DESCRIPTION);
 		final String url = JOptionPane.showInputDialog(value == null ? "" : value.toString()); 
 		AbstractTask<VideoPlayer, Void> result = null;
-		if (url != null) {
-			result = new AbstractTask<VideoPlayer, Void>(OPEN_RECORDING_ACTION) {
-				
-				protected VideoPlayer doInBackground() throws Exception {
+		result = new AbstractTask<VideoPlayer, Void>(OPEN_RECORDING_ACTION) {
+
+			protected VideoPlayer doInBackground() throws Exception {
+				VideoPlayer result = null;
+				if (url != null && url.length() > 0) {
 					message("startMessage", url);
-					return url.length() > 0 ? VideoPlayer.createInstance(url, 1.0f) : null;
+					result = VideoPlayer.createInstance(url, 1.0f);
 				}
-				
-			};
-			result.addTaskListener(new TaskListener.Adapter<VideoPlayer, Void>() {
-				
-				public void succeeded(TaskEvent<VideoPlayer> event) {
-					VideoPlayer videoPlayer = event.getValue();
-					if (videoPlayer != null) {
-						int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
-						getWindowManager().addWindow(videoPlayer, monitorId);
-					}
+				return result;
+			}
+
+		};
+		result.addTaskListener(new TaskListener.Adapter<VideoPlayer, Void>() {
+
+			public void succeeded(TaskEvent<VideoPlayer> event) {
+				VideoPlayer videoPlayer = event.getValue();
+				if (videoPlayer != null) {
+					int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
+					getWindowManager().addWindow(videoPlayer, monitorId);
 				}
-				
-				
-			});
-		}
+			}
+
+
+		});
 		return result;
 	}
 
 	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
-	public Task<Void, Void> showCapturerSettings() {
-		return new AbstractTask<Void, Void>(SHOW_CAPTURER_SETTINGS_ACTION) {
-
-			protected Void doInBackground() throws Exception {
-				message("startMessage");
-				getFrontMostCapturer().showCapturerSettings();
-				return null;
-			}
-		};
+	public Task<?, ?> showCapturerSettings() {
+		return getFrontMostCapturer().showCapturerSettings();
 	}
 
 	@Action(enabledProperty = CAPTURER_CONTROLS_ENABLED)
-	public Task<Void, Void> showCameraSettings() {
-		return new AbstractTask<Void, Void>(SHOW_CAMERA_SETTINGS_ACTION) {
-
-			protected Void doInBackground() throws Exception {
-				message("startMessage");
-				getFrontMostCapturer().showCameraSettings();
-				return null;
-			}
-
-		};
+	public Task<?, ?> showCameraSettings() {
+		return getFrontMostCapturer().showCameraSettings();
 	}
-
+	
 	private void setPlayerPosition(VideoPlayer videoPlayer, int position) {
 		videoPlayer.setPosition(position);
 		if (videoPlayer == getFrontMostPlayer()) {
@@ -676,7 +663,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		setPlaying(false);
 		setStatusInfo(0, getFrontMostPlayer().getDuration());
 		return new AbstractTask<Void, Void>(STOP_PLAYING_ACTION) {
-			
+
 			protected Void doInBackground() throws Exception {
 				for (VideoPlayer player : getPlayers()) {
 					player.stop();
@@ -690,11 +677,17 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	@Action(block=BlockingScope.COMPONENT)
 	public Task<?, ?> openRecordings() {
 		final Analysis analysis = clickedAnalysis;
+		final Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
+			@OnEdt
+			private void setWaitCursor() {
+				activeWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			}
+
 			protected Void doInBackground() throws Exception {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				message("startMessage");
+				setWaitCursor();
 				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
 				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
@@ -714,14 +707,19 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				}
 				setSliderPosition(0);
 				getWindowManager().refreshScreen();
+				new Robot().waitForIdle();
 				message("endMessage", recordingCount, analysis.getClient());
-	            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				return null;
+			}
+
+			@Override
+			protected void finished() {
+				activeWindow.setCursor(Cursor.getDefaultCursor());
 			}
 			
 		};
 	}
-	
+
 	@OnEdt
 	public void loadVideo(final VideoPlayer videoPlayer, final File videoFile) {
 		// TODO quick and dirty fix for graph rebuilding here.. cleanup please
@@ -734,7 +732,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		}
 		getWindowManager().toFront(videoPlayer);
 	}
-	
+
 	@OnEdt
 	public void startVideoPlayer(final File videoFile) {
 		final float playRate = getAppSettings().getPlayRate();

@@ -126,6 +126,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		clientList = null;
 		setVisible(false);
 		getDismissSignal().countDown();
+		dispose();
 	}
 	
 	public boolean isAborted() {
