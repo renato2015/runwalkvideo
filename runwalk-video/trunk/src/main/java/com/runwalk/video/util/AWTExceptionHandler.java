@@ -14,7 +14,7 @@ public class AWTExceptionHandler {
 
 	public void handle(Throwable t) {
 		try {
-			Logger.getLogger(getClass()).error(t.getMessage(), t.getCause());
+			Logger.getLogger(getClass()).error(t.getMessage(), t);
 			// insert your exception handling code here
 			// or do nothing to make it go away
 		} catch (Throwable t1) {

@@ -14,7 +14,7 @@ public aspect OnEdtAspect {
 
 	pointcut invokeAndWait() : execution(@OnEdt+ boolean *(..));
 
-/*	 boolean around() : invokeAndWait() {
+	/* boolean around() : invokeAndWait() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
 				return invokeAndWait(new Callable<Boolean>() {
@@ -26,11 +26,9 @@ public aspect OnEdtAspect {
 					
 				});
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw e;
 			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw e;
 			}
 		}
 		return proceed();
