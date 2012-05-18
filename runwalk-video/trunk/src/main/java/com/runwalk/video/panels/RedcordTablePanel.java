@@ -22,6 +22,7 @@ import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
+import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -121,6 +122,25 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		Binding<?, String, JTextArea, String> commentsBinding = 
 				Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
+		/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
+		// update session manually if it is a synthetic element
+		commentsBinding.addBindingListener(new AbstractBindingListener() {
+
+			@Override
+			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
+				if (getSelectedItem().allowsChildren()) {
+					RedcordSession selectedSession = (RedcordSession) getSelectedItem();
+					// check if a change was made on a synthetic node
+					if (selectedSession.getRedcordExerciseCount() > 0) {
+						// update selected row..
+						int firstRow = getEventSelectionModel().getMinSelectionIndex();
+						int lastRow = getEventSelectionModel().getMaxSelectionIndex();
+						getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
+					}
+				}
+			}
+
+		});
 
 		BeanProperty<RedcordTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
@@ -421,6 +441,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				// refresh clients with updated session data
 				for(RedcordSession redcordSession : event.getValue()) {
 					Client client = redcordSession.getClient();
+					// find detached entity and apply modifications
 					client = getClientTablePanel().findItem(client);
 					if (redcordSession.isNew()) {
 						client.addRedcordSession(redcordSession);

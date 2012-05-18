@@ -114,7 +114,16 @@ MediaActionConstants, Containable, ActionListener {
 			if (element.isRecorded()) {
 				clickedAnalysis = element;
 				Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-				invokeAction(OPEN_RECORDINGS_ACTION, activeWindow);
+				try {
+					invokeAction(OPEN_RECORDINGS_ACTION, activeWindow);
+					// in case an exception is thrown before the action is started
+				} catch(Exception e) {
+					JOptionPane.showMessageDialog(
+							activeWindow, 
+							e.getMessage(),
+							getResourceMap().getString("openRecordingsAction.errorDialog.title"), 
+							JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 
@@ -706,7 +715,6 @@ MediaActionConstants, Containable, ActionListener {
 					recordingCount++;
 				}
 				setSliderPosition(0);
-				getWindowManager().refreshScreen();
 				new Robot().waitForIdle();
 				message("endMessage", recordingCount, analysis.getClient());
 				return null;
@@ -729,6 +737,7 @@ MediaActionConstants, Containable, ActionListener {
 			//getWindowManager().addWindow(player);
 			IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
 			((FullScreenSupport) videoImpl).setFullScreen(true);
+			getWindowManager().refreshScreen();
 		}
 		getWindowManager().toFront(videoPlayer);
 	}

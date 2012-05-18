@@ -3,9 +3,11 @@ package com.runwalk.video.entities;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 
+import org.jdesktop.swingx.treetable.TreeTableModel;
+
 /**
  * This interface provides a contract that allows implementing beans to display themselves
- * in a tree table.
+ * in a {@link TreeTableModel}.
  *
  * @author Jeroen Peelaerts
  *

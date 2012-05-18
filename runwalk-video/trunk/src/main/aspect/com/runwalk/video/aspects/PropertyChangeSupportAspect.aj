@@ -22,7 +22,7 @@ public aspect PropertyChangeSupportAspect {
 	
 	declare parents: SerializableEntity<?> implements PropertyChangeSupport;
 	
-	private transient final SwingPropertyChangeSupport PropertyChangeSupport.pcs = new SwingPropertyChangeSupport(this, true);
+	private transient final java.beans.PropertyChangeSupport PropertyChangeSupport.pcs = new java.beans.PropertyChangeSupport(this);
 
     /**
      * Add a PropertyChangeListener to the listener list.

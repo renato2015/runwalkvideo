@@ -3,6 +3,8 @@ package com.runwalk.video.ui;
 import java.awt.Component;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -11,6 +13,7 @@ import java.util.Iterator;
 
 import javax.swing.ActionMap;
 import javax.swing.JDesktopPane;
+import javax.swing.JRootPane;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
@@ -331,7 +334,11 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	 * This might be useful when mixing light- and heavyweight components over different screens.
 	 */
 	public void refreshScreen() {
-		getPane().repaint();
+		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+		JRootPane rootPane = SwingUtilities.getRootPane(activeWindow);
+		RepaintManager repaintManager = RepaintManager.currentManager(rootPane);
+		repaintManager.markCompletelyDirty(rootPane);
+		rootPane.repaint();
 	}
 
 	public boolean isToggleFullScreenEnabled(VideoComponent videoComponent) {
