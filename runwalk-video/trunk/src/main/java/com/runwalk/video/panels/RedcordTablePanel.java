@@ -136,6 +136,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 						int firstRow = getEventSelectionModel().getMinSelectionIndex();
 						int lastRow = getEventSelectionModel().getMaxSelectionIndex();
 						getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
+						setDirty(true);
 					}
 				}
 			}
