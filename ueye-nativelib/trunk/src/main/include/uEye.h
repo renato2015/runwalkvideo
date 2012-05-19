@@ -1,8 +1,8 @@
 /*****************************************************************************/
 /*! \file    ueye.h
-*   \author  (c) 2004-2011 by Imaging Development Systems GmbH
-*   \date    Date: 2011/09/08
-*   \version PRODUCTVERSION: 3.90 
+*   \author  (c) 2004-2012 by Imaging Development Systems GmbH
+*   \date    Date: 2012/03/02
+*   \version PRODUCTVERSION: 4.00 
 *
 *   \brief   Library interface for IDS uEye - camera family.
 *            definition of exported API functions and constants
@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 #ifndef UEYE_VERSION_CODE
-#   define UEYE_VERSION_CODE   UEYE_VERSION(3, 90, 0)
+#   define UEYE_VERSION_CODE   UEYE_VERSION(4, 00, 0)
 #endif
 
 
@@ -115,6 +115,8 @@ extern "C" {
 
 #define IS_SENSOR_UI1240_M          0x0050      // SXGA global shutter, monochrome
 #define IS_SENSOR_UI1240_C          0x0051      // SXGA global shutter, color
+#define IS_SENSOR_UI1240LE_M        0x0054      // SXGA global shutter, monochrome, single board
+#define IS_SENSOR_UI1240LE_C        0x0055      // SXGA global shutter, color, single board
 
 // custom board level designs
 #define IS_SENSOR_UI1543_M          0x0032      // SXGA rolling shutter, monochrome, single board
@@ -137,6 +139,11 @@ extern "C" {
 #define IS_SENSOR_UI1553_C_WN       0x0047      // UXGA rolling shutter, color, single board
 #define IS_SENSOR_UI1483_M_WO       0x0048      // QSXGA rolling shutter, monochrome, single board
 #define IS_SENSOR_UI1483_C_WO       0x0049      // QSXGA rolling shutter, color, single board
+
+#define IS_SENSOR_UI1580_M          0x005A      // 5MP rolling shutter, monochrome
+#define IS_SENSOR_UI1580_C          0x005B      // 5MP rolling shutter, color
+#define IS_SENSOR_UI1580LE_M        0x0060      // 5MP rolling shutter, monochrome, single board
+#define IS_SENSOR_UI1580LE_C        0x0061      // 5MP rolling shutter, color, single board
 
 // CCD Sensors
 #define IS_SENSOR_UI223X_M          0x0080      // Sony CCD sensor - XGA monochrome
@@ -169,6 +176,13 @@ extern "C" {
 #define IS_SENSOR_UI228X_M          0x009C      // Sony CCD sensor - QXGA monochrome
 #define IS_SENSOR_UI228X_C          0x009D      // Sony CCD sensor - QXGA color
 
+#define IS_SENSOR_UI241X_M_R2       0x0182      // Sony CCD sensor - VGA monochrome
+#define IS_SENSOR_UI251X_M          0x0182      // Sony CCD sensor - VGA monochrome
+#define IS_SENSOR_UI241X_C_R2       0x0183      // Sony CCD sensor - VGA color
+#define IS_SENSOR_UI251X_C          0x0183      // Sony CCD sensor - VGA color
+
+#define IS_SENSOR_UI2130_M          0x019E      // Sony CCD sensor - WXGA monochrome
+#define IS_SENSOR_UI2130_C          0x019F      // Sony CCD sensor - WXGA color
 
 // ----------------------------------------------------------------------------
 // Error codes
@@ -915,7 +929,7 @@ extern "C" {
 #define IS_CM_RGB16_PLANAR          //no compliant version
 
 
-#define IS_CM_ALL_POSSIBLE                  0xFFFF
+#define IS_CM_ALL_POSSIBLE          0xFFFF
 
 
 // ----------------------------------------------------------------------------
@@ -951,6 +965,8 @@ extern "C" {
 #define IS_HOTPIXEL_GET_MERGED_CAMERA_LIST_NUMBER       0x810F
 #define IS_HOTPIXEL_GET_MERGED_CAMERA_LIST              0x8110
 
+#define IS_HOTPIXEL_SAVE_SOFTWARE_USER_LIST_UNICODE     0x8111
+#define IS_HOTPIXEL_LOAD_SOFTWARE_USER_LIST_UNICODE     0x8112
 
 // ----------------------------------------------------------------------------
 // color correction definitions
@@ -1046,6 +1062,7 @@ extern "C" {
 
 #define IS_SET_DM_DIB                       1
 #define IS_SET_DM_DIRECT3D                  4
+#define IS_SET_DM_OPENGL                    8
 
 #define IS_SET_DM_MONO                      0x800
 #define IS_SET_DM_BAYER                     0x1000
@@ -1082,7 +1099,9 @@ extern "C" {
 #define DR_ENABLE_IMAGE_SCALING                 25
 #define DR_GET_OVERLAY_SIZE                     26
 #define DR_CHECK_COLOR_MODE_SUPPORT             27
-
+#define DR_GET_OVERLAY_DATA						28
+#define DR_UPDATE_OVERLAY_DATA					29
+#define DR_GET_SUPPORTED                        30
 
 // ----------------------------------------------------------------------------
 // save options
@@ -1109,6 +1128,7 @@ extern "C" {
 #define IS_SET_EVENT_STEAL                  6
 #define IS_SET_EVENT_VPRES                  7
 #define IS_SET_EVENT_CAPTURE_STATUS         8
+#define IS_SET_EVENT_TRANSFER_FAILED        8
 #define IS_SET_EVENT_DEVICE_RECONNECTED     9
 #define IS_SET_EVENT_MEMORY_MODE_FINISH     10
 #define IS_SET_EVENT_FRAME_RECEIVED         11
@@ -1130,6 +1150,7 @@ extern "C" {
   #define IS_SEQUENCE                       0x0001
   #define IS_TRIGGER                        0x0002
   #define IS_CAPTURE_STATUS                 0x0003
+  #define IS_TRANSFER_FAILED                0x0003
   #define IS_DEVICE_RECONNECTED             0x0004
   #define IS_MEMORY_MODE_FINISH             0x0005
   #define IS_FRAME_RECEIVED                 0x0006
@@ -1183,12 +1204,14 @@ extern "C" {
 #define IS_STANDBY                          24
 #define IS_STANDBY_SUPPORTED                25
 #define IS_QUEUED_IMAGE_EVENT_CNT           26
+#define IS_PARAMETER_EXT                    27
 
 
 // ----------------------------------------------------------------------------
 // Interface type defines
 // ----------------------------------------------------------------------------
 #define IS_INTERFACE_TYPE_USB               0x40
+#define IS_INTERFACE_TYPE_USB3              0x60
 #define IS_INTERFACE_TYPE_ETH               0x80
 
 
@@ -1201,6 +1224,9 @@ extern "C" {
 #define IS_BOARD_TYPE_UEYE_USB_ME           (IS_INTERFACE_TYPE_USB + 0x01)  // 0x41
 #define IS_BOARD_TYPE_UEYE_USB_LE           (IS_INTERFACE_TYPE_USB + 0x02)  // 0x42
 #define IS_BOARD_TYPE_UEYE_USB_XS           (IS_INTERFACE_TYPE_USB + 0x03)  // 0x43
+
+#define IS_BOARD_TYPE_UEYE_USB3_CP          (IS_INTERFACE_TYPE_USB3 + 0x04) // 0x64 
+
 #define IS_BOARD_TYPE_UEYE_ETH              IS_INTERFACE_TYPE_ETH           // 0x80
 #define IS_BOARD_TYPE_UEYE_ETH_HE           IS_BOARD_TYPE_UEYE_ETH          // 0x80
 #define IS_BOARD_TYPE_UEYE_ETH_SE           (IS_INTERFACE_TYPE_ETH + 0x01)  // 0x81
@@ -1216,6 +1242,9 @@ extern "C" {
 #define IS_CAMERA_TYPE_UEYE_USB_RE      IS_BOARD_TYPE_UEYE_USB_RE
 #define IS_CAMERA_TYPE_UEYE_USB_ME      IS_BOARD_TYPE_UEYE_USB_ME
 #define IS_CAMERA_TYPE_UEYE_USB_LE      IS_BOARD_TYPE_UEYE_USB_LE
+
+#define IS_CAMERA_TYPE_UEYE_USB3_CP     IS_BOARD_TYPE_UEYE_USB3_CP
+
 #define IS_CAMERA_TYPE_UEYE_ETH         IS_BOARD_TYPE_UEYE_ETH_HE
 #define IS_CAMERA_TYPE_UEYE_ETH_HE      IS_BOARD_TYPE_UEYE_ETH_HE
 #define IS_CAMERA_TYPE_UEYE_ETH_SE      IS_BOARD_TYPE_UEYE_ETH_SE
@@ -1247,7 +1276,7 @@ extern "C" {
 #define IS_USB_10                           0x0001 //  1,5 Mb/s
 #define IS_USB_11                           0x0002 //   12 Mb/s
 #define IS_USB_20                           0x0004 //  480 Mb/s
-#define IS_USB_30                           0x0008 // 5000 Mb/s
+#define IS_USB_30                           0x0008 // 4000 Mb/s
 #define IS_ETHERNET_10                      0x0080 //   10 Mb/s
 #define IS_ETHERNET_100                     0x0100 //  100 Mb/s
 #define IS_ETHERNET_1000                    0x0200 // 1000 Mb/s
@@ -1256,7 +1285,7 @@ extern "C" {
 #define IS_USB_LOW_SPEED                    1
 #define IS_USB_FULL_SPEED                   12
 #define IS_USB_HIGH_SPEED                   480
-#define IS_USB_SUPER_SPEED                  5000
+#define IS_USB_SUPER_SPEED                  4000
 #define IS_ETHERNET_10Base                  10
 #define IS_ETHERNET_100Base                 100
 #define IS_ETHERNET_1000Base                1000
@@ -1359,9 +1388,12 @@ extern "C" {
 
 // ----------------------------------------------------------------------------
 // I2C defines
+
 // nRegisterAddr | IS_I2C_16_BIT_REGISTER
+// nRegisterAddr | IS_I2C_0_BIT_REGISTER
 // ----------------------------------------------------------------------------
-#define IS_I2C_16_BIT_REGISTER              0x10000000
+#define IS_I2C_16_BIT_REGISTER          0x10000000
+#define IS_I2C_0_BIT_REGISTER	        0x20000000
 
 
 // ----------------------------------------------------------------------------
@@ -1682,8 +1714,10 @@ typedef struct _REVISIONINFO
     WORD  Product;                  // 2
     WORD  Power_Board;              // 2
     WORD  Logic_Board;              // 2
-                                    // --28
-    BYTE reserved[96];              // --128
+    WORD  FX3;                      // 2
+    WORD  FPGA;                     // 2
+                                    // --36
+    BYTE reserved[92];              // --128
 } REVISIONINFO, *PREVISIONINFO;
 
 
@@ -1726,7 +1760,7 @@ typedef enum E_CAPTURE_STATUS_CMD
 } CAPTURE_STATUS_CMD;
 
 
-IDSEXP is_CaptureStatus(HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_CaptureStatus(HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
 #ifndef UEYE_CAMERA_INFO_STRUCT
@@ -1900,188 +1934,167 @@ typedef struct _DC_INFO
 // function exports
 // ----------------------------------------------------------------------------
 #ifdef __LINUX__
-    IDSEXP is_WaitEvent             (HIDS hf, INT which, INT nTimeout);
+    IDSEXP is_WaitEvent             (HIDS hCam, INT which, INT nTimeout);
 #endif
 
 
-  IDSEXP   is_SetSaturation          (HIDS hf, INT ChromU, INT ChromV);
-  IDSEXP   is_SetAGC                 (HIDS hf, INT Mode);
-  IDSEXP   is_SetCaptureMode         (HIDS hf, INT Mode);
-  IDSEXP   is_PrepareStealVideo      (HIDS hf, int Mode, ULONG StealColorMode);
+  IDSEXP   is_SetSaturation          (HIDS hCam, INT ChromU, INT ChromV);
+  IDSEXP   is_SetAGC                 (HIDS hCam, INT Mode);
+  IDSEXP   is_SetCaptureMode         (HIDS hCam, INT Mode);
+  IDSEXP   is_PrepareStealVideo      (HIDS hCam, int Mode, ULONG StealColorMode);
   IDSEXP   is_GetNumberOfDevices     (void);
   
 
 // ----------------------------------------------------------------------------
 // common function
 // ----------------------------------------------------------------------------
-  IDSEXP   is_StopLiveVideo          (HIDS hf, INT Wait);
-  IDSEXP   is_FreezeVideo            (HIDS hf, INT Wait);
-  IDSEXP   is_CaptureVideo           (HIDS hf, INT Wait);
-  IDSEXP   is_IsVideoFinish          (HIDS hf, INT* pValue);
-  IDSEXP   is_HasVideoStarted        (HIDS hf, BOOL* pbo);
-  IDSEXP   is_SetGamma               (HIDS hf, INT nGamma);
+  IDSEXP   is_StopLiveVideo          (HIDS hCam, INT Wait);
+  IDSEXP   is_FreezeVideo            (HIDS hCam, INT Wait);
+  IDSEXP   is_CaptureVideo           (HIDS hCam, INT Wait);
+  IDSEXP   is_IsVideoFinish          (HIDS hCam, INT* pValue);
+  IDSEXP   is_HasVideoStarted        (HIDS hCam, BOOL* pbo);
+  IDSEXP   is_SetGamma               (HIDS hCam, INT nGamma);
 
-  IDSEXP   is_AllocImageMem          (HIDS hf, INT width, INT height, INT bitspixel, char** ppcImgMem, int* pid);
-  IDSEXP   is_SetImageMem            (HIDS hf, char* pcMem, int id);
-  IDSEXP   is_FreeImageMem           (HIDS hf, char* pcMem, int id);
-  IDSEXP   is_GetImageMem            (HIDS hf, VOID** pMem);
-  IDSEXP   is_GetActiveImageMem      (HIDS hf, char** ppcMem, int* pnID);
-  IDSEXP   is_InquireImageMem        (HIDS hf, char* pcMem, int nID, int* pnX, int* pnY, int* pnBits, int* pnPitch);
-  IDSEXP   is_GetImageMemPitch       (HIDS hf, INT* pPitch);
+  IDSEXP   is_AllocImageMem          (HIDS hCam, INT width, INT height, INT bitspixel, char** ppcImgMem, int* pid);
+  IDSEXP   is_SetImageMem            (HIDS hCam, char* pcMem, int id);
+  IDSEXP   is_FreeImageMem           (HIDS hCam, char* pcMem, int id);
+  IDSEXP   is_GetImageMem            (HIDS hCam, VOID** pMem);
+  IDSEXP   is_GetActiveImageMem      (HIDS hCam, char** ppcMem, int* pnID);
+  IDSEXP   is_InquireImageMem        (HIDS hCam, char* pcMem, int nID, int* pnX, int* pnY, int* pnBits, int* pnPitch);
+  IDSEXP   is_GetImageMemPitch       (HIDS hCam, INT* pPitch);
 
-  IDSEXP   is_SetAllocatedImageMem   (HIDS hf, INT width, INT height, INT bitspixel, char* pcImgMem, int* pid);
-  IDSEXP   is_SaveImageMem           (HIDS hf, const IS_CHAR* File, char* pcMem, int nID);
-  IDSEXP   is_CopyImageMem           (HIDS hf, char* pcSource, int nID, char* pcDest);
-  IDSEXP   is_CopyImageMemLines      (HIDS hf, char* pcSource, int nID, int nLines, char* pcDest);
+  IDSEXP   is_SetAllocatedImageMem   (HIDS hCam, INT width, INT height, INT bitspixel, char* pcImgMem, int* pid);
+  IDSEXP   is_CopyImageMem           (HIDS hCam, char* pcSource, int nID, char* pcDest);
+  IDSEXP   is_CopyImageMemLines      (HIDS hCam, char* pcSource, int nID, int nLines, char* pcDest);
 
-  IDSEXP   is_AddToSequence          (HIDS hf, char* pcMem, INT nID);
-  IDSEXP   is_ClearSequence          (HIDS hf);
-  IDSEXP   is_GetActSeqBuf           (HIDS hf, INT* pnNum, char** ppcMem, char** ppcMemLast);
-  IDSEXP   is_LockSeqBuf             (HIDS hf, INT nNum, char* pcMem);
-  IDSEXP   is_UnlockSeqBuf           (HIDS hf, INT nNum, char* pcMem);
+  IDSEXP   is_AddToSequence          (HIDS hCam, char* pcMem, INT nID);
+  IDSEXP   is_ClearSequence          (HIDS hCam);
+  IDSEXP   is_GetActSeqBuf           (HIDS hCam, INT* pnNum, char** ppcMem, char** ppcMemLast);
+  IDSEXP   is_LockSeqBuf             (HIDS hCam, INT nNum, char* pcMem);
+  IDSEXP   is_UnlockSeqBuf           (HIDS hCam, INT nNum, char* pcMem);
 
-  IDSEXP   is_GetError               (HIDS hf, INT* pErr, IS_CHAR** ppcErr);
-  IDSEXP   is_SetErrorReport         (HIDS hf, INT Mode);
+  IDSEXP   is_GetError               (HIDS hCam, INT* pErr, IS_CHAR** ppcErr);
+  IDSEXP   is_SetErrorReport         (HIDS hCam, INT Mode);
 
-  IDSEXP   is_ReadEEPROM             (HIDS hf, INT Adr, char* pcString, INT Count);
-  IDSEXP   is_WriteEEPROM            (HIDS hf, INT Adr, char* pcString, INT Count);
-  IDSEXP   is_SaveImage              (HIDS hf, const IS_CHAR* File);
-
-  IDSEXP   is_SetColorMode           (HIDS hf, INT Mode);
-  IDSEXP   is_GetColorDepth          (HIDS hf, INT* pnCol, INT* pnColMode);
+  IDSEXP   is_ReadEEPROM             (HIDS hCam, INT Adr, char* pcString, INT Count);
+  IDSEXP   is_WriteEEPROM            (HIDS hCam, INT Adr, char* pcString, INT Count);
+  
+  IDSEXP   is_SetColorMode           (HIDS hCam, INT Mode);
+  IDSEXP   is_GetColorDepth          (HIDS hCam, INT* pnCol, INT* pnColMode);
   
   // Bitmap display function
-  IDSEXP   is_RenderBitmap           (HIDS hf, INT nMemID, HWND hwnd, INT nMode);
+  IDSEXP   is_RenderBitmap           (HIDS hCam, INT nMemID, HWND hwnd, INT nMode);
 
-  IDSEXP   is_SetDisplayMode         (HIDS hf, INT Mode);
-  IDSEXP   is_SetDisplayPos          (HIDS hf, INT x, INT y);
+  IDSEXP   is_SetDisplayMode         (HIDS hCam, INT Mode);
+  IDSEXP   is_SetDisplayPos          (HIDS hCam, INT x, INT y);
   
-  IDSEXP   is_SetHwnd                (HIDS hf, HWND hwnd);
+  IDSEXP   is_SetHwnd                (HIDS hCam, HWND hwnd);
 
-  IDSEXP   is_GetVsyncCount          (HIDS hf, long* pIntr, long* pActIntr);
+  IDSEXP   is_GetVsyncCount          (HIDS hCam, long* pIntr, long* pActIntr);
   IDSEXP   is_GetOsVersion           (void);
 
   // Version information
   IDSEXP   is_GetDLLVersion          (void);
 
-  IDSEXP   is_InitEvent              (HIDS hf, HANDLE hEv, INT which);
-  IDSEXP   is_ExitEvent              (HIDS hf, INT which);
-  IDSEXP   is_EnableEvent            (HIDS hf, INT which);
-  IDSEXP   is_DisableEvent           (HIDS hf, INT which);
+  IDSEXP   is_InitEvent              (HIDS hCam, HANDLE hEv, INT which);
+  IDSEXP   is_ExitEvent              (HIDS hCam, INT which);
+  IDSEXP   is_EnableEvent            (HIDS hCam, INT which);
+  IDSEXP   is_DisableEvent           (HIDS hCam, INT which);
 
-  IDSEXP   is_SetExternalTrigger     (HIDS hf, INT nTriggerMode);
-  IDSEXP   is_SetTriggerCounter      (HIDS hf, INT nValue);
-  IDSEXP   is_SetRopEffect           (HIDS hf, INT effect, INT param, INT reserved);
+  IDSEXP   is_SetExternalTrigger     (HIDS hCam, INT nTriggerMode);
+  IDSEXP   is_SetTriggerCounter      (HIDS hCam, INT nValue);
+  IDSEXP   is_SetRopEffect           (HIDS hCam, INT effect, INT param, INT reserved);
 
 
   // Camera functions
-  IDSEXP is_InitCamera                  (HIDS* phf, HWND hWnd);
-  IDSEXP is_ExitCamera                  (HIDS hf);
-  IDSEXP is_GetCameraInfo               (HIDS hf, PCAMINFO pInfo);
-  IDSEXPUL is_CameraStatus              (HIDS hf, INT nInfo, ULONG ulValue);
-  IDSEXP is_GetCameraType               (HIDS hf);
+  IDSEXP is_InitCamera                  (HIDS* phCam, HWND hWnd);
+  IDSEXP is_ExitCamera                  (HIDS hCam);
+  IDSEXP is_GetCameraInfo               (HIDS hCam, PCAMINFO pInfo);
+  IDSEXPUL is_CameraStatus              (HIDS hCam, INT nInfo, ULONG ulValue);
+  IDSEXP is_GetCameraType               (HIDS hCam);
   IDSEXP is_GetNumberOfCameras          (INT* pnNumCams);
 
-  // PixelClock
-  IDSEXP is_GetPixelClockRange          (HIDS hf, INT *pnMin, INT *pnMax);
-  IDSEXP is_SetPixelClock               (HIDS hf, INT Clock);
-  IDSEXP is_GetUsedBandwidth            (HIDS hf);
+  IDSEXP is_GetUsedBandwidth            (HIDS hCam);
   
   // Set/Get Frame rate
-  IDSEXP is_GetFrameTimeRange           (HIDS hf, double *min, double *max, double *intervall);
-  IDSEXP is_SetFrameRate                (HIDS hf, double FPS, double* newFPS);
+  IDSEXP is_GetFrameTimeRange           (HIDS hCam, double *min, double *max, double *intervall);
+  IDSEXP is_SetFrameRate                (HIDS hCam, double FPS, double* newFPS);
     
   // Get frames per second
-  IDSEXP is_GetFramesPerSecond          (HIDS hf, double *dblFPS);
+  IDSEXP is_GetFramesPerSecond          (HIDS hCam, double *dblFPS);
 
   // Get Sensor info
-  IDSEXP is_GetSensorInfo               (HIDS hf, PSENSORINFO pInfo);
+  IDSEXP is_GetSensorInfo               (HIDS hCam, PSENSORINFO pInfo);
 
   // Get RevisionInfo
-  IDSEXP is_GetRevisionInfo             (HIDS hf, PREVISIONINFO prevInfo);
+  IDSEXP is_GetRevisionInfo             (HIDS hCam, PREVISIONINFO prevInfo);
 
   // enable/disable AutoExit after device remove
-  IDSEXP is_EnableAutoExit              (HIDS hf, INT nMode);
+  IDSEXP is_EnableAutoExit              (HIDS hCam, INT nMode);
 
   // Message
-  IDSEXP is_EnableMessage               (HIDS hf, INT which, HWND hWnd);
+  IDSEXP is_EnableMessage               (HIDS hCam, INT which, HWND hWnd);
 
   // hardware gain settings
-  IDSEXP is_SetHardwareGain             (HIDS hf, INT nMaster, INT nRed, INT nGreen, INT nBlue);
+  IDSEXP is_SetHardwareGain             (HIDS hCam, INT nMaster, INT nRed, INT nGreen, INT nBlue);
 
   // set render mode
-  IDSEXP is_SetRenderMode               (HIDS hf, INT Mode);
+  IDSEXP is_SetRenderMode               (HIDS hCam, INT Mode);
 
   // enable/disable WhiteBalance
-  IDSEXP is_SetWhiteBalance             (HIDS hf, INT nMode);
-  IDSEXP is_SetWhiteBalanceMultipliers  (HIDS hf, double dblRed, double dblGreen, double dblBlue);
-  IDSEXP is_GetWhiteBalanceMultipliers  (HIDS hf, double *pdblRed, double *pdblGreen, double *pdblBlue);
-
-  // Edge enhancement
-  IDSEXP is_SetEdgeEnhancement          (HIDS hf, INT nEnable);
+  IDSEXP is_SetWhiteBalance             (HIDS hCam, INT nMode);
+  IDSEXP is_SetWhiteBalanceMultipliers  (HIDS hCam, double dblRed, double dblGreen, double dblBlue);
+  IDSEXP is_GetWhiteBalanceMultipliers  (HIDS hCam, double *pdblRed, double *pdblGreen, double *pdblBlue);
 
   // Sensor features
-  IDSEXP is_SetColorCorrection          (HIDS hf, INT nEnable, double *factors);
-  IDSEXP is_SetBlCompensation           (HIDS hf, INT nEnable, INT offset, INT reserved);
+  IDSEXP is_SetColorCorrection          (HIDS hCam, INT nEnable, double *factors);
+  IDSEXP is_SetBlCompensation           (HIDS hCam, INT nEnable, INT offset, INT reserved);
 
-  IDSEXP is_SetSubSampling              (HIDS hf, INT mode);
-  IDSEXP is_ForceTrigger                (HIDS hf);
+  IDSEXP is_SetSubSampling              (HIDS hCam, INT mode);
+  IDSEXP is_ForceTrigger                (HIDS hCam);
 
   // new with driver version 1.12.0006
-  IDSEXP is_GetBusSpeed                 (HIDS hf);
+  IDSEXP is_GetBusSpeed                 (HIDS hCam);
 
   // new with driver version 1.12.0015
-  IDSEXP is_SetBinning                  (HIDS hf, INT mode);
+  IDSEXP is_SetBinning                  (HIDS hCam, INT mode);
 
   // new with driver version 1.12.0017
-  IDSEXP is_ResetToDefault              (HIDS hf);
-  IDSEXP is_LoadParameters              (HIDS hf, const IS_CHAR* pFilename);
-  IDSEXP is_SaveParameters              (HIDS hf, const IS_CHAR* pFilename);
-
-  // new with driver version 1.14.0002
-  IDSEXP is_LoadImage                   (HIDS hf, const IS_CHAR* File);
-
+  IDSEXP is_ResetToDefault              (HIDS hCam);
+  
   // new with driver version 1.14.0008
-  IDSEXP is_SetCameraID                 (HIDS hf, INT nID);
-  IDSEXP is_SetBayerConversion          (HIDS hf, INT nMode);
+  IDSEXP is_SetCameraID                 (HIDS hCam, INT nID);
+  IDSEXP is_SetBayerConversion          (HIDS hCam, INT nMode);
     
   // new with driver version 1.14.0009
-  IDSEXP is_SetHardwareGamma            (HIDS hf, INT nMode);
+  IDSEXP is_SetHardwareGamma            (HIDS hCam, INT nMode);
 
   // new with driver version 2.00.0001
   IDSEXP is_GetCameraList               (PUEYE_CAMERA_LIST pucl);
 
   // new with driver version 2.00.0011
-  IDSEXP is_SetAutoParameter            (HIDS hf, INT param, double *pval1, double *pval2);
-  IDSEXP is_GetAutoInfo                 (HIDS hf, UEYE_AUTO_INFO *pInfo);
-  
-  // new with driver version 2.20.0001
-  IDSEXP is_ConvertImage                (HIDS hf, char* pcSource, int nIDSource, char** pcDest, INT *nIDDest, INT *reserved);
-  IDSEXP is_SetConvertParam             (HIDS hf, BOOL ColorCorrection, INT BayerConversionMode, INT ColorMode, INT Gamma, double* WhiteBalanceMultipliers);
-  
-  IDSEXP is_SaveImageEx                 (HIDS hf, const IS_CHAR* File, INT fileFormat, INT Param);
-  IDSEXP is_SaveImageMemEx              (HIDS hf, const IS_CHAR* File, char* pcMem, INT nID, INT FileFormat, INT Param);
-  IDSEXP is_LoadImageMem                (HIDS hf, const IS_CHAR* File, char** ppcImgMem, INT* pid);
-  
-  IDSEXP is_GetImageHistogram           (HIDS hf, int nID, INT ColorMode, DWORD* pHistoMem);
-  IDSEXP is_SetTriggerDelay             (HIDS hf, INT nTriggerDelay);
+  IDSEXP is_SetAutoParameter            (HIDS hCam, INT param, double *pval1, double *pval2);
+  IDSEXP is_GetAutoInfo                 (HIDS hCam, UEYE_AUTO_INFO *pInfo);
+    
+  IDSEXP is_GetImageHistogram           (HIDS hCam, int nID, INT ColorMode, DWORD* pHistoMem);
+  IDSEXP is_SetTriggerDelay             (HIDS hCam, INT nTriggerDelay);
 
   // new with driver version 2.21.0000
-  IDSEXP is_SetGainBoost                (HIDS hf, INT mode);
+  IDSEXP is_SetGainBoost                (HIDS hCam, INT mode);
   
-  IDSEXP is_SetGlobalShutter            (HIDS hf, INT mode);
-  IDSEXP is_SetExtendedRegister         (HIDS hf, INT index,WORD value);
-  IDSEXP is_GetExtendedRegister         (HIDS hf, INT index, WORD *pwValue);
+  IDSEXP is_SetGlobalShutter            (HIDS hCam, INT mode);
+  IDSEXP is_SetExtendedRegister         (HIDS hCam, INT index,WORD value);
+  IDSEXP is_GetExtendedRegister         (HIDS hCam, INT index, WORD *pwValue);
 
   // new with driver version 2.22.0002
-  IDSEXP is_SetHWGainFactor             (HIDS hf, INT nMode, INT nFactor);
+  IDSEXP is_SetHWGainFactor             (HIDS hCam, INT nMode, INT nFactor);
 
   // camera renumeration
-  IDSEXP is_Renumerate                  (HIDS hf, INT nMode);
+  IDSEXP is_Renumerate                  (HIDS hCam, INT nMode);
 
   // Read / Write I2C
-  IDSEXP is_WriteI2C                    (HIDS hf, INT nDeviceAddr, INT nRegisterAddr, BYTE* pbData, INT nLen);
-  IDSEXP is_ReadI2C                     (HIDS hf, INT nDeviceAddr, INT nRegisterAddr, BYTE* pbData, INT nLen);
+  IDSEXP is_WriteI2C                    (HIDS hCam, INT nDeviceAddr, INT nRegisterAddr, BYTE* pbData, INT nLen);
+  IDSEXP is_ReadI2C                     (HIDS hCam, INT nDeviceAddr, INT nRegisterAddr, BYTE* pbData, INT nLen);
 
 
   // new with driver version 3.10.0000
@@ -2113,41 +2126,41 @@ typedef struct _DC_INFO
 
 
   // HDR functions
-  IDSEXP is_GetHdrMode                  (HIDS hf, INT *Mode);
-  IDSEXP is_EnableHdr                   (HIDS hf, INT Enable);
-  IDSEXP is_SetHdrKneepoints            (HIDS hf, KNEEPOINTARRAY *KneepointArray, INT KneepointArraySize);
-  IDSEXP is_GetHdrKneepoints            (HIDS hf, KNEEPOINTARRAY *KneepointArray, INT KneepointArraySize);
-  IDSEXP is_GetHdrKneepointInfo         (HIDS hf, KNEEPOINTINFO *KneepointInfo, INT KneepointInfoSize);
+  IDSEXP is_GetHdrMode                  (HIDS hCam, INT *Mode);
+  IDSEXP is_EnableHdr                   (HIDS hCam, INT Enable);
+  IDSEXP is_SetHdrKneepoints            (HIDS hCam, KNEEPOINTARRAY *KneepointArray, INT KneepointArraySize);
+  IDSEXP is_GetHdrKneepoints            (HIDS hCam, KNEEPOINTARRAY *KneepointArray, INT KneepointArraySize);
+  IDSEXP is_GetHdrKneepointInfo         (HIDS hCam, KNEEPOINTINFO *KneepointInfo, INT KneepointInfoSize);
 
-  IDSEXP is_SetOptimalCameraTiming      (HIDS hf, INT Mode, INT Timeout, INT *pMaxPxlClk, double *pMaxFrameRate);
+  IDSEXP is_SetOptimalCameraTiming      (HIDS hCam, INT Mode, INT Timeout, INT *pMaxPxlClk, double *pMaxFrameRate);
 
-  IDSEXP is_GetSupportedTestImages      (HIDS hf, INT *SupportedTestImages);
-  IDSEXP is_GetTestImageValueRange      (HIDS hf, INT TestImage, INT *TestImageValueMin, INT *TestImageValueMax);
-  IDSEXP is_SetSensorTestImage          (HIDS hf, INT Param1, INT Param2);
+  IDSEXP is_GetSupportedTestImages      (HIDS hCam, INT *SupportedTestImages);
+  IDSEXP is_GetTestImageValueRange      (HIDS hCam, INT TestImage, INT *TestImageValueMin, INT *TestImageValueMax);
+  IDSEXP is_SetSensorTestImage          (HIDS hCam, INT Param1, INT Param2);
 
-  IDSEXP is_SetCameraLUT                (HIDS hf, UINT Mode, UINT NumberOfEntries, double *pRed_Grey, double *pGreen, double *pBlue);
-  IDSEXP is_GetCameraLUT                (HIDS hf, UINT Mode, UINT NumberOfEntries, double *pRed_Grey, double *pGreen, double *pBlue);
+  IDSEXP is_SetCameraLUT                (HIDS hCam, UINT Mode, UINT NumberOfEntries, double *pRed_Grey, double *pGreen, double *pBlue);
+  IDSEXP is_GetCameraLUT                (HIDS hCam, UINT Mode, UINT NumberOfEntries, double *pRed_Grey, double *pGreen, double *pBlue);
 
-  IDSEXP is_GetColorConverter           (HIDS hf, INT ColorMode, INT *pCurrentConvertMode, INT *pDefaultConvertMode, INT *pSupportedConvertModes);
-  IDSEXP is_SetColorConverter           (HIDS hf, INT ColorMode, INT ConvertMode);
+  IDSEXP is_GetColorConverter           (HIDS hCam, INT ColorMode, INT *pCurrentConvertMode, INT *pDefaultConvertMode, INT *pSupportedConvertModes);
+  IDSEXP is_SetColorConverter           (HIDS hCam, INT ColorMode, INT ConvertMode);
 
-  IDSEXP is_WaitForNextImage            (HIDS hf, UINT timeout, char **ppcMem, INT *imageID);
-  IDSEXP is_InitImageQueue              (HIDS hf, INT nMode);
-  IDSEXP is_ExitImageQueue              (HIDS hf);
+  IDSEXP is_WaitForNextImage            (HIDS hCam, UINT timeout, char **ppcMem, INT *imageID);
+  IDSEXP is_InitImageQueue              (HIDS hCam, INT nMode);
+  IDSEXP is_ExitImageQueue              (HIDS hCam);
 
-  IDSEXP is_SetTimeout                  (HIDS hf, UINT nMode, UINT Timeout);
-  IDSEXP is_GetTimeout                  (HIDS hf, UINT nMode, UINT *pTimeout);
+  IDSEXP is_SetTimeout                  (HIDS hCam, UINT nMode, UINT Timeout);
+  IDSEXP is_GetTimeout                  (HIDS hCam, UINT nMode, UINT *pTimeout);
 
 
   typedef enum  eUEYE_GET_ESTIMATED_TIME_MODE
   {
       IS_SE_STARTER_FW_UPLOAD =   0x00000001, /*!< get estimated duration of GigE SE starter firmware upload in milliseconds */
       IS_CP_STARTER_FW_UPLOAD =   0x00000002, /*!< get estimated duration of GigE CP starter firmware upload in milliseconds */
-      IS_STARTER_FW_UPLOAD    =   0x00000004  /*!< get estimated duration of starter firmware upload in milliseconds using hf to */ 
+      IS_STARTER_FW_UPLOAD    =   0x00000004  /*!< get estimated duration of starter firmware upload in milliseconds using hCam to */ 
   } UEYE_GET_ESTIMATED_TIME_MODE;    
   
   
-  IDSEXP is_GetDuration                 (HIDS hf, UINT nMode, INT* pnTime);
+  IDSEXP is_GetDuration                 (HIDS hCam, UINT nMode, INT* pnTime);
 
 
   // new with driver version 3.40.0000
@@ -2164,8 +2177,8 @@ typedef struct _DC_INFO
   } SENSORSCALERINFO;
 
 
-  IDSEXP is_GetSensorScalerInfo (HIDS hf, SENSORSCALERINFO *pSensorScalerInfo, INT nSensorScalerInfoSize);
-  IDSEXP is_SetSensorScaler      (HIDS hf, UINT nMode, double dblFactor); 
+  IDSEXP is_GetSensorScalerInfo (HIDS hCam, SENSORSCALERINFO *pSensorScalerInfo, INT nSensorScalerInfoSize);
+  IDSEXP is_SetSensorScaler      (HIDS hCam, UINT nMode, double dblFactor); 
 
   typedef struct _UEYETIME
   {
@@ -2198,11 +2211,11 @@ typedef struct _DC_INFO
   } UEYEIMAGEINFO;
 
 
-    IDSEXP is_GetImageInfo (HIDS hf, INT nImageBufferID, UEYEIMAGEINFO *pImageInfo, INT nImageInfoSize);
+    IDSEXP is_GetImageInfo (HIDS hCam, INT nImageBufferID, UEYEIMAGEINFO *pImageInfo, INT nImageInfoSize);
 
 
     // New functions and defines for 3.52 (uEye XS)
-    IDSEXP is_ImageFormat (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+    IDSEXP is_ImageFormat (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
     typedef enum E_IMAGE_FORMAT_CMD
@@ -2262,7 +2275,7 @@ typedef struct _DC_INFO
     } IMAGE_FORMAT_LIST;
 
 
-IDSEXP is_FaceDetection (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_FaceDetection (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
     typedef enum E_FDT_CAPABILITY_FLAGS
@@ -2338,7 +2351,7 @@ IDSEXP is_FaceDetection (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam
     } FDT_CMD;
 
 
-    IDSEXP is_Focus (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+    IDSEXP is_Focus (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
     typedef enum E_FOCUS_CAPABILITY_FLAGS
@@ -2380,7 +2393,7 @@ IDSEXP is_FaceDetection (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam
     } FOCUS_CMD;
 
 
-    IDSEXP is_ImageStabilization(HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+    IDSEXP is_ImageStabilization(HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
     // image stabilization capability flags
     typedef enum E_IMGSTAB_CAPABILITY_FLAGS
@@ -2400,7 +2413,7 @@ IDSEXP is_FaceDetection (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam
     } IMGSTAB_CMD;
 
     // New functions and defines for 3.61 (uEye XS)
-    IDSEXP is_ScenePreset(HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+    IDSEXP is_ScenePreset(HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
     typedef enum E_SCENE_CMD
      {
@@ -2425,7 +2438,7 @@ IDSEXP is_FaceDetection (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam
      } SCENE_PRESET;
 
 
-IDSEXP is_Zoom (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_Zoom (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 typedef enum E_ZOOM_CMD
 {
@@ -2445,7 +2458,7 @@ typedef enum E_ZOOM_CAPABILITY_FLAGS
 } ZOOM_CAPABILITY_FLAGS;
 
 
-IDSEXP is_Sharpness (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_Sharpness (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
 typedef enum E_SHARPNESS_CMD
@@ -2469,7 +2482,7 @@ typedef enum E_SHARPNESS_CAPABILITY_FLAGS
 } SHARPNESS_CAPABILITY_FLAGS;
 
 
-IDSEXP is_Saturation (HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_Saturation (HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
 typedef enum E_SATURATION_CMD
@@ -2522,7 +2535,7 @@ typedef enum E_TRIGGER_DEBOUNCE_CMD
 } TRIGGER_DEBOUNCE_CMD;
 
 
-IDSEXP is_TriggerDebounce(HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_TriggerDebounce(HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
 
 typedef enum E_RGB_COLOR_MODELS
@@ -2551,11 +2564,18 @@ typedef enum E_COLOR_TEMPERATURE_CMD
 
 } COLOR_TEMPERATURE_CMD;
 
-IDSEXP is_ColorTemperature(HIDS hf, UINT nCommand, void *pParam, UINT nSizeOfParam);
+IDSEXP is_ColorTemperature(HIDS hCam, UINT nCommand, void *pParam, UINT nSizeOfParam);
 
-IDSEXP is_DirectRenderer(HIDS hf, UINT nMode, void *pParam, UINT SizeOfParam);
 
-IDSEXP is_HotPixel(HIDS hf, UINT nMode, void *pParam, UINT SizeOfParam);
+typedef struct _OPENGL_DISPLAY
+{
+	int 	nWindowID;
+	void 	*pDisplay;
+} OPENGL_DISPLAY;
+
+IDSEXP is_DirectRenderer(HIDS hCam, UINT nMode, void *pParam, UINT SizeOfParam);
+
+IDSEXP is_HotPixel(HIDS hCam, UINT nMode, void *pParam, UINT SizeOfParam);
 
 
 typedef struct 
@@ -2598,7 +2618,7 @@ typedef struct
 } AOI_SEQUENCE_PARAMS;
 
 
-IDSEXP is_AOI(HIDS hf, UINT nCommand, void *pParam, UINT SizeOfParam); 
+IDSEXP is_AOI(HIDS hCam, UINT nCommand, void *pParam, UINT SizeOfParam); 
 
 /*!
  * \brief Data type for 32-bit unsigned int value ranges.
@@ -2686,7 +2706,7 @@ typedef enum E_TRANSFER_CMD
 
 /*!
  * \brief Generic interface to the transfer engine setup.
- * \param   hf              valid device handle.
+ * \param   hCam            valid device handle.
  * \param   nCommand        code, indicates requested access and accessed value, \see TRANSFER_CMD enumeration.
  * \param   pParam          input or output storage for the accessed param.
  * \param   cbSizeOfParam   size of *pParam.
@@ -2696,7 +2716,7 @@ typedef enum E_TRANSFER_CMD
  *          is immediately written to the device.
  * \note For 'set' commands: The function forces the value to the next lower catch according to the related increment.
  */
-IDSEXP is_Transfer(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_Transfer(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 
 /*!
@@ -2711,7 +2731,7 @@ typedef BYTE IS_BOOTBOOST_ID;
 #define IS_BOOTBOOST_ID_NONE    0   /*!< \brief special value: no id's */
 #define IS_BOOTBOOST_ID_ALL     255 /*!< \brief special value: all id's */
 
-/*! \internal
+/*!
  * \brief definition of the boot boost id list object
  *
  * \note introduced with uEye SDK 3.90.
@@ -2794,7 +2814,7 @@ typedef enum E_IS_BOOTBOOST_CMD
 
 /*!
  * \brief Generic interface to the boot boost functionality.
- * \param   hf              currently not used / ignored, passing 0 recommended
+ * \param   hCam            currently not used / ignored, passing 0 recommended
  * \param   nCommand        code, indicates requested access and accessed parameter, \see BOOTBOOST_CMD enumeration.
  * \param   pParam          input or output storage for the accessed param.
  * \param   cbSizeOfParam   size of *pParam.
@@ -2803,9 +2823,9 @@ typedef enum E_IS_BOOTBOOST_CMD
  * \note introduced with uEye SDK 3.90.
  *
  * \note For the reason of your applications compatibility to future extensions
- *       it is strongly recommended to pass the value 0 for hf.
+ *       it is strongly recommended to pass the value 0 for hCam.
  */
-IDSEXP is_BootBoost(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_BootBoost(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 
 /*!
@@ -2841,13 +2861,13 @@ typedef enum E_DEVICE_FEATURE_MODE_CAPS
 
 /*!
  * \brief Interface to control various device features.
- * \param   hf              valid device handle.
+ * \param   hCam            valid device handle.
  * \param   nCommand        Specifies the command and device.
  * \param   pParam          input or output storage for the accessed param.
  * \param   cbSizeOfParam   size of *pParam.
  * \return  error code
  */
-IDSEXP is_DeviceFeature(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_DeviceFeature(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 
 /*!
@@ -2888,13 +2908,13 @@ typedef enum E_EXPOSURE_CAPS
 
 /*!
  * \brief Interface to control the camera exposure
- * \param   hf              valid device handle.
+ * \param   hCam            valid device handle.
  * \param   nCommand        Specifies the command
  * \param   pParam          input or output storage for the accessed param.
  * \param   cbSizeOfParam   size of *pParam.
  * \return  error code
  */
-IDSEXP is_Exposure(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_Exposure(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 
 
@@ -2904,26 +2924,115 @@ typedef enum E_TRIGGER_CMD
     IS_TRIGGER_CMD_GET_BURST_SIZE_RANGE         = 2,
     IS_TRIGGER_CMD_GET_BURST_SIZE               = 3,
     IS_TRIGGER_CMD_SET_BURST_SIZE               = 4
-    
+
 } TRIGGER_CMD;
 
 
 /*!
  * \brief Interface to control the trigger functions
- * \param   hf              valid device handle.
+ * \param   hCam            valid device handle.
  * \param   nCommand        Specifies the command
  * \param   pParam          input or output storage for the accessed param.
  * \param   cbSizeOfParam   size of *pParam.
  * \return  error code
  */
-IDSEXP is_Trigger(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_Trigger(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+#pragma pack(push, 1)
+
+/*!
+ * \brief definition of the uEye device info / heartbeat
+ *
+ * This data is periodically received from the device.
+ *
+ * \see IS_DEVICE_INFO
+ * \note introduced with uEye SDK 4.00.
+ */
+typedef struct S_IS_DEVICE_INFO_HEARTBEAT
+{
+    BYTE    reserved_1[24];             /*!< \brief reserved */
+
+    DWORD   dwRuntimeFirmwareVersion;   /*!< \brief Runtime firmware version */
+
+    BYTE    reserved_2[8];             /*!< \brief reserved */
+
+    WORD    wTemperature;               /*!< \brief camera temperature */
+    WORD    wLinkSpeed_Mb;              /*!< \brief current link speed in Mbit/s */
+
+    BYTE    reserved[208];              /*!< \brief reserved */
+
+} IS_DEVICE_INFO_HEARTBEAT;
+
+/*!
+ * \brief definition of the uEye device info / control
+ *
+ * This data is provided by the uEye driver.
+ *
+ * \see IS_DEVICE_INFO
+ * \note introduced with uEye SDK 4.00.
+ */
+typedef struct S_IS_DEVICE_INFO_CONTROL
+{
+    DWORD   dwDeviceId;         /*!< \brief device id */
+
+    BYTE    reserved[148];      /*!< \brief reserved */
+
+} IS_DEVICE_INFO_CONTROL;
+
+/*!
+ * \brief definition of the uEye device info
+ *
+ * This data is provided by the uEye driver.
+ *
+ * \note introduced with uEye SDK 4.00.
+ */
+typedef struct S_IS_DEVICE_INFO
+{
+    IS_DEVICE_INFO_HEARTBEAT    infoDevHeartbeat;   /*!< \brief device info / heartbeat */
+
+    IS_DEVICE_INFO_CONTROL      infoDevControl;     /*!< \brief device info / control */
+
+    BYTE                        reserved[240];      /*!< \brief reserved */
+
+} IS_DEVICE_INFO;
+
+#pragma pack(pop)
+
+/*!
+ * \brief Enumeration of commands supported by the device info access function, \see is_DeviceInfo.
+ *
+ * \note introduced with uEye SDK 4.00.
+ */
+typedef enum E_IS_DEVICE_INFO_CMD
+{
+    /*!
+     * \brief   Get the device info.
+     *          Type of data: IS_DEVICE_INFO.
+     */
+    IS_DEVICE_INFO_CMD_GET_DEVICE_INFO  = 0x02010001,
+
+} IS_DEVICE_INFO_CMD;
+
+/*!
+ * \brief Generic interface to the device info functionality.
+ * \param   hCam            currently not used / ignored, passing 0 recommended
+ * \param   nCommand        code, indicates requested access and accessed parameter, \see IS_DEVICE_INFO_CMD enumeration.
+ * \param   pParam          input or output storage for the accessed param.
+ * \param   cbSizeOfParam   size of *pParam.
+ * \return  error code
+ *
+ * \note introduced with uEye SDK 4.00.
+ */
+IDSEXP is_DeviceInfo(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
 
 
 // ----------------------------------------------------------------------------
 // new functions and datatypes only valid for uEye ETH
 // ----------------------------------------------------------------------------
 
-#pragma pack( push, 1)
+#pragma pack(push, 1)
 
   // IP V4 address
   typedef union _UEYE_ETH_ADDR_IPV4
@@ -3193,10 +3302,9 @@ IDSEXP is_Trigger(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 #pragma pack(pop)
 
-  IDSEXP is_GetEthDeviceInfo    (HIDS hf, UEYE_ETH_DEVICE_INFO* pDeviceInfo, UINT uStructSize);
-  IDSEXP is_SetStarterFirmware  (HIDS hf, const CHAR* pcFilepath, UINT uFilepathLen);
+  IDSEXP is_SetStarterFirmware  (HIDS hCam, const CHAR* pcFilepath, UINT uFilepathLen);
   IDSEXP is_SetPacketFilter     (INT iAdapterID, UINT uFilterSetting);
-  IDSEXP is_GetComportNumber    (HIDS hf, UINT *pComportNumber);
+  IDSEXP is_GetComportNumber    (HIDS hCam, UINT *pComportNumber);
 
 
 /*!
@@ -3224,9 +3332,9 @@ typedef enum E_IPCONFIG_CMD
     /*!
      * \brief   Query the IP configuration capabilities.
      *          Type of value: unsigned int bitmask, 32-bit.
-     * \see DHCP_CAPABILITY_FLAGS.
+     * \see IPCONFIG_CAPABILITY_FLAGS.
      */
-    IPCONFIG_CMD_QUERY_CAPABILITIES = 0,
+    IPCONFIG_CMD_QUERY_CAPABILITIES             = 0,
 
     /*!
      * \brief   Set persistent IP configuration.
@@ -3235,7 +3343,7 @@ typedef enum E_IPCONFIG_CMD
      * \note Use camera's device id or camera's MAC address as identifier for \see is_IpConfig.
      * \note Changing persistent IP configuration enabled status is allowed only if device is not paired.
      */
-    IPCONFIG_CMD_SET_PERSISTENT_IP  = 0x01010000,
+    IPCONFIG_CMD_SET_PERSISTENT_IP              = 0x01010000,
     /*!
      * \brief   Set IP auto configuration setup.
      *          Type of value: \see UEYE_ETH_AUTOCFG_IP_SETUP.
@@ -3244,7 +3352,18 @@ typedef enum E_IPCONFIG_CMD
      * \note Changed autoconfig IP setup is applied for each device connected to the addressed NIC
      *          at the next pairing of the device.
      */
-    IPCONFIG_CMD_SET_AUTOCONFIG_IP  = 0x01040000,
+    IPCONFIG_CMD_SET_AUTOCONFIG_IP              = 0x01040000,
+    /*!
+     * \brief   Set IP auto configuration setup by device identification.
+     *          Type of value: \see UEYE_ETH_AUTOCFG_IP_SETUP.
+     *
+     * \note Use camera's device id or camera's MAC address as identifier for \see is_IpConfig.
+     * \note Changed autoconfig IP setup is applied for each device connected to the addressed NIC
+     *          at the next pairing of the device.
+     *
+     * \note Introduced with uEye SDK 4.00.
+     */
+    IPCONFIG_CMD_SET_AUTOCONFIG_IP_BYDEVICE     = 0x01040100,
 
     /*!
      * \brief   Get persistent IP configuration.
@@ -3252,14 +3371,23 @@ typedef enum E_IPCONFIG_CMD
      *
      * \note Use camera's device id or camera's MAC address as identifier for \see is_IpConfig.
      */
-    IPCONFIG_CMD_GET_PERSISTENT_IP  = 0x02010000,
+    IPCONFIG_CMD_GET_PERSISTENT_IP              = 0x02010000,
     /*!
      * \brief   Get IP auto configuration setup.
      *          Type of value: \see UEYE_ETH_AUTOCFG_IP_SETUP.
      *
      * \note Use NIC's adapter id or NIC's MAC address as identifier for \see is_IpConfig.
      */
-    IPCONFIG_CMD_GET_AUTOCONFIG_IP  = 0x02040000
+    IPCONFIG_CMD_GET_AUTOCONFIG_IP              = 0x02040000,
+    /*!
+     * \brief   Get IP auto configuration setup by device identification.
+     *          Type of value: \see UEYE_ETH_AUTOCFG_IP_SETUP.
+     *
+     * \note Use camera's device id or camera's MAC address as identifier for \see is_IpConfig.
+     *
+     * \note Introduced with uEye SDK 4.00.
+     */
+    IPCONFIG_CMD_GET_AUTOCONFIG_IP_BYDEVICE     = 0x02040100
 
 } IPCONFIG_CMD;
 
@@ -3272,7 +3400,7 @@ typedef enum E_IPCONFIG_CMD
  * \param   cbSizeOfParam   size of *pParam.
  * \return  error code
  *
- * \note Introduced with uEye SDK 3.81.
+ * \note Introduced with uEye SDK 3.80.
  */
 IDSEXP is_IpConfig(INT iID, UEYE_ETH_ADDR_MAC mac, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
@@ -3294,8 +3422,6 @@ typedef enum E_CONFIGURATION_SEL
 
 } CONFIGURATION_SEL;
 
-
-
 /*!
  * \brief Enumeration of commands of function is_Configuration , \see is_Configuration.
  */
@@ -3316,7 +3442,6 @@ typedef enum E_CONFIGURATION_CMD
 
 } CONFIGURATION_CMD;
 
-
 /*!
  * \brief Enumeration of configuration command capability flags, \see is_Configuration.
  */
@@ -3326,7 +3451,6 @@ typedef enum E_CONFIGURATION_CAPS
     IS_CONFIG_OPEN_MP_CAP_SUPPORTED                        = 0x00000002, /*!< Open MP commands are supported by the SDK */
     IS_CONFIG_INITIAL_PARAMETERSET_CAP_SUPPORTED           = 0x00000004  /*!< Initial parameter set commands are supported by the SDK */
 } CONFIGURATION_CAPS;
-
 
 /*!
  * \brief Command to set general configuration parameters (e.g. the CPU idle state settings)
@@ -3343,7 +3467,7 @@ IDSEXP is_Configuration(UINT nCommand, void* pParam, UINT cbSizeOfParam);
  */
 typedef struct S_IO_FLASH_PARAMS
 {
-    UINT u32Delay;
+    INT s32Delay;
     UINT u32Duration;
 } IO_FLASH_PARAMS;
 
@@ -3429,8 +3553,190 @@ typedef enum E_IO_CMD
  * \param   cbSizeOfParam   size of *pParam.
  * \return  error code.
  */
-IDSEXP is_IO(HIDS hf, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+IDSEXP is_IO(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
+
+/*!
+ * \brief Enumeration of commands of function is_AutoParameter, \see is_AutoParameter.
+ */
+typedef enum E_AUTOPARAMETER_CMD
+{
+    IS_AWB_CMD_GET_SUPPORTED_TYPES              = 1,
+    IS_AWB_CMD_GET_TYPE                         = 2,
+    IS_AWB_CMD_SET_TYPE                         = 3,
+    IS_AWB_CMD_GET_ENABLE                       = 4,
+    IS_AWB_CMD_SET_ENABLE                       = 5,
+    IS_AWB_CMD_GET_SUPPORTED_RGB_COLOR_MODELS   = 6,
+    IS_AWB_CMD_GET_RGB_COLOR_MODEL              = 7,
+    IS_AWB_CMD_SET_RGB_COLOR_MODEL              = 8
+    
+} AUTOPARAMETER_CMD;
+
+
+/*!
+ * \brief Defines used by is_AutoParameter, \see is_AutoParameter.
+ */
+#define IS_AWB_GREYWORLD                0x0001
+#define IS_AWB_COLOR_TEMPERATURE        0x0002
+
+#define IS_AUTOPARAMETER_DISABLE             0
+#define IS_AUTOPARAMETER_ENABLE              1
+#define IS_AUTOPARAMETER_ENABLE_RUNONCE      2
+
+
+/*!
+ * \brief Function to control all auto parameter settings
+ * \param   nCommand        specifies the command, \see AUTOPARAMETER_CMD.
+ * \param   pParam          input or output storage for the accessed param.
+ * \param   cbSizeOfParam   size of *pParam.
+ * \return  error code.
+ */
+IDSEXP is_AutoParameter(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+typedef struct
+{
+    char* pSourceBuffer;
+    char* pDestBuffer;
+    INT nDestPixelFormat;
+    INT nDestPixelConverter;
+    INT nDestGamma;
+    INT nDestEdgeEnhancement;
+    INT nDestColorCorrectionMode;
+    INT nDestSaturationU;
+    INT nDestSaturationV;
+    BYTE reserved[32];
+
+} BUFFER_CONVERSION_PARAMS;
+
+
+/*!
+ * \brief Enumeration of commands of function is_Convert , \see is_Convert.
+ */
+typedef enum E_CONVERT_CMD
+{
+    IS_CONVERT_CMD_APPLY_PARAMS_AND_CONVERT_BUFFER = 1
+
+} CONVERT_CMD;
+
+
+/*!
+ * \brief Function for different conversions (e.g. raw images to different pixelformats)
+ * \param   hCam            valid device handle.
+ * \param   nCommand        specifies the command
+ * \param   pParam          input or output storage for the accessed param.
+ * \param   cbSizeOfParam   size of *pParam.
+ * \return  error code.
+ */
+IDSEXP is_Convert(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+/*!
+ * \brief Enumeration of commands of function is_ParameterSet , \see is_ParameterSet.
+ */
+typedef enum E_PARAMETERSET_CMD
+{
+    IS_PARAMETERSET_CMD_LOAD_EEPROM               = 1,
+    IS_PARAMETERSET_CMD_LOAD_FILE                 = 2,
+    IS_PARAMETERSET_CMD_SAVE_EEPROM               = 3,
+    IS_PARAMETERSET_CMD_SAVE_FILE                 = 4,
+    IS_PARAMETERSET_CMD_GET_NUMBER_SUPPORTED      = 5
+} PARAMETERSET_CMD;
+
+/*!
+* \brief Interface to control all parameters settings
+* \param   hCam            valid device handle.
+* \param   nCommand        Specifies the command
+* \param   pParam          input or output storage for the accessed param.
+* \param   cbSizeOfParam   size of *pParam.
+* \return  error code
+*/
+IDSEXP is_ParameterSet(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+/*!
+ * \brief Enumeration of commands of function is_EdgeEnhancement , \see is_EdgeEnhancement.
+ */
+typedef enum E_EDGE_ENHANCEMENT_CMD
+{
+    IS_EDGE_ENHANCEMENT_CMD_GET_RANGE   = 1,
+    IS_EDGE_ENHANCEMENT_CMD_GET_DEFAULT = 2,
+    IS_EDGE_ENHANCEMENT_CMD_GET         = 3,
+    IS_EDGE_ENHANCEMENT_CMD_SET         = 4
+    
+} EDGE_ENHANCEMENT_CMD;
+
+
+/*!
+* \brief Interface to set the edge enhancement
+* \param   hCam            valid device handle.
+* \param   nCommand        Specifies the command
+* \param   pParam          input or output storage for the accessed param.
+* \param   cbSizeOfParam   size of *pParam.
+* \return  error code
+*/
+IDSEXP is_EdgeEnhancement(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+/*!
+ * \brief Enumeration of commands of function is_PixelClock , \see is_PixelClock.
+ */
+typedef enum E_PIXELCLOCK_CMD
+{
+    IS_PIXELCLOCK_CMD_GET_NUMBER    = 1,
+    IS_PIXELCLOCK_CMD_GET_LIST      = 2,
+    IS_PIXELCLOCK_CMD_GET_RANGE     = 3,
+    IS_PIXELCLOCK_CMD_GET_DEFAULT   = 4,
+    IS_PIXELCLOCK_CMD_GET           = 5, 
+    IS_PIXELCLOCK_CMD_SET           = 6
+
+} PIXELCLOCK_CMD;
+
+
+/*!
+* \brief Interface to set the pixel clock
+* \param   hCam            valid device handle.
+* \param   nCommand        Specifies the command
+* \param   pParam          input or output storage for the accessed param.
+* \param   cbSizeOfParam   size of *pParam.
+* \return  error code
+*/
+IDSEXP is_PixelClock(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
+
+
+
+typedef struct
+{
+    wchar_t* pwchFileName;
+    UINT     nFileType;
+    UINT     nQuality;
+    char**   ppcImageMem;
+    UINT*    pnImageID;
+    BYTE     reserved[32];
+
+} IMAGE_FILE_PARAMS;
+
+
+/*!
+ * \brief Enumeration of commands of function is_ImageFile , \see is_ImageFile.
+ */
+typedef enum E_IMAGE_FILE_CMD
+{
+    IS_IMAGE_FILE_CMD_LOAD    = 1,
+    IS_IMAGE_FILE_CMD_SAVE    = 2
+
+} IMAGE_FILE_CMD;
+
+
+/*!
+* \brief Interface for all image file operations
+* \param   hCam            valid device handle.
+* \param   nCommand        Specifies the command
+* \param   pParam          input or output storage for the accessed param.
+* \param   cbSizeOfParam   size of *pParam.
+* \return  error code
+*/
+IDSEXP is_ImageFile(HIDS hCam, UINT nCommand, void* pParam, UINT cbSizeOfParam);
 
 
 #ifdef __cplusplus

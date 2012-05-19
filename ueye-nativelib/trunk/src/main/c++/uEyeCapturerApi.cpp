@@ -103,11 +103,11 @@ INT WINAPI InitializeCamera(HIDS* m_hCam) {
 	return result;
 }
 
-INT LoadSettings(HIDS* m_hCam, const char* settingsFile) {
+INT LoadSettings(HIDS* m_hCam, const wchar_t* settingsFile) {
 	INT result = IS_SUCCESS;
 	if (settingsFile != NULL && *settingsFile != '\0') {
 		TRACE("Loading settings from %s\n", settingsFile);
-		result = is_LoadParameters(*m_hCam, settingsFile);
+		result = is_ParameterSet(*m_hCam, IS_PARAMETERSET_CMD_LOAD_FILE, (void*) settingsFile, NULL);
 		if (result == IS_SUCCESS) {
 			// realloc image mem with actual sizes and depth.
 			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
@@ -245,7 +245,7 @@ int InitDisplayMode(HIDS* m_hCam)
     return result;
 }
 
-INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, int* nMonitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
+INT WINAPI StartRunning(HIDS* m_hCam, const wchar_t* settingsFile, int* nMonitorId, void (WINAPI*OnWindowShow)(BOOL), HWND hWnd) { 
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	m_monitorId = nMonitorId;
 	INT result = IS_SUCCESS;
@@ -294,7 +294,7 @@ void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible)
 	}
 }
 
-INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath) {
+INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath, INT quality) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	INT result = IS_SUCCESS;
 	if (!m_nAviID) {
@@ -330,7 +330,7 @@ INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath) {
 
 		result |= isavi_OpenAVI(m_nAviID, strFilePath);
 		// TODO image quality is hard coded to 75 for now
-		result |= isavi_SetImageQuality (m_nAviID, 75);
+		result |= isavi_SetImageQuality (m_nAviID, quality);
 		result |= isavi_SetFrameRate(*m_hCam, newFPS);
 		result |= isavi_StartAVI(m_nAviID);
 		// Set recording to true
