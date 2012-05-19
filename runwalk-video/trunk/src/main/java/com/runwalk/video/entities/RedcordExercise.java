@@ -97,6 +97,10 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		return false;
 	}
 	
+	public boolean isSynthetic() {
+		return false;
+	}
+
 	public int compareTo(RedcordTableElement redcordTableElement) {
 		int result = 1;
 		if (redcordTableElement != null) {

@@ -98,6 +98,10 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 		return true;
 	}
 	
+	public boolean isSynthetic() {
+		return getRedcordExerciseCount() > 0;
+	}
+	
 	/**
 	 * Currently returning <code>null</code>.
 	 * Could be changed to show aggregate data later on.

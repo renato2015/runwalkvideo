@@ -112,6 +112,7 @@ public class VideoCapturer extends VideoComponent {
 		return getVideoImpl().getCaptureEncoderName();
 	}
 	
+	@Action
 	public Task<?, ?> showCapturerSettings() {
 		return new AbstractTask<Void, Void>(ApplicationActionConstants.SHOW_CAPTURER_SETTINGS_ACTION) {
 
@@ -125,6 +126,7 @@ public class VideoCapturer extends VideoComponent {
 		};
 	}
 
+	@Action
 	public Task<?, ?> showCameraSettings() {
 		return new AbstractTask<Void, Void>(ApplicationActionConstants.SHOW_CAMERA_SETTINGS_ACTION) {
 

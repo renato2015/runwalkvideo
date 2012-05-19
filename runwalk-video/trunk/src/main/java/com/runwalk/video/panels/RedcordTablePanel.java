@@ -128,19 +128,16 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 			@Override
 			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
-				if (getSelectedItem().allowsChildren()) {
-					RedcordSession selectedSession = (RedcordSession) getSelectedItem();
-					// check if a change was made on a synthetic node
-					if (selectedSession.getRedcordExerciseCount() > 0) {
-						// update selected row..
-						int firstRow = getEventSelectionModel().getMinSelectionIndex();
-						int lastRow = getEventSelectionModel().getMaxSelectionIndex();
-						getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
-						setDirty(true);
-					}
+				// check if a change was made on a synthetic node
+				if (getSelectedItem().isSynthetic()) {
+					// update selected row..
+					int firstRow = getEventSelectionModel().getMinSelectionIndex();
+					int lastRow = getEventSelectionModel().getMaxSelectionIndex();
+					getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
+					setDirty(true);
 				}
-			}
 
+			}
 		});
 
 		BeanProperty<RedcordTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
@@ -175,322 +172,322 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		bindingGroup.addBinding(selectedRedcordExerciseBinding);
 
 		bindingGroup.bind();
-	}
-
-	private void addButton(String actionName, String layoutConstraints) {
-		JButton button = new JButton(getAction(actionName));
-		button.setFont(SettingsManager.MAIN_FONT);
-		add(button, layoutConstraints);
-	}
-
-	private void addButton(String actionName) {
-		addButton(actionName, "");
-	}
-
-	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
-	public PersistTask<RedcordSession> addRedcordSession() {
-		// insert a new session record
-		final Client selectedClient = getClientTablePanel().getSelectedItem();
-		if (("".equals(selectedClient.getName())  || selectedClient.getName() == null) && 
-				("".equals(selectedClient.getOrganization()) || selectedClient.getOrganization() == null)) {
-			JOptionPane.showMessageDialog(
-					SwingUtilities.windowForComponent(this), 
-					getResourceMap().getString("addRedcordSession.errorDialog.text"),
-					getResourceMap().getString("addRedcordSession.Action.text"), 
-					JOptionPane.ERROR_MESSAGE);
-			getLogger().warn("Attempt to insert redcordSession for " + selectedClient + " failed.");
-			return null;
 		}
-		// get session count and set name
-		int sessionCount = selectedClient.getRedcordSessionCount();
-		String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++sessionCount);
-		RedcordSession redcordSession = new RedcordSession(selectedClient, sessionName); 
-		PersistTask<RedcordSession> result = new PersistTask<RedcordSession>(getDaoService(), RedcordSession.class, redcordSession);
-		result.addTaskListener(new TaskListener.Adapter<RedcordSession, Void>() {
 
-			@Override
-			public void succeeded(TaskEvent<RedcordSession> event) {
-				RedcordSession result = event.getValue();
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					selectedClient.addRedcordSession(result);
-					setSelectedItemRow(result);
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
-			}
+		private void addButton(String actionName, String layoutConstraints) {
+			JButton button = new JButton(getAction(actionName));
+			button.setFont(SettingsManager.MAIN_FONT);
+			add(button, layoutConstraints);
+		}
 
-		});
-		return result;
-	}
+		private void addButton(String actionName) {
+			addButton(actionName, "");
+		}
 
-	@Action(enabledProperty = REDCORD_SESSION_SELECTED, block = BlockingScope.ACTION)
-	public DeleteTask<RedcordSession> deleteRedcordSession() {		
-		DeleteTask<RedcordSession> result = null;
-		int n = JOptionPane.showConfirmDialog(
-				SwingUtilities.windowForComponent(this),
-				getResourceMap().getString("deleteRedcordSession.confirmDialog.text"),
-				getResourceMap().getString("deleteRedcordSession.Action.text"),
-				JOptionPane.WARNING_MESSAGE,
-				JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.OK_OPTION) {
+		@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
+		public PersistTask<RedcordSession> addRedcordSession() {
+			// insert a new session record
 			final Client selectedClient = getClientTablePanel().getSelectedItem();
-			result = new DeleteTask<RedcordSession>(getDaoService(), RedcordSession.class, (RedcordSession) getSelectedItem());
+			if (("".equals(selectedClient.getName())  || selectedClient.getName() == null) && 
+					("".equals(selectedClient.getOrganization()) || selectedClient.getOrganization() == null)) {
+				JOptionPane.showMessageDialog(
+						SwingUtilities.windowForComponent(this), 
+						getResourceMap().getString("addRedcordSession.errorDialog.text"),
+						getResourceMap().getString("addRedcordSession.Action.text"), 
+						JOptionPane.ERROR_MESSAGE);
+				getLogger().warn("Attempt to insert redcordSession for " + selectedClient + " failed.");
+				return null;
+			}
+			// get session count and set name
+			int sessionCount = selectedClient.getRedcordSessionCount();
+			String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++sessionCount);
+			RedcordSession redcordSession = new RedcordSession(selectedClient, sessionName); 
+			PersistTask<RedcordSession> result = new PersistTask<RedcordSession>(getDaoService(), RedcordSession.class, redcordSession);
 			result.addTaskListener(new TaskListener.Adapter<RedcordSession, Void>() {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordSession> event) {
-					RedcordSession redcordSession = event.getValue();
+					RedcordSession result = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
-						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-						selectedClient.removeRedcordSession(redcordSession);
-						getItemList().remove(redcordSession);
-						// set selection on previous item
-						setSelectedItemRow(lastSelectedRowIndex - 1);
+						selectedClient.addRedcordSession(result);
+						setSelectedItemRow(result);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
 					}
 				}
 
 			});
+			return result;
 		}
-		return result;
-	}
 
-	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
-	public PersistTask<RedcordExercise> addRedcordExercise() {
-		// insert a new exercise record
-		RedcordSession selectedRedcordSession = null;
-		if (getSelectedItem() instanceof RedcordSession) {
-			selectedRedcordSession = (RedcordSession) getSelectedItem();
-		} else {
-			selectedRedcordSession = ((RedcordExercise) getSelectedItem()).getRedcordSession();
-		}
-		final RedcordSession finaSelectedRedcordSession = selectedRedcordSession;
-		// get exercise count and set name
-		int exerciseCount = selectedRedcordSession.getRedcordExerciseCount();
-		String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++exerciseCount);
-		RedcordExercise redcordExercise = new RedcordExercise(selectedRedcordSession, exerciseName);
-		PersistTask<RedcordExercise> result = new PersistTask<RedcordExercise>(getDaoService(), RedcordExercise.class, redcordExercise);
-		result.addTaskListener(new TaskListener.Adapter<RedcordExercise, Void>() {
+		@Action(enabledProperty = REDCORD_SESSION_SELECTED, block = BlockingScope.ACTION)
+		public DeleteTask<RedcordSession> deleteRedcordSession() {		
+			DeleteTask<RedcordSession> result = null;
+			int n = JOptionPane.showConfirmDialog(
+					SwingUtilities.windowForComponent(this),
+					getResourceMap().getString("deleteRedcordSession.confirmDialog.text"),
+					getResourceMap().getString("deleteRedcordSession.Action.text"),
+					JOptionPane.WARNING_MESSAGE,
+					JOptionPane.OK_CANCEL_OPTION);
+			if (n == JOptionPane.OK_OPTION) {
+				final Client selectedClient = getClientTablePanel().getSelectedItem();
+				result = new DeleteTask<RedcordSession>(getDaoService(), RedcordSession.class, (RedcordSession) getSelectedItem());
+				result.addTaskListener(new TaskListener.Adapter<RedcordSession, Void>() {
 
-			@Override
-			public void succeeded(TaskEvent<RedcordExercise> event) {
-				RedcordExercise result = event.getValue();
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					finaSelectedRedcordSession.addRedcordExercise(result);
-					//getItemList().add(result);
-					setSelectedItemRow(result);
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
+					@Override
+					public void succeeded(TaskEvent<RedcordSession> event) {
+						RedcordSession redcordSession = event.getValue();
+						getItemList().getReadWriteLock().writeLock().lock();
+						try {
+							int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+							selectedClient.removeRedcordSession(redcordSession);
+							getItemList().remove(redcordSession);
+							// set selection on previous item
+							setSelectedItemRow(lastSelectedRowIndex - 1);
+						} finally {
+							getItemList().getReadWriteLock().writeLock().unlock();
+						}
+					}
+
+				});
 			}
+			return result;
+		}
 
-		});
-		return result;
-	}
-
-	@Action(enabledProperty = REDCORD_EXERCISE_SELECTED, block = BlockingScope.ACTION)
-	public DeleteTask<RedcordExercise> deleteRedcordExercise() {		
-		DeleteTask<RedcordExercise> result = null;
-		int n = JOptionPane.showConfirmDialog(
-				SwingUtilities.windowForComponent(this),
-				getResourceMap().getString("deleteRedcordExercise.confirmDialog.text"),
-				getResourceMap().getString("deleteRedcordExercise.Action.text"),
-				JOptionPane.WARNING_MESSAGE,
-				JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.OK_OPTION) {
-			RedcordExercise selectedRedcordExercise = (RedcordExercise) getSelectedItem();
-			final RedcordSession owningRedcordSession = selectedRedcordExercise.getRedcordSession();
-			result = new DeleteTask<RedcordExercise>(getDaoService(), RedcordExercise.class, selectedRedcordExercise);
+		@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
+		public PersistTask<RedcordExercise> addRedcordExercise() {
+			// insert a new exercise record
+			RedcordSession selectedRedcordSession = null;
+			if (getSelectedItem() instanceof RedcordSession) {
+				selectedRedcordSession = (RedcordSession) getSelectedItem();
+			} else {
+				selectedRedcordSession = ((RedcordExercise) getSelectedItem()).getRedcordSession();
+			}
+			final RedcordSession finaSelectedRedcordSession = selectedRedcordSession;
+			// get exercise count and set name
+			int exerciseCount = selectedRedcordSession.getRedcordExerciseCount();
+			String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++exerciseCount);
+			RedcordExercise redcordExercise = new RedcordExercise(selectedRedcordSession, exerciseName);
+			PersistTask<RedcordExercise> result = new PersistTask<RedcordExercise>(getDaoService(), RedcordExercise.class, redcordExercise);
 			result.addTaskListener(new TaskListener.Adapter<RedcordExercise, Void>() {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordExercise> event) {
-					RedcordTableElement redcordExercise = event.getValue();
+					RedcordExercise result = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
-						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-						getItemList().remove(redcordExercise);
-						owningRedcordSession.removeRedcordExercise(redcordExercise);
-						// set selection on previous item
-						setSelectedItemRow(lastSelectedRowIndex - 1);
+						finaSelectedRedcordSession.addRedcordExercise(result);
+						//getItemList().add(result);
+						setSelectedItemRow(result);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
 					}
 				}
 
 			});
+			return result;
 		}
-		return result;
-	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	protected TreeList<RedcordTableElement> specializeItemList(EventList<RedcordTableElement> eventList) {
+		@Action(enabledProperty = REDCORD_EXERCISE_SELECTED, block = BlockingScope.ACTION)
+		public DeleteTask<RedcordExercise> deleteRedcordExercise() {		
+			DeleteTask<RedcordExercise> result = null;
+			int n = JOptionPane.showConfirmDialog(
+					SwingUtilities.windowForComponent(this),
+					getResourceMap().getString("deleteRedcordExercise.confirmDialog.text"),
+					getResourceMap().getString("deleteRedcordExercise.Action.text"),
+					JOptionPane.WARNING_MESSAGE,
+					JOptionPane.OK_CANCEL_OPTION);
+			if (n == JOptionPane.OK_OPTION) {
+				RedcordExercise selectedRedcordExercise = (RedcordExercise) getSelectedItem();
+				final RedcordSession owningRedcordSession = selectedRedcordExercise.getRedcordSession();
+				result = new DeleteTask<RedcordExercise>(getDaoService(), RedcordExercise.class, selectedRedcordExercise);
+				result.addTaskListener(new TaskListener.Adapter<RedcordExercise, Void>() {
 
-		final Comparator<RedcordTableElement> redcordTableElementComparator = GlazedLists.chainComparators(
-				GlazedLists.beanPropertyComparator(RedcordTableElement.class, "name")
-				);
-
-		TreeList.Format<RedcordTableElement> listFormat = new TreeList.Format<RedcordTableElement>() {
-
-			public void getPath(List<RedcordTableElement> paramList, RedcordTableElement redcordTableElement) {
-				if (!redcordTableElement.allowsChildren()) {
-					RedcordExercise redcordExercise = (RedcordExercise) redcordTableElement;
-					// always add the session up front
-					paramList.add(redcordExercise.getRedcordSession());
-					paramList.add(redcordTableElement);
-				} else {
-					paramList.add(redcordTableElement);
-				}
-			}
-
-			public boolean allowsChildren(RedcordTableElement redcordTableElement) {
-				return redcordTableElement.allowsChildren();
-			}
-
-			public Comparator<RedcordTableElement> getComparator(int paramInt) {
-				return redcordTableElementComparator;
-			}
-
-		};
-		// workaround to set selection back after a TreeTable update
-		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
-	}
-
-	/**
-	 * Covariant return here. We can do this cast because the return type of
-	 * {@link #specializeItemList(EventList)} is a {@link TreeList}, as well.
-	 * 
-	 * @return a treelist containing the items for this panel
-	 */
-	@Override
-	public TreeList<RedcordTableElement> getItemList() {
-		return (TreeList<RedcordTableElement>) super.getItemList();
-	}
-
-	public void initialiseTableColumnModel() {
-		getTable().setRowHeight(20);
-		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
-		// name of the session / exercise
-		getTable().getColumnModel().getColumn(0).setMinWidth(70);
-		getTable().getColumnModel().getColumn(0).setResizable(false);
-		// date of the session
-		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
-		datePickerCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerTableCellRenderer(AppUtil.DATE_FORMATTER));
-		getTable().getColumnModel().getColumn(1).setPreferredWidth(70);
-
-		SpinnerDateModel spinnerDateModel = new SpinnerDateModel();
-		JSpinner spinner = new JSpinner(spinnerDateModel);
-		spinner.setEditor(new JSpinner.DateEditor(spinner, AppUtil.HOUR_MINUTE_FORMATTER.toPattern()));
-		getTable().getColumnModel().getColumn(2).setCellRenderer(JSpinnerTableCellRenderer.dateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
-		getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
-		getTable().getColumnModel().getColumn(2).setPreferredWidth(30);
-
-		// create special table cell editor for selecting exercise type
-		EventList<ExerciseType> exerciseTypes = GlazedLists.eventListOf(ExerciseType.values());
-		AutoCompleteCellEditor<ExerciseType> exerciseTypeTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseTypes);
-		exerciseTypeTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
-		exerciseTypeTableCellEditor.getAutoCompleteSupport().setStrict(true);
-		exerciseTypeTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
-		exerciseTypeTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
-		exerciseTypeTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(3).setCellRenderer(comboBoxTableCellRenderer);
-		getTable().getColumnModel().getColumn(3).setCellEditor(exerciseTypeTableCellEditor);
-		getTable().getColumnModel().getColumn(3).setPreferredWidth(50);
-
-		EventList<ExerciseDirection> exerciseDirections = GlazedLists.eventListOf(ExerciseDirection.values());
-		AutoCompleteCellEditor<ExerciseDirection> exerciseDirectionTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseDirections);
-		exerciseDirectionTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
-		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setStrict(true);
-		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
-		exerciseDirectionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
-		exerciseDirectionTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(comboBoxTableCellRenderer);
-		getTable().getColumnModel().getColumn(4).setCellEditor(exerciseDirectionTableCellEditor);
-		getTable().getColumnModel().getColumn(4).setResizable(false);
-		getTable().getColumnModel().getColumn(4).setPreferredWidth(50);
-		// install tree table support on the first column of the table
-		TreeTableSupport.install(getTable(), getItemList(), 0);
-		// workaround for issue #GLAZEDLISTS-462
-		getEventSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
-			public void valueChanged(ListSelectionEvent e) {
-				if (isRowSelected() && getSelectedItem() != null &&
-						getEventSelectionModel().getSelected().isEmpty()) {
-					setSelectedItemRow(getSelectedItem()); 
-				}
-			}
-
-		});
-	}
-
-	@Action(block=BlockingScope.ACTION)
-	public Task<?, ?> syncToDatabase() {
-		Window parentWindow = SwingUtilities.getWindowAncestor(RedcordTablePanel.this);
-		Task<List<RedcordSession>, Void> result = new CalendarSlotSyncTask<RedcordSession>(parentWindow, getDaoService(), 
-				RedcordSession.class, getClientTablePanel().getObservableElementList());
-		result.addTaskListener(new TaskListener.Adapter<List<RedcordSession>, Void>() {
-
-			@Override
-			public void succeeded(TaskEvent<List<RedcordSession>> event) {
-				// refresh clients with updated session data
-				for(RedcordSession redcordSession : event.getValue()) {
-					Client client = redcordSession.getClient();
-					// find detached entity and apply modifications
-					client = getClientTablePanel().findItem(client);
-					if (redcordSession.isNew()) {
-						client.addRedcordSession(redcordSession);
-					} else if (redcordSession.isRemoved()) {
-						client.removeRedcordSession(redcordSession);
-					} else if (redcordSession.isModified()) {
-						client.replaceRedcordSession(redcordSession);
-						// refresh manually instead of firing a pce
-						getClientTablePanel().getObservableElementList().elementChanged(client);
+					@Override
+					public void succeeded(TaskEvent<RedcordExercise> event) {
+						RedcordTableElement redcordExercise = event.getValue();
+						getItemList().getReadWriteLock().writeLock().lock();
+						try {
+							int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+							getItemList().remove(redcordExercise);
+							owningRedcordSession.removeRedcordExercise(redcordExercise);
+							// set selection on previous item
+							setSelectedItemRow(lastSelectedRowIndex - 1);
+						} finally {
+							getItemList().getReadWriteLock().writeLock().unlock();
+						}
 					}
- 				}
+
+				});
 			}
+			return result;
+		}
 
-		});
-		return result;
+		@Override
+		@SuppressWarnings("unchecked")
+		protected TreeList<RedcordTableElement> specializeItemList(EventList<RedcordTableElement> eventList) {
+
+			final Comparator<RedcordTableElement> redcordTableElementComparator = GlazedLists.chainComparators(
+					GlazedLists.beanPropertyComparator(RedcordTableElement.class, "name")
+					);
+
+			TreeList.Format<RedcordTableElement> listFormat = new TreeList.Format<RedcordTableElement>() {
+
+				public void getPath(List<RedcordTableElement> paramList, RedcordTableElement redcordTableElement) {
+					if (!redcordTableElement.allowsChildren()) {
+						RedcordExercise redcordExercise = (RedcordExercise) redcordTableElement;
+						// always add the session up front
+						paramList.add(redcordExercise.getRedcordSession());
+						paramList.add(redcordTableElement);
+					} else {
+						paramList.add(redcordTableElement);
+					}
+				}
+
+				public boolean allowsChildren(RedcordTableElement redcordTableElement) {
+					return redcordTableElement.allowsChildren();
+				}
+
+				public Comparator<RedcordTableElement> getComparator(int paramInt) {
+					return redcordTableElementComparator;
+				}
+
+			};
+			// workaround to set selection back after a TreeTable update
+			return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
+		}
+
+		/**
+		 * Covariant return here. We can do this cast because the return type of
+		 * {@link #specializeItemList(EventList)} is a {@link TreeList}, as well.
+		 * 
+		 * @return a treelist containing the items for this panel
+		 */
+		@Override
+		public TreeList<RedcordTableElement> getItemList() {
+			return (TreeList<RedcordTableElement>) super.getItemList();
+		}
+
+		public void initialiseTableColumnModel() {
+			getTable().setRowHeight(20);
+			JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
+			// name of the session / exercise
+			getTable().getColumnModel().getColumn(0).setMinWidth(70);
+			getTable().getColumnModel().getColumn(0).setResizable(false);
+			// date of the session
+			DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
+			datePickerCellEditor.setClickCountToStart(1);
+			getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);
+			getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerTableCellRenderer(AppUtil.DATE_FORMATTER));
+			getTable().getColumnModel().getColumn(1).setPreferredWidth(70);
+
+			SpinnerDateModel spinnerDateModel = new SpinnerDateModel();
+			JSpinner spinner = new JSpinner(spinnerDateModel);
+			spinner.setEditor(new JSpinner.DateEditor(spinner, AppUtil.HOUR_MINUTE_FORMATTER.toPattern()));
+			getTable().getColumnModel().getColumn(2).setCellRenderer(JSpinnerTableCellRenderer.dateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
+			getTable().getColumnModel().getColumn(2).setCellEditor(new JSpinnerTableCellEditor(spinner));
+			getTable().getColumnModel().getColumn(2).setPreferredWidth(30);
+
+			// create special table cell editor for selecting exercise type
+			EventList<ExerciseType> exerciseTypes = GlazedLists.eventListOf(ExerciseType.values());
+			AutoCompleteCellEditor<ExerciseType> exerciseTypeTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseTypes);
+			exerciseTypeTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
+			exerciseTypeTableCellEditor.getAutoCompleteSupport().setStrict(true);
+			exerciseTypeTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
+			exerciseTypeTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
+			exerciseTypeTableCellEditor.setClickCountToStart(1);
+			getTable().getColumnModel().getColumn(3).setCellRenderer(comboBoxTableCellRenderer);
+			getTable().getColumnModel().getColumn(3).setCellEditor(exerciseTypeTableCellEditor);
+			getTable().getColumnModel().getColumn(3).setPreferredWidth(50);
+
+			EventList<ExerciseDirection> exerciseDirections = GlazedLists.eventListOf(ExerciseDirection.values());
+			AutoCompleteCellEditor<ExerciseDirection> exerciseDirectionTableCellEditor = AutoCompleteSupport.createTableCellEditor(exerciseDirections);
+			exerciseDirectionTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
+			exerciseDirectionTableCellEditor.getAutoCompleteSupport().setStrict(true);
+			exerciseDirectionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
+			exerciseDirectionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
+			exerciseDirectionTableCellEditor.setClickCountToStart(1);
+			getTable().getColumnModel().getColumn(4).setCellRenderer(comboBoxTableCellRenderer);
+			getTable().getColumnModel().getColumn(4).setCellEditor(exerciseDirectionTableCellEditor);
+			getTable().getColumnModel().getColumn(4).setResizable(false);
+			getTable().getColumnModel().getColumn(4).setPreferredWidth(50);
+			// install tree table support on the first column of the table
+			TreeTableSupport.install(getTable(), getItemList(), 0);
+			// workaround for issue #GLAZEDLISTS-462
+			getEventSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+				public void valueChanged(ListSelectionEvent e) {
+					if (isRowSelected() && getSelectedItem() != null &&
+							getEventSelectionModel().getSelected().isEmpty()) {
+						setSelectedItemRow(getSelectedItem()); 
+					}
+				}
+
+			});
+		}
+
+		@Action(block=BlockingScope.ACTION)
+		public Task<?, ?> syncToDatabase() {
+			Window parentWindow = SwingUtilities.getWindowAncestor(RedcordTablePanel.this);
+			Task<List<RedcordSession>, Void> result = new CalendarSlotSyncTask<RedcordSession>(parentWindow, getDaoService(), 
+					RedcordSession.class, getClientTablePanel().getObservableElementList());
+			result.addTaskListener(new TaskListener.Adapter<List<RedcordSession>, Void>() {
+
+				@Override
+				public void succeeded(TaskEvent<List<RedcordSession>> event) {
+					// refresh clients with updated session data
+					for(RedcordSession redcordSession : event.getValue()) {
+						Client client = redcordSession.getClient();
+						// find detached entity and apply modifications
+						client = getClientTablePanel().findItem(client);
+						if (redcordSession.isNew()) {
+							client.addRedcordSession(redcordSession);
+						} else if (redcordSession.isRemoved()) {
+							client.removeRedcordSession(redcordSession);
+						} else if (redcordSession.isModified()) {
+							client.replaceRedcordSession(redcordSession);
+							// refresh manually instead of firing a pce
+							getClientTablePanel().getObservableElementList().elementChanged(client);
+						}
+					}
+				}
+
+			});
+			return result;
+		}
+
+		public boolean isClientSelected() {
+			return clientSelected;
+		}
+
+		public void setClientSelected(boolean clientSelected) {
+			firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
+		}
+
+		public Boolean getRedcordSessionSelected() {
+			return redcordSessionSelected;
+		}
+
+		public void setRedcordSessionSelected(Boolean redcordSessionSelected) {
+			firePropertyChange(REDCORD_SESSION_SELECTED, this.redcordSessionSelected, this.redcordSessionSelected = redcordSessionSelected);
+		}
+
+		public Boolean getRedcordExerciseSelected() {
+			return redcordExerciseSelected;
+		}
+
+		public void setRedcordExerciseSelected(Boolean redcordExerciseSelected) {
+			firePropertyChange(REDCORD_EXERCISE_SELECTED, this.redcordExerciseSelected, this.redcordExerciseSelected = redcordExerciseSelected);
+		}
+
+		public ClientTablePanel getClientTablePanel() {
+			return clientTablePanel;
+		}
+
+		public DaoService getDaoService() {
+			return daoService;
+		}
+
+
 	}
-
-	public boolean isClientSelected() {
-		return clientSelected;
-	}
-
-	public void setClientSelected(boolean clientSelected) {
-		firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
-	}
-
-	public Boolean getRedcordSessionSelected() {
-		return redcordSessionSelected;
-	}
-
-	public void setRedcordSessionSelected(Boolean redcordSessionSelected) {
-		firePropertyChange(REDCORD_SESSION_SELECTED, this.redcordSessionSelected, this.redcordSessionSelected = redcordSessionSelected);
-	}
-
-	public Boolean getRedcordExerciseSelected() {
-		return redcordExerciseSelected;
-	}
-
-	public void setRedcordExerciseSelected(Boolean redcordExerciseSelected) {
-		firePropertyChange(REDCORD_EXERCISE_SELECTED, this.redcordExerciseSelected, this.redcordExerciseSelected = redcordExerciseSelected);
-	}
-
-	public ClientTablePanel getClientTablePanel() {
-		return clientTablePanel;
-	}
-
-	public DaoService getDaoService() {
-		return daoService;
-	}
-
-
-}
