@@ -18,6 +18,14 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	public static final String EXERCISE_TYPE = "exerciseType";
 	public static final String COMMENTS = "comments";
 	public static final String START_DATE = "startDate";
+	
+	/**
+	 * Return <code>true</code> if this is a synthetic element. This implies
+	 * that the element will be a node as well.
+	 * 
+	 * @return <code>true</code> if this is can be a synthetic element.
+	 */
+	boolean isSynthetic();
 
 	Date getStartDate();
 

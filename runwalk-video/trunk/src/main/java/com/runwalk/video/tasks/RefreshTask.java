@@ -115,7 +115,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 						new Matcher<RedcordTableElement>() {
 
 							public boolean matches(RedcordTableElement item) {
-								return item.allowsChildren() && ((RedcordSession) item).getRedcordExercises().isEmpty();
+								return !item.isSynthetic();
 							}
 						
 					});
