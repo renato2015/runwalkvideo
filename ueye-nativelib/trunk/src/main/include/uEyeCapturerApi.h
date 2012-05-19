@@ -10,9 +10,7 @@
 // See these sources for detailed information regarding the
 // Microsoft Foundation Classes product.
 
-#include "uEye.h"
-#include "uEye_tools.h"
-//#include "afxwin.h"
+#include "afxwin.h"
 //#include "DynamicuEyeTools.h"
 
 #define IS_THREAD_MESSAGE				(WM_APP + 0x0200)
@@ -48,12 +46,12 @@ typedef struct UEYE_CAMERA_DATA
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */
-	INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath);
+	INT WINAPI StartRecording(HIDS* m_hCam, const char* strFilePath, INT quality);
 	INT WINAPI StopRecording(HIDS* m_hCam);
 	INT WINAPI GetCameraNames(UEYE_CAMERA_LIST* cameraList);
 	INT WINAPI InitializeCamera(HIDS* m_hCam);
 	void WINAPI GetFrameDropInfo(HIDS* m_hCam, unsigned long* frameDropInfo);
-	INT WINAPI StartRunning(HIDS* m_hCam, const char* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShowCallback)(BOOL), HWND windowHandle);
+	INT WINAPI StartRunning(HIDS* m_hCam, const wchar_t* settingsFile, LPTSTR windowName, int* monitorId, void (WINAPI*OnWindowShowCallback)(BOOL), HWND windowHandle);
 	INT WINAPI StopRunning(HIDS* m_hCam);
 	INT WINAPI Dispose(HIDS* m_hCam);
 	void WINAPI WndToFront(HIDS* hCam);
