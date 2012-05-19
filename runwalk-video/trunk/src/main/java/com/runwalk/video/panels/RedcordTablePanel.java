@@ -264,7 +264,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			} else {
 				selectedRedcordSession = ((RedcordExercise) getSelectedItem()).getRedcordSession();
 			}
-			final RedcordSession finaSelectedRedcordSession = selectedRedcordSession;
+			final RedcordSession finalSelectedRedcordSession = selectedRedcordSession;
 			// get exercise count and set name
 			int exerciseCount = selectedRedcordSession.getRedcordExerciseCount();
 			String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++exerciseCount);
@@ -277,7 +277,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 					RedcordExercise result = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
-						finaSelectedRedcordSession.addRedcordExercise(result);
+						finalSelectedRedcordSession.addRedcordExercise(result);
 						//getItemList().add(result);
 						setSelectedItemRow(result);
 					} finally {

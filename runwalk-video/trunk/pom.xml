@@ -534,7 +534,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>ddMMyyyy-HHmmss</maven.build.timestamp.format>
 		<dsj.version>0.8.63</dsj.version>
-		<ueye.version>0.3</ueye.version>
+		<ueye.version>0.4-SNAPSHOT</ueye.version>
 		<aspectj.version>1.6.12</aspectj.version>
 		<!-- Keystore generation properties -->
 		<keystore.dnameCn>www.runwalk.be</keystore.dnameCn>

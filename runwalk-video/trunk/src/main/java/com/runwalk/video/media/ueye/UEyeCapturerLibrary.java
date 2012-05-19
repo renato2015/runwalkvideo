@@ -3,6 +3,7 @@ import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
+import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 /**
@@ -32,13 +33,13 @@ public class UEyeCapturerLibrary implements StdCallLibrary {
 	 */
 	public static native int InitializeCamera(IntByReference cameraHandle);
 	
-	public static native int StartRunning(IntByReference cameraHandle, final String settingsFile, IntByReference monitorId, Callback onWndShowCallback, Pointer windowHandle);
+	public static native int StartRunning(IntByReference cameraHandle, final WString settingsFile, IntByReference monitorId, Callback onWndShowCallback, Pointer windowHandle);
 	
 	public static native int StopRunning(IntByReference cameraHandle);
 
 	public static native int Dispose(IntByReference cameraHandle);
 	
-	public static native int StartRecording(IntByReference cameraHandle, final String path, double fps);
+	public static native int StartRecording(IntByReference cameraHandle, final String path, int quality);
 	
 	public static native int StopRecording(IntByReference cameraHandle);
 	

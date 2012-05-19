@@ -37,6 +37,7 @@ import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
 
 public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Containable, FullScreenSupport, ComponentListener  {
@@ -48,6 +49,9 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	private static final String NO_SETTINGS_FILE = "<default>";
 
 	private static final String MJPEG_ENCODER = "MJPEG";
+	
+	/** Image quality [1 = lowest ... 100 = highest] */
+	public static int COMPRESSION_QUALITY = 75;
 
 	private static Logger LOGGER =  Logger.getLogger(UEyeCapturer.class);
 
@@ -135,7 +139,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		} else {
 			IntByReference monitorId = new IntByReference(getMonitorId());
 			Pointer canvasPointer = isNativeWindowing() ? Pointer.NULL : Native.getComponentPointer(videoCanvas);
-			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, getSettingsFilePath(), monitorId, callback, canvasPointer);
+			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, new WString(getSettingsFilePath()), monitorId, callback, canvasPointer);
 			LOGGER.debug("StartRunning " + isSuccess(result));
 		}
 	}
@@ -178,7 +182,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void startRecording(String videoPath) {
-		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, 25);
+		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, COMPRESSION_QUALITY);
 		LOGGER.debug("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
@@ -201,7 +205,10 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 				long recordedSeconds = (System.currentTimeMillis() - startTime) / 1000;
 				BigDecimal secondsRecorded = BigDecimal.valueOf (recordedSeconds);
 				BigDecimal framesCaptured = BigDecimal.valueOf(capturedFrames);
-				BigDecimal fps = secondsRecorded.divide(framesCaptured, 2, RoundingMode.FLOOR);
+				BigDecimal fps = BigDecimal.valueOf(0);
+				if (secondsRecorded.intValue() > 0) {
+					fps = framesCaptured.divide(secondsRecorded, 2, RoundingMode.FLOOR);
+				}
 				LOGGER.debug("Average recording fps: " + fps.toPlainString());
 			}
 
@@ -366,7 +373,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 			// get native handle for the drawing canvas
 			Pointer newPointer = Native.getComponentPointer(videoCanvas);
 			LOGGER.debug("Opening camera " + getTitle());
-			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFilePath, monitorId, callback, newPointer);
+			int result = UEyeCapturerLibrary.StartRunning(cameraHandle, new WString(settingsFilePath), monitorId, callback, newPointer);
 			LOGGER.debug("Using settings file at " + settingsFilePath);
 			LOGGER.debug("StartRunning " + isSuccess(result));
 		}
