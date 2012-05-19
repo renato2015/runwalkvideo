@@ -18,6 +18,7 @@ import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
@@ -68,7 +69,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		frame.setVisible(true);
 		frame.pack();
 		Pointer newPointer = Native.getComponentPointer(canvas);
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, newPointer);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, new WString(settingsFile), monitorId, onWndShowCallback, newPointer);
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
@@ -88,7 +89,7 @@ public class UEyeCapturerLibraryTest extends TestCase {
 		frame.validate();
 		Pointer otherPointer = Native.getComponentPointer(canvas);
 		assert(otherPointer.equals(newPointer));
-		result = UEyeCapturerLibrary.StartRunning(cameraHandle, settingsFile, monitorId, onWndShowCallback, otherPointer);
+		result = UEyeCapturerLibrary.StartRunning(cameraHandle, new WString(settingsFile), monitorId, onWndShowCallback, otherPointer);
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
