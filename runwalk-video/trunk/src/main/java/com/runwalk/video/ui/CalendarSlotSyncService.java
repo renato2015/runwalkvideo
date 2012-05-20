@@ -197,7 +197,10 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			EventWho eventWho = new EventWho();
 			String fullClientName = textToUpperCase(client.getFirstname()) + " " + textToUpperCase(client.getName());
 			eventWho.setValueString(fullClientName);
-			eventWho.setEmail(client.getEmailAddress());
+			String emailAddress = client.getEmailAddress();
+			if (emailAddress != null && !emailAddress.isEmpty()) {
+				eventWho.setEmail(emailAddress);
+			}
 			calendarEventEntry.addParticipant(eventWho);
 			// update the event's title
 			// TODO it would be nice to have getName() returning the session number
