@@ -45,7 +45,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 		setClient(client);
 		setName(name);
 	}
-	
+
 	public List<RedcordExercise> getRedcordExercises() {
 		return redcordExercises;
 	}
