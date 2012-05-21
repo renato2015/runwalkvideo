@@ -30,7 +30,11 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 	public Long getId() {
 		return this.id;
 	}
-
+	
+	protected void setId(Long id) {
+		this.id = id;
+	}
+	
 	public void setDirty(boolean dirty) {
 		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 	}

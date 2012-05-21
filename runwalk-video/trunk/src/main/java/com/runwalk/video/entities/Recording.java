@@ -58,7 +58,7 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	private Integer statusCode = RecordingStatus.READY.getCode();
 
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, mappedBy="recording")
 	private List<Keyframe> keyframes;
 
 	/**

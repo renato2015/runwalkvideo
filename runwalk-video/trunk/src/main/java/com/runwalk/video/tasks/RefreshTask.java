@@ -2,13 +2,17 @@ package com.runwalk.video.tasks;
 
 import java.awt.Robot;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceUtil;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskService;
 
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
@@ -25,6 +29,7 @@ import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
+import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.ui.AnalysisConnector;
@@ -89,10 +94,14 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// create pipeline for overview tablepanel
 					final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
 					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, 
-						new CollectionList.Model<Client, Analysis>() {
+						new LazyModel<Client, Analysis>(getTaskService(), "analyses") {
 
-							public List<Analysis> getChildren(Client parent) {
+							public List<Analysis> getLazyChildren(Client parent) {
 								return parent.getAnalyses();
+							}
+
+							public void refreshParent(Client parent, List<Analysis> children) {
+								getClientTablePanel().getObservableElementList().elementChanged(parent);
 							}
 
 					});
@@ -104,10 +113,14 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());
 					// create pipeline for redord tablepanel
 					CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
-						new CollectionList.Model<Client, RedcordTableElement>() {
+						new LazyModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions") {
 
-							public List<RedcordTableElement> getChildren(final Client parent) {
+							public List<RedcordTableElement> getLazyChildren(Client parent) {
 								return new ArrayList<RedcordTableElement>(parent.getRedcordSessions());
+							}
+
+							public void refreshParent(Client parent, List<RedcordTableElement> children) {
+								getClientTablePanel().getObservableElementList().elementChanged(parent);
 							}
 
 					});
@@ -144,7 +157,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		}
 		return success;
 	}
-
+	
 	private DaoService getDaoService() {
 		return daoService;
 	}
@@ -163,6 +176,56 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private AbstractTablePanel<RedcordTableElement> getRedcordTablePanel() {
 		return redcordTablePanel;
+	}
+	
+	public static abstract class LazyModel<E extends SerializableEntity<? super E>, S> implements CollectionList.Model<E, S> {
+
+		private final String attributeName;
+		
+		private final TaskService taskService;
+
+		public LazyModel(TaskService taskService, String attributeName) {
+			this.taskService = taskService;
+			this.attributeName = attributeName;
+		}
+		
+		public abstract List<S> getLazyChildren(E parent);
+		
+		public abstract void refreshParent(E parent, List<S> children);	
+		
+		public List<S> getChildren(final E parent) {
+			List<S> result = Collections.emptyList();
+			PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
+			if (persistenceUtil.isLoaded(parent, getAttributeName())) {
+				result = getLazyChildren(parent);
+			} else {
+				getTaskService().execute(new AbstractTask<List<S>, Void>("loadEntities") {
+					
+					protected List<S> doInBackground() throws Exception {
+						List<S> result = getLazyChildren(parent);
+						message("endMessage", parent);
+						return result;
+					}
+					
+					@Override
+					protected void succeeded(List<S> children) {
+						// execute callback and refresh the parent list
+						refreshParent(parent, children);
+					}
+					
+				});
+			}
+			return result;
+		}
+
+		public String getAttributeName() {
+			return attributeName;
+		}
+
+		public TaskService getTaskService() {
+			return taskService;
+		}
+		
 	}
 	
 }
