@@ -43,7 +43,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@JoinColumn(name="clientid", nullable=false )
 	private Client client;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "analysis")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "analysis")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Recording> recordings = new ArrayList<Recording>();
 	

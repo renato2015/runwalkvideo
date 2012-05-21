@@ -16,9 +16,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.eclipse.persistence.annotations.JoinFetch;
-import org.eclipse.persistence.annotations.JoinFetchType;
-
 @Entity
 @SuppressWarnings("serial")
 @DiscriminatorValue(Client.PERSON_TYPE)
@@ -40,11 +37,11 @@ public class Client extends Person {
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	@JoinFetch(JoinFetchType.OUTER)
-	private List<Analysis> analyses = new ArrayList<Analysis>();
+	//@JoinFetch(JoinFetchType.OUTER)
+	private List<Analysis> analyses ;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	private List<RedcordSession> redcordSessions = new ArrayList<RedcordSession>();
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client" )
+	private List<RedcordSession> redcordSessions ;
 
 	@Column(name = "account_number")
 	private String taxNumber;
@@ -61,6 +58,13 @@ public class Client extends Person {
 	public Client(String name, String firstName) {
 		setFirstname(firstName);
 		setName(name);
+	}
+	
+	public Client(Client client, Date lastAnalysisDate) {
+		this(client.getName(), client.getFirstname());
+		setId(client.getId());
+		setVersion(client.getVersion());
+		setLastAnalysisDate(lastAnalysisDate);
 	}
 	
 	public String getTaxNumber() {

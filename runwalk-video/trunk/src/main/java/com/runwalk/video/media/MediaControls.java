@@ -1,11 +1,14 @@
 package com.runwalk.video.media;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -26,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -81,7 +85,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class MediaControls extends JPanel implements PropertyChangeListener, ApplicationActionConstants, 
-MediaActionConstants, Containable, ActionListener {
+	MediaActionConstants, Containable, ActionListener {
 
 	// enabled action properties
 	public static final String MUTED = "muted";
@@ -105,28 +109,35 @@ MediaActionConstants, Containable, ActionListener {
 
 	private final Timer timer;
 
-	private Analysis clickedAnalysis;
-
 	// open the selected recording
 	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
 
 		public void handleClick(Analysis element) {
 			if (element.isRecorded()) {
-				clickedAnalysis = element;
-				Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-				try {
-					invokeAction(OPEN_RECORDINGS_ACTION, activeWindow);
-					// in case an exception is thrown before the action is started
-				} catch(Exception e) {
-					JOptionPane.showMessageDialog(
-							activeWindow, 
-							e.getMessage(),
-							getResourceMap().getString("openRecordingsAction.errorDialog.title"), 
-							JOptionPane.ERROR_MESSAGE);
-				}
+				getTaskService().execute(openRecordings(element));
 			}
 		}
 
+	};
+	
+	final JComponent busyGlassPane = new JComponent() {
+		
+		{
+			setOpaque(false);
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			// gets the current clipping area
+			Rectangle clip = g.getClipBounds();
+			AlphaComposite alpha = AlphaComposite.SrcOver.derive(0.10f);
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.setComposite(alpha);
+			// fills the background
+			g.setColor(new Color(50, 50, 50));
+			g.fillRect(clip.x, clip.y, clip.width, clip.height);
+		}
+		
 	};
 
 	private Boolean selectedRecordingRecordable = false;
@@ -683,20 +694,15 @@ MediaActionConstants, Containable, ActionListener {
 		};
 	}
 
-	@Action(block=BlockingScope.COMPONENT)
-	public Task<?, ?> openRecordings() {
-		final Analysis analysis = clickedAnalysis;
-		final Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+	public Task<?, ?> openRecordings(final Analysis analysis) {
 		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
-			@OnEdt
-			private void setWaitCursor() {
-				activeWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			{ 
+				setInputBlocker(new CursorInputBlocker(this, MediaControls.this.busyGlassPane)); 
 			}
 
 			protected Void doInBackground() throws Exception {
 				message("startMessage");
-				setWaitCursor();
 				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
 				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
@@ -720,11 +726,6 @@ MediaActionConstants, Containable, ActionListener {
 				return null;
 			}
 
-			@Override
-			protected void finished() {
-				activeWindow.setCursor(Cursor.getDefaultCursor());
-			}
-			
 		};
 	}
 

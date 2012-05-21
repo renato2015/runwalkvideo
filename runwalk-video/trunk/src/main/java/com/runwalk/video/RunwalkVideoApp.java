@@ -325,7 +325,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
 	}
 	
-	@org.jdesktop.application.Action(enabledProperty=SAVE_NEEDED, block = Task.BlockingScope.APPLICATION)
+	@org.jdesktop.application.Action(enabledProperty=SAVE_NEEDED, block = Task.BlockingScope.WINDOW)
 	public Task<Boolean, Void> save() {
 		
 		return new AbstractTask<Boolean, Void>(SAVE_ACTION) {

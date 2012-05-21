@@ -86,6 +86,10 @@ public abstract class Person extends SerializableEntity<Person> {
 		return version;
 	}
 	
+	protected void setVersion(int version) {
+		this.version = version;
+	}
+	
 	public void incrementVersion() {
 		version++;
 	}
