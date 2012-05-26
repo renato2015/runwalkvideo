@@ -19,8 +19,6 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 
 	private final Logger logger;
 
-	public Object busyGlassPane;
-
 	@SuppressWarnings("deprecation")
 	public AbstractTask(String name) {
 		super(Application.getInstance(), name);

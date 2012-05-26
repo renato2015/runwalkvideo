@@ -58,7 +58,7 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	private Integer statusCode = RecordingStatus.READY.getCode();
 
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, mappedBy="recording")
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
 
 	/**
@@ -149,6 +149,7 @@ public class Recording extends SerializableEntity<Recording> {
 	public void setRecordingStatus(RecordingStatus recordingStatus) {
 		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE && this.recordingStatus != null) {
 			firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
+			
 			if (!recordingStatus.isErroneous()) {
 				// don't change the statuscode if it is erroneous.
 				this.statusCode = recordingStatus.getCode();

@@ -20,11 +20,6 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Table(name="redcord_sessions")
 public class RedcordSession extends CalendarSlot<RedcordTableElement> implements RedcordTableElement {
 	
-	/**
-	 * 'Synthetic' property to allow firing events when adding/removing analyses
-	 */
-	public static final String REDCORD_EXERCISE_COUNT = "redcordExerciseCount";
-	
 	@Lob
 	private String comments;
 	
@@ -55,9 +50,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	}
 	
 	public boolean addRedcordExercise(RedcordExercise redcordExercise) {
-		int oldSize = getRedcordExerciseCount();
 		boolean result = getRedcordExercises().add(redcordExercise);
-		firePropertyChange(REDCORD_EXERCISE_COUNT, oldSize, getRedcordExerciseCount());
 		getClient().incrementRedcordTableElementCount();
 		return result;
 	}
@@ -65,9 +58,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	public boolean removeRedcordExercise(RedcordTableElement redcordExercise) {
 		boolean result = false;
 		if (getClient() != null) {
-			int oldSize = getRedcordExerciseCount();
 			result = getRedcordExercises().remove(redcordExercise);
-			firePropertyChange(REDCORD_EXERCISE_COUNT, oldSize, getRedcordExerciseCount());
 			getClient().decrementRedcordTableElementCount();
 		}
 		return result;

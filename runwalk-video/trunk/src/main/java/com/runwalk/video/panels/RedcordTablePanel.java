@@ -38,6 +38,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
+import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
@@ -130,14 +131,19 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
 				// check if a change was made on a synthetic node
 				if (getSelectedItem().isSynthetic()) {
-					// update selected row..
-					int firstRow = getEventSelectionModel().getMinSelectionIndex();
-					int lastRow = getEventSelectionModel().getMaxSelectionIndex();
-					getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
-					setDirty(true);
+					updateSelectionModel();
 				}
-
 			}
+
+			@OnEdt
+			private void updateSelectionModel() {
+				// update selected row..
+				int firstRow = getEventSelectionModel().getMinSelectionIndex();
+				int lastRow = getEventSelectionModel().getMaxSelectionIndex();
+				getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
+				setDirty(true);
+			}
+		
 		});
 
 		BeanProperty<RedcordTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
@@ -441,15 +447,19 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 						Client client = redcordSession.getClient();
 						// find detached entity and apply modifications
 						client = getClientTablePanel().findItem(client);
-						if (redcordSession.isNew()) {
-							client.addRedcordSession(redcordSession);
-						} else if (redcordSession.isRemoved()) {
-							client.removeRedcordSession(redcordSession);
-						} else if (redcordSession.isModified()) {
-							client.replaceRedcordSession(redcordSession);
-							// refresh manually instead of firing a pce
-							getClientTablePanel().getObservableElementList().elementChanged(client);
-						}
+						if (client != null) {
+							if (redcordSession.isNew()) {
+								client.addRedcordSession(redcordSession);
+							} else if (redcordSession.isRemoved()) {
+								client.removeRedcordSession(redcordSession);
+							} else if (redcordSession.isModified()) {
+								client.replaceRedcordSession(redcordSession);
+								// refresh manually instead of firing a pce
+								getClientTablePanel().getObservableElementList().elementChanged(client);
+							}
+						} else {
+							getLogger().warn(redcordSession.toString() + " was not added, client set to null.");
+					}
 					}
 				}
 

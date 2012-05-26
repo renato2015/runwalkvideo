@@ -11,15 +11,13 @@ import javax.persistence.Persistence;
 import javax.persistence.PersistenceUtil;
 import javax.swing.SwingUtilities;
 
-import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskService;
 
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
+import ca.odell.glazedlists.DebugList;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.dao.DaoService;
@@ -66,7 +64,9 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			message("startMessage");
 			// get all clients from the db
 			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
-			final EventList<Client> clientList = GlazedLists.eventList(allClients);
+			//final EventList<Client> clientList = GlazedLists.eventList(allClients);
+			final DebugList<Client> clientList = new DebugList<Client>();
+				clientList.addAll(allClients);
 			// get all cities from the db
 			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
@@ -80,31 +80,20 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// get client table panel and inject data
 					getClientTablePanel().setItemList(clientList, Client.class);
 					final EventList<Client> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
-					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, 
-						new CollectionList.Model<Client, Analysis>() {
+					final CollectionList.Model<Client, Analysis> model = new CollectionList.Model<Client, Analysis>() {
 
-							public List<Analysis> getChildren(Client parent) {
-								return parent.getAnalyses();
-							}
+						public List<Analysis> getChildren(Client parent) {
+							return parent.getAnalyses();
+						}
 
-					});
+					};
+					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, model);
 					// get analysis tablepanel and inject data
 					getAnalysisTablePanel().setArticleList(articleList);
 					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
 					// create pipeline for overview tablepanel
 					final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
-					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, 
-						new LazyModel<Client, Analysis>(getTaskService(), "analyses") {
-
-							public List<Analysis> getLazyChildren(Client parent) {
-								return parent.getAnalyses();
-							}
-
-							public void refreshParent(Client parent, List<Analysis> children) {
-								getClientTablePanel().getObservableElementList().elementChanged(parent);
-							}
-
-					});
+					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, model);
 					// get analysis overview tablepanel and inject data
 					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
 					analysesOverview.addMemberList(selectedClientAnalyses);
@@ -112,11 +101,16 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// create the overview with unfinished analyses
 					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());
 					// create pipeline for redord tablepanel
-					CollectionList<Client, RedcordTableElement> redcordSessionList = new CollectionList<Client, RedcordTableElement>(selectedClients, 
+					CollectionList<Client, RedcordTableElement> redcordTableElements = new CollectionList<Client, RedcordTableElement>(selectedClients, 
 						new LazyModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions") {
 
 							public List<RedcordTableElement> getLazyChildren(Client parent) {
-								return new ArrayList<RedcordTableElement>(parent.getRedcordSessions());
+								ArrayList<RedcordTableElement> result = new ArrayList<RedcordTableElement>();
+								for (RedcordSession redcordSession : parent.getRedcordSessions()) {
+									result.addAll(redcordSession.getRedcordExercises());
+									result.add(redcordSession);
+								}
+								return result;
 							}
 
 							public void refreshParent(Client parent, List<RedcordTableElement> children) {
@@ -124,30 +118,11 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 							}
 
 					});
-					FilterList<RedcordTableElement> filteredRedcordSessionList = new FilterList<RedcordTableElement>(redcordSessionList, 
-						new Matcher<RedcordTableElement>() {
-
-							public boolean matches(RedcordTableElement item) {
-								return !item.isSynthetic();
-							}
-						
-					});
-					CollectionList<RedcordTableElement, RedcordTableElement> redcordExerciseList = new CollectionList<RedcordTableElement, RedcordTableElement>(redcordSessionList, 
-						new CollectionList.Model<RedcordTableElement, RedcordTableElement>() {
-
-							public List<RedcordTableElement> getChildren(RedcordTableElement parent) {
-								return new ArrayList<RedcordTableElement>(((RedcordSession) parent).getRedcordExercises());
-							}
-
-					});
-					CompositeList<RedcordTableElement> redcordTableElements = new CompositeList<RedcordTableElement>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
-					
-					redcordTableElements.addMemberList(filteredRedcordSessionList);
-					redcordTableElements.addMemberList(redcordExerciseList);
 					getRedcordTablePanel().setItemList(redcordTableElements, new RedcordTableElementConnector());
 				}
 
 			});
+			clientList.setLockCheckingEnabled(true);
 			message("waitForIdleMessage");
 			new Robot().waitForIdle();
 			message("endMessage", getExecutionDuration(TimeUnit.SECONDS));

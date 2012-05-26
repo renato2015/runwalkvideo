@@ -310,7 +310,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED, selectedProperty = PLAYING )
-	public Task<Void, Void> togglePlaying() {
+	public Task<?, ?> togglePlaying() {
 		return new AbstractTask<Void, Void>(TOGGLE_PLAY_ACTION) {
 
 			protected Void doInBackground() throws Exception {
@@ -357,7 +357,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	}
 
 	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED, selectedProperty = MUTED)
-	public Task<Void, Void> toggleMuted() {
+	public Task<?, ?> toggleMuted() {
 		return new AbstractTask<Void, Void>(TOGGLE_MUTED_ACTION) {
 
 			protected Void doInBackground() throws Exception {
