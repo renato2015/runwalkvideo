@@ -66,7 +66,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public void setExerciseDirection(ExerciseDirection exerciseDirection) {
-		firePropertyChange(EXERCISE_DIRECTION, this.exerciseDirection, this.exerciseDirection = exerciseDirection);
+		this.exerciseDirection = exerciseDirection;
 	}
 	
 	public ExerciseDirection getExerciseDirection() {
@@ -74,7 +74,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	}
 	
 	public void setExerciseType(ExerciseType exerciseType) {
-		firePropertyChange(EXERCISE_TYPE, this.exerciseType, this.exerciseType = exerciseType);
+		this.exerciseType = exerciseType;
 	}
 
 	public String getComments() {

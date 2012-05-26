@@ -219,7 +219,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		redcordTablePanel.setTableFormat(new RedcordTableFormat(redcordTablePanel.getResourceMap()));
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
-		// add all internal frames from here!!!
+		// add all internal frames here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
 		// add the window to the WINDOW menu
 		windowManager.addWindow(getMediaControls());

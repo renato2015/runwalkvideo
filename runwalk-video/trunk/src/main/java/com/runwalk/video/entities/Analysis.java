@@ -94,7 +94,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 	
 	public void setArticle(Article article) {
-		firePropertyChange(ARTICLE, this.article, this.article = article);
+		this.article = article;
 	}
 
 	public List<Recording> getRecordings() {

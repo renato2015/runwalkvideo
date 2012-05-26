@@ -23,12 +23,12 @@ public class ClientDao extends JpaDao<Client> {
 
 	@Override
 	public List<Client> getAll() {
-		/*TypedQuery<Client> query = createEntityManager().createQuery("SELECT client FROM " + getTypeParameter().getSimpleName() + " client", Client.class)
-		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")*/
-		TypedQuery<Client> query = createEntityManager().createQuery(
+		TypedQuery<Client> query = createEntityManager().createQuery("SELECT client FROM " + getTypeParameter().getSimpleName() + " client", Client.class)
+		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
+		/*TypedQuery<Client> query = createEntityManager().createQuery(
 				"SELECT DISTINCT NEW com.runwalk.video.entities.Client(c, MAX(a.creationDate)) " +
 				"FROM Client c " +
-				"LEFT OUTER JOIN c.analyses a GROUP BY c", Client.class)
+				"LEFT OUTER JOIN c.analyses a GROUP BY c", Client.class)*/
 		.setHint("javax.persistence.cache.storeMode", "REFRESH");
 		return query.getResultList();
 	}

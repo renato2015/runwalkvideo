@@ -16,6 +16,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.eclipse.persistence.annotations.JoinFetch;
+import org.eclipse.persistence.annotations.JoinFetchType;
+
 @Entity
 @SuppressWarnings("serial")
 @DiscriminatorValue(Client.PERSON_TYPE)
@@ -37,11 +40,11 @@ public class Client extends Person {
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	//@JoinFetch(JoinFetchType.OUTER)
-	private List<Analysis> analyses ;
+	@JoinFetch(JoinFetchType.OUTER)
+	private List<Analysis> analyses = new ArrayList<Analysis>();
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client" )
-	private List<RedcordSession> redcordSessions ;
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
+	private List<RedcordSession> redcordSessions = new ArrayList<RedcordSession>();
 
 	@Column(name = "account_number")
 	private String taxNumber;

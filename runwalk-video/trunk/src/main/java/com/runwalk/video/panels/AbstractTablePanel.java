@@ -39,11 +39,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";
-	
+
 	private final JTable table;
 	private final JTableMouseListener jTableMouseListener = new JTableMouseListener();
-	
-    private JButton firstButton, secondButton;
+
+	private JButton firstButton, secondButton;
 	private Boolean rowSelected = false;
 	/** The observable source list */
 	private ObservableElementList<T> observableElementList;
@@ -55,7 +55,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
 	private EventTableModel<T> eventTableModel;
-	
+
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
 		table = new JTable();
@@ -67,7 +67,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public AbstractTablePanel() {
 		this(null);
 	}
-	
+
 	abstract void initialiseTableColumnModel();
 
 	public boolean isRowSelected() {
@@ -99,18 +99,18 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			setSelectedItemRow(getItemList().get(row));
 		}
 	}
-	
+
 	protected void setSelectedItem(T selectedItem) {
 		if (selectedItem != this.selectedItem && selectedItem != null && selectedItem.equals(this.selectedItem)) {
 			this.selectedItem = null;
 		}
 		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
 	}
-	
+
 	public T getSelectedItem() {
 		return selectedItem;
 	}
-	
+
 	/**
 	 * Find an item with the same object identity as the given item
 	 * @param item The item's object identitty to look for
@@ -124,7 +124,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Find an item using the identity of the given item
 	 * and replace it.
@@ -139,7 +139,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public T refreshItem(T item) {
 		return refreshItem(item, item);
 	}
-	
+
 	/**
 	 * Replace the old item with the given new one.
 	 * Use this method or the one argument version depending
@@ -182,7 +182,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public JButton getFirstButton() {
 		return firstButton;
 	}
-	
+
 	public void setFirstButton(JButton deleteButton) {
 		this.firstButton = deleteButton;
 	}
@@ -248,7 +248,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		Connector<T> beanConnector = new BeanConnector<T>(itemClass);
 		setItemList(itemList, beanConnector);
 	}
-	
+
 	/**
 	 * Specialization hook for the set {@link ObservableElementList}. 
 	 * You can override the exact type of the set {@link EventList} by implementing this method.
@@ -271,7 +271,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public EventList<T> getItemList() {
 		return itemList;
 	}
-	
+
 	public ObservableElementList<T> getObservableElementList() {
 		return observableElementList;
 	}
@@ -279,23 +279,23 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
-	
+
 	protected EventTableModel<T> getEventTableModel() {
 		return eventTableModel;
 	}
 
 	public interface ClickHandler<E> {
-		
+
 		void handleClick(E element);
-		
+
 	}
 
 	private class JTableMouseListener extends MouseAdapter {
-		
+
 		private ClickHandler<T> clickHandler;
 
 		public JTableMouseListener() { }
-		
+
 		protected void setClickHandler(ClickHandler<T> clickHandler) {
 			this.clickHandler = clickHandler;
 		}
