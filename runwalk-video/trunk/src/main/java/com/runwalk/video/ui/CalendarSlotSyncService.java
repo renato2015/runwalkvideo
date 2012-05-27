@@ -203,7 +203,6 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 			}
 			calendarEventEntry.addParticipant(eventWho);
 			// update the event's title
-			// TODO it would be nice to have getName() returning the session number
 			calendarEventEntry.setTitle(new PlainTextConstruct(fullClientName));
 			// update base entry
 			calendarEventEntryDao.merge(calendarEventEntry);
@@ -266,7 +265,6 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		try {
 			result = getTypeParameter().newInstance();
 			result.setCalendarId(calendarEventEntry.getIcalUID());
-			result.setName(calendarEventEntry.getTitle().getPlainText());
 			result.setCalendarSlotStatus(CalendarSlotStatus.NEW);
 			mapStartAndEndDate(calendarEventEntry, result);
 		} catch (InstantiationException e) {

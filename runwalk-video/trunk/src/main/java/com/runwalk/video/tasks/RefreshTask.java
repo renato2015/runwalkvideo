@@ -108,7 +108,9 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 								ArrayList<RedcordTableElement> result = new ArrayList<RedcordTableElement>();
 								for (RedcordSession redcordSession : parent.getRedcordSessions()) {
 									result.addAll(redcordSession.getRedcordExercises());
-									result.add(redcordSession);
+									if (!redcordSession.isSynthetic()) {
+										result.add(redcordSession);
+									}
 								}
 								return result;
 							}
@@ -153,6 +155,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return redcordTablePanel;
 	}
 	
+	/**
+	 * An extension of {@link CollectionList.Model} that will fetch a parent entity's property in a background thread.
+	 *
+	 * @param <E> The parent entity that owns the property collection to be loaded
+	 * @param <S> The type of the child entity
+	 */
 	public static abstract class LazyModel<E extends SerializableEntity<? super E>, S> implements CollectionList.Model<E, S> {
 
 		private final String attributeName;

@@ -40,20 +40,20 @@ import com.runwalk.video.ui.actions.ApplicationActionConstants;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class CameraDialog extends JDialog implements ApplicationActionConstants {
+public class VideoCapturerDialog extends JDialog implements ApplicationActionConstants {
 	
 	// bound class properties
-	public static final String SELECTED_CAPTURER_NAME = "selectedCapturerName";
+	public static final String SELECTED_VIDEO_CAPTURER_NAME = "selectedVideoCapturerName";
 
 	public static final String ABORTED = "aborted";
 
-	private JComboBox capturerComboBox;
+	private JComboBox videoCapturerComboBox;
 
-	private String selectedCapturerName;
+	private String selectedVideoCapturerName;
 	
-	private final String defaultCapturerName;
+	private final String defaultVideoCapturerName;
 
-	private final int capturerId;
+	private final int videoCapturerId;
 
 	private String selectedMonitorId;
 
@@ -68,14 +68,14 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 	 * 
 	 * @param parent The parent {@link Window} whose focusing behavior will be inherited. If null, then the exit action will be available in the {@link Dialog}
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
-	 * @param capturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
+	 * @param videoCapturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
 	 * @param defaultCapturer The name of the default selected capturer
 	 */
-	public CameraDialog(Window parent, ActionMap actionMap, int capturerId, String defaultCapturerName) {
+	public VideoCapturerDialog(Window parent, ActionMap actionMap, int videoCapturerId, String defaultVideoCapturerName) {
 		super(parent);
 		setModal(true);
-		this.capturerId = capturerId;
-		this.defaultCapturerName = defaultCapturerName;
+		this.videoCapturerId = videoCapturerId;
+		this.defaultVideoCapturerName = defaultVideoCapturerName;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
 		final boolean enableQuitAction = parent == null;
@@ -95,11 +95,11 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		setTitle(getResourceMap().getString("captureDeviceDialog.title")); // NOI18N
 		setResizable(false);
 
-		JLabel captureDeviceLabel = new JLabel(getResourceMap().getString("captureDeviceLabel.text")); // NOI18N
-		add(captureDeviceLabel, "wrap");
+		JLabel videoCapturerDeviceLabel = new JLabel(getResourceMap().getString("videoCapturerDeviceLabel.text")); // NOI18N
+		add(videoCapturerDeviceLabel, "wrap");
 
-		capturerComboBox = new JComboBox();
-		add(capturerComboBox, "wrap, grow");
+		videoCapturerComboBox = new JComboBox();
+		add(videoCapturerComboBox, "wrap, grow");
 
 		buttonPanel = new JPanel(new MigLayout("fill, gap 0, insets 0"));
 		buttonPanel.setVisible(false);
@@ -119,12 +119,12 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		add(okButton, "align right");
 		getRootPane().setDefaultButton(okButton);
 		// populate combobox with the capture device list
-		capturerComboBox.addItemListener(new ItemListener() {
+		videoCapturerComboBox.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
 				JComboBox source = (JComboBox) e.getSource();
-				String capturerName = source.getSelectedItem().toString();
-				setSelectedCapturerName(capturerName);
+				String videoCapturerName = source.getSelectedItem().toString();
+				setSelectedVideoCapturerName(videoCapturerName);
 			}
 
 		});
@@ -145,12 +145,12 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 		}
 	}
 	
-	public void setSelectedCapturerName(String selectedCapturerName) {
-		firePropertyChange(SELECTED_CAPTURER_NAME, this.selectedCapturerName, this.selectedCapturerName = selectedCapturerName);
+	public void setSelectedVideoCapturerName(String selectedVideoCapturerName) {
+		firePropertyChange(SELECTED_VIDEO_CAPTURER_NAME, this.selectedVideoCapturerName, this.selectedVideoCapturerName = selectedVideoCapturerName);
 	}
 
 	public String getSelectedCapturerName() {
-		return selectedCapturerName;
+		return selectedVideoCapturerName;
 	}
 	
 	public void dismissDialog() {
@@ -178,18 +178,18 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 	 * and displaying devices. The layout of this dialog will be changed accordingly.
 	 */
 	@Action
-	public boolean refreshCapturers() {
+	public boolean refreshVideoCapturers() {
 		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-		Collection<String> capturerNames = VideoCapturerFactory.getInstance().getCapturerNames();
+		Collection<String> videoCapturerNames = VideoCapturerFactory.getInstance().getVideoCapturerNames();
 		// return if no capturers available
-		if (capturerNames.isEmpty()) {
+		if (videoCapturerNames.isEmpty()) {
 			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshCapturers.errorDialog.message"), 
 					getResourceMap().getString("refreshCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
 			dismissDialog();
 			return false;
 		}
 		// add the capturers to the gui
-		addCapturers(capturerNames);
+		addVideoCapturers(videoCapturerNames);
 		// add some extra gui elements depending on the number of connected monitors
 		addMonitors();
 		pack();
@@ -200,24 +200,24 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 	/**
 	 * Add the available capturers to the {@link Dialog}.
 	 * 
-	 * @param capturerNames The names of the available capturers
+	 * @param videoCapturerNames The names of the available capturers
 	 */
-	private void addCapturers(Collection<String> capturerNames) {
-		String[] captureDevicesArray = Iterables.toArray(capturerNames, String.class);
-		capturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
+	private void addVideoCapturers(Collection<String> videoCapturerNames) {
+		String[] captureDevicesArray = Iterables.toArray(videoCapturerNames, String.class);
+		videoCapturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
-		String defaultCapturerName = capturerComboBox.getSelectedItem().toString();
+		String defaultVideoCapturerName = videoCapturerComboBox.getSelectedItem().toString();
 		// retain the previous selection if there was one. Otherwise use the default selected capturer name
-		if (selectedCapturerName == null && this.defaultCapturerName != null && 
-				capturerNames.contains(this.defaultCapturerName)) {
-			defaultCapturerName = this.defaultCapturerName;
-		} else if (selectedCapturerName != null) {
-			defaultCapturerName = selectedCapturerName;
+		if (selectedVideoCapturerName == null && this.defaultVideoCapturerName != null && 
+				videoCapturerNames.contains(this.defaultVideoCapturerName)) {
+			defaultVideoCapturerName = this.defaultVideoCapturerName;
+		} else if (selectedVideoCapturerName != null) {
+			defaultVideoCapturerName = selectedVideoCapturerName;
 		}
 		// set the selected item on the combobox
-		capturerComboBox.setSelectedItem(defaultCapturerName);
+		videoCapturerComboBox.setSelectedItem(defaultVideoCapturerName);
 		// make another call to the setter here to make sure the selected capturer will be started
-		setSelectedCapturerName(defaultCapturerName);
+		setSelectedVideoCapturerName(defaultVideoCapturerName);
 	}
 	
 	/**
@@ -235,7 +235,7 @@ public class CameraDialog extends JDialog implements ApplicationActionConstants 
 			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();
 			// get the default monitor id for this capturer
-			int defaultMonitorId = WindowManager.getDefaultMonitorId(graphicsDevices.length, capturerId);
+			int defaultMonitorId = WindowManager.getDefaultMonitorId(graphicsDevices.length, videoCapturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				DisplayMode displayMode = graphicsDevice.getDisplayMode();

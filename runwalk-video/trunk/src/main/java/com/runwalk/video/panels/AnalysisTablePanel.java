@@ -190,7 +190,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
-			final Client owningClient = getSelectedItem().getClient();
+			final Client selectedClient = getSelectedItem().getClient();
 			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, getSelectedItem());
 			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
@@ -200,8 +200,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-						getItemList().remove(analysis);
-						owningClient.removeAnalysis(analysis);
+						selectedClient.removeAnalysis(analysis);
 						// delete the video files
 						setSelectedItemRow(lastSelectedRowIndex - 1);
 						getVideoFileManager().deleteVideoFiles(analysis);

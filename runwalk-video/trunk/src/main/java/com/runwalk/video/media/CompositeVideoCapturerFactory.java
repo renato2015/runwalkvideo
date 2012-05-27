@@ -36,7 +36,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
 		// iterate over the capturer factories, find the first one and initialize
 		for(VideoCapturerFactory videoCapturerFactory : videoCapturerFactories) {
-			if (videoCapturerFactory.getCapturerNames().contains(capturerName)) {
+			if (videoCapturerFactory.getVideoCapturerNames().contains(capturerName)) {
 				return videoCapturerFactory.initializeCapturer(capturerName, captureEncoderName);
 			}
 		}
@@ -44,10 +44,10 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 	}
 
 	@Override
-	public Collection<String> getCapturerNames() {
+	public Collection<String> getVideoCapturerNames() {
 		List<String> capturerNames = new ArrayList<String>();
 		for (VideoCapturerFactory videoCapturerFactory : videoCapturerFactories) {
-			if (capturerNames.addAll(videoCapturerFactory.getCapturerNames())) {
+			if (capturerNames.addAll(videoCapturerFactory.getVideoCapturerNames())) {
 				// TODO add some sort of separator item?? maybe later
 			}
 		}
