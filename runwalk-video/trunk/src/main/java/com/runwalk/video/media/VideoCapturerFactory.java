@@ -36,7 +36,7 @@ public abstract class VideoCapturerFactory {
 	 * 
 	 * @return The {@link List} with available capturers
 	 */
-	public abstract Collection<String> getCapturerNames();
+	public abstract Collection<String> getVideoCapturerNames();
 	
 	/**
 	 * Get an implementation of a {@link VideoCapturerFactory} for the current {@link PlatformType}.
@@ -65,7 +65,7 @@ public abstract class VideoCapturerFactory {
 	 * At this time capturing is only available for {@link PlatformType#WINDOWS}. This method will always run 
 	 * on the Event Dispatching Thread
 	 * 
-	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link CameraDialog}, can be <code>null</code>
+	 * @param parentComponent The {@link Window} whose focusing behavior will be inherited by the {@link VideoCapturerDialog}, can be <code>null</code>
 	 * @param defaultCapturerName The name of the last chosen capturer
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
@@ -73,12 +73,12 @@ public abstract class VideoCapturerFactory {
 	public VideoComponent createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer videoCapturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		CameraDialog dialog = new CameraDialog(parentComponent, videoCapturer.getApplicationActionMap(), 
+		VideoCapturerDialog dialog = new VideoCapturerDialog(parentComponent, videoCapturer.getApplicationActionMap(), 
 				videoCapturer.getComponentId(), defaultCapturerName);
 		PropertyChangeListener changeListener = new PropertyChangeListener()  { 
 
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals(CameraDialog.SELECTED_CAPTURER_NAME)) {
+				if (evt.getPropertyName().equals(VideoCapturerDialog.SELECTED_VIDEO_CAPTURER_NAME)) {
 					// user changed capture device selection, dispose only if there was something running
 					if (videoCapturer.getVideoImpl() != null) {
 						// dispose capturer from a different thread
@@ -113,7 +113,7 @@ public abstract class VideoCapturerFactory {
 		};
 		dialog.addPropertyChangeListener(changeListener);
 		// populate dialog with capture devices and look for connected monitors
-		if (dialog.refreshCapturers()) {
+		if (dialog.refreshVideoCapturers()) {
 			// show the dialog on screen
 			dialog.setVisible(true);
 			dialog.toFront();
@@ -142,7 +142,7 @@ public abstract class VideoCapturerFactory {
 			return null;
 		}
 
-		public List<String> getCapturerNames() {
+		public List<String> getVideoCapturerNames() {
 			return Collections.emptyList();
 		}
 

@@ -52,13 +52,12 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 	
 	private boolean aborted = false;
 
-	public CalendarSlotDialog(Window parentWindow, CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<Client> clientList) {
+	public CalendarSlotDialog(Window parentWindow, final CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<Client> clientList) {
 		super(parentWindow);
 		addWindowListener(new WindowAdapter() {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				setAborted(true);
 				save();
 			}
 
@@ -129,14 +128,6 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		dispose();
 	}
 	
-	public boolean isAborted() {
-		return aborted;
-	}
-
-	public void setAborted(boolean aborted) {
-		this.aborted = aborted;
-	}
-
 	private EventList<Client> getClientList() {
 		return clientList;
 	}

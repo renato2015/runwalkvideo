@@ -205,6 +205,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<? super T> itemConnector) {
 		if (sourceList != null && itemList != null) {
 			// dispose the current list, so it can be garbage collected
+			this.itemList.dispose();
+			observableElementList.dispose();
 			sourceList.dispose();
 		}
 		sourceList = itemList;

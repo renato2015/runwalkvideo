@@ -68,7 +68,7 @@ public abstract class CalendarSlot<T> extends SerializableEntity<T> {
 	}
 
 	public void setStartDate(Date startDate) {
-		firePropertyChange(START_DATE, this.startDate, this.startDate = startDate);
+		this.startDate = startDate;
 	}
 
 	public Date getEndDate() {

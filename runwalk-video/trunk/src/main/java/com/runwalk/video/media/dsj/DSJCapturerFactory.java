@@ -64,7 +64,7 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	}
 
 	/** {@inheritDoc} */
-	public synchronized List<String> getCapturerNames() {
+	public synchronized List<String> getVideoCapturerNames() {
 		List<String> result = Lists.newArrayList();
 		// query first with bit set to 0 to get quick listing of available capture devices
 		DSFilterInfo[][] dsi = DSCapture.queryDevices(0 | DSCapture.SKIP_AUDIO);

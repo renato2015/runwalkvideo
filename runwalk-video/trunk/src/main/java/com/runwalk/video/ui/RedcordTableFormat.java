@@ -52,11 +52,18 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 			int[] calendarConstants = column == 1 ? CALENDAR_DATE_FIELDS : CALENDAR_TIME_FIELDS;				;
 			Date newStartDate = addToDate(startDate, (Date) editedValue, calendarConstants);
 			redcordSession.setStartDate(newStartDate);
-		} else if (column == 3 && !redcordTableElement.allowsChildren()) {
-			((RedcordExercise) redcordTableElement).setExerciseType(parseEnumValue(ExerciseType.class, editedValue));
-		} else if (column == 4 && !redcordTableElement.allowsChildren()) {
-			((RedcordExercise) redcordTableElement).setExerciseDirection(parseEnumValue(ExerciseDirection.class, editedValue));
+			redcordSession.getClient().setDirty(true);
+		} else if (!redcordTableElement.allowsChildren()) {
+			RedcordExercise redcordExercise = (RedcordExercise) redcordTableElement;
+			if (column == 3) {
+				redcordExercise.setExerciseType(parseEnumValue(ExerciseType.class, editedValue));
+			} else if (column == 4) {
+				redcordExercise.setExerciseDirection(parseEnumValue(ExerciseDirection.class, editedValue));
+			}
+			RedcordSession redcordSession = redcordExercise.getRedcordSession();
+			redcordSession.getClient().setDirty(true);
 		}
+
 		return redcordTableElement;
 	}
 	

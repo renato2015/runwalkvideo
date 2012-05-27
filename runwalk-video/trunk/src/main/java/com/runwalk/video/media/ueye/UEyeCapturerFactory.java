@@ -41,7 +41,7 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 	 * 
 	 * @return A collection containg the retrieved camera names
 	 */
-	public Collection<String> getCapturerNames() {
+	public Collection<String> getVideoCapturerNames() {
 		cameraNameIdMap = Maps.newHashMap();
 		// create native struct to retrieve 2 camera information from the library
 		UEyeCameraList.ByValue uEyeCameraList = new UEyeCameraList.ByValue();

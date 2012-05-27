@@ -32,11 +32,16 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 	}
 
 	private long findMaxEntityId() {
-		Comparator<T> idComparator = GlazedLists.beanPropertyComparator(getItemClass(), SerializableEntity.ID);
-		ArrayList<T> sortedList = new ArrayList<T>(getItemList());
-		Collections.sort(sortedList, idComparator);
-		T lastItem = Iterables.getLast(sortedList);
-		return lastItem.getId();
+		getItemList().getReadWriteLock().readLock().lock();
+		try {
+			Comparator<T> idComparator = GlazedLists.beanPropertyComparator(getItemClass(), SerializableEntity.ID);
+			ArrayList<T> sortedList = new ArrayList<T>(getItemList());
+			Collections.sort(sortedList, idComparator);
+			T lastItem = Iterables.getLast(sortedList);
+			return lastItem.getId();
+		} finally {
+			getItemList().getReadWriteLock().readLock().unlock();
+		}
 	}
 
 	protected List<T> doInBackground() throws Exception {

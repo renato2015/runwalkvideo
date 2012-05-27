@@ -29,7 +29,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	
 	public RedcordSession() {	}
 	
-	public RedcordSession(Client client, String name) {
+	public RedcordSession(Client client) {
 		// set default starting date to 8 o'clock current day
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -38,7 +38,6 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 		calendar.set(Calendar.MILLISECOND, 0);
 		setStartDate(calendar.getTime());
 		setClient(client);
-		setName(name);
 	}
 
 	public List<RedcordExercise> getRedcordExercises() {
