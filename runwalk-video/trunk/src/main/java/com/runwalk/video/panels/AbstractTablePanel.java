@@ -214,41 +214,46 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			observableElementList.dispose();
 			sourceList.dispose();
 		}
-		sourceList = itemList;
-		observableElementList = new ObservableElementList<T>(itemList, itemConnector);
-		sortedList = SortedList.create(observableElementList);
-		sortedList.setMode(SortedList.AVOID_MOVING_ELEMENTS);
-		EventList<T> specializedList = specializeItemList(sortedList);
-		firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
-		eventSelectionModel = new EventSelectionModel<T>(specializedList);
-		eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
-		eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
+		itemList.getReadWriteLock().writeLock().lock();
+		try {
+			sourceList = itemList;
+			observableElementList = new ObservableElementList<T>(itemList, itemConnector);
+			sortedList = SortedList.create(observableElementList);
+			sortedList.setMode(SortedList.AVOID_MOVING_ELEMENTS);
+			EventList<T> specializedList = specializeItemList(sortedList);
+			firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
+			eventSelectionModel = new EventSelectionModel<T>(specializedList);
+			eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
+			eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
 
-			public void listChanged(ListEvent<T> listChanges) {
+				public void listChanged(ListEvent<T> listChanges) {
 
-				while(listChanges.next()) {
-					int changeType = listChanges.getType();
-					if (changeType == ListEvent.DELETE) {
-						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-					} else if (changeType == ListEvent.INSERT) {
-						T newValue = null;
-						EventList<T> sourceList = listChanges.getSourceList();
-						if (!sourceList.isEmpty()) {
-							newValue = Iterables.getOnlyElement(sourceList);
+					while(listChanges.next()) {
+						int changeType = listChanges.getType();
+						if (changeType == ListEvent.DELETE) {
+							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+						} else if (changeType == ListEvent.INSERT) {
+							T newValue = null;
+							EventList<T> sourceList = listChanges.getSourceList();
+							if (!sourceList.isEmpty()) {
+								newValue = Iterables.getOnlyElement(sourceList);
+							}
+							setSelectedItem(newValue);
+							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
+							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 						}
-						setSelectedItem(newValue);
-						getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
-						setRowSelected(!eventSelectionModel.getSelected().isEmpty());
 					}
 				}
-			}
-		});
-		eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
-		getTable().setModel(eventTableModel);
-		TableComparatorChooser.install(getTable(), sortedList, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
-		getTable().setSelectionModel(eventSelectionModel);
-		getTable().setColumnSelectionAllowed(false);
-		initialiseTableColumnModel();
+			});
+			eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
+			getTable().setModel(eventTableModel);
+			TableComparatorChooser.install(getTable(), sortedList, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
+			getTable().setSelectionModel(eventSelectionModel);
+			getTable().setColumnSelectionAllowed(false);
+			initialiseTableColumnModel();
+		} finally {
+			itemList.getReadWriteLock().writeLock().unlock();
+		}
 	}
 
 	public void setItemList(EventList<T> itemList, Class<T> itemClass) {

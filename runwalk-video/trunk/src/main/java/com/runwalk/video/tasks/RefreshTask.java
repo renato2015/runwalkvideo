@@ -11,11 +11,11 @@ import javax.persistence.Persistence;
 import javax.persistence.PersistenceUtil;
 import javax.swing.SwingUtilities;
 
+import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskService;
 
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
-import ca.odell.glazedlists.DebugList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
@@ -64,9 +64,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			message("startMessage");
 			// get all clients from the db
 			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
-			//final EventList<Client> clientList = GlazedLists.eventList(allClients);
-			final DebugList<Client> clientList = new DebugList<Client>();
-				clientList.addAll(allClients);
+			final EventList<Client> clientList = GlazedLists.eventList(allClients);
 			// get all cities from the db
 			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
@@ -124,7 +122,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				}
 
 			});
-			clientList.setLockCheckingEnabled(true);
 			message("waitForIdleMessage");
 			new Robot().waitForIdle();
 			message("endMessage", getExecutionDuration(TimeUnit.SECONDS));
