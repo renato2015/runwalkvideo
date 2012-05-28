@@ -92,10 +92,10 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 
 		});
 		setLayout(new MigLayout("fill, nogrid"));
-		setTitle(getResourceMap().getString("captureDeviceDialog.title")); // NOI18N
+		setTitle(getResourceMap().getString("videoCaptureDeviceDialog.title")); // NOI18N
 		setResizable(false);
 
-		JLabel videoCapturerDeviceLabel = new JLabel(getResourceMap().getString("videoCapturerDeviceLabel.text")); // NOI18N
+		JLabel videoCapturerDeviceLabel = new JLabel(getResourceMap().getString("videoCaptureDeviceLabel.text")); // NOI18N
 		add(videoCapturerDeviceLabel, "wrap");
 
 		videoCapturerComboBox = new JComboBox();
@@ -110,7 +110,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 			JButton quitButton = new JButton(quitAction); // NOI18N
 			add(quitButton, "grow");
 		}
-		JButton refreshButton = new JButton(getAction(REFRESH_CAPTURER_ACTION)); // NOI18N
+		JButton refreshButton = new JButton(getAction(REFRESH_VIDEO_CAPTURERS_ACTION)); // NOI18N
 		add(refreshButton, "align right");
 		// add some extra actions to configure the capture device
 		addAction(SHOW_CAMERA_SETTINGS_ACTION, actionMap, true);
