@@ -18,9 +18,9 @@ public interface ApplicationActionConstants {
 	
 	String REFRESH_VIDEO_FILES_ACTION = "refreshVideoFiles";
 	
-	String INITIALIZE_CAPTURER_ACTION = "initializeCapturer";
+	String INITIALIZE_CAPTURER_ACTION = "initializeVideoCapturer";
 	
-	String REFRESH_CAPTURER_ACTION = "refreshCapturers";
+	String REFRESH_VIDEO_CAPTURERS_ACTION = "refreshVideoCapturers";
 	
 	String SHOW_CAMERA_SETTINGS_ACTION = "showCameraSettings";
 	
