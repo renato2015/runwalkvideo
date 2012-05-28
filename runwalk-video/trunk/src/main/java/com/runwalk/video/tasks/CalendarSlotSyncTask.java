@@ -1,6 +1,8 @@
 package com.runwalk.video.tasks;
 
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,7 @@ public class CalendarSlotSyncTask<T extends CalendarSlot<? super T>> extends Abs
 		message("startMessage");
 		CalendarSlotSyncService<T> calendarSyncService = new CalendarSlotSyncService<T>(getDaoService(), getItemClass());
 		// get data to sync with calendar
-		Map<T, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToDatabase();
+		final Map<T, CalendarEventEntry> calendarSlotMapping = calendarSyncService.prepareSyncToDatabase();
 		EventList<T> calendarSlotList = GlazedLists.eventList(calendarSlotMapping.keySet());
 		// sort appointments according to date
 		Collections.sort(calendarSlotList);
@@ -46,8 +48,19 @@ public class CalendarSlotSyncTask<T extends CalendarSlot<? super T>> extends Abs
 			// show the sync dialog on screen (invoke on EDT)
 			CountDownLatch endSignal = new CountDownLatch(1);
 			// pass the unfiltered client list to the dialog here
-			calendarSyncService.showCalendarSlotDialog(getParentWindow(), endSignal, calendarSlotList, getClientList());
+			Window calendarSlotDialog = calendarSyncService.showCalendarSlotDialog(getParentWindow(), endSignal, calendarSlotList, getClientList()).get();
+			// don't sync anything if the dialog was closed by the user
+			WindowAdapter windowAdapter = new WindowAdapter() {
+
+				@Override
+				public void windowClosed(WindowEvent paramWindowEvent) {
+					calendarSlotMapping.clear();
+				}
+				
+			};
+			calendarSlotDialog.addWindowListener(windowAdapter);
 			endSignal.await();
+			calendarSlotDialog.removeWindowListener(windowAdapter);
 		}
 		// continue to work after notification from the dialog
 		List<T> redcordSessions = calendarSyncService.syncToDatabase(calendarSlotMapping);

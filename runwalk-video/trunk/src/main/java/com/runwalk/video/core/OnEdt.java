@@ -18,4 +18,6 @@ import javax.swing.SwingUtilities;
 @Target(ElementType.METHOD)
 public @interface OnEdt {
 
+	boolean invokeAndWait() default false;
+	
 }

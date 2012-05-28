@@ -52,10 +52,6 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		this.name = name;
 		this.startDate = new Date();
 	}
-	
-	public RedcordExercise(RedcordSession redcordSession) {
-		this(redcordSession, "Oefening " + (redcordSession.getRedcordExerciseCount() + 1));
-	}
 
 	public RedcordSession getRedcordSession() {
 		return redcordSession;
@@ -87,6 +83,10 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 	
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Date getStartDate() {

@@ -36,7 +36,7 @@ public class CalendarSlotTableFormat extends AbstractTableFormat<CalendarSlot<?>
 
 	@Override
 	public boolean isEditable(CalendarSlot<?> baseObject, int column) {
-		return column == 4 || column == 5;
+		return column == 4 || (column == 5 && baseObject.isNew());
 	}
 
 	@Override

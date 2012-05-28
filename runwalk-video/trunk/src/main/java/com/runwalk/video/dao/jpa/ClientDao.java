@@ -5,6 +5,8 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
+import org.eclipse.persistence.config.CascadePolicy;
+import org.eclipse.persistence.config.HintValues;
 import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.Dao;
@@ -37,7 +39,7 @@ public class ClientDao extends JpaDao<Client> {
 	public void persist(Client item) {
 		super.persist(item);
 		// remove client from second level cache
-		getEntityManagerFactory().getCache().evict(Client.class, item.getId());
+		evictFromCache(item.getId());
 	}
 
 	/**
@@ -49,11 +51,13 @@ public class ClientDao extends JpaDao<Client> {
 	 */
 	@Override
 	public Client getById(Object id) {
+		evictFromCache(id);
 		TypedQuery<Client> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id = :id", getTypeParameter())
 				.setParameter("id", id)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
-		.setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setHint(QueryHints.REFRESH, HintValues.TRUE)
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeByMapping);
 		return query.getSingleResult();
 	}
 	

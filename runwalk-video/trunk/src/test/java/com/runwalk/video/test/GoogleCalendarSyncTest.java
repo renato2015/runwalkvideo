@@ -1,5 +1,6 @@
 package com.runwalk.video.test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -58,7 +59,7 @@ public class GoogleCalendarSyncTest extends BaseTestCase {
 		}
 	}
 	
-	public void testSyncManager() throws InterruptedException {
+	public void testSyncManager() throws InterruptedException, InvocationTargetException {
 		// create a composite daoservice ..
 		DaoService daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
 		CalendarSlotSyncService<RedcordSession> calendarSyncService = new CalendarSlotSyncService<RedcordSession>(daoService, RedcordSession.class);
