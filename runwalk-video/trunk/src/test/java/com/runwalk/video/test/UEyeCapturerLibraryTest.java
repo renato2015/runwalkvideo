@@ -25,7 +25,7 @@ import com.sun.jna.ptr.PointerByReference;
 public class UEyeCapturerLibraryTest extends TestCase {
 
 	public void testUEyeCapturerFactory() {
-		VideoCapturerFactory.getInstance().createCapturer(null, null, null);
+		VideoCapturerFactory.getInstance().createVideoCapturer(null, null, null);
 	}
 
 	public static void main(String[] args) {

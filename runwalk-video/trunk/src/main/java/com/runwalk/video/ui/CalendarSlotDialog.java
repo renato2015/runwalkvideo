@@ -49,8 +49,6 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 	private EventTableModel<T> calendarSlotEventTableModel;
 	
 	private final CountDownLatch dismissSignal;
-	
-	private boolean aborted = false;
 
 	public CalendarSlotDialog(Window parentWindow, final CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<Client> clientList) {
 		super(parentWindow);

@@ -200,6 +200,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+						getItemList().remove(analysis);
 						selectedClient.removeAnalysis(analysis);
 						// delete the video files
 						setSelectedItemRow(lastSelectedRowIndex - 1);

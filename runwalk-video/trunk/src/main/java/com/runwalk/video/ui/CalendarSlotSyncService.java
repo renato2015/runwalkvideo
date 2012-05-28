@@ -1,6 +1,8 @@
 package com.runwalk.video.ui;
 
+import java.awt.Dialog;
 import java.awt.Window;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,7 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
+
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
@@ -275,11 +281,33 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		return result;
 	}
 	
+	/**
+	 * Calling this method will show an overview {@link Dialog} containing all {@link CalendarSlot}s not yet synchronized with the application.
+	 * The {@link Dialog} itself is created on the EDT and will be returned after calling {@link SwingUtilities#invokeLater(Runnable)}, which 
+	 * might be useful if extra listeners need to be attached.
+	 * 
+	 * @param parentWindow The dialog's parent window
+	 * @param endSignal A latch that the calling thread should wait for
+	 * @param calendarSlotList A list of calendarSlots to be synchronized with the application
+	 * @param clientList A list of clients to be associated with the displayed calendarSlots
+	 * @return <code>false</code> if the dialog was dismissed and the result of the user actions should be discarded
+	 * @throws InvocationTargetException Exception during capturing user actions on the EDT
+	 * @throws InterruptedException Exception during capturing user actions on the EDT
+	 */
 	@OnEdt
-	public void showCalendarSlotDialog(Window parentWindow, final CountDownLatch endSignal, final EventList<T> calendarSlotList, final EventList<Client> clientList) {
-		CalendarSlotDialog<T> calendarSlotDialog = new CalendarSlotDialog<T>(parentWindow, endSignal, calendarSlotList, clientList);
-		calendarSlotDialog.setVisible(true);
-		calendarSlotDialog.toFront();
+	@SuppressWarnings("unused")
+	public FutureTask<? extends Window> showCalendarSlotDialog(final Window parentWindow, final CountDownLatch endSignal, 
+			final EventList<T> calendarSlotList, final EventList<Client> clientList) throws InvocationTargetException, InterruptedException {
+		return new FutureTask<CalendarSlotDialog<T>>(new Callable<CalendarSlotDialog<T>>() {
+
+			public CalendarSlotDialog<T> call() throws Exception {
+				CalendarSlotDialog<T> calendarSlotDialog = new CalendarSlotDialog<T>(parentWindow, endSignal, calendarSlotList, clientList);
+				calendarSlotDialog.setVisible(true);
+				calendarSlotDialog.toFront();
+				return calendarSlotDialog;
+			}
+			
+		});
 	}
 
 	private Class<T> getTypeParameter() {

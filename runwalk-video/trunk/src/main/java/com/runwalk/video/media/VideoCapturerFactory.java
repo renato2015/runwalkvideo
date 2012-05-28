@@ -59,6 +59,20 @@ public abstract class VideoCapturerFactory {
 		}
 		return factory;
 	}
+	
+	private void disposeVideoCapturer(final VideoCapturer videoCapturer) {
+		if (videoCapturer.getVideoImpl() != null) {
+			// dispose video capturer from a different thread
+			new Thread(new Runnable() {
+
+				public void run() {
+					videoCapturer.getVideoImpl().dispose();
+					videoCapturer.setVideoImpl(null);
+				}
+				
+			}, videoCapturer.getVideoImpl().getTitle() + " Disposer").start();
+		}
+	}
 
 	/** 
 	 * This factory method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
@@ -70,7 +84,7 @@ public abstract class VideoCapturerFactory {
 	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
 	 * @return The created capturer instance or null if no capturer devices were found
 	 */
-	public VideoComponent createCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
+	public VideoComponent createVideoCapturer(Window parentComponent, String defaultCapturerName, final String defaultCaptureEncoderName) {
 		final VideoCapturer videoCapturer = new VideoCapturer();
 		// create a dialog to let the user choose which capture device to start on which monitor
 		VideoCapturerDialog dialog = new VideoCapturerDialog(parentComponent, videoCapturer.getApplicationActionMap(), 
@@ -80,17 +94,7 @@ public abstract class VideoCapturerFactory {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(VideoCapturerDialog.SELECTED_VIDEO_CAPTURER_NAME)) {
 					// user changed capture device selection, dispose only if there was something running
-					if (videoCapturer.getVideoImpl() != null) {
-						// dispose capturer from a different thread
-						new Thread(new Runnable() {
-
-							public void run() {
-								videoCapturer.getVideoImpl().dispose();
-								videoCapturer.setVideoImpl(null);
-							}
-							
-						}, videoCapturer.getVideoImpl().getTitle() + " Disposer").start();
-					}
+					disposeVideoCapturer(videoCapturer);
 					// initialize the selected capturer
 					String selectedCapturerName = evt.getNewValue().toString();
 					try {

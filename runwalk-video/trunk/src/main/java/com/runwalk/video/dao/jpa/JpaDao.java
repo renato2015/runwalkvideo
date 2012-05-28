@@ -181,5 +181,13 @@ public class JpaDao<E> extends AbstractDao<E> {
 	public void persist(E item) {
 		persist(item, 0);
 	}
+	
+	/**
+	 * Remove the object with the given key from the 2nd level cache
+	 * @param id The object's key
+	 */
+	protected void evictFromCache(Object id) {
+		getEntityManagerFactory().getCache().evict(getTypeParameter(), id);
+	}
 
 }

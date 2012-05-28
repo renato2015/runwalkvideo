@@ -1,5 +1,6 @@
 package com.runwalk.video.aspects;
 
+import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -10,29 +11,25 @@ import javax.swing.SwingUtilities;
 import com.runwalk.video.core.OnEdt;
 
 public aspect OnEdtAspect {
+	
 	pointcut invokeLater() : execution(@OnEdt+ void *(..));
 
-	pointcut invokeAndWait() : execution(@OnEdt+ boolean *(..));
-
-	/* boolean around() : invokeAndWait() {
+	pointcut invokeCallableLater() : execution(@OnEdt+ FutureTask<? extends Window> *(..));
+	
+	/**
+	 * This advice is applied to methods that create a {@link Window}, which should always happen on the EDT.
+	 * The window created by the function will be returned after it is instantiated.
+	 * @return The created window.
+	 */
+	FutureTask<? extends Window> around() : invokeCallableLater() {
+		FutureTask<? extends Window> futureTask = proceed();
 		if (!SwingUtilities.isEventDispatchThread()) {
-			try {
-				return invokeAndWait(new Callable<Boolean>() {
-
-					public Boolean call() throws Exception {
-						return proceed();
-					}
-					
-					
-				});
-			} catch (InterruptedException e) {
-				throw e;
-			} catch (InvocationTargetException e) {
-				throw e;
-			}
+			SwingUtilities.invokeLater(futureTask);
+		} else {
+			futureTask.run();
 		}
-		return proceed();
-	}*/
+		return futureTask;
+	}
 
 	void around() : invokeLater() {
 		if (!SwingUtilities.isEventDispatchThread()) {
@@ -45,11 +42,11 @@ public aspect OnEdtAspect {
 			proceed();
 		}
 	}
-	
+
 	public static <T> FutureTask<T> invokeLater(Callable<T> callable) {
-	    FutureTask<T> task = new FutureTask<T>(callable);
-	    SwingUtilities.invokeLater(task);
-	    return task;
+		FutureTask<T> task = new FutureTask<T>(callable);
+		SwingUtilities.invokeLater(task);
+		return task;
 	}
 
 	public static <T> T invokeAndWait(Callable<T> callable) throws InterruptedException, InvocationTargetException {

@@ -625,7 +625,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		String captureEncoderName = getAppSettings().getCaptureEncoderName();
 		// if there is no actionEvent specified, then this call was made at startup time
 		Window parentWindow = SwingUtilities.windowForComponent(this);
-		VideoComponent capturer = VideoCapturerFactory.getInstance().createCapturer(parentWindow, capturerName, captureEncoderName);
+		VideoComponent capturer = VideoCapturerFactory.getInstance().createVideoCapturer(parentWindow, capturerName, captureEncoderName);
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);
 			// save chosen name only if this is the first chosen capturer

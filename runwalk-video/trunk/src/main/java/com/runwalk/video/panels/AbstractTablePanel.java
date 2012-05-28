@@ -51,6 +51,8 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private EventList<T> itemList;
 	/** The original, unfiltered list */
 	private EventList<T> sourceList;
+	/** The sorted list */
+	private SortedList<T> sortedList;
 	private EventSelectionModel<T> eventSelectionModel;
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
@@ -204,16 +206,19 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<? super T> itemConnector) {
 		if (sourceList != null && itemList != null) {
-			// dispose the current list, so it can be garbage collected
-			this.itemList.dispose();
+			// FIXME dispose the list pipeline in the opposite order in which it was constructed - MOVE TO DISPOSE METHOD
+			//eventTableModel.dispose();
+			//eventSelectionModel.dispose();
+			getItemList().dispose();
+			sortedList.dispose();
 			observableElementList.dispose();
 			sourceList.dispose();
 		}
 		sourceList = itemList;
 		observableElementList = new ObservableElementList<T>(itemList, itemConnector);
-		SortedList<T> sortedItems = SortedList.create(observableElementList);
-		sortedItems.setMode(SortedList.AVOID_MOVING_ELEMENTS);
-		EventList<T> specializedList = specializeItemList(sortedItems);
+		sortedList = SortedList.create(observableElementList);
+		sortedList.setMode(SortedList.AVOID_MOVING_ELEMENTS);
+		EventList<T> specializedList = specializeItemList(sortedList);
 		firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
 		eventSelectionModel = new EventSelectionModel<T>(specializedList);
 		eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
@@ -240,7 +245,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		});
 		eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
 		getTable().setModel(eventTableModel);
-		TableComparatorChooser.install(getTable(), sortedItems, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
+		TableComparatorChooser.install(getTable(), sortedList, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
 		getTable().setSelectionModel(eventSelectionModel);
 		getTable().setColumnSelectionAllowed(false);
 		initialiseTableColumnModel();
