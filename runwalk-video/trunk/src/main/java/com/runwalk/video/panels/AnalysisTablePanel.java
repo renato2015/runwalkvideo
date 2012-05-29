@@ -203,7 +203,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 						getItemList().remove(analysis);
 						selectedClient.removeAnalysis(analysis);
 						// delete the video files
-						setSelectedItemRow(lastSelectedRowIndex - 1);
+						if (lastSelectedRowIndex > 0) {
+							setSelectedItemRow(lastSelectedRowIndex - 1);
+						}
 						getVideoFileManager().deleteVideoFiles(analysis);
 					} finally {
 						getItemList().getReadWriteLock().writeLock().unlock();
