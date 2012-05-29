@@ -1,14 +1,10 @@
 package com.runwalk.video.media;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
-import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -123,19 +119,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	final JComponent busyGlassPane = new JComponent() {
 		
 		{
-			setOpaque(false);
-		}
-		
-		@Override
-		protected void paintComponent(Graphics g) {
-			// gets the current clipping area
-			Rectangle clip = g.getClipBounds();
-			AlphaComposite alpha = AlphaComposite.SrcOver.derive(0.10f);
-			Graphics2D g2d = (Graphics2D) g;
-			g2d.setComposite(alpha);
-			// fills the background
-			g.setColor(new Color(50, 50, 50));
-			g.fillRect(clip.x, clip.y, clip.width, clip.height);
+			setOpaque(true);
 		}
 		
 	};
