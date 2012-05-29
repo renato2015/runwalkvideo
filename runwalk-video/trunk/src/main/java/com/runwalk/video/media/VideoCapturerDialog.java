@@ -182,7 +182,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
 		Collection<String> videoCapturerNames = VideoCapturerFactory.getInstance().getVideoCapturerNames();
 		// return if no capturers available
-		if (videoCapturerNames.isEmpty()) {
+		if (videoCapturerNames.isEmpty() && !isVisible()) {
 			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.message"), 
 					getResourceMap().getString("refreshVideoCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
 			dismissDialog();

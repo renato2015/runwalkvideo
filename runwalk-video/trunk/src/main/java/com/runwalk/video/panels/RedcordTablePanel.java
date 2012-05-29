@@ -346,7 +346,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
 						selectedClient.removeRedcordSession(redcordSession);
 						// set selection on previous item
-						if (lastSelectedRowIndex - 1 > -1) {
+						if (lastSelectedRowIndex > 0) {
 							setSelectedItemRow(lastSelectedRowIndex - 1);
 						}
 					} finally {
