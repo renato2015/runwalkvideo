@@ -1,6 +1,7 @@
 package com.runwalk.video.ui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
@@ -66,22 +67,22 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		//TODO add support for three monitors
 		return result;
 	}
-	
+
 	public static int getDefaultMonitorId(VideoComponent videoComponent) {
 		return getDefaultMonitorId(getMonitorCount(), videoComponent.getComponentId());
 	}
-	
+
 	public static int getDefaultMonitorId() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
 		monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
 		return Integer.parseInt(monitorIdString);
 	}
-	
+
 	public static int getMonitorCount() {
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
 	}
-	
+
 	public static GraphicsDevice getDefaultGraphicsDevice() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		return graphicsEnvironment.getDefaultScreenDevice();
@@ -91,7 +92,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		this.menuBar = menuBar;
 		this.pane = pane;
 	}
-	
+
 	public void addWindow(VideoComponent videoComponent) {
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
 		Integer monitorId = null;
@@ -126,7 +127,8 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 						fsVideoImpl.setFullScreen(true);
 						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap(), title);
 					} else if (isContainable) {
-						addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
+						Container container = addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
+						container.addHierarchyListener(videoComponent.getVideoImpl());
 					}
 				} else if (isContainable && !fsVideoImpl.isFullScreen()) {
 					addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
@@ -144,16 +146,17 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		addWindow(selfContained, selfContained.getApplicationActionMap(), title);
 	}
 
-	public void addWindow(Containable containable) {
-		addWindow(containable, containable.getApplicationActionMap(), containable.getTitle());
+	public Container addWindow(Containable containable) {
+		return addWindow(containable, containable.getApplicationActionMap(), containable.getTitle());
 	}
-	
-	private void addWindow(Containable containable, ApplicationActionMap actionMap, String title) {
+
+	private Container addWindow(Containable containable, ApplicationActionMap actionMap, String title) {
 		AppInternalFrame selfContainedImpl = createInternalFrame(containable);
 		// reeds bestaande actions in action map delegeren naar die van selfContainedImpl
 		setActionProxy(actionMap, TOGGLE_VISIBILITY_ACTION, selfContainedImpl.getApplicationActionMap());
 		setActionProxy(actionMap, TOGGLE_FULL_SCREEN_ACTION, selfContainedImpl.getApplicationActionMap());
 		addWindow(selfContainedImpl, actionMap, title);
+		return selfContainedImpl;
 	}
 
 	//TODO add windows here to toggle between fullscreen and windowed mode
@@ -164,7 +167,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			getMenuBar().addMenu(title, actionMap);
 			setVisible(selfContainedImpl, true);
 		}
-	
+
 	}
 	public void setVisible(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
@@ -190,31 +193,34 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		getPane().add(internalFrame);
 		return internalFrame;
 	}
-	
-	public void disposeWindow(Containable containable) {
+
+	public Container disposeWindow(Containable containable) {
 		AppInternalFrame selfContainedImpl = getDecoratingComponent(AppInternalFrame.class, containable);
 		if (selfContainedImpl != null) {
 			// remove from the desktop pane
 			getPane().remove(selfContainedImpl);
 			disposeWindow(selfContainedImpl);
 		}
+		return selfContainedImpl;
 	}
-	
+
 	public void disposeWindow(SelfContained selfContainedImpl) {
 		if (selfContainedImpl != null) {
 			selfContainedImpl.removePropertyChangeListener(this);
 			selfContainedImpl.dispose();
 		}
 	}
-	
+
 	public void disposeWindow(VideoComponent videoComponent) {
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
+		if (videoImpl instanceof Containable && // if Containable and not SelfContained then dispose the wrapping component
+				SwingUtilities.isDescendingFrom(getPane(), ((Containable) videoImpl).getComponent())) {
+			Container container = disposeWindow((Containable) videoImpl);
+			container.removeHierarchyListener(videoComponent.getVideoImpl());
+		}
 		if (videoImpl instanceof SelfContained) {
 			// if the implementation implements both SelfContained and Containable, cast to SelfContained
 			disposeWindow((SelfContained) videoImpl);
-		} else if (videoImpl instanceof Containable) {
-			// if Containable and not SelfContained then dispose the wrapping component
-			disposeWindow((Containable) videoImpl);
 		}
 	}
 
@@ -226,7 +232,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				VideoComponent videoComponent = (VideoComponent) evt.getSource();
 				getMenuBar().removeMenu(videoComponent.getTitle());
 				videoComponent.removePropertyChangeListener(this);
-				//disposeWindow(videoComponent);
+				disposeWindow(videoComponent);
 			}
 		} else if (WindowConstants.FULL_SCREEN.equals(evt.getPropertyName())) {
 			if (evt.getSource() instanceof Containable) {
@@ -328,7 +334,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			}
 		}
 	}
-	
+
 	/**
 	 * A call to this method will ask the {@link RepaintManager} to redraw the whole {@link JDesktopPane}.
 	 * This might be useful when mixing light- and heavyweight components over different screens.

@@ -170,7 +170,7 @@ public class JpaDao<E> extends AbstractDao<E> {
 				Logger.getLogger(getClass()).warn("Transaction was rolled back!");
 			}
 			if (retryNumber < MAX_ROLLBACKS) {
-				Logger.getLogger(getClass()).info(e.getMessage() + ": Retrying persist for " + item);
+				Logger.getLogger(getClass()).info("Retrying persist: " + e.getMessage());
 				persist(item, ++retryNumber);
 			} else {
 				throw e;

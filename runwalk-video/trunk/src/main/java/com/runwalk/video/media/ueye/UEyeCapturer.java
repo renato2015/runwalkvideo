@@ -13,6 +13,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -347,6 +348,13 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	public void componentHidden(ComponentEvent e) {
 		setVisible(e.getComponent().isVisible());
+	}
+	
+	public void hierarchyChanged(HierarchyEvent e) {
+		// visibility of the container changed
+		if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+			setVisible(e.getChanged().isVisible());
+		}
 	}
 	
 	private GraphicsDevice getGraphicsDevice() {

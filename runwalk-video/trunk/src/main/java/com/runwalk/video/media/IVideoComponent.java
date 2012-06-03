@@ -3,6 +3,7 @@ package com.runwalk.video.media;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.HierarchyListener;
 import java.awt.image.BufferedImage;
 
 /**
@@ -12,7 +13,7 @@ import java.awt.image.BufferedImage;
  * @author Jeroen Peelaerts
  *
  */
-public interface IVideoComponent {
+public interface IVideoComponent extends HierarchyListener {
 	
 	/**
 	 * Start running and bring the component to a state in which the {@link Component} returned by {@link #getComponent()} 
