@@ -47,6 +47,13 @@ public interface IVideoComponent {
 	BufferedImage getImage();
 	
 	String getTitle();
+	
+	/**
+	 * Returns <code>true</code> if the component is currently visible on screen.
+	 * 
+	 * @return <code>true</code> if component is visible on screen
+	 */
+	boolean isVisible();
 
 	/**
 	 * Returns <code>true</code> if the containing window is created in native code.

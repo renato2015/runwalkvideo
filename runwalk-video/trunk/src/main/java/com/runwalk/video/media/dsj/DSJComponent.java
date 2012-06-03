@@ -48,6 +48,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 */
 	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
 
+	private volatile boolean visible;
+
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;
@@ -55,8 +57,6 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	private boolean toggleFullScreenEnabled = true;
 
 	private boolean fullScreen;
-
-	private boolean visible;
 
 	private Integer monitorId;
 
