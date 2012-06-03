@@ -9,6 +9,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractButton;
@@ -37,7 +38,8 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, ComponentListener, FullScreenSupport, Containable {
+public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, 
+	ComponentListener, FullScreenSupport, Containable {
 
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -50,13 +52,13 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	private volatile boolean visible;
 
+	private volatile boolean fullScreen;
+
 	private T filtergraph;
 
 	private boolean rejectPauseFilter = false;
 
 	private boolean toggleFullScreenEnabled = true;
-
-	private boolean fullScreen;
 
 	private Integer monitorId;
 
@@ -104,8 +106,8 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		DSFilter[] filters = getFiltergraph().listFilters();
 		DSFilter selectedFilter =  (DSFilter) JOptionPane.showInputDialog(
 				null,
-				"Kies een filter:",
-				"Bekijk filter..",
+				getResourceMap().getString("viewFilterProperties.Action.shortDescription"),
+				getResourceMap().getString("viewFilterProperties.Action.text"),
 				JOptionPane.PLAIN_MESSAGE,
 				null,
 				filters,
@@ -274,6 +276,13 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	public void componentResized(ComponentEvent e) { }
 
 	public void componentMoved(ComponentEvent e) { }
+	
+	public void hierarchyChanged(HierarchyEvent e) {
+		// visibility of the container changed
+		if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+			setVisible(e.getChanged().isVisible());
+		}
+	}
 
 	public BufferedImage getImage() {
 		return getFiltergraph().getImage();

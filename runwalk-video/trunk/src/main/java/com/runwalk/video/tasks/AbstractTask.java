@@ -94,6 +94,7 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		protected void unblock() {
 			busyGlassPane.setCursor(Cursor.getDefaultCursor());
 			busyGlassPane.setVisible(false);
+			rootPane.setGlassPane(null);
 			busyGlassPane = null;
 			rootPane = null;
 		}

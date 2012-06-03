@@ -1,8 +1,14 @@
 package com.runwalk.video.core;
 
 import java.awt.Component;
+import java.awt.Container;
 
-
+/**
+ * {@link Containable}'s are components designed to be contained by a {@link Container}.
+ * 
+ * @author Jeroen Peelaerts
+ *
+ */
 @AppComponent
 public interface Containable extends WindowConstants {
 	
