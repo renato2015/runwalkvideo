@@ -136,6 +136,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				// check if a change was made on a synthetic node
 				if (getSelectedItem().isSynthetic()) {
 					updateSelectionModel();
+					getClientTablePanel().getSelectedItem().setDirty(true);
 				}
 			}
 
@@ -145,7 +146,6 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				int firstRow = getEventSelectionModel().getMinSelectionIndex();
 				int lastRow = getEventSelectionModel().getMaxSelectionIndex();
 				getEventTableModel().fireTableRowsUpdated(firstRow, lastRow);
-				setDirty(true);
 			}
 
 		});
