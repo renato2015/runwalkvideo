@@ -11,6 +11,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
+import org.eclipse.persistence.config.HintValues;
+import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
@@ -87,27 +89,27 @@ public class JpaDao<E> extends AbstractDao<E> {
 
 	public List<E> getAll() {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() +  " e", getTypeParameter())
-		.setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 	
 	public <T> List<E> getNewEntities(T id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter())
-		.setParameter("id", id).setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setParameter("id", id).setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 
 	public E getById(Object id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id = :id", getTypeParameter())
-		.setParameter("id", id).setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setParameter("id", id).setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getSingleResult();
 	}
 
 	public List<E> getByIds(Set<?> ids) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id IN :ids", getTypeParameter())
-		.setParameter("ids", ids).setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setParameter("ids", ids).setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 

@@ -61,6 +61,15 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	public boolean isFocusable() {
 		return getVideoImpl() instanceof Containable && !getVideoImpl().isNativeWindowing();
 	}
+	
+	/**
+	 * Returns <code>true</code> if the component is currently visible on screen.
+	 * 
+	 * @return <code>true</code> if component is visible on screen
+	 */
+	public boolean isVisible() {
+		return getVideoImpl() != null ? getVideoImpl().isVisible() : false;
+	}
 
 	/**
 	 * Returns an unique id for this concrete {@link VideoComponent} type.

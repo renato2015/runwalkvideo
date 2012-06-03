@@ -31,7 +31,7 @@ public class ClientDao extends JpaDao<Client> {
 				"SELECT DISTINCT NEW com.runwalk.video.entities.Client(c, MAX(a.creationDate)) " +
 				"FROM Client c " +
 				"LEFT OUTER JOIN c.analyses a GROUP BY c", Client.class)*/
-		.setHint("javax.persistence.cache.storeMode", "REFRESH");
+		.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 
