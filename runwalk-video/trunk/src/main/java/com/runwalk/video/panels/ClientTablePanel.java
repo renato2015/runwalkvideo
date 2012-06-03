@@ -235,7 +235,9 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				getVideoFileManager().deleteVideoFiles(client);
 				getItemList().remove(client);
 				// select previous record
-				setSelectedItemRow(lastSelectedRowIndex - 1);
+				if (lastSelectedRowIndex > 0) {
+					setSelectedItemRow(lastSelectedRowIndex - 1);
+				}
 			}
 			
 		});
