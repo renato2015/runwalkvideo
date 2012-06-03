@@ -27,7 +27,6 @@ import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
 
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
-import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.util.AppUtil;
 
