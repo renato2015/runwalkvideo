@@ -682,7 +682,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
 			{ 
-				setInputBlocker(new CursorInputBlocker(this, MediaControls.this.busyGlassPane)); 
+				setInputBlocker(new CursorInputBlocker(this, SwingUtilities.getWindowAncestor(MediaControls.this))); 
 			}
 
 			protected Void doInBackground() throws Exception {
