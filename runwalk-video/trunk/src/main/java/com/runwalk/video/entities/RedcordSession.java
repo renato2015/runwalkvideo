@@ -23,7 +23,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	@Lob
 	private String comments;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "redcordSession")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "redcordSession")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>();
 	

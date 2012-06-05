@@ -490,8 +490,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		// date of the session ... workaround for #SWINGX-1086
 		final DateSelectionModel dateSelectionModel = new DefaultDateSelectionModel();
 		Calendar cal1 = Calendar.getInstance();
-		cal1.setTime(new Date());
-		cal1.roll(Calendar.DAY_OF_WEEK, true);
+		cal1.roll(Calendar.DAY_OF_WEEK, false);
 		dateSelectionModel.setLowerBound(cal1.getTime());
 		Calendar cal2 = Calendar.getInstance();
 		cal2.setTime(new Date());
