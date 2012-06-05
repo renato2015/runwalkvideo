@@ -212,7 +212,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					ClientTablePanel.this.transferFocus();
 					setDirty(true);
 				} finally {
-					getItemList().getReadWriteLock().writeLock().lock();
+					getItemList().getReadWriteLock().writeLock().unlock();
 				}
 			}
 
