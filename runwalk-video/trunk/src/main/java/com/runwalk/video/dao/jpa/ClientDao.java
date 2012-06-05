@@ -57,7 +57,8 @@ public class ClientDao extends JpaDao<Client> {
 				.setParameter("id", id)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
 		.setHint(QueryHints.REFRESH, HintValues.TRUE)
-		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeByMapping);
+		.setHint("javax.persistence.cache.storeMode", "REFRESH")
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
 		return query.getSingleResult();
 	}
 	

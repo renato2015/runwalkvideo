@@ -271,6 +271,7 @@ public class CalendarSlotSyncService<T extends CalendarSlot<? super T>> implemen
 		try {
 			result = getTypeParameter().newInstance();
 			result.setCalendarId(calendarEventEntry.getIcalUID());
+			result.setName(calendarEventEntry.getTitle().getPlainText());
 			result.setCalendarSlotStatus(CalendarSlotStatus.NEW);
 			mapStartAndEndDate(calendarEventEntry, result);
 		} catch (InstantiationException e) {

@@ -1,15 +1,19 @@
 package com.runwalk.video.panels;
 
+import java.awt.Component;
 import java.awt.Window;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingUtilities;
@@ -31,6 +35,10 @@ import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXMonthView;
+import org.jdesktop.swingx.calendar.DateSelectionModel;
+import org.jdesktop.swingx.calendar.DefaultDateSelectionModel;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 
 import ca.odell.glazedlists.EventList;
@@ -479,8 +487,32 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		// name of the session / exercise
 		getTable().getColumnModel().getColumn(0).setMinWidth(70);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		// date of the session
-		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
+		// date of the session ... workaround for #SWINGX-1086
+		final DateSelectionModel dateSelectionModel = new DefaultDateSelectionModel();
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(new Date());
+		cal1.roll(Calendar.DAY_OF_WEEK, true);
+		dateSelectionModel.setLowerBound(cal1.getTime());
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(new Date());
+		cal2.roll(Calendar.YEAR, true);
+		dateSelectionModel.setUpperBound(cal2.getTime());
+		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER) {
+
+			@Override
+			public Component getTableCellEditorComponent(JTable table,
+					Object value, boolean isSelected, int row, int column) {
+				JXDatePicker datePicker = (JXDatePicker) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+				JXMonthView monthView = datePicker.getMonthView();
+				// set the dateSelectionModel just once
+				if (monthView.getSelectionModel() != dateSelectionModel) {
+					monthView.setSelectionModel(dateSelectionModel);
+				}
+				return datePicker;
+			}
+			
+			
+		};
 		datePickerCellEditor.setClickCountToStart(1);
 		getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);
 		getTable().getColumnModel().getColumn(1).setCellRenderer(new DatePickerTableCellRenderer(AppUtil.DATE_FORMATTER));

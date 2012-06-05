@@ -90,7 +90,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		JButton saveButton = new JButton(getAction(SAVE_ACTION));
 		saveButton.setFont(SettingsManager.MAIN_FONT);
 		add(saveButton);
-		
+
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
@@ -139,10 +139,10 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					}
 				};
 			}
-			
+
 		});
 	}
-	
+
 	public void initialiseTableColumnModel() {
 		getTable().getColumnModel().getColumn(0).setMinWidth(35);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(35);
@@ -175,7 +175,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				public boolean matches(Client item) {
 					return item.isDirty();
 				}
-				
+
 			});
 			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
 			Dao<Client> dao = getDaoService().getDao(Client.class);
@@ -187,7 +187,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				if (mergedClient.getVersion() != dirtyClient.getVersion()) {
 					dirtyClient.incrementVersion();
 				}
-				
+
 			}
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();
@@ -201,14 +201,19 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		Client client = new Client();
 		PersistTask<Client> result = new PersistTask<Client>(getDaoService(), Client.class, client);
 		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
-			
+
 			@Override
 			public void succeeded(TaskEvent<Client> event) {
-				Client client = event.getValue();
-				getItemList().add(client);
-				setSelectedItemRow(client);
-				ClientTablePanel.this.transferFocus();
-				setDirty(true);
+				getItemList().getReadWriteLock().writeLock().lock();
+				try {
+					Client client = event.getValue();
+					getItemList().add(client);
+					setSelectedItemRow(client);
+					ClientTablePanel.this.transferFocus();
+					setDirty(true);
+				} finally {
+					getItemList().getReadWriteLock().writeLock().lock();
+				}
 			}
 
 		});
@@ -229,21 +234,26 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void succeeded(TaskEvent<Client> event) {
-				int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-				Client client = event.getValue();
-				// delete all video files for the selected client
-				getVideoFileManager().deleteVideoFiles(client);
-				getItemList().remove(client);
-				// select previous record
-				if (lastSelectedRowIndex > 0) {
-					setSelectedItemRow(lastSelectedRowIndex - 1);
+				getItemList().getReadWriteLock().writeLock().lock();
+				try {
+					int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+					Client client = event.getValue();
+					// delete all video files for the selected client
+					getVideoFileManager().deleteVideoFiles(client);
+					getItemList().remove(client);
+					// select previous record
+					if (lastSelectedRowIndex > 0) {
+						setSelectedItemRow(lastSelectedRowIndex - 1);
+					}
+				} finally {
+					getItemList().getReadWriteLock().writeLock().unlock();
 				}
 			}
-			
+
 		});
 		return result;
 	}
-	
+
 	@Override
 	public Client refreshItem(Client oldClient, Client newClient) {
 		Client result = super.refreshItem(oldClient, newClient);
@@ -252,7 +262,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 		}
 		return result;
 	}
-	
+
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
 		if (getSelectedItem().isDirty() && isDirty()) {
@@ -287,7 +297,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				}
 				return clientList;
 			}
-			
+
 		};
 	}
 

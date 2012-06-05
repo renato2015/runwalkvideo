@@ -167,8 +167,8 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			getMenuBar().addMenu(title, actionMap);
 			setVisible(selfContainedImpl, true);
 		}
-
 	}
+	
 	public void setVisible(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
 	}
@@ -212,16 +212,16 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	public void disposeWindow(VideoComponent videoComponent) {
+		// TODO should be reviewed
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
-		if (videoImpl instanceof Containable && // if Containable and not SelfContained then dispose the wrapping component
-				SwingUtilities.isDescendingFrom(getPane(), ((Containable) videoImpl).getComponent())) {
-			Container container = disposeWindow((Containable) videoImpl);
-			container.removeHierarchyListener(videoComponent.getVideoImpl());
-		}
+		// if Containable and not SelfContained then dispose the wrapping component
 		if (videoImpl instanceof SelfContained) {
 			// if the implementation implements both SelfContained and Containable, cast to SelfContained
 			disposeWindow((SelfContained) videoImpl);
-		}
+		} else if (videoImpl instanceof Containable) {
+			Container container = disposeWindow((Containable) videoImpl);
+			container.removeHierarchyListener(videoComponent.getVideoImpl());
+		}  
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
