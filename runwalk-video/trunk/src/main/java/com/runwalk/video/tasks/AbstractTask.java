@@ -1,13 +1,11 @@
 package com.runwalk.video.tasks;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 
-import javax.swing.JComponent;
 import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
@@ -74,28 +72,19 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 
 	public static class CursorInputBlocker extends Task.InputBlocker {
 
-		private JRootPane rootPane;
-		
-		private JComponent busyGlassPane;
+		private Component rootPane;
 
-		public CursorInputBlocker(@SuppressWarnings("rawtypes") Task arg0, JComponent busyGlassPane) {
-			super(arg0, BlockingScope.COMPONENT, busyGlassPane);
-			this.busyGlassPane = busyGlassPane;
+		public CursorInputBlocker(@SuppressWarnings("rawtypes") Task arg0, Component rootPane) {
+			super(arg0, BlockingScope.COMPONENT, rootPane);
+			this.rootPane = rootPane;
 		}
 
 		protected void block() {
-			Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-			rootPane = SwingUtilities.getRootPane(activeWindow);
-			rootPane.setGlassPane(busyGlassPane);
-			busyGlassPane.setVisible(true);
-			busyGlassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		}
 
 		protected void unblock() {
-			busyGlassPane.setCursor(Cursor.getDefaultCursor());
-			busyGlassPane.setVisible(false);
-			rootPane.setGlassPane(null);
-			busyGlassPane = null;
+			rootPane.setCursor(Cursor.getDefaultCursor());
 			rootPane = null;
 		}
 

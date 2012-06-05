@@ -2,6 +2,8 @@ package com.runwalk.video.dao.jpa;
 
 import java.util.List;
 
+import javax.persistence.CacheRetrieveMode;
+import javax.persistence.CacheStoreMode;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
@@ -57,8 +59,9 @@ public class ClientDao extends JpaDao<Client> {
 				.setParameter("id", id)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
 		.setHint(QueryHints.REFRESH, HintValues.TRUE)
-		.setHint("javax.persistence.cache.storeMode", "REFRESH")
-		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts);
+		.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts)
+		.setHint("javax.persistence.cache.storeMode", CacheStoreMode.REFRESH)
+		.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
 		return query.getSingleResult();
 	}
 	
