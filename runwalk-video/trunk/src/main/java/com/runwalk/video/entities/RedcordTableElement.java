@@ -53,7 +53,7 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	}
 	
 	public enum ExerciseDirection {
-		LEFT, RIGHT;
+		LEFT, RIGHT, LR;
 	}
 	
 }
