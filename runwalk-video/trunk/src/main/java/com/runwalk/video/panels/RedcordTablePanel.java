@@ -507,6 +507,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				if (monthView.getSelectionModel() != dateSelectionModel) {
 					monthView.setSelectionModel(dateSelectionModel);
 				}
+				monthView.setSelectionDate(getValueAsDate(value));
 				return datePicker;
 			}
 			

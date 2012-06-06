@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.persistence.NoResultException;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
@@ -48,11 +50,16 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 		message("startMessage");
 		List<T> result = null;
 		Dao<T> itemDao = getDaoService().getDao(getItemClass());
-		T selectedItem = itemDao.getById(getItem().getId());
 		// get the last added entities
 		result = itemDao.getNewEntities(findMaxEntityId());
-		// add selected client to the end
-		result.add(selectedItem);
+		try {
+			T selectedItem = itemDao.getById(getItem().getId());
+			// add selected client to the end
+			result.add(selectedItem);
+		} catch (NoResultException e) {
+			// item has been removed.. handle this
+			
+		}
 		message("endMessage", result.size());
 		return result;
 	}
