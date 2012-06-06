@@ -283,10 +283,10 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
 					for (Client client : clientList) {
-						int index = getItemList().indexOf(client);
-						if (index == -1) {
+						if (!getItemList().contains(client)) {
 							getItemList().add(client);
 						} else {
+							// TODO handle eventual item delete
 							// selected item is always the last in the list
 							refreshItem(getSelectedItem(), client);
 						}
