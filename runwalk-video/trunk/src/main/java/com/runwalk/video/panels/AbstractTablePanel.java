@@ -196,6 +196,17 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public void setSecondButton(JButton newButton) {
 		this.secondButton = newButton;
 	}
+	
+	public void dispose() {
+		if (sourceList != null && itemList != null) {
+			eventTableModel.dispose();
+			eventSelectionModel.dispose();
+			itemList.dispose();
+			sortedList.dispose();
+			observableElementList.dispose();
+			sourceList.dispose();
+		}
+	}
 
 	/**
 	 * The {@link EventList} will be injected from the outside. This method will further prepare it to 
@@ -205,15 +216,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	 * @param itemConnector The connector that will forward changeEvents to the list.
 	 */
 	public void setItemList(EventList<T> itemList, ObservableElementList.Connector<? super T> itemConnector) {
-		if (sourceList != null && itemList != null) {
-			// FIXME dispose the list pipeline in the opposite order in which it was constructed - MOVE TO DISPOSE METHOD
-			//eventTableModel.dispose();
-			//eventSelectionModel.dispose();
-			getItemList().dispose();
-			sortedList.dispose();
-			observableElementList.dispose();
-			sourceList.dispose();
-		}
+		// FIXME lists should be disposed first when calling this method
 		itemList.getReadWriteLock().writeLock().lock();
 		try {
 			sourceList = itemList;

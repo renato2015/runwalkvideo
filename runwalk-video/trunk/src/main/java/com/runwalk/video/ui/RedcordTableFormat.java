@@ -17,7 +17,7 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 	
 	private static final int[] CALENDAR_DATE_FIELDS = new int[] {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH};
 	
-	private final static int[] CALENDAR_TIME_FIELDS = new int[] {Calendar.HOUR_OF_DAY, Calendar.MINUTE};
+	private static final int[] CALENDAR_TIME_FIELDS = new int[] {Calendar.HOUR_OF_DAY, Calendar.MINUTE};
 	
 	public RedcordTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
