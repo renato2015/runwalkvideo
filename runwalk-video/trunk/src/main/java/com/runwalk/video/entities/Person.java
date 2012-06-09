@@ -59,7 +59,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public void setGender(Gender gender) {
-		firePropertyChange(GENDER, this.gender, this.gender = gender);
+		this.gender = gender;
 	}
 	
 	public Gender getGender() {
@@ -107,7 +107,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public void setBirthdate(Date birthdate) {
-		firePropertyChange(BIRTH_DATE, this.birthDate, this.birthDate = birthdate);
+		this.birthDate = birthdate;
 	}
 	
 	public String getFirstname() {

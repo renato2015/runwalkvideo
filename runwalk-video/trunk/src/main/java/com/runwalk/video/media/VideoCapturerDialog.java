@@ -183,7 +183,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 		Collection<String> videoCapturerNames = VideoCapturerFactory.getInstance().getVideoCapturerNames();
 		// return if no capturers available
 		if (videoCapturerNames.isEmpty() && !isVisible()) {
-			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.message"), 
+			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.text"), 
 					getResourceMap().getString("refreshVideoCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
 			dismissDialog();
 			return false;

@@ -36,7 +36,6 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.swingx.JXDatePicker;
-import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
 import org.jdesktop.swingx.calendar.DefaultDateSelectionModel;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
@@ -222,113 +221,23 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 			@Override
 			public void succeeded(TaskEvent<RedcordSession> event) {
-				RedcordSession redcordSession = event.getValue();
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					renameRedcordSessions(selectedClient, redcordSession, true);
-					selectedClient.addRedcordSession(redcordSession);
-					setSelectedItemRow(redcordSession);
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
+				addRedcordSession(selectedClient, event.getValue(), true);
 			}
 
 		});
 		return result;
 	}
 	
-	@Action
-	public AbstractTask<Void, Void> renameRedcordTableElements() {
-		final Client selectedClient = getClientTablePanel().getSelectedItem();
-		return new AbstractTask<Void, Void>("renameRedcordTableElements") {
-
-			@Override
-			protected Void doInBackground() throws Exception {
-				getObservableElementList().getReadWriteLock().writeLock().lock();
-				try {
-					renameRedcordSessions(selectedClient);
-					for (RedcordSession redcordSession : selectedClient.getRedcordSessions()) {
-						renameRedcordExercises(redcordSession);
-					}
-					for(RedcordTableElement redcordTableElement : getObservableElementList()) {
-						int index = getObservableElementList().indexOf(redcordTableElement);
-						if (index > -1) {
-							getObservableElementList().set(index, redcordTableElement);
-						}
-					}
-					message("endMessage");
-				} finally {
-					getObservableElementList().getReadWriteLock().writeLock().unlock();
-				}
-				return null;
+	private void addRedcordSession(Client client, RedcordSession redcordSession, boolean changeSelection) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			client.addRedcordSession(redcordSession);
+			if (changeSelection) {
+				setSelectedItemRow(redcordSession);
 			}
-			
-		};
-	}
-
-	/**
-	 * Rename a {@link List} of {@link RedcordSession}s according to their natural order. This method does not 
-	 * explicitly require newRedcordSession to be in the client's redcordSession list. If addOrRemoveSession 
-	 * is <code>false</code>, then it does not
-	 * matter whether the redcordSession's exercise {@link List} contains newRedcordExercise or not.
-	 * 
-	 * @param client The client whose redcordSessions will be renamed
-	 * @param newRedcordSession The redcordSession to be added or removed from the client's redcordSession list
-	 * @param addOrRemoveSession <code>true</code> if the second argument needs to be added to the list, 
-	 * <code>false</code> if it needs to be removed, <code>null</code> if nothing should happen
-	 */
-	private void renameRedcordSessions(Client client, RedcordSession newRedcordSession, Boolean addOrRemoveSession) {
-		List<RedcordSession> redcordSessions = new ArrayList<RedcordSession>(client.getRedcordSessions());
-		if (addOrRemoveSession != null) {
-			if (addOrRemoveSession) {
-				redcordSessions.add(newRedcordSession);
-			} else {
-				redcordSessions.remove(newRedcordSession);
-			}
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
 		}
-		Collections.sort(redcordSessions);
-		int i = 0;
-		for (RedcordSession redcordSession : redcordSessions) {
-			String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++i);
-			redcordSession.setName(sessionName);
-		}
-		client.setDirty(true);
-	}
-	
-	private void renameRedcordSessions(Client client) {
-		renameRedcordSessions(client, null, null);
-	}
-	
-	/**
-	 * Rename a {@link List} of {@link RedcordExercise}s according to their natural order. If addOrRemoveExercise is <code>true</code>, then
-	 * newRedcordExercise should not already be in the redcordSession's exercise {@link List}. If addOrRemoveExercise is <code>false</code>, then it does not
-	 * matter whether the redcordSession's exercise {@link List} contains newRedcordExercise or not.
-	 * 
-	 * @param client The client whose redcordSessions will be renamed
-	 * @param addOrRemoveExercise The redcordExercise to be added or removed from the redcordSession's exercise list
-	 * @param addOrRemoveExercise <code>true</code> if the second argument needs to be added to the list, 
-	 * <code>false</code> if it needs to be removed, <code>null</code> if nothing should happen
-	 */
-	private void renameRedcordExercises(RedcordSession redcordSession, RedcordExercise newRedcordExercise, Boolean addOrRemoveExercise) {
-		List<RedcordExercise> redcordExercises = new ArrayList<RedcordExercise>(redcordSession.getRedcordExercises());
-		if (addOrRemoveExercise != null) {
-			if (addOrRemoveExercise) {
-				redcordExercises.add(newRedcordExercise);
-			} else {
-				redcordExercises.remove(newRedcordExercise);
-			}
-		}
-		Collections.sort(redcordExercises);
-		int i = 0;
-		for (RedcordExercise redcordExercise : redcordExercises) {
-			String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++i);
-			redcordExercise.setName(exerciseName);
-		}
-		redcordSession.getClient().setDirty(true);
-	}
-	
-	private void renameRedcordExercises(RedcordSession redcordSession) {
-		renameRedcordExercises(redcordSession, null, null);
 	}
 	
 	@Action(enabledProperty = REDCORD_SESSION_SELECTED, block = BlockingScope.ACTION)
@@ -347,26 +256,97 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 
 				@Override
 				public void succeeded(TaskEvent<RedcordSession> event) {
-					RedcordSession redcordSession = event.getValue();
-					getItemList().getReadWriteLock().writeLock().lock();
-					try {
-						renameRedcordSessions(selectedClient, redcordSession, false);
-						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-						selectedClient.removeRedcordSession(redcordSession);
-						// set selection on previous item
-						if (lastSelectedRowIndex > 0) {
-							setSelectedItemRow(lastSelectedRowIndex - 1);
-						}
-					} finally {
-						getItemList().getReadWriteLock().writeLock().unlock();
-					}
+					deleteRedcordSession(selectedClient, event.getValue(), true);
 				}
 
 			});
 		}
 		return result;
 	}
+	
+	private void deleteRedcordSession(Client client, RedcordSession redcordSession, boolean changeSelection) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+			client.removeRedcordSession(redcordSession);
+			// set selection on previous item
+			if (lastSelectedRowIndex > 0 && changeSelection) {
+				setSelectedItemRow(lastSelectedRowIndex - 1);
+			}
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
+	}
 
+	/**
+	 * Rename a {@link List} of {@link RedcordSession}s according to their natural order. This method does not 
+	 * explicitly require newRedcordSession to be in the client's redcordSession list. If addOrRemoveSession 
+	 * is <code>false</code>, then it does not
+	 * matter whether the redcordSession's exercise {@link List} contains newRedcordExercise or not.
+	 * 
+	 * @param client The client whose redcordSessions will be renamed
+	 * @param newRedcordSession The redcordSession to be added or removed from the client's redcordSession list
+	 * @param addOrRemoveSession <code>true</code> if the second argument needs to be added to the list, 
+	 * <code>false</code> if it needs to be removed, <code>null</code> if nothing should happen
+	 * @return The list containing the renamed redcordSessions
+	 */
+	public List<RedcordSession> renameRedcordSessions(Client client, RedcordSession newRedcordSession, Boolean addOrRemoveSession) {
+		List<RedcordSession> result = new ArrayList<RedcordSession>(client.getRedcordSessions());
+		if (addOrRemoveSession != null) {
+			if (addOrRemoveSession) {
+				result.add(newRedcordSession);
+			} else {
+				result.remove(newRedcordSession);
+			}
+		}
+		Collections.sort(result);
+		int i = 0;
+		for (RedcordSession redcordSession : result) {
+			String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++i);
+			redcordSession.setName(sessionName);
+		}
+		client.setDirty(true);
+		return result;
+	}
+	
+	public List<RedcordSession> renameRedcordSessions(Client client) {
+		return renameRedcordSessions(client, null, null);
+	}
+	
+	/**
+	 * Rename a {@link List} of {@link RedcordExercise}s according to their natural order. If addOrRemoveExercise is <code>true</code>, then
+	 * newRedcordExercise should not already be in the redcordSession's exercise {@link List}. If addOrRemoveExercise is <code>false</code>, then it does not
+	 * matter whether the redcordSession's exercise {@link List} contains newRedcordExercise or not.
+	 * 
+	 * @param client The client whose redcordSessions will be renamed
+	 * @param addOrRemoveExercise The redcordExercise to be added or removed from the redcordSession's exercise list
+	 * @param addOrRemoveExercise <code>true</code> if the second argument needs to be added to the list, 
+	 * <code>false</code> if it needs to be removed, <code>null</code> if nothing should happen
+	 * @return The list containing the renamed redcordExercises
+	 */
+	private List<RedcordExercise> renameRedcordExercises(RedcordSession redcordSession, RedcordExercise newRedcordExercise, Boolean addOrRemoveExercise) {
+		List<RedcordExercise> result = new ArrayList<RedcordExercise>(redcordSession.getRedcordExercises());
+		if (addOrRemoveExercise != null) {
+			if (addOrRemoveExercise) {
+				result.add(newRedcordExercise);
+			} else {
+				result.remove(newRedcordExercise);
+			}
+		}
+		Collections.sort(result);
+		int i = 0;
+		for (RedcordExercise redcordExercise : result) {
+			String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++i);
+			redcordExercise.setName(exerciseName);
+		}
+		redcordSession.getClient().setDirty(true);
+		return result;
+	}
+	
+	public List<RedcordExercise> renameRedcordExercises(RedcordSession redcordSession) {
+		return renameRedcordExercises(redcordSession, null, null);
+	}
+	
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<RedcordExercise> addRedcordExercise() {
 		// insert a new exercise record
@@ -439,7 +419,6 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected TreeList<RedcordTableElement> specializeItemList(EventList<RedcordTableElement> eventList) {
-
 		final Comparator<RedcordTableElement> redcordTableElementComparator = GlazedLists.chainComparators(
 				GlazedLists.beanPropertyComparator(RedcordTableElement.class, "name")
 				);
@@ -466,7 +445,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 
 		};
-		// workaround to set selection back after a TreeTable update
+		//TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
 		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 
@@ -496,18 +475,23 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		cal2.setTime(new Date());
 		cal2.roll(Calendar.YEAR, true);
 		dateSelectionModel.setUpperBound(cal2.getTime());
+		// FIXME selection model does not seem to take selected date into account..
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER) {
 
 			@Override
 			public Component getTableCellEditorComponent(JTable table,
 					Object value, boolean isSelected, int row, int column) {
 				JXDatePicker datePicker = (JXDatePicker) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-				JXMonthView monthView = datePicker.getMonthView();
+				/*JXMonthView monthView = datePicker.getMonthView();
 				// set the dateSelectionModel just once
 				if (monthView.getSelectionModel() != dateSelectionModel) {
 					monthView.setSelectionModel(dateSelectionModel);
 				}
-				monthView.setSelectionDate(getValueAsDate(value));
+				Date selectedDate = getValueAsDate(value);
+				monthView.setFlaggedDates(selectedDate);
+				monthView.setSelectionDate(selectedDate);
+				monthView.setFlaggedDayForeground(Color.BLUE);
+				datePicker.setDate(selectedDate);*/
 				return datePicker;
 			}
 			
@@ -581,16 +565,15 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 					try {
 						client = getClientTablePanel().findItem(client);
 						if (client != null) {
+							boolean isSelectedClient = getClientTablePanel().getSelectedItem() == client;
 							if (redcordSession.isNew()) {
-								renameRedcordSessions(client, redcordSession, true);
 								// add the session to the client and update the ui
-								client.addRedcordSession(redcordSession);
+								addRedcordSession(client, redcordSession, isSelectedClient);
 							} else if (redcordSession.isRemoved()) {
-								renameRedcordSessions(client, redcordSession, false);
 								// remove the session from the client and update the ui
-								client.removeRedcordSession(redcordSession);
+								deleteRedcordSession(client, redcordSession, isSelectedClient);
 							} else if (redcordSession.isModified()) {
-								renameRedcordSessions(client);
+								//renameRedcordSessions(client);
 								client.replaceRedcordSession(redcordSession);
 								// refresh manually instead of firing a pce
 								clientList.elementChanged(client);

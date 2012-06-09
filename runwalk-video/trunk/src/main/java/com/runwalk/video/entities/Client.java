@@ -155,7 +155,7 @@ public class Client extends Person {
 	}
 
 	public void setOrganization(String organization) {
-		firePropertyChange(ORGANIZATION, this.organization, this.organization = organization);
+		this.organization = organization;
 	}
 
 	public Date getLastAnalysisDate() {

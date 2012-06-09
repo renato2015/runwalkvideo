@@ -6,6 +6,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.persistence.NoResultException;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -204,20 +205,28 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void succeeded(TaskEvent<Client> event) {
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					Client client = event.getValue();
-					getItemList().add(client);
-					setSelectedItemRow(client);
-					ClientTablePanel.this.transferFocus();
-					setDirty(true);
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
+				addClient(event.getValue());
 			}
 
 		});
 		return result;
+	}
+	
+	/**
+	 * Add the given {@link Client} to the table's list.
+	 * 
+	 * @param client The client to remove
+	 */
+	private void addClient(Client client) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			getItemList().add(client);
+			setSelectedItemRow(client);
+			ClientTablePanel.this.transferFocus();
+			setDirty(true);
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
 	}
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
@@ -234,24 +243,32 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 			@Override
 			public void succeeded(TaskEvent<Client> event) {
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-					Client client = event.getValue();
-					// delete all video files for the selected client
-					getVideoFileManager().deleteVideoFiles(client);
-					getItemList().remove(client);
-					// select previous record
-					if (lastSelectedRowIndex > 0) {
-						setSelectedItemRow(lastSelectedRowIndex - 1);
-					}
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
+				deleteClient(event.getValue());
 			}
 
 		});
 		return result;
+	}
+	
+	/**
+	 * Remove the given Client from the table's list.
+	 * 
+	 * @param client The client to remove
+	 */
+	private void deleteClient(Client client) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+			// delete all video files for the selected client
+			getVideoFileManager().deleteVideoFiles(client);
+			getItemList().remove(client);
+			// select previous record
+			if (lastSelectedRowIndex > 0) {
+				setSelectedItemRow(lastSelectedRowIndex - 1);
+			}
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
 	}
 
 	@Override
@@ -265,7 +282,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
-		if (getSelectedItem().isDirty() && isDirty()) {
+		final Client selectedClient = getSelectedItem();
+		if (selectedClient.isDirty() && isDirty()) {
 			int n = JOptionPane.showConfirmDialog(
 					SwingUtilities.windowForComponent(this),
 					getResourceMap().getString("refreshClient.confirmDialog.text"),
@@ -286,9 +304,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 						if (!getItemList().contains(client)) {
 							getItemList().add(client);
 						} else {
-							// TODO handle eventual item delete
 							// selected item is always the last in the list
-							refreshItem(getSelectedItem(), client);
+							refreshItem(selectedClient, client);
 						}
 						setProgress(clientList.indexOf(client), 0, clientList.size());
 					}
@@ -296,6 +313,23 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
 				return clientList;
+			}
+
+			@Override
+			protected void failed(Throwable throwable) {
+				if (throwable instanceof NoResultException) {
+					// TODO show warning that item was deleted!
+					ClientTablePanel outerInstance = ClientTablePanel.this;
+					JOptionPane.showMessageDialog( 
+						SwingUtilities.windowForComponent(outerInstance),
+						outerInstance.getResourceMap().getString("refreshClient.errorDialog.text"),
+						outerInstance.getResourceMap().getString("refreshClient.errorDialog.title"),
+						JOptionPane.WARNING_MESSAGE
+					);
+					deleteClient(selectedClient);
+				} else {
+					super.failed(throwable);
+				}
 			}
 
 		};
