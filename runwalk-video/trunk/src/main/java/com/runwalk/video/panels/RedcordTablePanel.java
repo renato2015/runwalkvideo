@@ -1,5 +1,6 @@
 package com.runwalk.video.panels;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
 import org.jdesktop.swingx.JXDatePicker;
+import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
 import org.jdesktop.swingx.calendar.DefaultDateSelectionModel;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
@@ -57,7 +59,6 @@ import com.runwalk.video.entities.RedcordTableElement;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseDirection;
 import com.runwalk.video.entities.RedcordTableElement.ExerciseType;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CalendarSlotSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
@@ -482,16 +483,17 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			public Component getTableCellEditorComponent(JTable table,
 					Object value, boolean isSelected, int row, int column) {
 				JXDatePicker datePicker = (JXDatePicker) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-				/*JXMonthView monthView = datePicker.getMonthView();
+				JXMonthView monthView = datePicker.getMonthView();
 				// set the dateSelectionModel just once
 				if (monthView.getSelectionModel() != dateSelectionModel) {
 					monthView.setSelectionModel(dateSelectionModel);
+					monthView.setTodayBackground(Color.WHITE);
 				}
 				Date selectedDate = getValueAsDate(value);
 				monthView.setFlaggedDates(selectedDate);
 				monthView.setSelectionDate(selectedDate);
 				monthView.setFlaggedDayForeground(Color.BLUE);
-				datePicker.setDate(selectedDate);*/
+				datePicker.setDate(selectedDate);
 				return datePicker;
 			}
 			
