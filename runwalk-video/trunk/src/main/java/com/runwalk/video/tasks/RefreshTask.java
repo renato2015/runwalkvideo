@@ -107,7 +107,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// create pipeline for redord tablepanel
 					//ThreadProxyEventList<Client> taskProxyEventList = new TaskProxyEventList<Client> (getTaskService(), selectedClients);
 					CollectionList<Client, RedcordTableElement> redcordTableElements = new CollectionList<Client, RedcordTableElement>(selectedClients, 
-						new LazyModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions") {
+						new LazyModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions", true) {
 						
 							public List<RedcordTableElement> getLazyChildren(Client client) {
 								List<RedcordTableElement> result = new LinkedList<RedcordTableElement>();
@@ -163,6 +163,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 	
 	/**
 	 * An extension of {@link CollectionList.Model} that will fetch a parent entity's property in a background thread.
+	 * Caching can be enabled only if the implementation of {@link #getLazyChildren(SerializableEntity)} returns the same
+	 * result after populating the entity's lazy associations.
 	 *
 	 * @param <E> The parent entity that owns the property collection to be loaded
 	 * @param <S> The type of the child entity
@@ -173,9 +175,14 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		
 		private final TaskService taskService;
 		
-		public LazyModel(TaskService taskService, String attributeName) {
+		private List<S> cachedList;
+		
+		private final boolean useCache;
+		
+		public LazyModel(TaskService taskService, String attributeName, boolean useCache) {
 			this.taskService = taskService;
 			this.attributeName = attributeName;
+			this.useCache = useCache;
 		}
 		
 		public abstract List<S> getLazyChildren(E parent);
@@ -186,7 +193,12 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			List<S> result = Collections.emptyList();
 			PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
 			if (persistenceUtil.isLoaded(parent, getAttributeName())) {
-				result = getLazyChildren(parent);
+				if (useCache && cachedList != null) {
+					result = cachedList;
+					cachedList = null;
+				} else {
+					result = getLazyChildren(parent);
+				}
 			} else {
 				getTaskService().execute(new AbstractTask<List<S>, Void>("loadEntities") {
 					
@@ -198,6 +210,10 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					
 					@Override
 					protected void succeeded(List<S> children) {
+						if (useCache) {
+							// cache the fetched result
+							cachedList = children;
+						}
 						// execute callback and refresh the parent list
 						refreshParent(parent, children);
 					}

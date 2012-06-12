@@ -306,6 +306,7 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 						} else {
 							// selected item is always the last in the list
 							refreshItem(selectedClient, client);
+							client.setDirty(false);
 						}
 						setProgress(clientList.indexOf(client), 0, clientList.size());
 					}
@@ -318,7 +319,6 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			@Override
 			protected void failed(Throwable throwable) {
 				if (throwable instanceof NoResultException) {
-					// TODO show warning that item was deleted!
 					ClientTablePanel outerInstance = ClientTablePanel.this;
 					JOptionPane.showMessageDialog( 
 						SwingUtilities.windowForComponent(outerInstance),
