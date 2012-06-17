@@ -49,7 +49,7 @@ public interface RedcordTableElement extends Comparable<RedcordTableElement> {
 	boolean allowsChildren();
 
 	public enum ExerciseType {
-		FRONT, SIDE, BACK, SCAPULA;
+		FRONT, SIDE, BACK, SCAPULA, STAND;
 	}
 	
 	public enum ExerciseDirection {

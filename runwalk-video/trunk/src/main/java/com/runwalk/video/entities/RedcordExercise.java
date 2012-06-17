@@ -101,10 +101,33 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 		return false;
 	}
 
+/*	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if (obj != null && getClass() == obj.getClass()) {
+			RedcordExercise other = (RedcordExercise) obj;
+			result &= getStartDate() != null ? getStartDate().equals(other.getStartDate()) : other.getStartDate() == null;
+			result &= getId() != null ? getId().equals(other.getId()) : result;
+		}
+		return result;
+	}*/
+
 	public int compareTo(RedcordTableElement redcordTableElement) {
 		int result = 1;
 		if (redcordTableElement != null) {
-			result = equals(redcordTableElement) ? 0 : getName().compareTo(redcordTableElement.getName());
+			if (equals(redcordTableElement)) {
+				result = 0;
+			} else if (getStartDate() != null && redcordTableElement.getStartDate() != null) {
+				result = getStartDate().compareTo(redcordTableElement.getStartDate());
+			}
 		}
 		return result;
 	}

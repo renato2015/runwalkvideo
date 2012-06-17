@@ -45,9 +45,11 @@ import org.jdesktop.swingx.table.DatePickerCellEditor;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
+import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.TreeList;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
+import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
 import com.runwalk.video.core.OnEdt;
@@ -142,10 +144,10 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			@Override
 			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
 				// check if a change was made on a synthetic node
-				if (getSelectedItem().isSynthetic()) {
-					updateSelectionModel();
-					getClientTablePanel().getSelectedItem().setDirty(true);
-				}
+				//if (getSelectedItem().isSynthetic()) {
+				updateSelectionModel();
+				getClientTablePanel().getSelectedItem().setDirty(true);
+				//}
 			}
 
 			@OnEdt
@@ -228,7 +230,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		});
 		return result;
 	}
-	
+
 	private void addRedcordSession(Client client, RedcordSession redcordSession, boolean changeSelection) {
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
@@ -240,7 +242,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			getItemList().getReadWriteLock().writeLock().unlock();
 		}
 	}
-	
+
 	@Action(enabledProperty = REDCORD_SESSION_SELECTED, block = BlockingScope.ACTION)
 	public DeleteTask<RedcordSession> deleteRedcordSession() {		
 		DeleteTask<RedcordSession> result = null;
@@ -264,7 +266,7 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		}
 		return result;
 	}
-	
+
 	private void deleteRedcordSession(Client client, RedcordSession redcordSession, boolean changeSelection) {
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
@@ -293,27 +295,28 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	 */
 	public List<RedcordSession> renameRedcordSessions(Client client, RedcordSession newRedcordSession, Boolean addOrRemoveSession) {
 		List<RedcordSession> result = new ArrayList<RedcordSession>(client.getRedcordSessions());
-		if (addOrRemoveSession != null) {
-			if (addOrRemoveSession) {
-				result.add(newRedcordSession);
-			} else {
-				result.remove(newRedcordSession);
-			}
+		boolean isDirty = addOrRemoveSession != null;
+		if (isDirty) {
+			result.add(newRedcordSession);
+		} else {
+			result.remove(newRedcordSession);
 		}
 		Collections.sort(result);
-		int i = 0;
-		for (RedcordSession redcordSession : result) {
-			String sessionName = getResourceMap().getString("addRedcordSession.Action.defaultSessionName", ++i);
-			redcordSession.setName(sessionName);
+		for (int i = 0; i < result.size(); i++) {
+			String name = getResourceMap().getString("addRedcordSession.Action.defaultName", i);
+			RedcordSession redcordSession = result.get(i);
+			if (!name.equals(redcordSession.getName()) && !isDirty) {
+				client.setDirty(true);
+			}
+			redcordSession.setName(name);
 		}
-		client.setDirty(true);
 		return result;
 	}
-	
+
 	public List<RedcordSession> renameRedcordSessions(Client client) {
 		return renameRedcordSessions(client, null, null);
 	}
-	
+
 	/**
 	 * Rename a {@link List} of {@link RedcordExercise}s according to their natural order. If addOrRemoveExercise is <code>true</code>, then
 	 * newRedcordExercise should not already be in the redcordSession's exercise {@link List}. If addOrRemoveExercise is <code>false</code>, then it does not
@@ -325,8 +328,9 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 	 * <code>false</code> if it needs to be removed, <code>null</code> if nothing should happen
 	 * @return The list containing the renamed redcordExercises
 	 */
-	private List<RedcordExercise> renameRedcordExercises(RedcordSession redcordSession, RedcordExercise newRedcordExercise, Boolean addOrRemoveExercise) {
+	public List<RedcordExercise> renameRedcordExercises(RedcordSession redcordSession, RedcordExercise newRedcordExercise, Boolean addOrRemoveExercise) {
 		List<RedcordExercise> result = new ArrayList<RedcordExercise>(redcordSession.getRedcordExercises());
+		boolean isDirty = addOrRemoveExercise != null;
 		if (addOrRemoveExercise != null) {
 			if (addOrRemoveExercise) {
 				result.add(newRedcordExercise);
@@ -335,19 +339,21 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 		}
 		Collections.sort(result);
-		int i = 0;
-		for (RedcordExercise redcordExercise : result) {
-			String exerciseName = getResourceMap().getString("addRedcordExercise.Action.defaultExerciseName", ++i);
-			redcordExercise.setName(exerciseName);
+		for (int i = 0; i < result.size(); i++) {
+			String name = getResourceMap().getString("addRedcordExercise.Action.defaultName", i);
+			RedcordExercise redcordExercise = result.get(i);
+			if (!name.equals(redcordExercise.getName()) && !isDirty) {
+				redcordSession.getClient().setDirty(true);
+			}
+			redcordExercise.setName(name);
 		}
-		redcordSession.getClient().setDirty(true);
 		return result;
 	}
-	
+
 	public List<RedcordExercise> renameRedcordExercises(RedcordSession redcordSession) {
 		return renameRedcordExercises(redcordSession, null, null);
 	}
-	
+
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<RedcordExercise> addRedcordExercise() {
 		// insert a new exercise record
@@ -446,8 +452,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 
 		};
-		//TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
-		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
+		TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
+		return new TreeList<RedcordTableElement>(swingThreadProxyList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 
 	/**
@@ -496,8 +502,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 				datePicker.setDate(selectedDate);
 				return datePicker;
 			}
-			
-			
+
+
 		};
 		datePickerCellEditor.setClickCountToStart(1);
 		getTable().getColumnModel().getColumn(1).setCellEditor(datePickerCellEditor);

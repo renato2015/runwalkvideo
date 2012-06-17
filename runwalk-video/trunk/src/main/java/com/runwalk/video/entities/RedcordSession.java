@@ -64,7 +64,7 @@ public class RedcordSession extends CalendarSlot<RedcordTableElement> implements
 	}
 
 	public int compareTo(RedcordTableElement redcordTableElement) {
-		int result = -1;
+		int result = 1;
 		if (redcordTableElement != null) {
 			if (equals(redcordTableElement)) {
 				result = 0;
