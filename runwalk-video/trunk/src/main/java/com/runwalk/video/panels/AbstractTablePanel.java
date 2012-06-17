@@ -24,9 +24,8 @@ import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
-import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
-import ca.odell.glazedlists.swing.DefaultEventTableModel;
-import ca.odell.glazedlists.swing.GlazedListsSwing;
+import ca.odell.glazedlists.swing.EventSelectionModel;
+import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
@@ -54,10 +53,10 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private EventList<T> sourceList;
 	/** The sorted list */
 	private SortedList<T> sortedList;
-	private DefaultEventSelectionModel<T> eventSelectionModel;
+	private EventSelectionModel<T> eventSelectionModel;
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
-	private DefaultEventTableModel<T> eventTableModel;
+	private EventTableModel<T> eventTableModel;
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
@@ -229,12 +228,12 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 				sortedList.setMode(SortedList.AVOID_MOVING_ELEMENTS);
 				specializedList = specializeItemList(sortedList);
 				firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
-				specializedList = GlazedListsSwing.swingThreadProxyList(specializedList);
+				//specializedList = GlazedListsSwing.swingThreadProxyList(specializedList);
 			} else {
 				specializedList = specializeItemList(itemList);
 				firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
 			}
-			eventSelectionModel = new DefaultEventSelectionModel<T>(specializedList);
+			eventSelectionModel = new EventSelectionModel<T>(specializedList);
 			eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
 			eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
 
@@ -257,7 +256,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 					}
 				}
 			});
-			eventTableModel = new DefaultEventTableModel<T>(specializedList, getTableFormat());
+			eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
 			getTable().setModel(eventTableModel);
 			if (!RedcordTablePanel.class.isAssignableFrom(getClass())) {
 				TableComparatorChooser.install(getTable(), sortedList, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE_WITH_UNDO);
@@ -302,11 +301,11 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		return observableElementList;
 	}
 
-	public DefaultEventSelectionModel<T> getEventSelectionModel() {
+	public EventSelectionModel<T> getEventSelectionModel() {
 		return eventSelectionModel;
 	}
 
-	protected DefaultEventTableModel<T> getEventTableModel() {
+	protected EventTableModel<T> getEventTableModel() {
 		return eventTableModel;
 	}
 

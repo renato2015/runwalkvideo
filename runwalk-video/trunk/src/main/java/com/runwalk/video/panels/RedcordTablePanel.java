@@ -45,11 +45,9 @@ import org.jdesktop.swingx.table.DatePickerCellEditor;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.TreeList;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
-import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TreeTableSupport;
 
 import com.runwalk.video.core.OnEdt;
@@ -144,10 +142,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			@Override
 			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
 				// check if a change was made on a synthetic node
-				//if (getSelectedItem().isSynthetic()) {
 				updateSelectionModel();
 				getClientTablePanel().getSelectedItem().setDirty(true);
-				//}
 			}
 
 			@OnEdt
@@ -452,8 +448,8 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 
 		};
-		TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
-		return new TreeList<RedcordTableElement>(swingThreadProxyList, listFormat, TreeList.NODES_START_EXPANDED);
+		//TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
+		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 
 	/**
@@ -476,13 +472,12 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		// date of the session ... workaround for #SWINGX-1086
 		final DateSelectionModel dateSelectionModel = new DefaultDateSelectionModel();
 		Calendar cal1 = Calendar.getInstance();
-		cal1.roll(Calendar.DAY_OF_WEEK, false);
+		cal1.roll(Calendar.DAY_OF_MONTH, false);
 		dateSelectionModel.setLowerBound(cal1.getTime());
 		Calendar cal2 = Calendar.getInstance();
 		cal2.setTime(new Date());
 		cal2.roll(Calendar.YEAR, true);
 		dateSelectionModel.setUpperBound(cal2.getTime());
-		// FIXME selection model does not seem to take selected date into account..
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER) {
 
 			@Override
