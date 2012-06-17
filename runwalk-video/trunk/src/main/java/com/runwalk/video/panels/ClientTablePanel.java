@@ -106,7 +106,12 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 			public void mouseClicked(MouseEvent arg0) {
 				theLabel.setIcon(search);
 				clearSearchField();
-				setSelectedItemRow(getTable().getSelectedRow());
+				getItemList().getReadWriteLock().readLock().lock();
+				try {
+					setSelectedItemRow(getTable().getSelectedRow());
+				} finally {
+					getItemList().getReadWriteLock().readLock().unlock();
+				}
 			}
 			public void mouseEntered(MouseEvent arg0) {
 				theLabel.setIcon(searchOverlay);

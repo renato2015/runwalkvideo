@@ -402,7 +402,7 @@
 		<dependency>
 			<groupId>net.java.dev.glazedlists</groupId>
 			<artifactId>glazedlists_java15</artifactId>
-			<version>1.8.0</version>
+			<version>1.9-SNAPSHOT</version>
 		</dependency>
 		<!-- Persistence libraries -->
 		<dependency>
@@ -457,6 +457,17 @@
 		<repository>
 			<id>Codehaus Snapshots</id>
 			<url>http://nexus.codehaus.org/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>maven2-repository.snapshot.dev.java.net</id>
+			<name>Java.net Repository for Maven Snapshots</name>
+			<url>https://maven.java.net/content/repositories/snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
