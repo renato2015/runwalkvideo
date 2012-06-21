@@ -1,14 +1,11 @@
 package com.runwalk.video.tasks;
 
 import java.awt.Robot;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceUtil;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Task;
@@ -30,7 +27,7 @@ import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.RedcordExercise;
 import com.runwalk.video.entities.RedcordSession;
 import com.runwalk.video.entities.RedcordTableElement;
-import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.glazedlists.LazyCollectionModel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.RedcordTablePanel;
@@ -107,7 +104,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					// create pipeline for redord tablepanel
 					//ThreadProxyEventList<Client> taskProxyEventList = new TaskProxyEventList<Client> (getTaskService(), selectedClients);
 					CollectionList<Client, RedcordTableElement> redcordTableElements = new CollectionList<Client, RedcordTableElement>(selectedClients, 
-						new LazyModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions", true) {
+						new LazyCollectionModel<Client, RedcordTableElement>(getTaskService(), "redcordSessions", true) {
 						
 							public List<RedcordTableElement> getLazyChildren(Client client) {
 								List<RedcordTableElement> result = new LinkedList<RedcordTableElement>();
@@ -159,109 +156,6 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private RedcordTablePanel getRedcordTablePanel() {
 		return redcordTablePanel;
-	}
-	
-	/**
-	 * An extension of {@link CollectionList.Model} that will fetch a parent entity's property in a background thread.
-	 * Caching can be enabled only if the implementation of {@link #getLazyChildren(SerializableEntity)} returns the same
-	 * result after populating the entity's lazy associations.
-	 *
-	 * @param <E> The parent entity that owns the property collection to be loaded
-	 * @param <S> The type of the child entity
-	 */
-	public static abstract class LazyModel<E extends SerializableEntity<? super E>, S> implements CollectionList.Model<E, S> {
-
-		private final String attributeName;
-		
-		private final TaskService taskService;
-		
-		private List<S> cachedList;
-		
-		private final boolean useCache;
-		
-		public LazyModel(TaskService taskService, String attributeName, boolean useCache) {
-			this.taskService = taskService;
-			this.attributeName = attributeName;
-			this.useCache = useCache;
-		}
-		
-		public abstract List<S> getLazyChildren(E parent);
-		
-		public abstract void refreshParent(E parent, List<S> children);	
-		
-		public List<S> getChildren(final E parent) {
-			List<S> result = Collections.emptyList();
-			PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
-			if (persistenceUtil.isLoaded(parent, getAttributeName())) {
-				if (useCache && cachedList != null) {
-					result = cachedList;
-					cachedList = null;
-				} else {
-					result = getLazyChildren(parent);
-				}
-			} else {
-				getTaskService().execute(new AbstractTask<List<S>, Void>("loadEntities") {
-					
-					protected List<S> doInBackground() throws Exception {
-						List<S> result = getLazyChildren(parent);
-						message("endMessage", parent);
-						return result;
-					}
-					
-					@Override
-					protected void succeeded(List<S> children) {
-						if (useCache) {
-							// cache the fetched result
-							cachedList = children;
-						}
-						// execute callback and refresh the parent list
-						refreshParent(parent, children);
-					}
-					
-				});
-			}
-			return result;
-		}
-
-		public String getAttributeName() {
-			return attributeName;
-		}
-
-		public TaskService getTaskService() {
-			return taskService;
-		}
-		
-	}
-	
-	public static class TaskProxyEventList<T> extends ThreadProxyEventList<T> {
-		
-		private final TaskService taskService;
-
-		public TaskProxyEventList(TaskService taskService, EventList<T> source) {
-			super(source);
-			this.taskService = taskService;
-		}
-		
-		protected void schedule(final Runnable runnable) {
-			// don't build this part of the pipeline on the EDT (lazy loading)
-			if (SwingUtilities.isEventDispatchThread()) {
-				getTaskService().execute(new AbstractTask<Void, Void>("loadEntities") {
-					
-					protected Void doInBackground() throws Exception {
-						runnable.run();
-						return null;
-					}
-					
-				});
-			} else {
-				runnable.run();
-			}
-		}
-		
-		private TaskService getTaskService() {
-			return taskService;
-		}
-		
 	}
 	
 }

@@ -57,6 +57,28 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	private T selectedItem;
 	private TableFormat<T> tableFormat;
 	private EventTableModel<T> eventTableModel;
+	
+	private final ListEventListener<T> listEventListener = new ListEventListener<T>() {
+
+		public void listChanged(ListEvent<T> listChanges) {
+
+			while(listChanges.next()) {
+				int changeType = listChanges.getType();
+				if (changeType == ListEvent.DELETE) {
+					setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+				} else if (changeType == ListEvent.INSERT) {
+					T newValue = null;
+					EventList<T> sourceList = listChanges.getSourceList();
+					if (!sourceList.isEmpty()) {
+						newValue = Iterables.getOnlyElement(sourceList);
+					}
+					setSelectedItem(newValue);
+					getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
+					setRowSelected(!eventSelectionModel.getSelected().isEmpty());
+				}
+			}
+		}
+	};
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
@@ -200,6 +222,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	public void dispose() {
 		if (sourceList != null && itemList != null) {
 			eventTableModel.dispose();
+			eventSelectionModel.getTogglingSelected().removeListEventListener(listEventListener);
 			eventSelectionModel.dispose();
 			itemList.dispose();
 			sortedList.dispose();
@@ -235,27 +258,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 			}
 			eventSelectionModel = new EventSelectionModel<T>(specializedList);
 			eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
-			eventSelectionModel.getTogglingSelected().addListEventListener(new ListEventListener<T>() {
-
-				public void listChanged(ListEvent<T> listChanges) {
-
-					while(listChanges.next()) {
-						int changeType = listChanges.getType();
-						if (changeType == ListEvent.DELETE) {
-							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-						} else if (changeType == ListEvent.INSERT) {
-							T newValue = null;
-							EventList<T> sourceList = listChanges.getSourceList();
-							if (!sourceList.isEmpty()) {
-								newValue = Iterables.getOnlyElement(sourceList);
-							}
-							setSelectedItem(newValue);
-							getLogger().log(Level.DEBUG, "Selected " + selectedItem.toString());
-							setRowSelected(!eventSelectionModel.getSelected().isEmpty());
-						}
-					}
-				}
-			});
+			eventSelectionModel.getTogglingSelected().addListEventListener(listEventListener);
 			eventTableModel = new EventTableModel<T>(specializedList, getTableFormat());
 			getTable().setModel(eventTableModel);
 			if (!RedcordTablePanel.class.isAssignableFrom(getClass())) {
@@ -314,7 +317,7 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		void handleClick(E element);
 
 	}
-
+	
 	private class JTableMouseListener extends MouseAdapter {
 
 		private ClickHandler<T> clickHandler;
