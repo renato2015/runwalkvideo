@@ -9,9 +9,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
-import javax.persistence.metamodel.Attribute.PersistentAttributeType;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.PluralAttribute;
 
 import org.apache.log4j.Logger;
 import org.eclipse.persistence.config.HintValues;
@@ -19,7 +16,6 @@ import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.AbstractDao;
 import com.runwalk.video.dao.Dao;
-import com.runwalk.video.entities.SerializableEntity;
 
 /**
  * This is a default {@link Dao} implementation for a J2SE application managed persistence context. 

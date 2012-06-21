@@ -44,7 +44,7 @@ public class RedcordTableFormat extends AbstractTableFormat<RedcordTableElement>
 	}
 	
 	public RedcordTableElement setColumnValue(RedcordTableElement redcordTableElement, Object editedValue, int column) {
-		if (column == 1 || column == 2 && redcordTableElement.allowsChildren() && editedValue != null) {
+		if ((column == 1 || column == 2) && redcordTableElement.allowsChildren() && editedValue != null) {
 			// add the date parsed from the datepicker to the one in the spinner
 			RedcordSession redcordSession = (RedcordSession) redcordTableElement;
 			Date startDate = redcordSession.getStartDate();
