@@ -9,14 +9,12 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskService;
 
 import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.CompositeList;
 import ca.odell.glazedlists.DebugList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.impl.gui.ThreadProxyEventList;
 
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.dao.DaoService;
