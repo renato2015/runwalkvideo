@@ -135,8 +135,7 @@ public class RedcordExercise extends SerializableEntity<RedcordTableElement> imp
 
 	@Override
 	public String toString() {
-		return "RedcordExercise [redcordSession=" + redcordSession + ", name="
-				+ name + "]";
+		return "RedcordExercise [client=" + getRedcordSession().getClient() + ", name=" + getName() + "]";
 	}
 	
 }
