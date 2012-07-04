@@ -36,6 +36,7 @@ import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.ELProperty;
+import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.calendar.DateSelectionModel;
@@ -138,9 +139,9 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 		/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
 		// update session manually if it is a synthetic element
 		commentsBinding.addBindingListener(new AbstractBindingListener() {
-
+			
 			@Override
-			public void synced(@SuppressWarnings("rawtypes") Binding binding) {
+			public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 				// check if a change was made on a synthetic node
 				updateSelectionModel();
 				getClientTablePanel().getSelectedItem().setDirty(true);
@@ -448,7 +449,6 @@ public class RedcordTablePanel extends AbstractTablePanel<RedcordTableElement> {
 			}
 
 		};
-		//TransformedList<RedcordTableElement, RedcordTableElement> swingThreadProxyList = GlazedListsSwing.swingThreadProxyList(eventList);
 		return new TreeList<RedcordTableElement>(eventList, listFormat, TreeList.NODES_START_EXPANDED);
 	}
 
