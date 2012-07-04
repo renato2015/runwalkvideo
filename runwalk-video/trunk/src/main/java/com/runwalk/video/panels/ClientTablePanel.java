@@ -30,7 +30,6 @@ import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.impl.beans.BeanConnector;
-import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.Dao;
@@ -176,24 +175,18 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	public boolean save() {
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			FilterList<Client> dirtyClients = new FilterList<Client>(getItemList(), new Matcher<Client>() {
-
-				public boolean matches(Client item) {
-					return item.isDirty();
-				}
-
-			});
 			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
 			Dao<Client> dao = getDaoService().getDao(Client.class);
-			for(Client dirtyClient : dirtyClients) {
-				Client mergedClient = dao.merge(dirtyClient);
-				// set dirty flag to false again
-				dirtyClient.setDirty(false);
-				// set version field on old client
-				if (mergedClient.getVersion() != dirtyClient.getVersion()) {
-					dirtyClient.incrementVersion();
+			for(Client client : getItemList()) {
+				if (client.isDirty()) {
+					Client mergedClient = dao.merge(client);
+					// set dirty flag to false again
+					client.setDirty(false);
+					// set version field on old client
+					if (mergedClient.getVersion() != client.getVersion()) {
+						client.incrementVersion();
+					}
 				}
-
 			}
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();

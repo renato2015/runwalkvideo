@@ -269,7 +269,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		Object oldValue = evt.getOldValue();
 		if (TaskMonitor.PROP_FOREGROUND_TASK.equals(evt.getPropertyName()) && oldValue != null) {
 			Window parentComponent = SwingUtilities.windowForComponent(this);
-			Class<? extends Object> taskClass = oldValue.getClass();
+			Class<?> taskClass = oldValue.getClass();
 			if (taskClass == RefreshTask.class) {
 				invokeAction(ApplicationActionConstants.REFRESH_VIDEO_FILES_ACTION, parentComponent);
 			} else if (taskClass == RefreshVideoFilesTask.class) {

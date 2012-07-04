@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.util.Collections;
 
 import javax.swing.JOptionPane;
 
@@ -38,9 +39,8 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		}
 		return result;
 	}
-
-	@Override
-	protected void failed(Throwable throwable) {
+	
+	protected void failed(Throwable throwable, Object... variables) {
 		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		if (activeWindow == null || !activeWindow.getName().equals("mainFrame")) {
 			activeWindow = null;
@@ -48,22 +48,32 @@ public abstract class AbstractTask<T, V> extends Task<T, V> {
 		getLogger().error(throwable.getMessage(), throwable);
 		JOptionPane.showMessageDialog(
 				activeWindow, 
-				getErrorMessage(throwable),
+				getErrorMessage(throwable, variables),
 				getResourceString(ERROR_MESSAGE), 
 				JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	protected void failed(Throwable throwable) {
+		failed(throwable, Collections.emptyList().toArray());
 	}
 
 	/**
 	 * Fetch a human readable error description from the {@link Task}'s property file.
 	 * 
 	 * @param throwable The throwable to find an error description for
+	 * @param args The arguments to be injected in the error description
 	 * @return The error description
 	 */
-	private Object getErrorMessage(Throwable throwable) {
+	private Object getErrorMessage(Throwable throwable, Object... args) {
 		String simpleClassName = throwable.getClass().getSimpleName();
 		String resourceSuffix = Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
-		String errorMessage = getResourceString(resourceName(resourceSuffix));
-		return errorMessage == null ? throwable : errorMessage;
+		Object errorMessage = getResourceString(resourceSuffix, args);
+		// go through nested exceptions and look for a specific message..
+		if (errorMessage == null && throwable.getCause() != null) {
+			errorMessage = getErrorMessage(throwable.getCause(), args);
+		}
+		return errorMessage == null || errorMessage == throwable.getCause() ? throwable : errorMessage;
 	}
 
 	public Logger getLogger() {

@@ -76,13 +76,13 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public static final String APP_MAIN_FONT = "Application.mainFont";
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
-	
+
 	private final static int MAIN_PANEL_MIN_HEIGHT = 600;
 
 	private static final String SAVE_NEEDED = "saveNeeded";
-	
+
 	private static final String DIRTY = "dirty";
-	
+
 	private List<AbstractPanel> panels = new ArrayList<AbstractPanel>();
 	private ClientTablePanel clientTablePanel;
 	private AnalysisTablePanel analysisTablePanel;
@@ -100,7 +100,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private SettingsManager settingsManager;
 
 	private boolean saveNeeded = false;
-	
+
 	/**
 	 * This listener will listen to the table panel's event firing
 	 */
@@ -111,7 +111,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				setSaveNeeded((Boolean) event.getNewValue() || isSaveNeeded());
 			}
 		}
-		
+
 	};
 
 	/**
@@ -131,7 +131,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		LOGGER.log(Level.INFO, "Detected platform is " + AppHelper.getPlatform());
 		launch(RunwalkVideoApp.class, args);
 	}
-	
+
 	/**
 	 *  sets the default font for all Swing components.
 	 *   ex. 
@@ -205,8 +205,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-	//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
-	//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
+		//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
+		//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
 				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startVideoCapturer();
@@ -252,14 +252,14 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			}
 		}
 	}
-	
+
 	/**
 	 * Start a new {@link Thread} and wait until the {@link TaskService} is completely 
 	 * terminated before exiting the application.
 	 */
 	private void awaitShutdown(final EventObject event) {
 		new Thread(new Runnable() {
-			
+
 			public void run() {
 				LOGGER.debug("Taskservice shutting down...");
 				getContext().getTaskService().shutdown();
@@ -278,26 +278,26 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				getDaoService().shutdown();
 				exit(event);
 			}
-			
+
 		}, "AwaitShutdownThread").start();
 	}
-	
+
 	public String getTitle() {
 		return getResourceString(APP_TITLE);
 	}
-	
+
 	public String getName() {
 		return getResourceString(APP_NAME);
 	}
-	
+
 	public String getVersionString() {
 		return getResourceString(APP_NAME) + "-" + getResourceString(APP_VERSION) + "-" + getResourceString(APP_BUILD_DATE);
 	}
-	
+
 	private String getResourceString(String resourceName) {
 		return getContext().getResourceMap().getString(resourceName);
 	}
-	
+
 	/**
 	 * Add the given {@link AbstractTablePanel} to the list of panels so it's dirty state can be tracked.
 	 * Setting a panel's dirty state to <code>true</code> will enable the save action throughout the application.
@@ -316,7 +316,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public void saveSettings() {
 		settingsManager.saveSettings();
 	}
-	
+
 	public boolean isSaveNeeded() {
 		return saveNeeded;
 	}
@@ -324,12 +324,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public void setSaveNeeded(boolean saveNeeded) {
 		this.firePropertyChange(SAVE_NEEDED, this.saveNeeded, this.saveNeeded = saveNeeded);
 	}
-	
+
 	@org.jdesktop.application.Action(enabledProperty=SAVE_NEEDED, block = Task.BlockingScope.WINDOW)
 	public Task<Boolean, Void> save() {
-		
+
 		return new AbstractTask<Boolean, Void>(SAVE_ACTION) {
-			
+
 			protected Boolean doInBackground() throws Exception {
 				boolean result = true;
 				message("startMessage");
@@ -347,9 +347,15 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 			protected void succeeded(Boolean result) {
 				setSaveNeeded(!result);
 			}
-			
+
+			@Override
+			protected void failed(Throwable throwable) {
+				String entityName = throwable.toString().replaceAll("[\\s\\S]*\\[(.+)\\][\\s\\S]*", "$1");
+				super.failed(throwable, entityName);
+			}
+
 		};
-		
+
 	}
 
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
@@ -387,7 +393,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		mainPanel.add(getStatusPanel(), "height 30!, gapleft push");
 		mainPanel.setMinimumSize(new Dimension(minimumWidth, MAIN_PANEL_MIN_HEIGHT));
 		return new Containable() {
-			
+
 			public Component getComponent() {
 				return mainPanel;
 			}
@@ -438,7 +444,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
 		return analysisOverviewTablePanel;
 	}
-	
+
 	private RedcordTablePanel getRedcordTablePanel() {
 		return redcordTablePanel;
 	}
@@ -458,7 +464,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private DaoService getDaoService() {
 		return daoService;
 	}
-	
+
 	private SettingsManager getSettingsManager() {
 		return settingsManager;
 	}
@@ -485,7 +491,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private UndoableEditListener createUndoableEditListener() {
 		return getApplicationActions().getUndoableEditListener();
 	}
-	
+
 	//getters for action maps in this application
 	public ActionMap getActionMap(Object obj) {
 		return getContext().getActionMap(obj);
