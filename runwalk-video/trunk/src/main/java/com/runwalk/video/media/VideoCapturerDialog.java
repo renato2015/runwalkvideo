@@ -29,6 +29,7 @@ import javax.swing.JToggleButton;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -176,25 +177,41 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	/**
 	 * This method refreshes the list with connected capture devices 
 	 * and displaying devices. The layout of this dialog will be changed accordingly.
+	 * 
+	 * The method will return <code>false</code> in case something goes wrong in the 
+	 * initialization routines. If all is well, <code>true</code> will be returned.
+	 * 
+	 * @return <code>true</code> if initialization went well
 	 */
 	@Action
 	public boolean refreshVideoCapturers() {
-		// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-		Collection<String> videoCapturerNames = VideoCapturerFactory.getInstance().getVideoCapturerNames();
-		// return if no capturers available
-		if (videoCapturerNames.isEmpty() && !isVisible()) {
-			JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.text"), 
-					getResourceMap().getString("refreshVideoCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
-			dismissDialog();
-			return false;
+		boolean result = true;
+		try {
+			// refresh capture devices by querying the capturer implementation for uninitialized capture devices
+			Collection<String> videoCapturerNames = VideoCapturerFactory.getInstance().getVideoCapturerNames();
+			// return if no capturers available
+			if (videoCapturerNames.isEmpty() && !isVisible()) {
+				showErrorDialog();
+			}
+			// add the capturers to the gui
+			addVideoCapturers(videoCapturerNames);
+			// add some extra gui elements depending on the number of connected monitors
+			addMonitors();
+			pack();
+			setLocationRelativeTo(null);
+		} catch(Throwable exception) {
+			// probably some native packages missing..
+			Logger.getLogger(getClass()).error("Error while initializing capturers", exception);
+			showErrorDialog();
+			result = false;
 		}
-		// add the capturers to the gui
-		addVideoCapturers(videoCapturerNames);
-		// add some extra gui elements depending on the number of connected monitors
-		addMonitors();
-		pack();
-		setLocationRelativeTo(null);
-		return true;
+		return result;
+	}
+	
+	private void showErrorDialog() {
+		JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.text"), 
+				getResourceMap().getString("refreshVideoCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
+		dismissDialog();
 	}
 	
 	/**
