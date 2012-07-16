@@ -3,6 +3,8 @@ package com.runwalk.video.media.dsj;
 
 import org.apache.log4j.Level;
 
+import com.runwalk.video.settings.VideoCapturerSettings;
+
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.sink.FileSink;
@@ -18,8 +20,8 @@ public class DSJFileSinkCapturer extends DSJCapturer {
 	private FileSink sink;
 	private boolean controllable = false;
 
-	DSJFileSinkCapturer(String capturerName) {
-		super(capturerName, null);
+	DSJFileSinkCapturer(VideoCapturerSettings videoCapturerSettings) {
+		super(videoCapturerSettings);
 	}
 
 	@Override

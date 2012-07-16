@@ -4,40 +4,34 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.jdesktop.application.utils.PlatformType;
+import com.runwalk.video.settings.CompositeVideoCapturerFactorySettings;
+import com.runwalk.video.settings.VideoCapturerFactorySettings;
+import com.runwalk.video.settings.VideoCapturerSettings;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 
-	private final List<VideoCapturerFactory> videoCapturerFactories;
+	private final List<VideoCapturerFactory> videoCapturerFactories = new ArrayList<VideoCapturerFactory>();
 	
-	public CompositeVideoCapturerFactory(List<String> classNames) {
-		videoCapturerFactories = new ArrayList<VideoCapturerFactory>();
-		// public constructor.. load factories using reflection
-		for (String className : classNames) {
-			VideoCapturerFactory factory = loadFactory(className);
-			if (factory != null) {
-				videoCapturerFactories.add(factory);
+	public CompositeVideoCapturerFactory() { }
+	
+	@Override
+	public void loadVideoCapturerFactorySettings(VideoCapturerFactorySettings compositeVideoCapturerFactorySettings) {
+		// instantiate other factories here
+		if (compositeVideoCapturerFactorySettings instanceof CompositeVideoCapturerFactorySettings) {
+			for(VideoCapturerFactorySettings videoCapturerFactorySettings : 
+				((CompositeVideoCapturerFactorySettings) compositeVideoCapturerFactorySettings).getVideoCapturerFactorySettings()) {
+				videoCapturerFactories.add(createInstance(videoCapturerFactorySettings));
 			}
 		}
-	}
-	
-	private VideoCapturerFactory loadFactory(String className) {
-		try {
-			Class<? extends VideoCapturerFactory> theClass = Class.forName(className).asSubclass(VideoCapturerFactory.class);
-			return theClass.newInstance();
-		} catch (Throwable e) {
-			Logger.getLogger(CompositeVideoCapturerFactory.class).error("Could not instantiate factory " + className, e);
-		}
-		return null;
+		super.loadVideoCapturerFactorySettings(compositeVideoCapturerFactorySettings);
 	}
 
 	@Override
-	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
+	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
 		// iterate over the capturer factories, find the first one and initialize
 		for(VideoCapturerFactory videoCapturerFactory : videoCapturerFactories) {
-			if (videoCapturerFactory.getVideoCapturerNames().contains(capturerName)) {
-				return videoCapturerFactory.initializeCapturer(capturerName, captureEncoderName);
+			if (videoCapturerFactory.getVideoCapturerNames().contains(videoCapturerSettings.getName())) {
+				return videoCapturerFactory.initializeCapturer(videoCapturerSettings);
 			}
 		}
 		return null;
@@ -52,10 +46,6 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 			}
 		}
 		return capturerNames;
-	}
-
-	protected boolean isPlatformSupported(PlatformType platformType) {
-		return true;
 	}
 
 }

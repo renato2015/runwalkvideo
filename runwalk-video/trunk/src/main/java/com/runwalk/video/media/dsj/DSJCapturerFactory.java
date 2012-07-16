@@ -8,6 +8,7 @@ import org.jdesktop.application.utils.PlatformType;
 import com.google.common.collect.Lists;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
+import com.runwalk.video.settings.VideoCapturerSettings;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;
@@ -57,9 +58,9 @@ public class DSJCapturerFactory extends VideoCapturerFactory {
 	}
 		
 	/** {@inheritDoc} */
-	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
+	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
 		// initialize the capturer's native resources
-		return new DSJCapturer(capturerName, captureEncoderName);
+		return new DSJCapturer(videoCapturerSettings);
 		//return new DSJFileSinkCapturer(capturerName);
 	}
 

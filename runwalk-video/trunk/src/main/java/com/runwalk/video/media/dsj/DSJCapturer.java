@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.media.IVideoCapturer;
+import com.runwalk.video.settings.VideoCapturerSettings;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;
@@ -21,17 +22,16 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 	private DSFilterInfo captureEncoder;
 
 	private String capturerName;
-
-	public DSJCapturer(String capturerName) {
-		this(capturerName, null);
-	}
 	
-	DSJCapturer(String capturerName, String captureEncoderName) {
-		this.capturerName = capturerName;
+	private VideoCapturerSettings videoCapturerSettings;
+
+	DSJCapturer(VideoCapturerSettings videoCapturerSettings) {
+		this.videoCapturerSettings = videoCapturerSettings;
+		this.capturerName = videoCapturerSettings.getName();
 		DSFilterInfo filterInfo = DSFilterInfo.filterInfoForName(capturerName);
 		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
 		// capture encoder is resolved here
-		setCaptureEncoderName(captureEncoderName);
+		setCaptureEncoderName(videoCapturerSettings.getEncoderName());
 		// filter info for this capturer will change after intialization, if needed, get it from the active capture device
 		stopRunning();
 	}
@@ -98,6 +98,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 				captureEncoder = DSFilterInfo.doNotRender();
 			}
 		}
+		videoCapturerSettings.setCaptureEncoderName(captureEncoder.getName());
 	}
 
 	public String getCaptureEncoderName() {
@@ -115,7 +116,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 
 	/**
 	 * This method should return the name of the capturer which was originally 
-	 * provided by {@link VideoCapturerFactory#createVideoCapturer(java.awt.Window, String, String)}.
+	 * provided by {@link VideoCapturerFactory#createVideoCapturer(String, String)}.
 	 */
 	public String getTitle() {
 		return capturerName;

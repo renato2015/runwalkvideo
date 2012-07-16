@@ -3,7 +3,7 @@ package com.runwalk.video.settings;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * This class manages three common properties that are commonly used in authentication against
+ * This marshallable bean manages three common properties that are commonly used in authentication against
  * backends.
  *
  * @author Jeroen Peelaerts

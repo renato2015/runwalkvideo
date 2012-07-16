@@ -13,8 +13,10 @@ import com.runwalk.video.media.VideoCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCameraInfo;
 import com.runwalk.video.media.ueye.UEyeCameraList;
+import com.runwalk.video.media.ueye.UEyeCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
 import com.runwalk.video.media.ueye.UEyeLibrary;
+import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -25,7 +27,10 @@ import com.sun.jna.ptr.PointerByReference;
 public class UEyeCapturerLibraryTest extends TestCase {
 
 	public void testUEyeCapturerFactory() {
-		VideoCapturerFactory.getInstance().createVideoCapturer(null, null, null);
+		VideoCapturerFactorySettings videoCapturerFactorySettings = new VideoCapturerFactorySettings(UEyeCapturerFactory.class);
+		VideoCapturerFactory uEyeCapturerFactory = VideoCapturerFactory.createInstance(videoCapturerFactorySettings);
+		// FIXME pass a camera name here
+		uEyeCapturerFactory.createVideoCapturer("");
 	}
 
 	public static void main(String[] args) {
