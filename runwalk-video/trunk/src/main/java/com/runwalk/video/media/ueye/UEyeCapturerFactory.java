@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
+import com.runwalk.video.settings.VideoCapturerSettings;
 
 /**
  * This factory can be used as an entry point to communicate with a uEye camera using native code.
@@ -22,17 +22,17 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 	 */
 	private Map<String, Integer> cameraNameIdMap;
 	
-	public UEyeCapturerFactory() { 	}
+	public UEyeCapturerFactory() { }
 
 	/**
 	 * {@inheritDoc}
 	 */
-	protected IVideoCapturer initializeCapturer(String capturerName, String captureEncoderName) {
-		Integer cameraId = cameraNameIdMap.get(capturerName);
+	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
+		Integer cameraId = cameraNameIdMap.get(videoCapturerSettings.getName());
 		if (cameraId != null) {
-			return new UEyeCapturer(cameraId, capturerName);
+			return new UEyeCapturer(cameraId, videoCapturerSettings.getName());
 		}
-		throw new IllegalArgumentException("Camera " + capturerName + " is not connected to the system anymore");
+		throw new IllegalArgumentException("Camera " + videoCapturerSettings.getName() + " is not connected to the system anymore");
 	}
 
 	/**
@@ -62,10 +62,6 @@ public class UEyeCapturerFactory extends VideoCapturerFactory {
 			}
 		}
 		return cameraNameIdMap.keySet();
-	}
-
-	protected boolean isPlatformSupported(PlatformType platformType) {
-		return platformType == PlatformType.WINDOWS;
 	}
 
 }
