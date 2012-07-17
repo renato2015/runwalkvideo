@@ -8,20 +8,18 @@ import com.runwalk.video.settings.CompositeVideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
-public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
+public class CompositeVideoCapturerFactory extends VideoCapturerFactory<CompositeVideoCapturerFactorySettings> {
 
-	private final List<VideoCapturerFactory> videoCapturerFactories = new ArrayList<VideoCapturerFactory>();
-	
+	private final List<VideoCapturerFactory<?>> videoCapturerFactories = new ArrayList<VideoCapturerFactory<?>>();
+
 	public CompositeVideoCapturerFactory() { }
-	
+
 	@Override
-	public void loadVideoCapturerFactorySettings(VideoCapturerFactorySettings compositeVideoCapturerFactorySettings) {
+	public void loadVideoCapturerFactorySettings(CompositeVideoCapturerFactorySettings compositeVideoCapturerFactorySettings) {
 		// instantiate other factories here
-		if (compositeVideoCapturerFactorySettings instanceof CompositeVideoCapturerFactorySettings) {
-			for(VideoCapturerFactorySettings videoCapturerFactorySettings : 
-				((CompositeVideoCapturerFactorySettings) compositeVideoCapturerFactorySettings).getVideoCapturerFactorySettings()) {
-				videoCapturerFactories.add(createInstance(videoCapturerFactorySettings));
-			}
+		for(VideoCapturerFactorySettings<?> videoCapturerFactorySettings : compositeVideoCapturerFactorySettings.getVideoCapturerFactorySettings()) {
+			/*VideoCapturerFactory<VideoCapturerFactorySettings<?>> videoCapturerFactory = 
+					VideoCapturerFactory.<VideoCapturerFactory<VideoCapturerFactorySettings<?>>>createInstance2(videoCapturerFactorySettings, VideoCapturerFactory.class);*/
 		}
 		super.loadVideoCapturerFactorySettings(compositeVideoCapturerFactorySettings);
 	}
@@ -29,7 +27,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 	@Override
 	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
 		// iterate over the capturer factories, find the first one and initialize
-		for(VideoCapturerFactory videoCapturerFactory : videoCapturerFactories) {
+		for(VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
 			if (videoCapturerFactory.getVideoCapturerNames().contains(videoCapturerSettings.getName())) {
 				return videoCapturerFactory.initializeCapturer(videoCapturerSettings);
 			}
@@ -40,7 +38,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory {
 	@Override
 	public Collection<String> getVideoCapturerNames() {
 		List<String> capturerNames = new ArrayList<String>();
-		for (VideoCapturerFactory videoCapturerFactory : videoCapturerFactories) {
+		for (VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
 			if (capturerNames.addAll(videoCapturerFactory.getVideoCapturerNames())) {
 				// TODO add some sort of separator item?? maybe later
 			}

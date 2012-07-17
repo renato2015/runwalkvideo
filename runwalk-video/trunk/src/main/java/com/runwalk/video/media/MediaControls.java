@@ -69,6 +69,7 @@ import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
+import com.runwalk.video.settings.CompositeVideoCapturerFactorySettings;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
@@ -606,7 +607,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void startVideoCapturer() {
 		// if there is no actionEvent specified, then this call was made at startup time
 		// FIXME this won't work anymore!!
-		VideoCapturerFactory videoCapturerFactory = VideoCapturerFactory.createInstance(null);
+		VideoCapturerFactory<?> videoCapturerFactory = VideoCapturerFactory.createInstance(new CompositeVideoCapturerFactorySettings(), CompositeVideoCapturerFactory.class);
 		VideoComponent capturer = videoCapturerFactory.createVideoCapturer("");
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);
