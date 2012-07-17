@@ -3,12 +3,8 @@ package com.runwalk.video.settings;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class VideoCapturerSettings {
+public class VideoCapturerSettings extends VideoComponentSettings {
 
-	private String monitorId;
-	
-	private String monitorResolution;
-	
 	private String captureEncodeName;
 	
 	private String name;
@@ -18,9 +14,8 @@ public class VideoCapturerSettings {
 	}
 
 	public VideoCapturerSettings(String name, String monitorId, String monitorResolution) {
+		super(monitorId, monitorResolution);
 		this.name = name;
-		this.monitorId = monitorId;
-		this.monitorResolution = monitorResolution;
 	}
 	
 	public VideoCapturerSettings(String name, String monitorId, String monitorResolution,
@@ -43,22 +38,6 @@ public class VideoCapturerSettings {
 
 	public void setCaptureEncoderName(String captureEncoderName) {
 		this.captureEncodeName = captureEncoderName;
-	}
-
-	public String getMonitorId() {
-		return monitorId;
-	}
-
-	public void setMonitorId(String monitorId) {
-		this.monitorId = monitorId;
-	}
-
-	public String getMonitorResolution() {
-		return monitorResolution;
-	}
-
-	public void setMonitorResolution(String monitorResolution) {
-		this.monitorResolution = monitorResolution;
 	}
 
 }

@@ -7,26 +7,26 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
-public abstract class VideoCapturerFactory {
-
-	private static final Logger LOGGER = Logger.getLogger(VideoCapturerFactory.class);
+public abstract class VideoCapturerFactory<V extends VideoCapturerFactorySettings<? extends VideoCapturerSettings>> extends VideoComponentFactory<V> {
 	
-	private VideoCapturerFactorySettings videoCapturerFactorySettings;
-
-	public static VideoCapturerFactory createInstance(VideoCapturerFactorySettings videoCapturerFactorySettings) {
-		VideoCapturerFactory result = null;
+	public static <T extends VideoCapturerFactory<V>, V extends VideoCapturerFactorySettings<E>, E extends VideoCapturerSettings> T 
+			createInstance(V videoCapturerFactorySettings, Class<T> videoCapturerFactoryClass) {
+		return VideoComponentFactory.<T, V>createGenericInstance(videoCapturerFactorySettings, videoCapturerFactoryClass);
+	}
+	
+	public static <T extends VideoCapturerFactory<VideoCapturerFactorySettings<?>>> T createInstance2(VideoCapturerFactorySettings<?> videoComponentFactorySettings, Class<? extends T> theClass) {
+		T result = null;
 		try {
-			Class<?> factoryClass = Class.forName(videoCapturerFactorySettings.getVideoCapturerFactoryClassName());
-			result = factoryClass.asSubclass(VideoCapturerFactory.class).newInstance();
+			Class<?> factoryClass = Class.forName(videoComponentFactorySettings.getVideoComponentFactoryClassName());
+			result = factoryClass.asSubclass(theClass).newInstance();
 			// apply settings to the factory..
-			result.loadVideoCapturerFactorySettings(videoCapturerFactorySettings);
+			result.loadVideoCapturerFactorySettings(videoComponentFactorySettings);
 		} catch (Throwable e) {
 			// any kind of error during initialization..
 			// return a dummy factory if fails
@@ -34,12 +34,8 @@ public abstract class VideoCapturerFactory {
 		}
 		return result;
 	}
-	
+
 	protected VideoCapturerFactory() { 	}
-	
-	public void loadVideoCapturerFactorySettings(VideoCapturerFactorySettings videoCapturerFactorySettings) {
-		this.videoCapturerFactorySettings = videoCapturerFactorySettings;
-	}
 	
 	/**
 	 * Initialize the capturer with the given name. Visible components should not be initialized until
@@ -104,7 +100,7 @@ public abstract class VideoCapturerFactory {
 	
 	public VideoComponent createVideoCapturer(String videoCapturerName) {
 		VideoCapturerSettings defaultVideoCapturerSettings = new VideoCapturerSettings(videoCapturerName);
-		for(VideoCapturerSettings videoCapturerSettings : videoCapturerFactorySettings.getVideoCapturerSettingsList()) {
+		for(VideoCapturerSettings videoCapturerSettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
 			if (videoCapturerName != null && videoCapturerName.equals(videoCapturerSettings.getName())) {
 				defaultVideoCapturerSettings = videoCapturerSettings;
 			}
@@ -145,5 +141,13 @@ public abstract class VideoCapturerFactory {
 		// if the video implementation is null then the created capturer is useless
 		return videoCapturer.getVideoImpl() != null ? videoCapturer : null;
 	}
+	
+	/**
+	 * An adapter class that takes away the burden of inheriting a quite elaborate generic signature.
+	 * Can be useful when there are no specific marshallable beans used within the {@link VideoCapturerFactory}.
+	 * 
+	 * @author Jeroen Peelaerts
+	 */
+	public abstract static class Adapter extends VideoCapturerFactory<VideoCapturerFactorySettings<VideoCapturerSettings>> {	}
 
 }

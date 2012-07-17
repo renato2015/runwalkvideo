@@ -10,7 +10,7 @@ import com.runwalk.video.settings.VideoCapturerSettings;
  * 
  * @author Jeroen Peelaerts
  */
-public final class DummyVideoCapturerFactory extends VideoCapturerFactory {
+public final class DummyVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 	
 	private DummyVideoCapturerFactory() { }
 

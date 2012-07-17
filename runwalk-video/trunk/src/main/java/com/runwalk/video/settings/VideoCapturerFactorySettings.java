@@ -1,10 +1,7 @@
 package com.runwalk.video.settings;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.runwalk.video.media.VideoCapturerFactory;
@@ -15,32 +12,19 @@ import com.runwalk.video.media.VideoCapturerFactory;
  * @author Jeroen Peelaerts
  */
 @XmlRootElement
-public class VideoCapturerFactorySettings {
-	
-	@XmlElementRef
-	private List<VideoCapturerSettings> videoCapturerSettingsList;
+public class VideoCapturerFactorySettings<E extends VideoCapturerSettings> extends VideoComponentFactorySettings<E> {
 	
 	private String videoCapturerName;
 	
-	private final String videoCapturerFactoryClassName;
-	
-	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory> videoCapturerFactoryClass) {
-		this.videoCapturerFactoryClassName = videoCapturerFactoryClass.getSimpleName();
+	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory<? extends VideoCapturerFactorySettings<E>>> videoCapturerFactoryClass) {
+		super(videoCapturerFactoryClass.getSimpleName());
 	}
 
-	public VideoCapturerFactorySettings(String videoCapturerName, Class<? extends VideoCapturerFactory> videoCapturerFactoryClass, 
-			VideoCapturerSettings... videoCapturerSettings) {
-		this(videoCapturerFactoryClass);
-		this.videoCapturerSettingsList = Arrays.asList(videoCapturerSettings);
+	public VideoCapturerFactorySettings(String videoCapturerName,
+			Class<? extends VideoCapturerFactory<? extends VideoCapturerFactorySettings<E>>> videoCapturerFactoryClass, 
+			E... videoCapturerSettings) {
+		super(videoCapturerFactoryClass, Arrays.asList(videoCapturerSettings));
 		this.videoCapturerName = videoCapturerName;
-	}
-
-	public List<VideoCapturerSettings> getVideoCapturerSettingsList() {
-		return Collections.unmodifiableList(videoCapturerSettingsList);
-	}
-	
-	public boolean addVideoCapturerSettings(VideoCapturerSettings videoCapturerSettings) {
-		return videoCapturerSettingsList.add(videoCapturerSettings);
 	}
 	
 	public String getVideoCapturerName() {
@@ -50,9 +34,5 @@ public class VideoCapturerFactorySettings {
 	public void setVideoCapturerName(String videoCapturerName) {
 		this.videoCapturerName = videoCapturerName;
 	}
-
-	public String getVideoCapturerFactoryClassName() {
-		return videoCapturerFactoryClassName;
-	}
-
+	
 }
