@@ -11,15 +11,14 @@ import com.runwalk.video.settings.VideoCapturerSettings;
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory<CompositeVideoCapturerFactorySettings> {
 
 	private final List<VideoCapturerFactory<?>> videoCapturerFactories = new ArrayList<VideoCapturerFactory<?>>();
-
+	
 	public CompositeVideoCapturerFactory() { }
 
 	@Override
 	public void loadVideoCapturerFactorySettings(CompositeVideoCapturerFactorySettings compositeVideoCapturerFactorySettings) {
-		// instantiate other factories here
-		for(VideoCapturerFactorySettings<?> videoCapturerFactorySettings : compositeVideoCapturerFactorySettings.getVideoCapturerFactorySettings()) {
-			/*VideoCapturerFactory<VideoCapturerFactorySettings<?>> videoCapturerFactory = 
-					VideoCapturerFactory.<VideoCapturerFactory<VideoCapturerFactorySettings<?>>>createInstance2(videoCapturerFactorySettings, VideoCapturerFactory.class);*/
+		for(VideoCapturerFactorySettings<? extends VideoCapturerSettings> videoCapturerFactorySettings : compositeVideoCapturerFactorySettings.getVideoCapturerFactorySettings()) {
+			videoCapturerFactories.add(VideoCapturerFactory.<VideoCapturerFactory<VideoCapturerFactorySettings<?>>, 
+					VideoCapturerFactorySettings<?>>createInstance(videoCapturerFactorySettings));
 		}
 		super.loadVideoCapturerFactorySettings(compositeVideoCapturerFactorySettings);
 	}
