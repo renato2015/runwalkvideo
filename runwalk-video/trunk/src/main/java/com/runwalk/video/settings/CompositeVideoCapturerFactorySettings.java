@@ -11,18 +11,18 @@ import com.runwalk.video.media.CompositeVideoCapturerFactory;
 public class CompositeVideoCapturerFactorySettings extends VideoCapturerFactorySettings<VideoCapturerSettings> {
 	
 	@XmlElementRef
-	private List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings;
+	private List<VideoCapturerFactorySettings<? extends VideoCapturerSettings>> videoCapturerFactorySettings;
 	
 	public CompositeVideoCapturerFactorySettings() {
 		super(CompositeVideoCapturerFactory.class);
 	}
 
-	public List<VideoCapturerFactorySettings<?>> getVideoCapturerFactorySettings() {
+	public List<VideoCapturerFactorySettings<? extends VideoCapturerSettings>> getVideoCapturerFactorySettings() {
 		return videoCapturerFactorySettings;
 	}
 
 	public void setVideoCapturerFactorySettings(
-			List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings) {
+			List<VideoCapturerFactorySettings<? extends VideoCapturerSettings>> videoCapturerFactorySettings) {
 		this.videoCapturerFactorySettings = videoCapturerFactorySettings;
 	}
 	

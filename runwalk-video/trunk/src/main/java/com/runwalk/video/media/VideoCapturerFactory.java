@@ -15,26 +15,6 @@ import com.runwalk.video.settings.VideoCapturerSettings;
 
 public abstract class VideoCapturerFactory<V extends VideoCapturerFactorySettings<? extends VideoCapturerSettings>> extends VideoComponentFactory<V> {
 	
-	public static <T extends VideoCapturerFactory<V>, V extends VideoCapturerFactorySettings<E>, E extends VideoCapturerSettings> T 
-			createInstance(V videoCapturerFactorySettings, Class<T> videoCapturerFactoryClass) {
-		return VideoComponentFactory.<T, V>createGenericInstance(videoCapturerFactorySettings, videoCapturerFactoryClass);
-	}
-	
-	public static <T extends VideoCapturerFactory<VideoCapturerFactorySettings<?>>> T createInstance2(VideoCapturerFactorySettings<?> videoComponentFactorySettings, Class<? extends T> theClass) {
-		T result = null;
-		try {
-			Class<?> factoryClass = Class.forName(videoComponentFactorySettings.getVideoComponentFactoryClassName());
-			result = factoryClass.asSubclass(theClass).newInstance();
-			// apply settings to the factory..
-			result.loadVideoCapturerFactorySettings(videoComponentFactorySettings);
-		} catch (Throwable e) {
-			// any kind of error during initialization..
-			// return a dummy factory if fails
-			LOGGER.error("exception while instantiating factory", e);
-		}
-		return result;
-	}
-
 	protected VideoCapturerFactory() { 	}
 	
 	/**
