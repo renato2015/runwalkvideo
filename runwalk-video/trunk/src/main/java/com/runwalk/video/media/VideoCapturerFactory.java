@@ -10,10 +10,9 @@ import java.util.List;
 import org.jdesktop.application.utils.PlatformType;
 
 import com.runwalk.video.core.SelfContained;
-import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
-public abstract class VideoCapturerFactory<V extends VideoCapturerFactorySettings<? extends VideoCapturerSettings>> extends VideoComponentFactory<V> {
+public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> extends VideoComponentFactory<T> {
 	
 	protected VideoCapturerFactory() { 	}
 	
@@ -128,6 +127,6 @@ public abstract class VideoCapturerFactory<V extends VideoCapturerFactorySetting
 	 * 
 	 * @author Jeroen Peelaerts
 	 */
-	public abstract static class Adapter extends VideoCapturerFactory<VideoCapturerFactorySettings<VideoCapturerSettings>> {	}
+	public abstract static class Adapter extends VideoCapturerFactory<VideoCapturerSettings> {	}
 
 }

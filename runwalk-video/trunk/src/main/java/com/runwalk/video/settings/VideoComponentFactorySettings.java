@@ -16,9 +16,9 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 	
 	private final String videoComponentFactoryClassName;
 	
-	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends VideoComponentFactorySettings<T>>> videoComponentFactoryClass, 
+	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends T>> videoCapturerFactoryClass, 
 			List<T> videoComponentSettings) {
-		this(videoComponentFactoryClass.getSimpleName());
+		this(videoCapturerFactoryClass.getSimpleName());
 		this.videoComponentSettings = videoComponentSettings;
 	}
 

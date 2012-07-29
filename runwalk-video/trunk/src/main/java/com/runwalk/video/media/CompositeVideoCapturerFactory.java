@@ -4,25 +4,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.runwalk.video.settings.CompositeVideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
-public class CompositeVideoCapturerFactory extends VideoCapturerFactory<CompositeVideoCapturerFactorySettings> {
+public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 
 	private final List<VideoCapturerFactory<?>> videoCapturerFactories = new ArrayList<VideoCapturerFactory<?>>();
 	
 	public CompositeVideoCapturerFactory() { }
-
-	@Override
-	public void loadVideoCapturerFactorySettings(CompositeVideoCapturerFactorySettings compositeVideoCapturerFactorySettings) {
-		for(VideoCapturerFactorySettings<? extends VideoCapturerSettings> videoCapturerFactorySettings : compositeVideoCapturerFactorySettings.getVideoCapturerFactorySettings()) {
-			videoCapturerFactories.add(VideoCapturerFactory.<VideoCapturerFactory<VideoCapturerFactorySettings<?>>, 
-					VideoCapturerFactorySettings<?>>createInstance(videoCapturerFactorySettings));
+	
+	/**
+	 * Create a composite factory using the given {@link List} of settings. 
+	 * A unchecked warning had to be suppressed because of the inability
+	 * to specify parameter type information inside a class constant in java.
+	 * 
+	 * @param videoCapturerFactorySettingsList The list with factory setting beans
+	 * @return The instantiated factory
+	 */
+	@SuppressWarnings("unchecked")
+	public static <V extends VideoCapturerSettings> CompositeVideoCapturerFactory
+		createInstance(List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList) {
+		CompositeVideoCapturerFactory result = new CompositeVideoCapturerFactory();
+		for (VideoCapturerFactorySettings<?> videoCapturerFactorySettings : videoCapturerFactorySettingsList) {
+			createInstance(videoCapturerFactorySettings, VideoCapturerFactory.class); 
 		}
-		super.loadVideoCapturerFactorySettings(compositeVideoCapturerFactorySettings);
-	}
-
+		return result;
+	}	
+	
 	@Override
 	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
 		// iterate over the capturer factories, find the first one and initialize

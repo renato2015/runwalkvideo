@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
 /**
@@ -16,7 +15,7 @@ import com.runwalk.video.settings.VideoCapturerSettings;
  * 
  * @author Jeroen Peelaerts
  */
-public class UEyeCapturerFactory extends VideoCapturerFactory<VideoCapturerFactorySettings<UEyeCapturerSettings>> {
+public class UEyeCapturerFactory extends VideoCapturerFactory<UEyeCapturerSettings> {
 	
 	/**
 	 * a {@link Map} that holds a mapping which associates the name of a device with it's unique ID

@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -69,8 +70,8 @@ import com.runwalk.video.media.VideoComponent.State;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
-import com.runwalk.video.settings.CompositeVideoCapturerFactorySettings;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
@@ -607,7 +608,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	public void startVideoCapturer() {
 		// if there is no actionEvent specified, then this call was made at startup time
 		// FIXME this won't work anymore!!
-		VideoCapturerFactory<?> videoCapturerFactory = VideoCapturerFactory.createInstance(new CompositeVideoCapturerFactorySettings(), CompositeVideoCapturerFactory.class);
+		List<VideoCapturerFactorySettings<?>> emptyList = Collections.emptyList();
+		VideoCapturerFactory<?> videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(emptyList);
 		VideoComponent capturer = videoCapturerFactory.createVideoCapturer("");
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);

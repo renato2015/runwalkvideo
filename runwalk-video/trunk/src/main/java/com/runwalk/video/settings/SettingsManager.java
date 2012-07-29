@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -26,6 +25,7 @@ import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
 
+import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.util.AppUtil;
@@ -313,10 +313,10 @@ public class SettingsManager implements Serializable {
 		getSettings().databaseSettings = databaseSettings;
 	}
 
-	public List<String> getVideoCapturerFactories() {
-		return Arrays.asList(getSettings().videoCapturerFactories);
+	public List<VideoCapturerFactorySettings<?>> getVideoCapturerFactorySettings() {
+		return getSettings().videoCapturerFactorySettings;
 	}
-
+	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
@@ -345,7 +345,8 @@ public class SettingsManager implements Serializable {
 
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
-		private String[] videoCapturerFactories = new String[] {"com.runwalk.video.media.dsj.DSJCapturerFactory", "com.runwalk.video.media.ueye.UEyeCapturerFactory"};
+		@XmlElementRef
+		private List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
 
 		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy("yyyy/MM - MMM/dd");
