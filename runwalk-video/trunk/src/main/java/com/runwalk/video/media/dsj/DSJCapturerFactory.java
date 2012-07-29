@@ -15,7 +15,7 @@ import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSFilterInfo;
 import de.humatic.dsj.DSFiltergraph;
 
-public class DSJCapturerFactory extends VideoCapturerFactory.Adapter {
+public class DSJCapturerFactory extends VideoCapturerFactory<VideoCapturerSettings> {
 	
 	private static final String DSJ_UNLOCK_NAME = "dsj.unlockName";
 	private static final String DSJ_CODE3 = "dsj.code3";

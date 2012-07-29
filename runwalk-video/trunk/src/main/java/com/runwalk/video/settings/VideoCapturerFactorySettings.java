@@ -16,12 +16,12 @@ public class VideoCapturerFactorySettings<E extends VideoCapturerSettings> exten
 	
 	private String videoCapturerName;
 	
-	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory<? extends VideoCapturerFactorySettings<E>>> videoCapturerFactoryClass) {
+	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory<? extends E>> videoCapturerFactoryClass) {
 		super(videoCapturerFactoryClass.getSimpleName());
 	}
 
 	public VideoCapturerFactorySettings(String videoCapturerName,
-			Class<? extends VideoCapturerFactory<? extends VideoCapturerFactorySettings<E>>> videoCapturerFactoryClass, 
+			Class<? extends VideoCapturerFactory<? extends E>> videoCapturerFactoryClass, 
 			E... videoCapturerSettings) {
 		super(videoCapturerFactoryClass, Arrays.asList(videoCapturerSettings));
 		this.videoCapturerName = videoCapturerName;
