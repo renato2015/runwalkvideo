@@ -9,8 +9,14 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 	
 	protected final static Logger LOGGER = Logger.getLogger(VideoCapturerFactory.class);
 	
+	private final Class<T> videoComponentSettingsClass;
+
 	private VideoComponentFactorySettings<T> videoComponentFactorySettings;
 	
+	public VideoComponentFactory(Class<T> videoComponentSettingsClass) {
+		this.videoComponentSettingsClass = videoComponentSettingsClass;
+	}
+
 	/**
 	 * Create a factory with explicitly type information. Use this method whenever possible as it typesafer in comparison to
 	 * its overloaded one argument version.
@@ -30,9 +36,23 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 		} catch (Throwable e) {
 			// any kind of error during initialization..
 			// return a dummy factory if fails
-			LOGGER.error("exception while instantiating factory", e);
+			LOGGER.error("Exception while instantiating factory", e);
 		}
 		return result;
+	}
+	
+	protected T createSettingsBean(String videoCapturerName) {
+		try {
+			T newInstance = getVideoComponentSettingsClass().newInstance();
+			// eventueel een setter die de waarde van t op de bean gooit
+			newInstance.setName(videoCapturerName);
+			return newInstance;
+		} catch (InstantiationException e) {
+			LOGGER.error("Exception while instantiating settings bean", e);
+		} catch (IllegalAccessException e) {
+			LOGGER.error("Exception while instantiating settings bean", e);
+		}
+		return null;
 	}
 	
 	public void loadVideoCapturerFactorySettings(VideoComponentFactorySettings<T> videoCapturerFactorySettings) {
@@ -42,5 +62,9 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 	public VideoComponentFactorySettings<T> getVideoComponentFactorySettings() {
 		return videoComponentFactorySettings;
 	}
-	
+
+	public Class<T> getVideoComponentSettingsClass() {
+		return videoComponentSettingsClass;
+	}
+
 }

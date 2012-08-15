@@ -5,9 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class VideoCapturerSettings extends VideoComponentSettings {
 
-	private String captureEncodeName;
-	
-	private String name;
+	private String encoderName;
 	
 	public VideoCapturerSettings(String name) {
 		this.name = name;
@@ -19,25 +17,17 @@ public class VideoCapturerSettings extends VideoComponentSettings {
 	}
 	
 	public VideoCapturerSettings(String name, String monitorId, String monitorResolution,
-			String captureEncoderName) {
+			String encoderName) {
 		this(name, monitorId, monitorResolution);
-		this.captureEncodeName = captureEncoderName;
+		this.encoderName = encoderName;
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getEncoderName() {
-		return captureEncodeName;
+		return encoderName;
 	}
 
-	public void setCaptureEncoderName(String captureEncoderName) {
-		this.captureEncodeName = captureEncoderName;
+	public void setEncoderName(String encoderName) {
+		this.encoderName = encoderName;
 	}
 
 }

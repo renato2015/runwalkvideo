@@ -5,13 +5,13 @@ import java.util.Collection;
 import java.util.List;
 
 import com.runwalk.video.settings.VideoCapturerFactorySettings;
-import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.settings.VideoComponentSettings;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 
 	private final List<VideoCapturerFactory<?>> videoCapturerFactories = new ArrayList<VideoCapturerFactory<?>>();
 	
-	public CompositeVideoCapturerFactory() { }
+	private CompositeVideoCapturerFactory() { }
 	
 	/**
 	 * Create a composite factory using the given {@link List} of settings. 
@@ -22,7 +22,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	 * @return The instantiated factory
 	 */
 	@SuppressWarnings("unchecked")
-	public static <V extends VideoCapturerSettings> CompositeVideoCapturerFactory
+	public static <V extends VideoComponentSettings> CompositeVideoCapturerFactory
 		createInstance(List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList) {
 		CompositeVideoCapturerFactory result = new CompositeVideoCapturerFactory();
 		for (VideoCapturerFactorySettings<?> videoCapturerFactorySettings : videoCapturerFactorySettingsList) {
@@ -32,11 +32,11 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	}	
 	
 	@Override
-	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
+	public VideoComponent createVideoCapturer(String videoCapturerName) {
 		// iterate over the capturer factories, find the first one and initialize
 		for(VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
-			if (videoCapturerFactory.getVideoCapturerNames().contains(videoCapturerSettings.getName())) {
-				return videoCapturerFactory.initializeCapturer(videoCapturerSettings);
+			if (videoCapturerFactory.getVideoCapturerNames().contains(videoCapturerName)) {
+				return videoCapturerFactory.createVideoCapturer(videoCapturerName);
 			}
 		}
 		return null;
