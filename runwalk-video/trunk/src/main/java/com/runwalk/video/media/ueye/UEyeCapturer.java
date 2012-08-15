@@ -51,12 +51,10 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	private static final String MJPEG_ENCODER = "MJPEG";
 	
-	/** Image quality [1 = lowest ... 100 = highest] */
-	public static int COMPRESSION_QUALITY = 75;
-
 	private static Logger LOGGER =  Logger.getLogger(UEyeCapturer.class);
+	
+	private final UEyeCapturerSettings uEyeCapturerSettings;
 
-	private final String cameraName;
 	private IntByReference cameraHandle;
 
 	private File settingsFile;
@@ -81,21 +79,25 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	private Component videoCanvas;
 
 	private Frame fullScreenFrame;
-
-	UEyeCapturer(int cameraId, String cameraName) {
-		this.cameraName = cameraName;
-		cameraHandle = new IntByReference(cameraId);
+	
+	UEyeCapturer(UEyeCapturerSettings uEyeCapturerSettings) {
+		this.uEyeCapturerSettings = uEyeCapturerSettings;
+		cameraHandle = new IntByReference(uEyeCapturerSettings.getCameraId());
 		int result = UEyeCapturerLibrary.InitializeCamera(cameraHandle);
 		LOGGER.debug("InitializeCamera " + isSuccess(result));
 		LOGGER.debug("Camera handle value = "  + cameraHandle.getValue());
 	}
-	
+
 	private String isSuccess(int resultCode) {
 		return resultCode == 0 ? "succeeded" : "failed (" + resultCode + ")";
 	}
+	
+	public UEyeCapturerSettings getuEyeCapturerSettings() {
+		return uEyeCapturerSettings;
+	}
 
 	public String getTitle() {
-		return cameraName;
+		return getuEyeCapturerSettings().getName();
 	}
 
 	public void dispose() {
@@ -147,7 +149,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 
 	private File getSettingsFile() {
 		if (settingsFile == null) {
-			String settingsFilePathProperty = System.getProperty(SETTINGS_FILE_PROPERTY);
+			String settingsFilePathProperty = getuEyeCapturerSettings().getSettingsFile();
 			if (settingsFilePathProperty != null) {
 				File selectedFile = new File(settingsFilePathProperty);
 				if (selectedFile.exists()) {
@@ -164,6 +166,10 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 			result = getSettingsFile().getAbsolutePath();
 		}
 		return result;
+	}
+	
+	private int getCompressionQuality() {
+		return getuEyeCapturerSettings().getCompressionQuality();
 	}
 
 	public void stopRunning() {
@@ -183,7 +189,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public void startRecording(String videoPath) {
-		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, COMPRESSION_QUALITY);
+		int result = UEyeCapturerLibrary.StartRecording(cameraHandle, videoPath, getCompressionQuality());
 		LOGGER.debug("StartRecording " + isSuccess(result));
 
 		Thread thread = new Thread(new Runnable() {
@@ -230,7 +236,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	/**
 	 * This implementation will open the .ini settings file for the selected camera.
 	 */
-	public boolean showCaptureSettings() {
+	public boolean showCapturerSettings() {
 		// nothing to show here
 		if (getSettingsFile() != null) {
 			try {

@@ -104,6 +104,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final WindowManager windowManager;
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
+	private final VideoCapturerFactory<?> videoCapturerFactory;
 
 	private final Timer timer;
 
@@ -118,13 +119,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	};
 	
-	final JComponent busyGlassPane = new JComponent() {
-		
-		{
+	final JComponent busyGlassPane = new JComponent() {{
 			setOpaque(true);
-		}
-		
-	};
+	}};
 
 	private Boolean selectedRecordingRecordable = false;
 	private boolean recordingEnabled, playerControlsEnabled, stopEnabled, capturerControlsEnabled, toggleFullScreenEnabled;
@@ -148,13 +145,14 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private RecordTask recordTask = null;
 
 	public MediaControls(SettingsManager appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
-			DaoService daoService, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+			DaoService daoService, VideoCapturerFactory<?> videoCapturerFactory, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+		this.appSettings = appSettings;
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
-		this.appSettings = appSettings;
+		this.windowManager = windowManager;
+		this.videoCapturerFactory = videoCapturerFactory;
 		this.analysisTablePanel = analysisTablePanel;
 		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
-		this.windowManager = windowManager;
 
 		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
@@ -607,9 +605,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	@Action
 	public void startVideoCapturer() {
 		// if there is no actionEvent specified, then this call was made at startup time
-		// FIXME this won't work anymore!!
-		List<VideoCapturerFactorySettings<?>> emptyList = Collections.emptyList();
-		VideoCapturerFactory<?> videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(emptyList);
+		// TODO should get default capturer name from the composite factory??
 		VideoComponent capturer = videoCapturerFactory.createVideoCapturer("");
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);

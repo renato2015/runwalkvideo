@@ -8,6 +8,8 @@ public class VideoComponentSettings {
 	private String monitorId;
 	
 	private String monitorResolution;
+
+	protected String name;
 	
 	public VideoComponentSettings() {	}
 
@@ -30,6 +32,14 @@ public class VideoComponentSettings {
 
 	public void setMonitorResolution(String monitorResolution) {
 		this.monitorResolution = monitorResolution;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

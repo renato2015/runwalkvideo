@@ -118,7 +118,7 @@ public class VideoCapturer extends VideoComponent {
 
 			protected Void doInBackground() throws Exception {
 				message("startMessage");
-				if (getVideoImpl().showCaptureSettings()) {
+				if (getVideoImpl().showCapturerSettings()) {
 					setIdle(true);
 				}
 				return null;

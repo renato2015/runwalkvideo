@@ -38,6 +38,7 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.media.CompositeVideoCapturerFactory;
 import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
@@ -48,6 +49,7 @@ import com.runwalk.video.panels.ClientTablePanel;
 import com.runwalk.video.panels.RedcordTablePanel;
 import com.runwalk.video.panels.StatusPanel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
@@ -205,10 +207,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-		//	List<String> classNames = AppSettings.getInstance().getVideoCapturerFactories();
-		//	VideoCapturerFactory videoCapturerFactory = new CompositeVideoCapturerFactory(classNames);
+		List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings = getSettingsManager().getVideoCapturerFactorySettings();
+		// create video capturer factory
+		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettings);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
-				windowManager, getDaoService(), getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+				windowManager, getDaoService(), videoCapturerFactory, 
+				getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));

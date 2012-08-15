@@ -75,7 +75,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 		getFiltergraph().setPreview();
 	}
 
-	public boolean showCaptureSettings() {
+	public boolean showCapturerSettings() {
 		return getFiltergraph().getActiveVideoDevice().showDialog(DSCapture.CaptureDevice.WDM_DEVICE) > -1;
 	}
 
@@ -98,7 +98,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 				captureEncoder = DSFilterInfo.doNotRender();
 			}
 		}
-		videoCapturerSettings.setCaptureEncoderName(captureEncoder.getName());
+		videoCapturerSettings.setEncoderName(captureEncoder.getName());
 	}
 
 	public String getCaptureEncoderName() {

@@ -12,7 +12,7 @@ import com.runwalk.video.media.VideoCapturerFactory;
  * @author Jeroen Peelaerts
  */
 @XmlRootElement
-public class VideoCapturerFactorySettings<E extends VideoCapturerSettings> extends VideoComponentFactorySettings<E> {
+public class VideoCapturerFactorySettings<E extends VideoComponentSettings> extends VideoComponentFactorySettings<E> {
 	
 	private String videoCapturerName;
 	

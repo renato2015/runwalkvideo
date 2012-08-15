@@ -29,7 +29,6 @@ import javax.swing.JToggleButton;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -183,34 +182,16 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * 
 	 * @return <code>true</code> if initialization went well
 	 */
-	@Action
-	public boolean refreshVideoCapturers() {
-		boolean result = true;
-		try {
-			// FIXWM
-			VideoCapturerFactory<?> videoCapturerFactory = null;
-			// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-			Collection<String> videoCapturerNames = videoCapturerFactory.getVideoCapturerNames();
-			// return if no capturers available
-			if (videoCapturerNames.isEmpty() && !isVisible()) {
-				showErrorDialog();
-			}
-			// add the capturers to the gui
-			addVideoCapturers(videoCapturerNames);
-			// add some extra gui elements depending on the number of connected monitors
-			addMonitors();
-			pack();
-			setLocationRelativeTo(null);
-		} catch(Throwable exception) {
-			// probably some native packages missing..
-			Logger.getLogger(getClass()).error("Error while initializing capturers", exception);
-			showErrorDialog();
-			result = false;
-		}
-		return result;
+	public void refreshVideoCapturers(Collection<String> videoCapturerNames) {
+		// add the capturers to the gui
+		addVideoCapturers(videoCapturerNames);
+		// add some extra gui elements depending on the number of connected monitors
+		addMonitors();
+		pack();
+		setLocationRelativeTo(null);
 	}
 	
-	private void showErrorDialog() {
+	public void showErrorDialog() {
 		JOptionPane.showMessageDialog(getParent(), getResourceMap().getString("refreshVideoCapturers.errorDialog.text"), 
 				getResourceMap().getString("refreshVideoCapturers.errorDialog.title"), JOptionPane.ERROR_MESSAGE);
 		dismissDialog();
@@ -268,7 +249,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 					public void actionPerformed(ActionEvent e) {
 						AbstractButton source = (AbstractButton) e.getSource();
 						String monitorId = source.getActionCommand();
-						// TODO pas position here instead of monitor id..
+						// TODO pass position here instead of monitor id..
 						firePropertyChange(SelfContained.MONITOR_ID, selectedMonitorId, selectedMonitorId = monitorId);
 					}
 

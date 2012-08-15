@@ -20,7 +20,7 @@ public interface IVideoCapturer extends IVideoComponent {
 	 * if the component's state was changed to running.
 	 * @return <code>true</code> if the component is running
 	 */
-	boolean showCaptureSettings();
+	boolean showCapturerSettings();
 	
 	/**
 	 * Show a camera settings dialog box. Will return <code>true</code>
