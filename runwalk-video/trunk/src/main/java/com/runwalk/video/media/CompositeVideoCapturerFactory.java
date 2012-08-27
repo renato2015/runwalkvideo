@@ -3,7 +3,9 @@ package com.runwalk.video.media;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.Sets;
 import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.settings.VideoComponentSettings;
 
@@ -25,12 +27,21 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	public static <V extends VideoComponentSettings> CompositeVideoCapturerFactory
 		createInstance(List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList) {
 		CompositeVideoCapturerFactory result = new CompositeVideoCapturerFactory();
+		Set<String> instantiatedFactoryClassNames = Sets.newHashSet();
 		for (VideoCapturerFactorySettings<?> videoCapturerFactorySettings : videoCapturerFactorySettingsList) {
-			createInstance(videoCapturerFactorySettings, VideoCapturerFactory.class); 
+			String videoComponentFactoryClassName = videoCapturerFactorySettings.getVideoComponentFactoryClassName();
+			if (videoComponentFactoryClassName .contains(videoComponentFactoryClassName)) {
+				VideoCapturerFactory<?> videoCapturerFactory = createInstance(videoCapturerFactorySettings, VideoCapturerFactory.class); 
+				result.addFactory(videoCapturerFactory);
+				instantiatedFactoryClassNames.add(videoComponentFactoryClassName);
+			}
 		}
 		return result;
 	}	
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public VideoComponent createVideoCapturer(String videoCapturerName) {
 		// iterate over the capturer factories, find the first one and initialize
@@ -41,7 +52,14 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 		}
 		return null;
 	}
+	
+	public boolean addFactory(VideoCapturerFactory<?> videoCapturerFactory) {
+		return videoCapturerFactory != null ? videoCapturerFactories.add(videoCapturerFactory) : false;
+	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Collection<String> getVideoCapturerNames() {
 		List<String> capturerNames = new ArrayList<String>();

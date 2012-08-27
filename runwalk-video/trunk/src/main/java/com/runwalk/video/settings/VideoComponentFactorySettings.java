@@ -14,12 +14,18 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 	@XmlElementRef
 	private List<T> videoComponentSettings = new ArrayList<T>();
 	
-	private final String videoComponentFactoryClassName;
+	private String videoComponentFactoryClassName;
+	
+	public VideoComponentFactorySettings() { } 
 	
 	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends T>> videoCapturerFactoryClass, 
 			List<T> videoComponentSettings) {
-		this(videoCapturerFactoryClass.getSimpleName());
+		this(videoCapturerFactoryClass);
 		this.videoComponentSettings = videoComponentSettings;
+	}
+	
+	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends T>> videoCapturerFactoryClass) {
+		this(videoCapturerFactoryClass.getName());
 	}
 
 	public VideoComponentFactorySettings(String videoComponentFactoryClassName) {

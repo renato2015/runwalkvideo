@@ -40,6 +40,7 @@ import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.CompositeVideoCapturerFactory;
 import com.runwalk.video.media.MediaControls;
+import com.runwalk.video.media.dsj.DSJCapturerFactory;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
@@ -207,9 +208,14 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-		List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings = getSettingsManager().getVideoCapturerFactorySettings();
+		// FIXME why can't I use a generic signature here?
+		@SuppressWarnings("unchecked")
+		VideoCapturerFactorySettings<?> videoCapturerFactorySettings = 
+				new VideoCapturerFactorySettings(DSJCapturerFactory.class);
+		settingsManager.addVideoCapturerFactorySettings(videoCapturerFactorySettings);
+		List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList = getSettingsManager().getVideoCapturerFactorySettings();
 		// create video capturer factory
-		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettings);
+		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettingsList);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
 				windowManager, getDaoService(), videoCapturerFactory, 
 				getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
