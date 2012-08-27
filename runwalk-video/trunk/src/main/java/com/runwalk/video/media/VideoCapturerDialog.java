@@ -29,6 +29,7 @@ import javax.swing.JToggleButton;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -46,20 +47,23 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	public static final String SELECTED_VIDEO_CAPTURER_NAME = "selectedVideoCapturerName";
 
 	public static final String ABORTED = "aborted";
-
-	private JComboBox videoCapturerComboBox;
-
-	private String selectedVideoCapturerName;
 	
 	private final String defaultVideoCapturerName;
 
 	private final int videoCapturerId;
+
+	private final VideoCapturerFactory<?> videoCapturerFactory;
+
+	private JComboBox videoCapturerComboBox;
+	
+	private String selectedVideoCapturerName;
 
 	private String selectedMonitorId;
 
 	private JPanel buttonPanel;
 	
 	private boolean aborted = false;
+	
 
 	/**
 	 * Create a dialog that allows the user to start a capture device. Selection notification will be done by firing {@link PropertyChangeEvent}s 
@@ -69,13 +73,16 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * @param parent The parent {@link Window} whose focusing behavior will be inherited. If null, then the exit action will be available in the {@link Dialog}
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
 	 * @param videoCapturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
+	 * @param videoCapturerFactory TODO
 	 * @param defaultCapturer The name of the default selected capturer
 	 */
-	public VideoCapturerDialog(Window parent, ActionMap actionMap, int videoCapturerId, String defaultVideoCapturerName) {
+	public VideoCapturerDialog(Window parent, ActionMap actionMap, int videoCapturerId, 
+			String defaultVideoCapturerName, VideoCapturerFactory<?> videoCapturerFactory) {
 		super(parent);
 		setModal(true);
 		this.videoCapturerId = videoCapturerId;
 		this.defaultVideoCapturerName = defaultVideoCapturerName;
+		this.videoCapturerFactory = videoCapturerFactory;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		// is the application starting up or already started?
 		final boolean enableQuitAction = parent == null;
@@ -182,13 +189,29 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * 
 	 * @return <code>true</code> if initialization went well
 	 */
-	public void refreshVideoCapturers(Collection<String> videoCapturerNames) {
-		// add the capturers to the gui
-		addVideoCapturers(videoCapturerNames);
-		// add some extra gui elements depending on the number of connected monitors
-		addMonitors();
-		pack();
-		setLocationRelativeTo(null);
+	@Action
+	public boolean refreshVideoCapturers() {
+		boolean result = true;
+		try {
+			// refresh capture devices by querying the capturer implementation for uninitialized capture devices
+			Collection<String> videoCapturerNames = videoCapturerFactory.getVideoCapturerNames();
+			// return if no capturers available
+			if (videoCapturerNames.isEmpty() && !isVisible()) {
+				showErrorDialog();
+			}
+			// add the capturers to the gui
+			addVideoCapturers(videoCapturerNames);
+			// add some extra gui elements depending on the number of connected monitors
+			addMonitors();
+			pack();
+			setLocationRelativeTo(null);
+		} catch(Throwable exception) {
+			// probably some native packages missing..
+			Logger.getLogger(getClass()).error("Error while initializing capturers", exception);
+			showErrorDialog();
+			result = false;
+		}
+		return result;
 	}
 	
 	public void showErrorDialog() {
@@ -201,6 +224,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * Add the available capturers to the {@link Dialog}.
 	 * 
 	 * @param videoCapturerNames The names of the available capturers
+	 * @param videoCapturerName TODO
 	 */
 	private void addVideoCapturers(Collection<String> videoCapturerNames) {
 		String[] captureDevicesArray = Iterables.toArray(videoCapturerNames, String.class);

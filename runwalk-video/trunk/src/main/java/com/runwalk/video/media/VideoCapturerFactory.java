@@ -7,8 +7,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.settings.VideoCapturerSettings;
 
@@ -86,9 +84,9 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 
 	public VideoComponent createVideoCapturer(String videoCapturerName) {
 		 T videoCapturerSettings = null;
-         for (T element : getVideoComponentFactorySettings().getVideoComponentSettings()) {
-        	if (element.toString().equals(element.getName())) {
-            	 videoCapturerSettings = element;
+         for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
+        	if (videoComponentFactorySettings.getName().equals(videoCapturerName)) {
+            	 videoCapturerSettings = videoComponentFactorySettings;
              }
          }
          // if not found.. instantiate new bean
@@ -110,35 +108,24 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		final VideoCapturer videoCapturer = new VideoCapturer();
 		Window parentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		// create a dialog to let the user choose which capture device to start on which monitor
+		// TODO review constructor arguments
 		VideoCapturerDialog dialog = new VideoCapturerDialog(parentWindow, videoCapturer.getApplicationActionMap(), 
-				videoCapturer.getComponentId(), videoCapturerSettings.getEncoderName());
+				videoCapturer.getComponentId(), videoCapturerSettings.getName(), this);
 		final PropertyChangeListener changeListener = createDialogListener(videoCapturer, videoCapturerSettings);
 		dialog.addPropertyChangeListener(changeListener);
-		try {
-			// refresh capture devices by querying the capturer implementation for uninitialized capture devices
-			Collection<String> videoCapturerNames = getVideoCapturerNames();
-			if (!videoCapturerNames.isEmpty() && !dialog.isVisible()) {
-				// populate dialog with capture devices and look for connected monitors
-				dialog.refreshVideoCapturers(videoCapturerNames);
-				// show the dialog on screen
-				dialog.setVisible(true);
-				dialog.toFront();
-				// implementation can be null here if returned by the dummy factory
-				if (!dialog.isAborted() && videoCapturer.getVideoImpl() != null) {
-					// prepare the capturer for showing live video
-					videoCapturer.startRunning();
-				}
-			} else {
-				dialog.showErrorDialog();
+		// populate dialog with capture devices and look for connected monitors
+		if (dialog.refreshVideoCapturers()) {
+			// show the dialog on screen
+			dialog.setVisible(true);
+			dialog.toFront();
+			// implementation can be null here if returned by the dummy factory
+			if (!dialog.isAborted() && videoCapturer.getVideoImpl() != null) {
+				// prepare the capturer for showing live video
+				videoCapturer.startRunning();
 			}
-			// return if no capturers available
-		} catch(Throwable throwable) {
-			Logger.getLogger(getClass()).error("Error while initializing capturers", throwable);
-			dialog.showErrorDialog();
-		} finally {
-			// remove the listener to avoid memory leaking
-			dialog.removePropertyChangeListener(changeListener);
 		}
+		// remove the listener to avoid memory leaking
+		dialog.removePropertyChangeListener(changeListener);
 		// if the video implementation is null then the created capturer is useless
 		return videoCapturer.getVideoImpl() != null ? videoCapturer : null;
 	}

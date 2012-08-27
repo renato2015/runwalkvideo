@@ -12,16 +12,18 @@ import com.runwalk.video.media.VideoCapturerFactory;
  * @author Jeroen Peelaerts
  */
 @XmlRootElement
-public class VideoCapturerFactorySettings<E extends VideoComponentSettings> extends VideoComponentFactorySettings<E> {
+public class VideoCapturerFactorySettings<E extends VideoCapturerSettings> extends VideoComponentFactorySettings<E> {
 	
 	private String videoCapturerName;
 	
-	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory<? extends E>> videoCapturerFactoryClass) {
-		super(videoCapturerFactoryClass.getSimpleName());
+	public VideoCapturerFactorySettings() {} 
+	
+	public VideoCapturerFactorySettings(Class<? extends VideoCapturerFactory<E>> videoCapturerFactoryClass) {
+		super(videoCapturerFactoryClass);
 	}
 
 	public VideoCapturerFactorySettings(String videoCapturerName,
-			Class<? extends VideoCapturerFactory<? extends E>> videoCapturerFactoryClass, 
+			Class<? extends VideoCapturerFactory<E>> videoCapturerFactoryClass, 
 			E... videoCapturerSettings) {
 		super(videoCapturerFactoryClass, Arrays.asList(videoCapturerSettings));
 		this.videoCapturerName = videoCapturerName;

@@ -317,6 +317,10 @@ public class SettingsManager implements Serializable {
 		return getSettings().videoCapturerFactorySettings;
 	}
 	
+	public boolean addVideoCapturerFactorySettings(VideoCapturerFactorySettings<?> videoCapturerFactorySettings) {
+		return getSettings().videoCapturerFactorySettings.add(videoCapturerFactorySettings);
+	}
+	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
