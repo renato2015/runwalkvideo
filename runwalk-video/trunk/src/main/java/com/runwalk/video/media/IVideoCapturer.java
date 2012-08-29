@@ -13,6 +13,9 @@ public interface IVideoCapturer extends IVideoComponent {
 	 */
 	void startRecording(String videoPath);
 	
+	/**
+	 * Stop recording. This call should be made after a call to {@link #startRecording(String)}.
+	 */
 	void stopRecording();
 
 	/**

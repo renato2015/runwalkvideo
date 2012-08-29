@@ -52,8 +52,12 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		}
 	}
 
-	private PropertyChangeListener createDialogListener(final VideoCapturer videoCapturer, final T videoCapturerSettings) {
+	private PropertyChangeListener createDialogListener(final VideoCapturer videoCapturer) {
 		return new PropertyChangeListener()  { 
+			
+			private T videoCapturerSettings;
+			
+			private Integer monitorId = -1;
 
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals(VideoCapturerDialog.SELECTED_VIDEO_CAPTURER_NAME)) {
@@ -61,7 +65,11 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 					disposeVideoCapturer(videoCapturer);
 					// initialize the selected capturer
 					try {
-						videoCapturerSettings.setName(evt.getNewValue().toString());
+						String selectedVideoCapturerName = evt.getNewValue().toString();
+						videoCapturerSettings = getVideoCapturerSettings(selectedVideoCapturerName);
+						videoCapturerSettings.setName(selectedVideoCapturerName);
+						String monitorId = this.monitorId == -1 ? "" : Integer.toString(this.monitorId);
+						videoCapturerSettings.setMonitorId(monitorId);
 						IVideoCapturer videoCapturerImpl = initializeCapturer(videoCapturerSettings);
 						videoCapturer.setVideoImpl(videoCapturerImpl);
 						// track object life cycle and release resources if needed
@@ -73,45 +81,50 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 				} else if (evt.getPropertyName().equals(SelfContained.MONITOR_ID)) {
 					if (videoCapturer.getVideoImpl() instanceof SelfContained) {
 						// user clicked a monitor button, set it on the capturer
-						int monitorId = Integer.parseInt(evt.getNewValue().toString());
-						videoCapturerSettings.setMonitorId(String.valueOf(monitorId));
+						monitorId = Integer.parseInt(evt.getNewValue().toString());
 						((SelfContained) videoCapturer.getVideoImpl()).setMonitorId(monitorId);
 					}
 				}
 			}
 		};
 	}
-
-	public VideoComponent createVideoCapturer(String videoCapturerName) {
-		 T videoCapturerSettings = null;
-         for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
-        	if (videoComponentFactorySettings.getName().equals(videoCapturerName)) {
-            	 videoCapturerSettings = videoComponentFactorySettings;
-             }
-         }
-         // if not found.. instantiate new bean
-         videoCapturerSettings = videoCapturerSettings == null ? 
-        		 createSettingsBean(videoCapturerName) : videoCapturerSettings;
-         return createVideoCapturer(videoCapturerSettings);
+	
+	private T getVideoCapturerSettings(String videoCapturerName) {
+		T result = null;
+		for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
+			if (videoComponentFactorySettings.getName().equals(videoCapturerName)) {
+				result = videoComponentFactorySettings;
+			}
+		}
+		// if not found.. instantiate new bean
+		return result == null ? createSettingsBean(videoCapturerName) : result;
 	}
-
+	
 	/** 
 	 * This method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
 	 * This method should be called on the Event Dispatching Thread.
 	 * 
-	 * @param defaultCapturerName The name of the last chosen capturer
-	 * @param defaultCaptureEncoderName The name of the default capture encoder, null if none
+	 * @return The created capturer instance or null if no capturer devices were found
+	 */
+	public VideoComponent createVideoCapturer() {
+		String defaultVideoComponentName = getVideoComponentFactorySettings().getDefaultVideoComponentName();
+		return createVideoCapturer(defaultVideoComponentName);
+	}
+	
+	/** 
+	 * This method creates a new {@link VideoCapturer} instance by showing a camera selection dialog. 
+	 * This method should be called on the Event Dispatching Thread.
+	 * @param defaultVideoCapturerName The default name of the video capturer
 	 * 
 	 * @return The created capturer instance or null if no capturer devices were found
 	 */
-	public VideoComponent createVideoCapturer(T videoCapturerSettings) {
+	protected VideoComponent createVideoCapturer(String defaultVideoCapturerName) {
 		final VideoCapturer videoCapturer = new VideoCapturer();
 		Window parentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		// create a dialog to let the user choose which capture device to start on which monitor
-		// TODO review constructor arguments
 		VideoCapturerDialog dialog = new VideoCapturerDialog(parentWindow, videoCapturer.getApplicationActionMap(), 
-				videoCapturer.getComponentId(), videoCapturerSettings.getName(), this);
-		final PropertyChangeListener changeListener = createDialogListener(videoCapturer, videoCapturerSettings);
+				videoCapturer.getComponentId(), defaultVideoCapturerName, this);
+		final PropertyChangeListener changeListener = createDialogListener(videoCapturer);
 		dialog.addPropertyChangeListener(changeListener);
 		// populate dialog with capture devices and look for connected monitors
 		if (dialog.refreshVideoCapturers()) {

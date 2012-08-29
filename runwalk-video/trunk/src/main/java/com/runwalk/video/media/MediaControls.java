@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -71,7 +70,6 @@ import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.settings.VideoCapturerFactorySettings;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
 import com.runwalk.video.tasks.CreateOverlayImageTask;
@@ -605,14 +603,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	@Action
 	public void startVideoCapturer() {
 		// if there is no actionEvent specified, then this call was made at startup time
-		// TODO should get default capturer name from the composite factory??
-		VideoComponent capturer = videoCapturerFactory.createVideoCapturer("");
+		VideoComponent capturer = videoCapturerFactory.createVideoCapturer();
 		if (capturer != null) {
 			capturer.addPropertyChangeListener(this);
-			// save chosen name only if this is the first chosen capturer
-			if (getCapturers().isEmpty()) {
-				getAppSettings().setCapturerName(capturer.getVideoImpl().getTitle());
-			}
 			videoComponents.add(capturer);
 			getWindowManager().addWindow(capturer);
 			capturersToFront();

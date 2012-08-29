@@ -191,18 +191,6 @@ public class SettingsManager implements Serializable {
 		return videoDir;
 	}
 
-	public void setCapturerName(String capturerName) {
-		getSettings().capturerName = capturerName;	
-	}
-
-	/**
-	 * Returns the first chosen capturer of the last program instance.
-	 * @return The save capturer name
-	 */
-	public String getCapturerName() {
-		return getSettings().capturerName;
-	}
-
 	/**
 	 * Set a new directory for storing and reading uncompressed video files. 
 	 * The directory will be lazily reloaded by clearing the cached value.
@@ -263,17 +251,13 @@ public class SettingsManager implements Serializable {
 	public void setPlayRate(float rateIndex) {
 		getSettings().playRate = rateIndex;
 	}
-
+	
 	public String getTranscoderName() {
 		return getSettings().transcoderName;
 	}
 
-	public String getCaptureEncoderName() {
-		return getSettings().captureEncoderName;
-	}
-
-	public void setCaptureEncoderName(String captureEncoderName) {
-		getSettings().captureEncoderName = captureEncoderName;
+	public String setTranscoderName(String transcoderName) {
+		return getSettings().transcoderName = transcoderName;
 	}
 
 	public String getLogFileUploadUrl() {
@@ -313,11 +297,11 @@ public class SettingsManager implements Serializable {
 		getSettings().databaseSettings = databaseSettings;
 	}
 
-	public List<VideoCapturerFactorySettings<?>> getVideoCapturerFactorySettings() {
+	public List<VideoComponentFactorySettings<?>> getVideoCapturerFactorySettings() {
 		return getSettings().videoCapturerFactorySettings;
 	}
 	
-	public boolean addVideoCapturerFactorySettings(VideoCapturerFactorySettings<?> videoCapturerFactorySettings) {
+	public boolean addVideoCapturerFactorySettings(VideoComponentFactorySettings<?> videoCapturerFactorySettings) {
 		return getSettings().videoCapturerFactorySettings.add(videoCapturerFactorySettings);
 	}
 	
@@ -334,23 +318,16 @@ public class SettingsManager implements Serializable {
 			
 		}
 
-		/**
-		 * The last selected capturer on startup.
-		 */
-		private String capturerName;
-
 		private float playRate;
 
 		private float savedVolume;
-
+		
 		private String transcoderName = "XviD MPEG-4 Codec";
-
-		private String captureEncoderName = "none";
 
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
 		@XmlElementRef
-		private List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
+		private List<VideoComponentFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
 
 		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy("yyyy/MM - MMM/dd");

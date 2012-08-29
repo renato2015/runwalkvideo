@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-import com.runwalk.video.settings.VideoCapturerFactorySettings;
+import com.runwalk.video.settings.VideoComponentFactorySettings;
 import com.runwalk.video.settings.VideoComponentSettings;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
@@ -20,17 +20,17 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	 * A unchecked warning had to be suppressed because of the inability
 	 * to specify parameter type information inside a class constant in java.
 	 * 
-	 * @param videoCapturerFactorySettingsList The list with factory setting beans
+	 * @param videoComponentFactorySettingsList The list with factory setting beans
 	 * @return The instantiated factory
 	 */
 	@SuppressWarnings("unchecked")
 	public static <V extends VideoComponentSettings> CompositeVideoCapturerFactory
-		createInstance(List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList) {
+		createInstance(List<VideoComponentFactorySettings<?>> videoComponentFactorySettingsList) {
 		CompositeVideoCapturerFactory result = new CompositeVideoCapturerFactory();
 		Set<String> instantiatedFactoryClassNames = Sets.newHashSet();
-		for (VideoCapturerFactorySettings<?> videoCapturerFactorySettings : videoCapturerFactorySettingsList) {
+		for (VideoComponentFactorySettings<?> videoCapturerFactorySettings : videoComponentFactorySettingsList) {
 			String videoComponentFactoryClassName = videoCapturerFactorySettings.getVideoComponentFactoryClassName();
-			if (videoComponentFactoryClassName .contains(videoComponentFactoryClassName)) {
+			if (!instantiatedFactoryClassNames.contains(videoComponentFactoryClassName)) {
 				VideoCapturerFactory<?> videoCapturerFactory = createInstance(videoCapturerFactorySettings, VideoCapturerFactory.class); 
 				result.addFactory(videoCapturerFactory);
 				instantiatedFactoryClassNames.add(videoComponentFactoryClassName);
@@ -40,19 +40,27 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	}	
 	
 	/**
-	 * {@inheritDoc}
+	 * This method overrides the original implementation because
+	 * the composite will have a <code>null</code> return value for the
+	 * {@link #getVideoComponentFactorySettings()} method.
+	 * 
+	 * The default capturer name will therefore be the default one of the
+	 * first registered factory in the list contained by the composite.
+	 * 
 	 */
 	@Override
-	public VideoComponent createVideoCapturer(String videoCapturerName) {
-		// iterate over the capturer factories, find the first one and initialize
-		for(VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
-			if (videoCapturerFactory.getVideoCapturerNames().contains(videoCapturerName)) {
-				return videoCapturerFactory.createVideoCapturer(videoCapturerName);
-			}
+	public VideoComponent createVideoCapturer() {
+		VideoComponent result = null;
+		if (!videoCapturerFactories.isEmpty()) {
+			VideoCapturerFactory<?> firstVideoCapturerFactory = videoCapturerFactories.get(0);
+			VideoComponentFactorySettings<?> videoComponentFactorySettings = 
+					firstVideoCapturerFactory.getVideoComponentFactorySettings();
+			String defaultVideoComponentName = videoComponentFactorySettings.getDefaultVideoComponentName();
+			result = createVideoCapturer(defaultVideoComponentName);
 		}
-		return null;
+		return result;
 	}
-	
+
 	public boolean addFactory(VideoCapturerFactory<?> videoCapturerFactory) {
 		return videoCapturerFactory != null ? videoCapturerFactories.add(videoCapturerFactory) : false;
 	}

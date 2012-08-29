@@ -50,7 +50,8 @@ import com.runwalk.video.panels.ClientTablePanel;
 import com.runwalk.video.panels.RedcordTablePanel;
 import com.runwalk.video.panels.StatusPanel;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.settings.VideoCapturerFactorySettings;
+import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.settings.VideoComponentFactorySettings;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
@@ -208,12 +209,10 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-		// FIXME why can't I use a generic signature here?
-		@SuppressWarnings("unchecked")
-		VideoCapturerFactorySettings<?> videoCapturerFactorySettings = 
-				new VideoCapturerFactorySettings(DSJCapturerFactory.class);
+		VideoComponentFactorySettings<?> videoCapturerFactorySettings =  
+				new VideoComponentFactorySettings<VideoCapturerSettings>(DSJCapturerFactory.class);
 		settingsManager.addVideoCapturerFactorySettings(videoCapturerFactorySettings);
-		List<VideoCapturerFactorySettings<?>> videoCapturerFactorySettingsList = getSettingsManager().getVideoCapturerFactorySettings();
+		List<VideoComponentFactorySettings<?>> videoCapturerFactorySettingsList = getSettingsManager().getVideoCapturerFactorySettings();
 		// create video capturer factory
 		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettingsList);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
