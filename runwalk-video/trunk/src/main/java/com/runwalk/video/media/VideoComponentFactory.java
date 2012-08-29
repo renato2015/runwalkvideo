@@ -32,7 +32,7 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 			Class<?> factoryClass = Class.forName(videoComponentFactorySettings.getVideoComponentFactoryClassName());
 			result = factoryClass.asSubclass(theClass).newInstance();
 			// apply settings to the factory..
-			result.loadVideoCapturerFactorySettings(videoComponentFactorySettings);
+			result.setVideoCapturerFactorySettings(videoComponentFactorySettings);
 		} catch (Throwable e) {
 			// any kind of error during initialization..
 			// return a dummy factory if fails
@@ -41,12 +41,20 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 		return result;
 	}
 	
-	protected T createSettingsBean(String videoCapturerName) {
+	/**
+	 * Create a generic settings bean and add it to the list of settings 
+	 * owned by the corresponding {@link VideoComponentFactorySettings}.
+	 * 
+	 * @param videoComponentName The name of the component to create
+	 * @return The created component
+	 */
+	protected T createSettingsBean(String videoComponentName) {
 		try {
-			T newInstance = getVideoComponentSettingsClass().newInstance();
-			// eventueel een setter die de waarde van t op de bean gooit
-			newInstance.setName(videoCapturerName);
-			return newInstance;
+			T result = getVideoComponentSettingsClass().newInstance();
+			result.setName(videoComponentName);
+			// add the settings bean to the factory's settings
+			videoComponentFactorySettings.addVideoComponentSettings(result);
+			return result;
 		} catch (InstantiationException e) {
 			LOGGER.error("Exception while instantiating settings bean", e);
 		} catch (IllegalAccessException e) {
@@ -55,14 +63,14 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 		return null;
 	}
 	
-	public void loadVideoCapturerFactorySettings(VideoComponentFactorySettings<T> videoCapturerFactorySettings) {
+	public void setVideoCapturerFactorySettings(VideoComponentFactorySettings<T> videoCapturerFactorySettings) {
 		this.videoComponentFactorySettings = videoCapturerFactorySettings;
 	}
 
 	public VideoComponentFactorySettings<T> getVideoComponentFactorySettings() {
 		return videoComponentFactorySettings;
 	}
-
+	
 	public Class<T> getVideoComponentSettingsClass() {
 		return videoComponentSettingsClass;
 	}

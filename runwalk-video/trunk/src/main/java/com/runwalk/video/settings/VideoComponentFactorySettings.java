@@ -16,6 +16,8 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 	
 	private String videoComponentFactoryClassName;
 	
+	private String defaultVideoComponentName;
+	
 	public VideoComponentFactorySettings() { } 
 	
 	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends T>> videoCapturerFactoryClass, 
@@ -42,6 +44,14 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 
 	public List<T> getVideoComponentSettings() {
 		return videoComponentSettings;
+	}
+
+	public String getDefaultVideoComponentName() {
+		return defaultVideoComponentName;
+	}
+
+	public void setDefaultVideoComponentName(String defaultVideoComponentName) {
+		this.defaultVideoComponentName = defaultVideoComponentName;
 	}
 	
 }
