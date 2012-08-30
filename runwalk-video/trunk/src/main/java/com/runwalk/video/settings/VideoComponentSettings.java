@@ -11,7 +11,7 @@ public class VideoComponentSettings {
 
 	protected String name;
 	
-	public VideoComponentSettings() {	}
+	public VideoComponentSettings() { }
 
 	public VideoComponentSettings(String monitorId, String monitorResolution) {
 		this.monitorId = monitorId;

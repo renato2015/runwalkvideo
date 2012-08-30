@@ -7,6 +7,8 @@ public class VideoCapturerSettings extends VideoComponentSettings {
 
 	private String encoderName;
 	
+	public VideoCapturerSettings() { }
+
 	public VideoCapturerSettings(String name) {
 		this.name = name;
 	}
