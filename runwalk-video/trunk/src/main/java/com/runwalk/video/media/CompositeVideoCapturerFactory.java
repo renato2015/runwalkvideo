@@ -1,10 +1,15 @@
 package com.runwalk.video.media;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.runwalk.video.settings.VideoComponentFactorySettings;
 import com.runwalk.video.settings.VideoComponentSettings;
@@ -39,6 +44,37 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 		return result;
 	}	
 	
+	
+	@Override
+	protected PropertyChangeListener createDialogListener(VideoCapturer videoCapturer) {
+		final Map<VideoCapturerFactory<?>, PropertyChangeListener> videoCapturerFactoryMapping = Maps.newHashMap();
+		for (VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
+			PropertyChangeListener propertyChangeListener = videoCapturerFactory.createDialogListener(videoCapturer);
+			videoCapturerFactoryMapping.put(videoCapturerFactory, propertyChangeListener);
+		}
+		return new PropertyChangeListener() {
+			
+			private VideoCapturerFactory<?> selectedVideoCapturerFactory;
+			
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals(VideoCapturerDialog.SELECTED_VIDEO_CAPTURER_NAME)) {
+					String newValue = evt.getNewValue().toString();
+					// should forward event to currently selected factory.?...?.?
+					for(Entry<VideoCapturerFactory<?>, PropertyChangeListener> entry : videoCapturerFactoryMapping.entrySet()) {
+						if (entry.getKey().getVideoCapturerNames().contains(newValue)) {
+							selectedVideoCapturerFactory = entry.getKey();
+						}
+					}
+				}
+				if (selectedVideoCapturerFactory != null) {
+					PropertyChangeListener propertyChangeListener = videoCapturerFactoryMapping.get(selectedVideoCapturerFactory);
+					propertyChangeListener.propertyChange(evt);
+				}
+			}
+			
+		};
+	}
+
 	/**
 	 * This method overrides the original implementation because
 	 * the composite will have a <code>null</code> return value for the

@@ -52,7 +52,7 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		}
 	}
 
-	private PropertyChangeListener createDialogListener(final VideoCapturer videoCapturer) {
+	protected PropertyChangeListener createDialogListener(final VideoCapturer videoCapturer) {
 		return new PropertyChangeListener()  { 
 			
 			private T videoCapturerSettings;
