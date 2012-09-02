@@ -38,6 +38,10 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 		return videoComponentFactoryClassName;
 	}
 	
+	public void setVideoComponentFactoryClassName(String videoComponentFactoryClassName) {
+		this.videoComponentFactoryClassName = videoComponentFactoryClassName;
+	}
+
 	public boolean addVideoComponentSettings(T videoCapturerSettings) {
 		return videoComponentSettings.add(videoCapturerSettings);
 	}
