@@ -64,13 +64,13 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			// get all cities from the db
 			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
+			// get all articles from the db
+			List<Article> allArticles = getDaoService().getDao(Article.class).getAll();
 			// get all clients from the db
 			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
 			final DebugList<Client> clientList = new DebugList<Client>();
 			clientList.addAll(allClients);
 			clientList.setLockCheckingEnabled(true);
-			// get all articles from the db
-			List<Article> allArticles = getDaoService().getDao(Article.class).getAll();
 			final EventList<Article> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 

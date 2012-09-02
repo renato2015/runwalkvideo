@@ -209,9 +209,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-		VideoComponentFactorySettings<?> videoCapturerFactorySettings =  
+		/*VideoComponentFactorySettings<?> videoCapturerFactorySettings =  
 				new VideoComponentFactorySettings<VideoCapturerSettings>(DSJCapturerFactory.class);
-		settingsManager.addVideoCapturerFactorySettings(videoCapturerFactorySettings);
+		settingsManager.addVideoCapturerFactorySettings(videoCapturerFactorySettings);*/
 		List<VideoComponentFactorySettings<?>> videoCapturerFactorySettingsList = getSettingsManager().getVideoCapturerFactorySettings();
 		// create video capturer factory
 		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettingsList);
