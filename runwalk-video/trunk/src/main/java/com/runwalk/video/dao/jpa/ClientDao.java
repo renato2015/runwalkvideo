@@ -20,8 +20,8 @@ import com.runwalk.video.entities.Client;
  */
 public class ClientDao extends JpaDao<Client> {
 
-	public ClientDao(Class<Client> typeParameter, EntityManagerFactory entityManagerFactory) {
-		super(typeParameter, entityManagerFactory);
+	public ClientDao(EntityManagerFactory entityManagerFactory) {
+		super(Client.class, entityManagerFactory);
 	}
 
 	@Override
