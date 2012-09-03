@@ -23,7 +23,7 @@ import com.runwalk.video.dao.Dao;
  * 
  * @author Jeroen Peelaerts
  *
- * @param <E> class which this Dao will serve
+ * @param <E> class which this Day will serve
  */
 public class JpaDao<E> extends AbstractDao<E> {
 

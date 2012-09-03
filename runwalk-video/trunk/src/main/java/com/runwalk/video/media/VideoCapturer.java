@@ -33,7 +33,7 @@ public class VideoCapturer extends VideoComponent {
 	}
 	
 	@Action
-	public void setCaptureEncoder() {
+	public void setCaptureEncoderName() {
 		List<String> captureEncoderNames = getVideoImpl().getCaptureEncoderNames();
 		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
 		String captureEncoderName =  (String) JOptionPane.showInputDialog(

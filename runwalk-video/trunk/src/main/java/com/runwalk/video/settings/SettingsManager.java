@@ -87,7 +87,7 @@ public class SettingsManager implements Serializable {
 		this.settingsFileName = settingsFileName;
 		logger.debug("Instantiating JAXB context..");
 		try {
-			jaxbContext = JAXBContext.newInstance( Settings.class );
+			jaxbContext = JAXBContext.newInstance( Settings.class  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}
