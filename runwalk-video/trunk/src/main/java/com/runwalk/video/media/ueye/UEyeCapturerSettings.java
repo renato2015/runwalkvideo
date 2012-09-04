@@ -12,6 +12,8 @@ public class UEyeCapturerSettings extends VideoCapturerSettings {
 	private int cameraId;
 	
 	private int compressionQuality = DEFAULT_QUALITY;
+	
+	public UEyeCapturerSettings() {	}
 
 	public UEyeCapturerSettings(String name, String settingsFile, String monitorId, String monitorResolution) {
 		super(name, monitorId, monitorResolution);

@@ -3,7 +3,7 @@ package com.runwalk.video.settings;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.runwalk.video.media.VideoComponentFactory;
@@ -11,7 +11,7 @@ import com.runwalk.video.media.VideoComponentFactory;
 @XmlRootElement
 public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 
-	@XmlElementRef
+	@XmlAnyElement(lax=true)
 	private List<T> videoComponentSettings = new ArrayList<T>();
 	
 	private String videoComponentFactoryClassName;

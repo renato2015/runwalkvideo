@@ -1,9 +1,7 @@
 package com.runwalk.video.settings;
 
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
-public class VideoComponentSettings {
+public abstract class VideoComponentSettings {
 
 	private String monitorId;
 	
