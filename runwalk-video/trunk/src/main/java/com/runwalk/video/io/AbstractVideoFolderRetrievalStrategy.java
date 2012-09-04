@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * 
  * @author Jeroen Peelaerts
  */
-@XmlSeeAlso(value={DateVideoFolderRetrievalStrategy.class, DefaultVideoFolderRetrievalStrategy.class})
 public abstract class AbstractVideoFolderRetrievalStrategy implements VideoFolderRetrievalStrategy {
 
 	protected AbstractVideoFolderRetrievalStrategy() {}

@@ -15,6 +15,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -27,7 +28,9 @@ import org.jdesktop.beansbinding.ELProperty;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
+import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.media.ueye.UEyeCapturerSettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -87,7 +90,11 @@ public class SettingsManager implements Serializable {
 		this.settingsFileName = settingsFileName;
 		logger.debug("Instantiating JAXB context..");
 		try {
-			jaxbContext = JAXBContext.newInstance( Settings.class  );
+			// TODO find a modular way to add classes to the context here
+			jaxbContext = JAXBContext.newInstance( VideoComponentFactorySettings.class, 
+					VideoCapturerSettings.class, UEyeCapturerSettings.class, 
+					DefaultVideoFolderRetrievalStrategy.class, DateVideoFolderRetrievalStrategy.class,
+					Settings.class  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}
@@ -313,7 +320,7 @@ public class SettingsManager implements Serializable {
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
 				videoDir = "D:\\Video's";
 			} else if (AppHelper.getPlatform() == PlatformType.OS_X) {
-				videoDir = System.getProperty("user.home")+ File.separator +"Movies";
+				videoDir = System.getProperty("user.home")+ File.separator + "Movies";
 			}
 			
 		}
@@ -326,7 +333,7 @@ public class SettingsManager implements Serializable {
 
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 
-		@XmlElementRef
+		@XmlAnyElement(lax=true)
 		private List<VideoComponentFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
 
 		@XmlElementRef
