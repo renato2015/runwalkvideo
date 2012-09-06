@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.media.VideoCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeCapturerSettings;
 import com.runwalk.video.util.AppUtil;
 
@@ -93,7 +94,7 @@ public class SettingsManager implements Serializable {
 			// TODO find a modular way to add classes to the context here
 			jaxbContext = JAXBContext.newInstance( VideoComponentFactorySettings.class, 
 					VideoCapturerSettings.class, UEyeCapturerSettings.class, 
-					DefaultVideoFolderRetrievalStrategy.class, DateVideoFolderRetrievalStrategy.class,
+					DefaultVideoFolderRetrievalStrategy.class, DateVideoFolderRetrievalStrategy.class, 
 					Settings.class  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
@@ -275,7 +276,6 @@ public class SettingsManager implements Serializable {
 		return getSettings().videoFolderRetrievalStrategy;
 	}
 
-
 	public void setVideoFolderRetrievalStrategy(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
 		getSettings().videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
@@ -308,23 +308,14 @@ public class SettingsManager implements Serializable {
 		return getSettings().videoCapturerFactorySettings;
 	}
 	
-	public boolean addVideoCapturerFactorySettings(VideoComponentFactorySettings<?> videoCapturerFactorySettings) {
-		return getSettings().videoCapturerFactorySettings.add(videoCapturerFactorySettings);
+	public void setVideoCapturerFactorySettings(List<VideoComponentFactorySettings<?>> videoCapturerFactorySettings) {
+		getSettings().videoCapturerFactorySettings = Lists.newArrayList(videoCapturerFactorySettings);
 	}
 	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
 		
-		{
-			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
-				videoDir = "D:\\Video's";
-			} else if (AppHelper.getPlatform() == PlatformType.OS_X) {
-				videoDir = System.getProperty("user.home")+ File.separator + "Movies";
-			}
-			
-		}
-
 		private float playRate;
 
 		private float savedVolume;
@@ -332,7 +323,7 @@ public class SettingsManager implements Serializable {
 		private String transcoderName = "XviD MPEG-4 Codec";
 
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
-
+		
 		@XmlAnyElement(lax=true)
 		private List<VideoComponentFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
 
@@ -348,6 +339,16 @@ public class SettingsManager implements Serializable {
 		private AuthenticationSettings databaseSettings = AuthenticationSettings.JDBC_DEFAULT;
 
 		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+		
+		{
+			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
+				videoDir = "D:\\Video's";
+			} else if (AppHelper.getPlatform() == PlatformType.OS_X) {
+				videoDir = System.getProperty("user.home")+ File.separator + "Movies";
+			}
+			// initialize factory settings with default values
+			videoCapturerFactorySettings.add(VideoCapturerFactory.DEFAULT_SETTINGS);
+		}
 
 	}
 

@@ -12,7 +12,7 @@ import com.runwalk.video.settings.VideoCapturerSettings;
  */
 public final class DummyVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 	
-	private DummyVideoCapturerFactory() { }
+	public DummyVideoCapturerFactory() { }
 
 	protected IVideoCapturer initializeCapturer(VideoCapturerSettings videoCapturerSettings) {
 		return null;

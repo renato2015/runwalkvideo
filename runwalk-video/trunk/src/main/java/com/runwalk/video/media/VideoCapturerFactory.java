@@ -9,9 +9,13 @@ import java.util.List;
 
 import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.settings.VideoComponentFactorySettings;
 
 public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> extends VideoComponentFactory<T> {
-
+	
+	public final static VideoComponentFactorySettings<?> DEFAULT_SETTINGS = 
+			new VideoComponentFactorySettings<VideoCapturerSettings>(DummyVideoCapturerFactory.class);
+	
 	protected VideoCapturerFactory(Class<T> capturerSettingsClass) { 	
 		super(capturerSettingsClass);
 	}
