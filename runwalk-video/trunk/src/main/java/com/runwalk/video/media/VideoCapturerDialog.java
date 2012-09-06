@@ -198,6 +198,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 			// return if no capturers available
 			if (videoCapturerNames.isEmpty() && !isVisible()) {
 				showErrorDialog();
+				return false;
 			}
 			// add the capturers to the gui
 			addVideoCapturers(videoCapturerNames);

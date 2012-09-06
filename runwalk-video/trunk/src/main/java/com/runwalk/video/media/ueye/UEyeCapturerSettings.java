@@ -1,7 +1,10 @@
 package com.runwalk.video.media.ueye;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import com.runwalk.video.settings.VideoCapturerSettings;
 
+@XmlRootElement
 public class UEyeCapturerSettings extends VideoCapturerSettings {
 	
 	/** Image quality [1 = lowest ... 100 = highest] */
