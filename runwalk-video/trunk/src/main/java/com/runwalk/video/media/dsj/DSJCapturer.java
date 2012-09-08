@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.media.IVideoCapturer;
-import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.media.settings.VideoCapturerSettings;
 
 import de.humatic.dsj.DSCapture;
 import de.humatic.dsj.DSEnvironment;

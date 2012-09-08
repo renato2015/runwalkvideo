@@ -11,8 +11,8 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.runwalk.video.settings.VideoComponentFactorySettings;
-import com.runwalk.video.settings.VideoComponentSettings;
+import com.runwalk.video.media.settings.VideoComponentFactorySettings;
+import com.runwalk.video.media.settings.VideoComponentSettings;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 
