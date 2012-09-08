@@ -2,8 +2,8 @@ package com.runwalk.video.media;
 
 import org.apache.log4j.Logger;
 
-import com.runwalk.video.settings.VideoComponentFactorySettings;
-import com.runwalk.video.settings.VideoComponentSettings;
+import com.runwalk.video.media.settings.VideoComponentFactorySettings;
+import com.runwalk.video.media.settings.VideoComponentSettings;
 
 public class VideoComponentFactory<T extends VideoComponentSettings> {
 	

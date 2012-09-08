@@ -1,4 +1,4 @@
-package com.runwalk.video.settings;
+package com.runwalk.video.media.settings;
 
 import java.util.ArrayList;
 import java.util.List;

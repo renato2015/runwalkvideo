@@ -3,7 +3,7 @@ package com.runwalk.video.media;
 import java.util.Collections;
 import java.util.List;
 
-import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.media.settings.VideoCapturerSettings;
 
 /**
  * A dummy factory that doesn't do anything.

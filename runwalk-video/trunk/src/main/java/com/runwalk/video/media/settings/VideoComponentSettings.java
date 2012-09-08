@@ -1,4 +1,4 @@
-package com.runwalk.video.settings;
+package com.runwalk.video.media.settings;
 
 
 public abstract class VideoComponentSettings {

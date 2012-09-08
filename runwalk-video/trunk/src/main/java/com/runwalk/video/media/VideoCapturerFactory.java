@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 import com.runwalk.video.core.SelfContained;
-import com.runwalk.video.settings.VideoCapturerSettings;
-import com.runwalk.video.settings.VideoComponentFactorySettings;
+import com.runwalk.video.media.settings.VideoCapturerSettings;
+import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 
 public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> extends VideoComponentFactory<T> {
 	

@@ -28,10 +28,9 @@ import org.jdesktop.beansbinding.ELProperty;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
-import com.runwalk.video.io.DefaultVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.ueye.UEyeCapturerSettings;
+import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -91,11 +90,7 @@ public class SettingsManager implements Serializable {
 		this.settingsFileName = settingsFileName;
 		logger.debug("Instantiating JAXB context..");
 		try {
-			// TODO find a modular way to add classes to the context here
-			jaxbContext = JAXBContext.newInstance( VideoComponentFactorySettings.class, 
-					VideoCapturerSettings.class, UEyeCapturerSettings.class, 
-					DefaultVideoFolderRetrievalStrategy.class, DateVideoFolderRetrievalStrategy.class, 
-					Settings.class  );
+			jaxbContext = JAXBContext.newInstance( "com.runwalk.video.settings:com.runwalk.video.io:com.runwalk.video.media.settings"  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}

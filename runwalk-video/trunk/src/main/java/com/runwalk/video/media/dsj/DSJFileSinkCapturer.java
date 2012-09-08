@@ -3,7 +3,7 @@ package com.runwalk.video.media.dsj;
 
 import org.apache.log4j.Level;
 
-import com.runwalk.video.settings.VideoCapturerSettings;
+import com.runwalk.video.media.settings.VideoCapturerSettings;
 
 import de.humatic.dsj.DSEnvironment;
 import de.humatic.dsj.DSJException;
