@@ -1,6 +1,8 @@
-package com.runwalk.video.media.settings;
+package com.runwalk.video.media.ueye;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.runwalk.video.media.settings.VideoCapturerSettings;
 
 
 @XmlRootElement

@@ -1,20 +1,23 @@
-<@forAllPackages var="package">
-	<#assign printpackage=false>
-	<#list package.classes as class>
-		<@ifHasAnnotation declaration=class annotation="javax.xml.bind.annotation.XmlRootElement">
-			<#assign printpackage=true>
-		</@ifHasAnnotation>
-	</#list>
-	<#if printpackage>
-		<@file package="${package.qualifiedName}" name="jaxb.index">
-			<@forAllTypes var="type">
-				<@ifHasAnnotation declaration=type annotation="javax.xml.bind.annotation.XmlRootElement">
+<@file package="com.runwalk.video.settings.resources" name="SettingsManager.properties">
+	<@forAllPackages var="package">
+		<#assign printpackage=false>
+		<#list package.classes as class>
+			<@ifHasAnnotation declaration=class annotation="javax.xml.bind.annotation.XmlRootElement">
+				<#assign printpackage=true>
+			</@ifHasAnnotation>
+		</#list>
+		<#if printpackage>
+${package.qualifiedName}
+			<@file package="${package.qualifiedName}" name="jaxb.index">
+				<@forAllTypes var="type">
+					<@ifHasAnnotation declaration=type annotation="javax.xml.bind.annotation.XmlRootElement">
 ${type.simpleName}
-				</@ifHasAnnotation>
-				<@forAllNestedTypes var="nestedType" annotation="javax.xml.bind.annotation.XmlRootElement">
+					</@ifHasAnnotation>
+					<@forAllNestedTypes var="nestedType" annotation="javax.xml.bind.annotation.XmlRootElement">
 ${type.simpleName}$${nestedType.simpleName}
-				</@forAllNestedTypes>
-			</@forAllTypes>
-		</@file>
-	</#if>
-</@forAllPackages> 
+					</@forAllNestedTypes>
+				</@forAllTypes>
+			</@file>
+		</#if>
+	</@forAllPackages> 
+</@file>
