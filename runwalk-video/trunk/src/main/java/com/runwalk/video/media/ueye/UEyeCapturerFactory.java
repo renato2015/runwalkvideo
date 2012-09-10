@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Maps;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.settings.UEyeCapturerSettings;
 
 /**
  * This factory can be used as an entry point to communicate with a uEye camera using native code.

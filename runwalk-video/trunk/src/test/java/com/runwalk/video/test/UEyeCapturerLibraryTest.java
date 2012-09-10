@@ -10,13 +10,13 @@ import junit.framework.TestCase;
 import org.junit.Ignore;
 
 import com.runwalk.video.media.VideoCapturerFactory;
-import com.runwalk.video.media.settings.UEyeCapturerSettings;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 import com.runwalk.video.media.ueye.UEyeAviLibrary;
 import com.runwalk.video.media.ueye.UEyeCameraInfo;
 import com.runwalk.video.media.ueye.UEyeCameraList;
 import com.runwalk.video.media.ueye.UEyeCapturerFactory;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary;
+import com.runwalk.video.media.ueye.UEyeCapturerSettings;
 import com.runwalk.video.media.ueye.UEyeLibrary;
 import com.runwalk.video.ui.WindowManager;
 import com.sun.jna.Native;

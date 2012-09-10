@@ -34,7 +34,6 @@ import com.runwalk.video.core.Containable;
 import com.runwalk.video.core.FullScreenSupport;
 import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.media.IVideoCapturer;
-import com.runwalk.video.media.settings.UEyeCapturerSettings;
 import com.runwalk.video.media.ueye.UEyeCapturerLibrary.OnWndShowCallback;
 import com.sun.jna.Callback;
 import com.sun.jna.Native;
