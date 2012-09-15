@@ -253,6 +253,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	}
 
 	public boolean showCameraSettings() {
+		File settingsFile = getSettingsFile();
 		// show a filechooser dialog which enables you to select a settings file
 		final JFileChooser chooser = settingsFile == null ? new JFileChooser() : new JFileChooser(settingsFile);
 		chooser.setFileFilter(new FileFilter() {
