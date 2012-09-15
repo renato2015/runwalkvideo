@@ -20,9 +20,7 @@
   <update check="always" policy="prompt-update" />
 #end
 	<resources>
-	  <property name="ueye.enable" value="true" />
-	  <property name="ueye.settings_file" value="D:\Documents and Settings\Administrator\My Documents\uEye configurations\4.00settingsOpenMP.ini" />
-	  <j2se version="1.6+" java-vm-args="-XX:+UseCompressedOops"/>
+	  <j2se version="1.7+" java-vm-args="-XX:+UseCompressedOops"/>
 #foreach( $dependency in $fulldependencies )
 #if ( !$dependency.classifier.startsWith('natives') )
 		<jar href="$libFolder/${dependency.file.name}" />
