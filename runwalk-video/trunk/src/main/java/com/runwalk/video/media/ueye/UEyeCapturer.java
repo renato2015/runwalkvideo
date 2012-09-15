@@ -269,6 +269,9 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		int returnVal = chooser.showDialog(null, "Kies");
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
 			settingsFile = chooser.getSelectedFile();
+			if (settingsFile != null) {
+				getuEyeCapturerSettings().setSettingsFile(settingsFile.getAbsolutePath());
+			}
 		}
 		return false;
 	}
