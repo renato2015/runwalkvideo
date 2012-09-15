@@ -93,15 +93,16 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		};
 	}
 	
-	private T getVideoCapturerSettings(String videoCapturerName) {
+	private T getVideoCapturerSettings(String selectedVideoCapturerName) {
 		T result = null;
 		for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
-			if (videoComponentFactorySettings.getName().equals(videoCapturerName)) {
+			String videoCapturerName = videoComponentFactorySettings.getName();
+			if (videoCapturerName != null && videoCapturerName.equals(selectedVideoCapturerName)) {
 				result = videoComponentFactorySettings;
 			}
 		}
 		// if not found.. instantiate new bean
-		return result == null ? createSettingsBean(videoCapturerName) : result;
+		return result == null ? createSettingsBean(selectedVideoCapturerName) : result;
 	}
 	
 	/** 
