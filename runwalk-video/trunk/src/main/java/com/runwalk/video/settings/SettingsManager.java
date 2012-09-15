@@ -5,8 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -35,6 +39,8 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class SettingsManager implements Serializable {
+
+	private static final String JAXB_CONFIG_FILE = "com/runwalk/video/settings/resources/jaxbPackageNames.txt";
 
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
@@ -90,7 +96,7 @@ public class SettingsManager implements Serializable {
 		this.settingsFileName = settingsFileName;
 		logger.debug("Instantiating JAXB context..");
 		try {
-			jaxbContext = JAXBContext.newInstance( "com.runwalk.video.settings:com.runwalk.video.io:com.runwalk.video.media.settings"  );
+			jaxbContext = JAXBContext.newInstance( buildJaxbPackageNames()  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}
@@ -126,6 +132,32 @@ public class SettingsManager implements Serializable {
 		}
 		logger.debug("Found videodir: " + getVideoDir().getAbsolutePath());
 		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
+	}
+	
+	private String buildJaxbPackageNames() {
+		Scanner scanner = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		try {
+			URL resource = Thread.currentThread().getContextClassLoader().getResource(JAXB_CONFIG_FILE);
+			Path path = Paths.get(resource.toURI());
+			scanner = new Scanner(path);
+			while (scanner.hasNext()) {
+				stringBuilder.append(scanner.nextLine());
+				if (scanner.hasNext()) {
+					stringBuilder.append(":");
+				}
+			}
+			logger.debug("jaxb package scan path set to " + stringBuilder.toString());
+		} catch (URISyntaxException e) {
+			logger.debug("Failed to read jaxb package names from " + JAXB_CONFIG_FILE);
+		} catch (IOException e) {
+			logger.debug("Failed to read jaxb package names from " + JAXB_CONFIG_FILE);
+		} finally {
+			if (scanner != null) {
+				scanner.close();
+			}
+		}
+		return stringBuilder.toString();
 	}
 
 	/**

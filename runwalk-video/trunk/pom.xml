@@ -64,8 +64,8 @@
 					<excludes>
 						<exclude>**/*.*</exclude>
 					</excludes>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -82,8 +82,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -243,6 +243,7 @@
 						<value>template=${basedir}/src/main/freemarker/gotm-jar-apt-jelly.fmt</value>
 					</options>
 					<outputDirectory>${project.build.directory}/classes</outputDirectory>
+					<showWarnings>false</showWarnings>
 				</configuration>
 				<executions>
 					<execution>

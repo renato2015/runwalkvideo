@@ -1,4 +1,4 @@
-<@file package="com.runwalk.video.settings.resources" name="SettingsManager.properties">
+<@file package="com.runwalk.video.settings.resources" name="jaxbPackageNames.txt">
 	<@forAllPackages var="package">
 		<#assign printpackage=false>
 		<#list package.classes as class>
