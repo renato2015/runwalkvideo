@@ -86,6 +86,9 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 					if (videoCapturer.getVideoImpl() instanceof SelfContained) {
 						// user clicked a monitor button, set it on the capturer
 						monitorId = Integer.parseInt(evt.getNewValue().toString());
+						if (videoCapturerSettings != null) {
+							videoCapturerSettings.setMonitorId(monitorId.toString());
+						}
 						((SelfContained) videoCapturer.getVideoImpl()).setMonitorId(monitorId);
 					}
 				}

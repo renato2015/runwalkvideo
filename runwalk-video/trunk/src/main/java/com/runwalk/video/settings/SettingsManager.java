@@ -4,11 +4,9 @@ import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -138,9 +136,8 @@ public class SettingsManager implements Serializable {
 		Scanner scanner = null;
 		StringBuilder stringBuilder = new StringBuilder();
 		try {
-			URL resource = Thread.currentThread().getContextClassLoader().getResource(JAXB_CONFIG_FILE);
-			Path path = Paths.get(resource.toURI());
-			scanner = new Scanner(path);
+			InputStream resourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(JAXB_CONFIG_FILE);
+			scanner = new Scanner(resourceStream);
 			while (scanner.hasNext()) {
 				stringBuilder.append(scanner.nextLine());
 				if (scanner.hasNext()) {
@@ -148,10 +145,6 @@ public class SettingsManager implements Serializable {
 				}
 			}
 			logger.debug("jaxb package scan path set to " + stringBuilder.toString());
-		} catch (URISyntaxException e) {
-			logger.debug("Failed to read jaxb package names from " + JAXB_CONFIG_FILE);
-		} catch (IOException e) {
-			logger.debug("Failed to read jaxb package names from " + JAXB_CONFIG_FILE);
 		} finally {
 			if (scanner != null) {
 				scanner.close();
