@@ -74,7 +74,7 @@ public class VideoCapturer extends VideoComponent {
 			protected Void doInBackground() throws Exception {
 				String componentTitle = VideoCapturer.this.getTitle();
 				getLogger().info("Waiting for " + componentTitle + " to become visible..");
-				while(!isVisible() && !isDisposed()) {
+				while(!isVisible() && !isDisposed() && getVideoImpl() != null) {
 					// continue waiting for component activation or disposal
 					if (getTaskService() != null && getTaskService().isShutdown()) {
 						dispose();
