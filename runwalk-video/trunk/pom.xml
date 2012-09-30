@@ -49,23 +49,24 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.5</version>
+				<version>2.6</version>
 				<configuration>
 				    <encoding>ISO-8859-1</encoding>
 					<escapeString>\</escapeString>
 				</configuration>
+				<!-- here the phase you need -->
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5.1</version>
 				<configuration>
-					<!-- Tell javac not to compile sources for ajc will do it -->
-					<excludes>
-						<exclude>**/*.*</exclude>
-					</excludes>
 					<source>1.7</source>
 					<target>1.7</target>
+					<!-- Tell javac not to compile sources for ajc will do it -->
+					<excludes>
+						<exclude>**/*</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -93,6 +94,27 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+                <version>2.0.7</version>
+                <configuration>
+                    <outputDiagnostics>false</outputDiagnostics>
+                    <processors>
+                        <processor>com.runwalk.video.settings.SettingsAnnotationProcessor</processor>
+                    </processors>
+                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>process</id>
+                        <goals>
+                        	<goal>process</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -154,7 +176,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
-				<version>1.0</version>
+				<version>1.3</version>
 				<executions>
 					<execution>
 						<id>assemble-app</id>
@@ -188,7 +210,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.4</version>
+				<version>2.7</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
@@ -233,47 +255,9 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>apt-maven-plugin</artifactId>
-				<version>1.0-alpha-2</version>
-				<configuration>
-					<factory>net.sf.jelly.apt.freemarker.FreemarkerProcessorFactory</factory>
-					<fork>true</fork>
-					<options>
-						<value>template=${basedir}/src/main/freemarker/gotm-jar-apt-jelly.fmt</value>
-					</options>
-					<outputDirectory>${project.build.directory}/classes</outputDirectory>
-					<showWarnings>false</showWarnings>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>process</goal>
-						</goals>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>net.sf.apt-jelly</groupId>
-						<artifactId>apt-jelly</artifactId>
-						<version>2.3</version>
-					</dependency>
-					<dependency>
-						<groupId>org.freemarker</groupId>
-						<artifactId>freemarker</artifactId>
-						<version>2.3.12</version>
-					</dependency>
-					<dependency>
-						<groupId>com.sun</groupId>
-						<artifactId>tools</artifactId>
-						<version>1.6.0_06</version>
-						<scope>system</scope>
-						<systemPath>${java.home}/../lib/tools.jar</systemPath>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-antrun-plugin</artifactId>
+		        <version>1.7</version>
 				<executions>
 					<execution>
 						<phase>deploy</phase>
@@ -297,7 +281,7 @@
 					<dependency>
 						<groupId>commons-net</groupId>
 						<artifactId>commons-net</artifactId>
-						<version>1.4.1</version>
+						<version>3.1</version>
 					</dependency>
 					<dependency>
 						<groupId>ant</groupId>
@@ -307,7 +291,7 @@
 					<dependency>
 						<groupId>ant</groupId>
 						<artifactId>ant-nodeps</artifactId>
-						<version>1.6.5</version>
+						<version>1.8.1</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -317,7 +301,7 @@
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ftp</artifactId>
-				<version>1.0-alpha-6</version>
+				<version>2.2</version>
 			</extension>
 		</extensions>
 		<pluginManagement>
@@ -353,7 +337,7 @@
 											apt-maven-plugin
 										</artifactId>
 										<versionRange>
-											[1.0-alpha-2,)
+											[1.0-alpha-5,)
 										</versionRange>
 										<goals>
 											<goal>process</goal>
@@ -361,6 +345,23 @@
 									</pluginExecutionFilter>
 									<action>
 										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.bsc.maven</groupId>
+										<artifactId>
+											maven-processor-plugin
+										</artifactId>
+										<versionRange>
+											[2.0.7,)
+										</versionRange>
+										<goals>
+											<goal>process</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -379,7 +380,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
+			<version>1.2.17</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.collections</groupId>
@@ -389,7 +390,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.3</version>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -436,7 +437,7 @@
 		<dependency>
 			<groupId>org.swinglabs.swingx</groupId>
 			<artifactId>swingx-core</artifactId>
-			<version>1.6.3</version>
+			<version>1.6.4</version>
 		</dependency>
 		<dependency>
 			<groupId>it.tidalwave.betterbeansbinding</groupId>
@@ -467,7 +468,13 @@
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
-			<version>2.3.2</version>
+			<version>2.4.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commonj.sdo</artifactId>
+					<groupId>commonj.sdo</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
@@ -477,7 +484,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.19</version>
+			<version>5.1.21</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.gdata</groupId>
@@ -487,81 +494,25 @@
 	</dependencies>
 	<repositories>
 		<repository>
+			<id>central</id>
+			<name>Maven Plugin Repository</name>
+			<url>http://repo1.maven.org/maven2</url>
+		</repository>
+		<repository>
 			<id>mandubian-mvn</id>
 			<url>http://mandubian-mvn.googlecode.com/svn/trunk/mandubian-mvn/repository</url>
 		</repository>
 		<repository>
-			<id>central</id>
-			<name>Maven Plugin Repository</name>
-			<url>http://repo1.maven.org/maven2</url>
-			<layout>default</layout>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
 			<id>eclipseLink-repo</id>
-			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo
-			</url>
-		</repository>
-		<repository>
-			<id>maven2-repository.dev.java.net</id>
-			<name>Java.net Repository for Maven</name>
-			<url>http://download.java.net/maven/2/</url>
-			<layout>default</layout>
-		</repository>
-		<repository>
-			<id>Codehaus Snapshots</id>
-			<url>http://nexus.codehaus.org/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>maven2-repository.snapshot.dev.java.net</id>
-			<name>Java.net Repository for Maven Snapshots</name>
-			<url>https://maven.java.net/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>maven.springframework.org</id>
-			<name>SpringSource release</name>
-			<url>http://maven.springframework.org/release</url>
+			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
 		</repository>
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-		<id>central</id>
-		<name>Maven Plugin Repository</name>
-		<url>http://repo1.maven.org/maven2</url>
-		<layout>default</layout>
-		<snapshots>
-			<enabled>false</enabled>
-		</snapshots>
-		<releases>
-			<enabled>true</enabled>
-		</releases>
-		</pluginRepository>
-	</pluginRepositories>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>runwalk-ftp</id>
 			<name>runwalk-repo</name>
 			<url>ftp://${ftp.url}/maven2</url>
 		</snapshotRepository>
-		<!-- snapshotRepository> <id>local-repo</id> <name>local-repo</name> <url>file:///${user.home}/.m2/repository</url> 
-			</snapshotRepository -->
 	</distributionManagement>
 	<profiles>
 		<!-- This profile could be used for remote deployment -->
