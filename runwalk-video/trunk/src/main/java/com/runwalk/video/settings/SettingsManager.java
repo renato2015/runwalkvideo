@@ -38,7 +38,7 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class SettingsManager implements Serializable {
 
-	private static final String JAXB_CONFIG_FILE = "com/runwalk/video/settings/resources/jaxbPackageNames.txt";
+	private static final String JAXB_CONFIG_FILE = "com/runwalk/video/settings/jaxbPackageNames.txt";
 
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
