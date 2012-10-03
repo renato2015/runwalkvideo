@@ -4,11 +4,10 @@ import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -27,6 +26,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
+import org.reflections.Reflections;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
@@ -37,8 +37,6 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class SettingsManager implements Serializable {
-
-	private static final String JAXB_CONFIG_FILE = "com/runwalk/video/settings/jaxbPackageNames.txt";
 
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
@@ -92,12 +90,23 @@ public class SettingsManager implements Serializable {
 		settings = new Settings();
 		this.localStorageDir = localStorageDir;
 		this.settingsFileName = settingsFileName;
+		logger.debug("Scanning JAXB annotated classes ..");
+		Class<?>[] classArray = findAnnotatedClasses();
 		logger.debug("Instantiating JAXB context..");
 		try {
-			jaxbContext = JAXBContext.newInstance( buildJaxbPackageNames()  );
+			jaxbContext = JAXBContext.newInstance( classArray  );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}
+	}
+
+	private Class<?>[] findAnnotatedClasses() {
+		Reflections reflections = new Reflections("com.runwalk.video");
+		Set<Class<?>> annotated = 
+				reflections.getTypesAnnotatedWith(XmlRootElement.class);
+		Class<?>[] classArray = new Class<?>[annotated.size()];
+		annotated.toArray(classArray);
+		return classArray;
 	}
 
 	public void loadSettings() {
@@ -132,27 +141,6 @@ public class SettingsManager implements Serializable {
 		logger.debug("Found uncompressed videodir: " + getUncompressedVideoDir().getAbsolutePath());
 	}
 	
-	private String buildJaxbPackageNames() {
-		Scanner scanner = null;
-		StringBuilder stringBuilder = new StringBuilder();
-		try {
-			InputStream resourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(JAXB_CONFIG_FILE);
-			scanner = new Scanner(resourceStream);
-			while (scanner.hasNext()) {
-				stringBuilder.append(scanner.nextLine());
-				if (scanner.hasNext()) {
-					stringBuilder.append(":");
-				}
-			}
-			logger.debug("jaxb package scan path set to " + stringBuilder.toString());
-		} finally {
-			if (scanner != null) {
-				scanner.close();
-			}
-		}
-		return stringBuilder.toString();
-	}
-
 	/**
 	 * Looks for additional log4j files in the user.home directory of the application.
 	 * Use this to store specific appenders that require easy configuration. 
