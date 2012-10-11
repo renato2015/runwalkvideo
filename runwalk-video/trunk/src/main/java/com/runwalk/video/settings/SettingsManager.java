@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.FileAppender;
@@ -252,22 +253,6 @@ public class SettingsManager implements Serializable {
 		return logFile;
 	}
 
-	public float getSavedVolume() {
-		return getSettings().savedVolume;
-	}
-
-	public void setSavedVolume(float savedVolume) {
-		getSettings().savedVolume = savedVolume;
-	}
-
-	public float getPlayRate() {
-		return getSettings().playRate;
-	}
-
-	public void setPlayRate(float rateIndex) {
-		getSettings().playRate = rateIndex;
-	}
-	
 	public String getTranscoderName() {
 		return getSettings().transcoderName;
 	}
@@ -320,20 +305,29 @@ public class SettingsManager implements Serializable {
 		getSettings().videoCapturerFactorySettings = Lists.newArrayList(videoCapturerFactorySettings);
 	}
 	
+	public List<VideoComponentFactorySettings<?>> getVideoPlayerFactorySettings() {
+		return getSettings().videoPlayerFactorySettings;
+	}
+	
+	public void setVideoPlayerFactorySettings(List<VideoComponentFactorySettings<?>> videoPlayerFactorySettings) {
+		getSettings().videoCapturerFactorySettings = Lists.newArrayList(videoPlayerFactorySettings);
+	}
+	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings implements Serializable {
-		
-		private float playRate;
-
-		private float savedVolume;
 		
 		private String transcoderName = "XviD MPEG-4 Codec";
 
 		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
 		
 		@XmlAnyElement(lax=true)
+		@XmlElementWrapper(name="videoCapturerFactorySettingsList")
 		private List<VideoComponentFactorySettings<?>> videoCapturerFactorySettings = Lists.newArrayList();
+		
+		@XmlAnyElement(lax=true)
+		@XmlElementWrapper(name="videoPlayerFactorySettingsList")
+		private List<VideoComponentFactorySettings<?>> videoPlayerFactorySettings = Lists.newArrayList();
 
 		@XmlElementRef
 		private VideoFolderRetrievalStrategy videoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy("yyyy/MM - MMM/dd");
@@ -341,7 +335,7 @@ public class SettingsManager implements Serializable {
 		private String videoDir;
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
-
+		
 		private AuthenticationSettings calendarSettings = AuthenticationSettings.CALENDAR_DEFAULT;
 
 		private AuthenticationSettings databaseSettings = AuthenticationSettings.JDBC_DEFAULT;

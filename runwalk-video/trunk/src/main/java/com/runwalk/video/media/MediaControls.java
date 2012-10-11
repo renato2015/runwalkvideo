@@ -103,6 +103,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 	private final VideoCapturerFactory<?> videoCapturerFactory;
+	private final VideoPlayerFactory<?> videoPlayerFactory;
 
 	private final Timer timer;
 
@@ -143,12 +144,14 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private RecordTask recordTask = null;
 
 	public MediaControls(SettingsManager appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
-			DaoService daoService, VideoCapturerFactory<?> videoCapturerFactory, AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+			DaoService daoService, VideoCapturerFactory<?> videoCapturerFactory, VideoPlayerFactory<?> videoPlayerFactory,
+			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
 		this.appSettings = appSettings;
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
 		this.windowManager = windowManager;
 		this.videoCapturerFactory = videoCapturerFactory;
+		this.videoPlayerFactory = videoPlayerFactory;
 		this.analysisTablePanel = analysisTablePanel;
 		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
 
@@ -392,17 +395,18 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			result = new AbstractTask<Void, Void>(CHANGE_PLAY_RATE_ACTION) {
 
 				protected Void doInBackground() throws Exception {
-					float playRate = getAppSettings().getPlayRate();
+					List<Float> result = Lists.newArrayList();
 					for (VideoPlayer player : getPlayers()) {
+						float playRate = player.getPlayRate();
 						if (SLOWER_ACTION.equals(event.getActionCommand())) {
 							playRate = player.slower();
 						} else if (FASTER_ACTION.equals(event.getActionCommand())) {
 							playRate = player.faster();
 						}
+						result.add(playRate);
 					}
 					// save play rate to settings
-					getAppSettings().setPlayRate(playRate);
-					message("endMessage", playRate);
+					message("endMessage", result);
 					return null;
 				}
 
@@ -423,7 +427,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				VideoPlayer result = null;
 				if (url != null && url.length() > 0) {
 					message("startMessage", url);
-					result = VideoPlayer.createInstance(url, 1.0f);
+					result = videoPlayerFactory.createVideoPlayer(url);
 				}
 				return result;
 			}
@@ -719,8 +723,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	@OnEdt
 	public void startVideoPlayer(final File videoFile) {
-		final float playRate = getAppSettings().getPlayRate();
-		VideoPlayer videoPlayer = VideoPlayer.createInstance(videoFile.getAbsolutePath(), playRate);
+		VideoPlayer videoPlayer = videoPlayerFactory.createVideoPlayer(videoFile.getAbsolutePath());
 		videoPlayer.addPropertyChangeListener(MediaControls.this);
 		videoComponents.add(videoPlayer);
 		getWindowManager().addWindow(videoPlayer);

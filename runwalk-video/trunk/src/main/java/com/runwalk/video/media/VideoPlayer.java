@@ -5,16 +5,13 @@ import java.util.Arrays;
 import java.util.TreeSet;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.utils.AppHelper;
-import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.Sets;
 import com.runwalk.video.core.OnEdt;
-import com.runwalk.video.media.dsj.DSJPlayer;
 
 public class VideoPlayer extends VideoComponent {
-
-	private final static TreeSet<Float> PLAY_RATES = Sets.newTreeSet(Arrays.asList(0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f));
+	
+	public final static TreeSet<Float> PLAY_RATES = Sets.newTreeSet(Arrays.asList(0.05f, 0.10f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.50f, 1.75f, 2.0f));
 
 	public static final String POSITION = "position";
 
@@ -30,24 +27,8 @@ public class VideoPlayer extends VideoComponent {
 
 	private boolean muted = false;
 
-	public static VideoPlayer createInstance(String path, float playRate) {
-		playerCount++;
-		// check if the play rate is supported by the video player, if not then use the lowest one
-		if (!PLAY_RATES.contains(playRate)) {
-			playRate = PLAY_RATES.first();
-		}
-		// instantiate a suitable video player implementation for the current platform
-		IVideoPlayer result = null;
-		if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
-			result = new DSJPlayer(playRate);
-		} else {
-			throw new UnsupportedOperationException("This feature is not supported on this platform");
-		}
-		return new VideoPlayer(path, result);
-	}
-
-	private VideoPlayer(String path, IVideoPlayer playerImpl) {
-		super(playerCount);
+	VideoPlayer(String path, IVideoPlayer playerImpl) {
+		super(++playerCount);
 		this.playerImpl = playerImpl;
 		loadVideo(path);
 		setIdle(true);

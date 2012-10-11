@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import org.jdesktop.application.Action;
 
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.media.settings.VideoPlayerSettings;
 
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
@@ -19,14 +20,12 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 
 	private boolean customFramerateEnabled = false;
 
-	private float framerate;
-
-	private float rate;
-	
 	private int fourCc = -1;
 	
-	public DSJPlayer(float rate) {
-		this.rate = rate;
+	private VideoPlayerSettings videoPlayerSettings;
+	
+	public DSJPlayer(VideoPlayerSettings videoPlayerSettings) {
+		this.videoPlayerSettings = videoPlayerSettings;
 	}
 	
 	public DSJPlayer(String path, int flags, PropertyChangeListener listener) {
@@ -77,7 +76,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		// set playrate to 0 to make sure the filtergraph wont start running
 		pause();
 		if (isCustomFramerateEnabled()) {
-			getFiltergraph().setMasterFrameRate(framerate);
+			getFiltergraph().setMasterFrameRate(videoPlayerSettings.getFrameRate());
 		}
 		getFiltergraph().setRecueOnStop(true);
 	}
@@ -92,8 +91,9 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 						getResourceMap().getString("setCustomFramerate.dialog.title"), 
 						getResourceMap().getString("setCustomFramerate.dialog.text"), 
 						JOptionPane.PLAIN_MESSAGE);
-				framerate = Float.parseFloat(prefferredRate);
-				getFiltergraph().setMasterFrameRate(framerate);
+				float frameRate = Float.parseFloat(prefferredRate);
+				videoPlayerSettings.setFrameRate(frameRate);
+				getFiltergraph().setMasterFrameRate(frameRate);
 			} else {
 				JOptionPane.showMessageDialog(activeWindow, 
 						getResourceMap().getString("setCustomFramerate.noActiveGraphDialog.text"));
@@ -104,7 +104,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		}
 	}
 
-	public int getDuration(){
+	public int getDuration() {
 		return getFiltergraph().getDuration();
 	}
 
@@ -124,7 +124,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		setPosition(0);
 	}
 
-	public int getPosition(){
+	public int getPosition() {
 		return getFiltergraph().getTime();
 	}
 
@@ -133,11 +133,11 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	}
 
 	public void play() {
-		setPlayRate(rate);
+		setPlayRate(videoPlayerSettings.getPlayRate());
 	}
 	
 	public void setPlayRate(float rate) {
-		this.rate = rate;
+		videoPlayerSettings.setPlayRate(rate);
 		getFiltergraph().setRate(rate);
 	}
 
@@ -162,7 +162,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 	}
 
 	public String getTitle() {
-		return "DSJ player";
+		return videoPlayerSettings.getName();
 	}
 
 }

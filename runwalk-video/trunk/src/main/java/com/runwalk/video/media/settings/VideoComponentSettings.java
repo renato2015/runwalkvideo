@@ -1,6 +1,5 @@
 package com.runwalk.video.media.settings;
 
-
 public abstract class VideoComponentSettings {
 
 	private String monitorId;
