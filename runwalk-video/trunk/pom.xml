@@ -94,6 +94,22 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+            <plugin>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections-maven</artifactId>
+                <version>0.9.8</version>
+				<executions>
+					<execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>reflections</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scanners>org.reflections.scanners.TypeAnnotationsScanner</scanners>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -310,33 +326,16 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
-											org.codehaus.mojo
+											org.reflections
 										</groupId>
 										<artifactId>
-											apt-maven-plugin
+											reflections-maven
 										</artifactId>
 										<versionRange>
-											[1.0-alpha-5,)
+											[0.9.8,)
 										</versionRange>
 										<goals>
-											<goal>process</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.bsc.maven</groupId>
-										<artifactId>
-											maven-processor-plugin
-										</artifactId>
-										<versionRange>
-											[2.0.7,)
-										</versionRange>
-										<goals>
-											<goal>process</goal>
+											<goal>reflections</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -365,11 +364,6 @@
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-			<version>0.9.8</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
