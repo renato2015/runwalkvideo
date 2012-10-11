@@ -39,9 +39,8 @@ import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.CompositeVideoCapturerFactory;
+import com.runwalk.video.media.CompositeVideoPlayerFactory;
 import com.runwalk.video.media.MediaControls;
-import com.runwalk.video.media.dsj.DSJCapturerFactory;
-import com.runwalk.video.media.settings.VideoCapturerSettings;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
@@ -209,14 +208,13 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// create window manager
 		WindowManager windowManager = new WindowManager(getMenuBar(), getScrollableDesktopPane());
 		// create mediaplayer controls
-		/*VideoComponentFactorySettings<?> videoCapturerFactorySettings =  
-				new VideoComponentFactorySettings<VideoCapturerSettings>(DSJCapturerFactory.class);
-		settingsManager.addVideoCapturerFactorySettings(videoCapturerFactorySettings);*/
 		List<VideoComponentFactorySettings<?>> videoCapturerFactorySettingsList = getSettingsManager().getVideoCapturerFactorySettings();
+		List<VideoComponentFactorySettings<?>> videoPlayerFactorySettingsList = getSettingsManager().getVideoPlayerFactorySettings();
 		// create video capturer factory
 		CompositeVideoCapturerFactory videoCapturerFactory = CompositeVideoCapturerFactory.createInstance(videoCapturerFactorySettingsList);
+		CompositeVideoPlayerFactory videoPlayerFactory = CompositeVideoPlayerFactory.createInstance(videoPlayerFactorySettingsList);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
-				windowManager, getDaoService(), videoCapturerFactory, 
+				windowManager, getDaoService(), videoCapturerFactory, videoPlayerFactory,
 				getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels

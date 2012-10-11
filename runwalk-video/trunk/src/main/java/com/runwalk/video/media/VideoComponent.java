@@ -45,7 +45,6 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	 */
 	private final int componentId;
 
-
 	protected VideoComponent(int componentId) {
 		this.componentId = componentId;
 		setIdle(false);

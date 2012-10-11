@@ -96,12 +96,17 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		};
 	}
 	
+	/**
+	 * Get a {@link VideoCapturerSettings} bean for the given player name
+	 * @param selectedVideoCapturerName The capturer's name
+	 * @return The settings bean
+	 */
 	private T getVideoCapturerSettings(String selectedVideoCapturerName) {
 		T result = null;
-		for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
-			String videoCapturerName = videoComponentFactorySettings.getName();
+		for (T videoComponentSettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
+			String videoCapturerName = videoComponentSettings.getName();
 			if (videoCapturerName != null && videoCapturerName.equals(selectedVideoCapturerName)) {
-				result = videoComponentFactorySettings;
+				result = videoComponentSettings;
 			}
 		}
 		// if not found.. instantiate new bean

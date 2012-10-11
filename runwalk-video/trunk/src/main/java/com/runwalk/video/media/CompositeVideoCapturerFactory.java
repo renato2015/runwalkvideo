@@ -12,7 +12,6 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
-import com.runwalk.video.media.settings.VideoComponentSettings;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 
@@ -29,8 +28,8 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	 * @return The instantiated factory
 	 */
 	@SuppressWarnings("unchecked")
-	public static <V extends VideoComponentSettings> CompositeVideoCapturerFactory
-		createInstance(List<VideoComponentFactorySettings<?>> videoComponentFactorySettingsList) {
+	public static CompositeVideoCapturerFactory createInstance(
+			List<VideoComponentFactorySettings<?>> videoComponentFactorySettingsList) {
 		CompositeVideoCapturerFactory result = new CompositeVideoCapturerFactory();
 		Set<String> instantiatedFactoryClassNames = Sets.newHashSet();
 		for (VideoComponentFactorySettings<?> videoCapturerFactorySettings : videoComponentFactorySettingsList) {
@@ -52,6 +51,11 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 			PropertyChangeListener propertyChangeListener = videoCapturerFactory.createDialogListener(videoCapturer);
 			videoCapturerFactoryMapping.put(videoCapturerFactory, propertyChangeListener);
 		}
+		return createPropertyChangeListener(videoCapturerFactoryMapping);
+	}
+
+	private PropertyChangeListener createPropertyChangeListener(
+			final Map<VideoCapturerFactory<?>, PropertyChangeListener> videoCapturerFactoryMapping) {
 		return new PropertyChangeListener() {
 			
 			private VideoCapturerFactory<?> selectedVideoCapturerFactory;
@@ -108,9 +112,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	public Collection<String> getVideoCapturerNames() {
 		List<String> capturerNames = new ArrayList<String>();
 		for (VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
-			if (capturerNames.addAll(videoCapturerFactory.getVideoCapturerNames())) {
-				// TODO add some sort of separator item?? maybe later
-			}
+			capturerNames.addAll(videoCapturerFactory.getVideoCapturerNames());
 		}
 		return capturerNames;
 	}
