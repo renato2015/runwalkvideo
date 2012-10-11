@@ -4,10 +4,10 @@ import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
@@ -20,6 +20,10 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
@@ -27,7 +31,10 @@ import org.apache.log4j.PropertyConfigurator;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 import org.jdesktop.beansbinding.ELProperty;
-import org.reflections.Reflections;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import com.google.common.collect.Lists;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
@@ -102,12 +109,27 @@ public class SettingsManager implements Serializable {
 	}
 
 	private Class<?>[] findAnnotatedClasses() {
-		Reflections reflections = new Reflections("com.runwalk.video");
-		Set<Class<?>> annotated = 
-				reflections.getTypesAnnotatedWith(XmlRootElement.class);
-		Class<?>[] classArray = new Class<?>[annotated.size()];
-		annotated.toArray(classArray);
-		return classArray;
+		Class<?>[] result = null;
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		String expression = "//values/*[../../key/text()=\"" + XmlRootElement.class.getName() + "\"]";
+		InputStream reflectionsOutput = this.getClass().getClassLoader().
+				getResourceAsStream("META-INF/reflections/runwalk-video-reflections.xml");
+		InputSource inputSource = new InputSource(reflectionsOutput);
+		try {
+			NodeList nodes = (NodeList) xpath.evaluate(expression, inputSource, XPathConstants.NODESET);
+			result = new Class<?>[nodes.getLength()];
+			for (int i = 0; i < nodes.getLength(); i ++) {
+				Node item = nodes.item(i);
+				result[i] = Class.forName(item.getTextContent());
+			}
+		} catch (XPathExpressionException e) {
+			logger.error("Exception while parsing xPath expression", e);
+		} catch (ClassNotFoundException e) {
+			logger.error("Exception while loading JAXB annotated class", e);
+		} catch (DOMException e) {
+			logger.error("Exception while loading JAXB annotated class", e);
+		}
+		return result;
 	}
 
 	public void loadSettings() {
