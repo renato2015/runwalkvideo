@@ -17,18 +17,13 @@ import de.humatic.dsj.DSJException;
  * 
  * @author Jeroen Peelaerts
  */
-class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
+class DSJCapturer extends DSJComponent<DSCapture, VideoCapturerSettings> implements IVideoCapturer {
 
 	private DSFilterInfo captureEncoder;
 
-	private String capturerName;
-	
-	private VideoCapturerSettings videoCapturerSettings;
-
 	DSJCapturer(VideoCapturerSettings videoCapturerSettings) {
-		this.videoCapturerSettings = videoCapturerSettings;
-		this.capturerName = videoCapturerSettings.getName();
-		DSFilterInfo filterInfo = DSFilterInfo.filterInfoForName(capturerName);
+		super(videoCapturerSettings);
+		DSFilterInfo filterInfo = DSFilterInfo.filterInfoForName(videoCapturerSettings.getName());
 		setFiltergraph(new DSCapture(FLAGS, filterInfo, false, DSFilterInfo.doNotRender(), null));
 		// capture encoder is resolved here
 		setCaptureEncoderName(videoCapturerSettings.getEncoderName());
@@ -98,7 +93,7 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 				captureEncoder = DSFilterInfo.doNotRender();
 			}
 		}
-		videoCapturerSettings.setEncoderName(captureEncoder.getName());
+		getVideoComponentSettings().setEncoderName(captureEncoder.getName());
 	}
 
 	public String getCaptureEncoderName() {
@@ -112,14 +107,6 @@ class DSJCapturer extends DSJComponent<DSCapture> implements IVideoCapturer {
 			result.add(encoderInfo.getName());
 		}
 		return result;
-	}
-
-	/**
-	 * This method should return the name of the capturer which was originally 
-	 * provided by {@link VideoCapturerFactory#createVideoCapturer(String, String)}.
-	 */
-	public String getTitle() {
-		return capturerName;
 	}
 
 	protected boolean isRecording() {

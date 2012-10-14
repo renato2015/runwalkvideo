@@ -25,4 +25,8 @@ public class State implements Serializable {
 		return this.name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 }

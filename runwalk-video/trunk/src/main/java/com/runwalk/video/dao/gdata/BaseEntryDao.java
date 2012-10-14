@@ -30,7 +30,7 @@ public class BaseEntryDao<F extends BaseFeed<F, E>, E extends BaseEntry<E>> exte
 
 	public E getById(Object id) {
 		for (E entry : feed.getEntries()) {
-			if (id == entry.getId()) {
+			if (entry.getId().equals(id)) {
 				return entry;
 			}
 		}

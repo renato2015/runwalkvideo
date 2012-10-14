@@ -8,24 +8,20 @@ import javax.swing.JOptionPane;
 
 import org.jdesktop.application.Action;
 
-import com.runwalk.video.media.IVideoPlayer;
 import com.runwalk.video.media.settings.VideoPlayerSettings;
 
-import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJException;
 import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
-public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
+public class DSJPlayer extends AbstractDSJPlayer<DSMovie> {
 
 	private boolean customFramerateEnabled = false;
 
 	private int fourCc = -1;
 	
-	private VideoPlayerSettings videoPlayerSettings;
-	
 	public DSJPlayer(VideoPlayerSettings videoPlayerSettings) {
-		this.videoPlayerSettings = videoPlayerSettings;
+		super(videoPlayerSettings);
 	}
 	
 	public DSJPlayer(String path, int flags, PropertyChangeListener listener) {
@@ -76,7 +72,7 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		// set playrate to 0 to make sure the filtergraph wont start running
 		pause();
 		if (isCustomFramerateEnabled()) {
-			getFiltergraph().setMasterFrameRate(videoPlayerSettings.getFrameRate());
+			getFiltergraph().setMasterFrameRate(getVideoComponentSettings().getFrameRate());
 		}
 		getFiltergraph().setRecueOnStop(true);
 	}
@@ -87,13 +83,15 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		try {
 			if (getFiltergraph() != null && getFiltergraph().getActive()) {
 				setCustomFramerateEnabled(true);
-				String prefferredRate = JOptionPane.showInputDialog(activeWindow, 
+				String preferredRate = JOptionPane.showInputDialog(activeWindow, 
 						getResourceMap().getString("setCustomFramerate.dialog.title"), 
 						getResourceMap().getString("setCustomFramerate.dialog.text"), 
 						JOptionPane.PLAIN_MESSAGE);
-				float frameRate = Float.parseFloat(prefferredRate);
-				videoPlayerSettings.setFrameRate(frameRate);
-				getFiltergraph().setMasterFrameRate(frameRate);
+				if (preferredRate != null) {
+					float frameRate = Float.parseFloat(preferredRate);
+					getVideoComponentSettings().setFrameRate(frameRate);
+					getFiltergraph().setMasterFrameRate(frameRate);
+				}
 			} else {
 				JOptionPane.showMessageDialog(activeWindow, 
 						getResourceMap().getString("setCustomFramerate.noActiveGraphDialog.text"));
@@ -104,65 +102,12 @@ public class DSJPlayer extends DSJComponent<DSMovie> implements IVideoPlayer {
 		}
 	}
 
-	public int getDuration() {
-		return getFiltergraph().getDuration();
-	}
-
-	/**
-	 * Pausing a video is best accomplished by setting {@link DSFiltergraph#setRate(float)} to 0. 
-	 * The {@link DSFiltergraph#pause()} command has a different purpose in DirectShow terminology.
-	 */
-	public void pause() {
-		getFiltergraph().setRate(0);
-	}
-	
-	/**
-	 * Stopping a video is best accomplished by invoking {@link #pause()} and setting the playback position to 0.
-	 */
-	public void stop() {
-		pause();
-		setPosition(0);
-	}
-
-	public int getPosition() {
-		return getFiltergraph().getTime();
-	}
-
-	public void setPosition(int position) {
-		getFiltergraph().setTimeValue(position);
-	}
-
-	public void play() {
-		setPlayRate(videoPlayerSettings.getPlayRate());
-	}
-	
-	public void setPlayRate(float rate) {
-		videoPlayerSettings.setPlayRate(rate);
-		getFiltergraph().setRate(rate);
-	}
-
-	public float getPlayRate() {
-		return getFiltergraph().getRate();
-	}
-
-	public float getVolume() {
-		return getFiltergraph().getVolume();
-	}
-	
-	public void setVolume(float volume) {
-		getFiltergraph().setVolume(volume);
-	}
-	
 	public boolean isCustomFramerateEnabled() {
 		return customFramerateEnabled;
 	}
 
 	public void setCustomFramerateEnabled(boolean customFramerateEnabled) {
 		this.customFramerateEnabled = customFramerateEnabled;
-	}
-
-	public String getTitle() {
-		return videoPlayerSettings.getName();
 	}
 
 }

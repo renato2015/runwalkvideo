@@ -32,7 +32,8 @@ public abstract class VideoPlayerFactory<T extends VideoPlayerSettings> extends 
 	}
 	
 	/**
-	 * Create a VideoPlayer for the given path
+	 * Create a VideoPlayer for the given path.
+	 * 
 	 * @param path The path to create a videoPlayer for
 	 * @return The created videoPlayer
 	 */
@@ -50,18 +51,16 @@ public abstract class VideoPlayerFactory<T extends VideoPlayerSettings> extends 
 	}
 	
 	/**
-	 * Get a {@link VideoPlayerSettings} bean for the given player name
+	 * Get a {@link VideoPlayerSettings} bean for the given player name.
+	 * 
 	 * @param selectedVideoPlayerName The player's name
 	 * @return The settings bean
 	 */
 	protected T getVideoPlayerSettings(String selectedVideoPlayerName) {
 		T result = null;
-		for (T videoComponentFactorySettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
-			// will search on name here.. is this relevant?
-			String videoPlayerName = videoComponentFactorySettings.getName();
-			if (videoPlayerName != null && videoPlayerName.equals(selectedVideoPlayerName)) {
-				result = videoComponentFactorySettings;
-			}
+		for (T videoPlayerSettings : getVideoComponentFactorySettings().getVideoComponentSettings()) {
+			// just one settings bean for all players
+			result = videoPlayerSettings;
 		}
 		// if not found.. instantiate new bean
 		return result == null ? createSettingsBean(selectedVideoPlayerName) : result;

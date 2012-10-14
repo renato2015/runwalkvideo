@@ -25,6 +25,7 @@ import com.runwalk.video.core.PropertyChangeSupport;
 import com.runwalk.video.media.IVideoCapturer;
 import com.runwalk.video.media.IVideoComponent;
 import com.runwalk.video.media.IVideoPlayer;
+import com.runwalk.video.media.settings.VideoComponentSettings;
 
 import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFilterInfo;
@@ -38,8 +39,8 @@ import de.humatic.dsj.rc.RendererControls;
  *
  * @param <T> The specific DSFiltergraph subclass used by this component
  */
-public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoComponent, PropertyChangeSupport, 
-	ComponentListener, FullScreenSupport, Containable {
+public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoComponentSettings> implements IVideoComponent, 
+	PropertyChangeSupport, ComponentListener, FullScreenSupport, Containable {
 
 	private static final String REJECT_PAUSE_FILTER = "rejectPauseFilter";
 
@@ -49,10 +50,12 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	 * All filtergraphs are initialized in the paused state.
 	 */
 	protected static final int FLAGS = DSFiltergraph.D3D9 | DSFiltergraph.INIT_PAUSED;
-
+	
 	private volatile boolean visible;
 
 	private volatile boolean fullScreen;
+
+	private V videoComponentSettings;
 
 	private T filtergraph;
 
@@ -60,7 +63,11 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	private boolean toggleFullScreenEnabled = true;
 
-	private Integer monitorId;
+	protected DSJComponent(V videoComponentSettings) {
+		this.videoComponentSettings = videoComponentSettings;
+	}
+	
+	protected DSJComponent() { }
 
 	public void startRunning() {
 		// fire a graph changed so all settings made to the filtergraph will be applied
@@ -221,11 +228,13 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 	}
 
 	public Integer getMonitorId() {
-		return monitorId;
+		String monitorIdString = videoComponentSettings.getMonitorId();
+		return monitorIdString != null && !monitorIdString.isEmpty() ? 
+				Integer.parseInt(monitorIdString) : null;
 	}
 
 	public void setMonitorId(Integer monitorId) {
-		this.monitorId = monitorId;
+		videoComponentSettings.setMonitorId(Integer.toString(monitorId));
 	}
 
 	public boolean isToggleFullScreenEnabled() {
@@ -240,7 +249,7 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice foundDevice = null;
 		for (GraphicsDevice device : graphicsEnvironment.getScreenDevices()) {
-			if (monitorId != null && device.getIDstring().endsWith(monitorId.toString())) {
+			if (getMonitorId() != null && device.getIDstring().endsWith(getMonitorId().toString())) {
 				foundDevice = device;
 			}
 		}
@@ -301,6 +310,14 @@ public abstract class DSJComponent<T extends DSFiltergraph> implements IVideoCom
 
 	public boolean isNativeWindowing() {
 		return false;
+	}
+	
+	public String getTitle() {
+		return videoComponentSettings.getName();
+	}
+	
+	protected V getVideoComponentSettings() {
+		return videoComponentSettings;
 	}
 
 }
