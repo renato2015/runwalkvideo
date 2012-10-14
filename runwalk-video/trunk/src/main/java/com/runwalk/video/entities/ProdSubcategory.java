@@ -17,6 +17,7 @@ public class ProdSubcategory implements Serializable {
 	@Column(name="fk_catid")
 	private int fkCatid;
 
+	@Column(name="subcatname")
 	private String subcatname;
 
 	@Column(name="ext_url")

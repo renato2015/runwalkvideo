@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,8 +42,7 @@ import com.runwalk.video.media.VideoCapturerFactory;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 import com.runwalk.video.util.AppUtil;
 
-@SuppressWarnings("serial")
-public class SettingsManager implements Serializable {
+public class SettingsManager {
 
 	//FIXME dit zou terug uit een resourceMap moeten gehaald worden.
 	public static Font MAIN_FONT = new Font("Geneva", Font.PLAIN, 11);  //= ApplicationUtil.getResourceMap(ApplicationSettings.class).getFont("Application.mainFont").deriveFont(11f);
@@ -102,7 +100,7 @@ public class SettingsManager implements Serializable {
 		Class<?>[] classArray = findAnnotatedClasses();
 		logger.debug("Instantiating JAXB context..");
 		try {
-			jaxbContext = JAXBContext.newInstance( classArray  );
+			jaxbContext = JAXBContext.newInstance( classArray );
 		} catch (JAXBException e) {
 			logger.error("Exception while instantiating JAXB context", e);
 		}
@@ -337,7 +335,7 @@ public class SettingsManager implements Serializable {
 	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class Settings implements Serializable {
+	public static class Settings {
 		
 		private String transcoderName = "XviD MPEG-4 Codec";
 

@@ -2,6 +2,7 @@ package com.runwalk.video.entities;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -13,8 +14,10 @@ public class ProdCategory implements Serializable {
 	@Id
 	private int catid;
 
+	@Column(name="catname")
 	private String catname;
-
+	
+	@Column(name="publish")
 	private byte publish;
 
 	protected ProdCategory() { }

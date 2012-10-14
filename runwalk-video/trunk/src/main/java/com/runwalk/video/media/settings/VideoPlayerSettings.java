@@ -10,6 +10,8 @@ public class VideoPlayerSettings extends VideoComponentSettings {
 	private String path;
 	
 	private float frameRate;
+	
+	private boolean asynchronous = false;
 
 	public float getPlayRate() {
 		return playRate;
@@ -33,6 +35,14 @@ public class VideoPlayerSettings extends VideoComponentSettings {
 
 	public void setFrameRate(float frameRate) {
 		this.frameRate = frameRate;
+	}
+
+	public boolean isAsynchronous() {
+		return asynchronous;
+	}
+
+	public void setAsynchronous(boolean asynchronous) {
+		this.asynchronous = asynchronous;
 	}
 	
 }

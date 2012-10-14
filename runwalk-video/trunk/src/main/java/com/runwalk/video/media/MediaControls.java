@@ -270,7 +270,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			protected Void doInBackground() throws Exception {
 				message("startMessage", videoComponents.size());
 				for (VideoComponent videoComponent : Lists.newArrayList(videoComponents)) {
-					getLogger().debug("Stopping video for " + videoComponent.getTitle());
+					this.getLogger().debug("Stopping video for " + videoComponent.getTitle());
 					videoComponent.dispose();
 				}
 				new Robot().waitForIdle();
@@ -715,7 +715,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			//getWindowManager().disposeWindow(player);
 			//getWindowManager().addWindow(player);
 			IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
-			((FullScreenSupport) videoImpl).setFullScreen(true);
+			//((FullScreenSupport) videoImpl).setFullScreen(true);
 			getWindowManager().refreshScreen();
 		}
 		getWindowManager().toFront(videoPlayer);
@@ -805,7 +805,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			} else if (getFrontMostPlayer() != null && isPlaying()) {
 				// only update status info for the frontmost player
 				int position = getFrontMostPlayer().getPosition();
-				if (position == 0 && getFrontMostPlayer().isPlaying()) {
+				if ((position == 0 || position >= getFrontMostPlayer().getDuration()) 
+						&& getFrontMostPlayer().isPlaying()) {
 					getLogger().debug("playback position set to 0");
 					invokeAction(STOP_ACTION, this);
 				}

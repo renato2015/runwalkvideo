@@ -1,8 +1,5 @@
 package com.runwalk.video.media.dsj;
 
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -19,18 +16,21 @@ public class DSJPlayerFactory extends VideoPlayerFactory.Adapter {
 	 */
 	@Override
 	protected IVideoPlayer initializePlayer(VideoPlayerSettings videoPlayerSettings) {
-		// initialize the capturer's native resources
+		IVideoPlayer result = null;
 		videoPlayerSettings.setName("DSJ Player");
-		return new DSJPlayer(videoPlayerSettings);
+		if (videoPlayerSettings.isAsynchronous()) {
+			result = new DSJAsyncPlayer(videoPlayerSettings);
+		} else {
+			result = new DSJPlayer(videoPlayerSettings);
+		}
+		// initialize the capturer's native resources
+		return result;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean canHandleFile(String path) {
-		// handle files that are on the default filesystem..
-		FileSystem defaultFileSystem = FileSystems.getDefault();
-		// TODO check if file is not in a mounted folder??
 		return AppHelper.getPlatform() == PlatformType.WINDOWS;
 	}
 	
