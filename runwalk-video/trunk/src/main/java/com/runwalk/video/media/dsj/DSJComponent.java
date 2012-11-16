@@ -193,31 +193,34 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 	public boolean isFullScreen() {
 		return fullScreen;
 	}
+	
+	public void setFullScreen(boolean fullScreen) {
+		firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
+	}
 
 	@OnEdt
-	public void setFullScreen(boolean fullScreen) {
-		// TODO second condition commented out quick & dirty fix
-		if (isToggleFullScreenEnabled()/* && this.fullScreen != fullScreen*/) {
+	public void enterFullScreen() {
+		if (isToggleFullScreenEnabled() && !isFullScreen()) {
 			GraphicsDevice foundDevice = getGraphicsDevice();
 			if (foundDevice != null) {
 				// disable toggling while switching full screen
 				setToggleFullScreenEnabled(false);
-				if (fullScreen) {
-					getFiltergraph().goFullScreen(foundDevice, 1);
-					getFullscreenFrame().addComponentListener(this);
-					// TODO move this to EDT?
-					getFullscreenFrame().setTitle(getTitle());
-					getFullscreenFrame().setName(getTitle());
-				} else {
-					if (getFullscreenFrame() != null) {
-						getFullscreenFrame().removeComponentListener(this);
-					}
-					getFiltergraph().leaveFullScreen();
-				}
-				setToggleFullScreenEnabled(true);
-				firePropertyChange(FULL_SCREEN, this.fullScreen, this.fullScreen = fullScreen);
+				getFiltergraph().goFullScreen(foundDevice, 1);
+				getFullscreenFrame().addComponentListener(this);
+				getFullscreenFrame().setTitle(getTitle());
+				getFullscreenFrame().setName(getTitle());
 			}
+			setToggleFullScreenEnabled(true);
+			setFullScreen(true);
 		}
+	}
+	
+	public void leaveFullScreen() {
+		if (getFullscreenFrame() != null) {
+			getFullscreenFrame().removeComponentListener(this);
+		}
+		getFiltergraph().leaveFullScreen();
+		setFullScreen(false);
 	}
 
 	@OnEdt
@@ -261,7 +264,11 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 		// check if event is originating from a component that has selected state
 		if (event.getSource() instanceof AbstractButton) {
 			AbstractButton source = (AbstractButton) event.getSource();
-			setFullScreen(source.isSelected());
+			if (source.isSelected()) {
+				enterFullScreen();
+			} else {
+				leaveFullScreen();
+			}
 		}
 	}
 

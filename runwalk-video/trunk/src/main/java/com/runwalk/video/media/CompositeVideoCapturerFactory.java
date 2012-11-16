@@ -12,6 +12,7 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
+import com.runwalk.video.ui.WindowManager;
 
 public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter {
 
@@ -100,7 +101,7 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 		}
 		return result;
 	}
-
+	
 	public boolean addFactory(VideoCapturerFactory<?> videoCapturerFactory) {
 		return videoCapturerFactory != null ? videoCapturerFactories.add(videoCapturerFactory) : false;
 	}
@@ -108,7 +109,6 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	public Collection<String> getVideoCapturerNames() {
 		List<String> capturerNames = new ArrayList<String>();
 		for (VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
@@ -117,4 +117,15 @@ public class CompositeVideoCapturerFactory extends VideoCapturerFactory.Adapter 
 		return capturerNames;
 	}
 
+	@Override
+	public Integer getMonitorIdForComponent(String componentName) {
+		for(VideoCapturerFactory<?> videoCapturerFactory : videoCapturerFactories) {
+			Integer monitorId = videoCapturerFactory.getMonitorIdForComponent(componentName);
+			if (monitorId != null) {
+				return monitorId;
+			}
+		}
+		return null;
+	}
+	
 }

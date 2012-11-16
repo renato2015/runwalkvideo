@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.event.HierarchyListener;
 import java.awt.image.BufferedImage;
 
+import com.google.gdata.data.extensions.Image;
+
 /**
  * This class can be seen as the "implementor" of the used bridge pattern for providing the abstract {@link VideoPlayer} with a concrete
  * (native) implementation. 
@@ -37,6 +39,14 @@ public interface IVideoComponent extends HierarchyListener {
 	Dimension getDimension();
 	
 	/**
+	 * Get the monitor id for this component.
+	 * Should return <code>null</code> if running on the main screen.
+	 * 
+	 * @return The monitor id.
+	 */
+	Integer getMonitorId();
+	
+	/**
 	 * Set a {@link BufferedImage} and draw it on top of the rendering component.
 	 * Setting the image to null should clear all the drawings.
 	 * 
@@ -45,8 +55,16 @@ public interface IVideoComponent extends HierarchyListener {
 	 */
 	void setOverlayImage(BufferedImage image, Color alphaColor);
 	
+	/**
+	 * Get the currently showing {@link Image} of this video implementation.
+	 * @return The image currently shown
+	 */
 	BufferedImage getImage();
 	
+	/**
+	 * Get the component's title.
+	 * @return The title
+	 */
 	String getTitle();
 	
 	/**

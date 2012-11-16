@@ -17,8 +17,6 @@ public class VideoPlayer extends VideoComponent {
 
 	private static final String MUTED = "muted";
 
-	private static int playerCount = 0;
-
 	private int position;
 
 	private float volume;
@@ -28,7 +26,6 @@ public class VideoPlayer extends VideoComponent {
 	private boolean muted = false;
 
 	VideoPlayer(String path, IVideoPlayer playerImpl) {
-		super(++playerCount);
 		this.playerImpl = playerImpl;
 		loadVideo(path);
 		setIdle(true);
@@ -36,8 +33,6 @@ public class VideoPlayer extends VideoComponent {
 
 	public boolean loadVideo(String videoPath) {
 		boolean result = getVideoImpl().loadVideo(videoPath);
-		// TODO fix this, hardcoded to zeroth monitor
-		// showComponent(true, 0);
 		setVideoPath(videoPath);
 		setPosition(0);
 		return result;
@@ -173,7 +168,6 @@ public class VideoPlayer extends VideoComponent {
 	public void dispose() {
 		super.dispose();
 		setVideoImpl(null);
-		playerCount--;
 	}
 
 	public boolean isPlaying() {
@@ -182,7 +176,7 @@ public class VideoPlayer extends VideoComponent {
 
 	@Override
 	public String getTitle() {
-		return getResourceMap().getString("windowTitle.text", getComponentId());
+		return getResourceMap().getString("windowTitle.text", getMonitorId());
 	}
 
 	/**

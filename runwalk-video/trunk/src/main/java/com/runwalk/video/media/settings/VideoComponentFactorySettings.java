@@ -18,6 +18,8 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 	
 	private String defaultVideoComponentName;
 	
+	private int defaultMonitorId;
+	
 	public VideoComponentFactorySettings() { } 
 	
 	public VideoComponentFactorySettings(Class<? extends VideoComponentFactory<? extends T>> videoCapturerFactoryClass, 
@@ -44,6 +46,14 @@ public class  VideoComponentFactorySettings<T extends VideoComponentSettings> {
 
 	public boolean addVideoComponentSettings(T videoCapturerSettings) {
 		return videoComponentSettings.add(videoCapturerSettings);
+	}
+	
+	public int getDefaultMonitorId() {
+		return defaultMonitorId;
+	}
+
+	public void setDefaultMonitorId(int defaultMonitorId) {
+		this.defaultMonitorId = defaultMonitorId;
 	}
 
 	public List<T> getVideoComponentSettings() {

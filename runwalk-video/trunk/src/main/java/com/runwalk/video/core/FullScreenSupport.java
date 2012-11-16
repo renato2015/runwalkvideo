@@ -4,13 +4,15 @@ import java.awt.event.ActionEvent;
 
 
 public interface FullScreenSupport extends SelfContained {
+	
+	void enterFullScreen();
 
-	public abstract void setFullScreen(boolean fullScreen);
+	void leaveFullScreen();
+	
+	boolean isFullScreen();
 
-	public abstract boolean isFullScreen();
+	boolean isToggleFullScreenEnabled();
 
-	public abstract boolean isToggleFullScreenEnabled();
-
-	public abstract void toggleFullScreen(ActionEvent event);
+	void toggleFullScreen(ActionEvent event);
 
 }

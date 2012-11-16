@@ -40,13 +40,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	
 	private String videoPath;
 	
-	/**
-	 * This variable is used to determine the default monitor on which this component will be shown.
-	 */
-	private final int componentId;
-
-	protected VideoComponent(int componentId) {
-		this.componentId = componentId;
+	protected VideoComponent() {
 		setIdle(false);
 	}
 
@@ -71,15 +65,14 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	}
 
 	/**
-	 * Returns an unique id for this concrete {@link VideoComponent} type.
-	 * Implementations can be numbered independently from each other.
-	 * Most of the time a static counter will be used at creation time, that 
-	 * is incremented in the subclass.
+	 * Returns the monitor ID on which this component is shown.
+	 * Should return <code>null</code> in case the component is running
+	 * on the default (main) monitor.
 	 * 
-	 * @return The number
+	 * @return The monitor number
 	 */
-	public int getComponentId() {
-		return componentId;
+	public Integer getMonitorId() {
+		return getVideoImpl().getMonitorId();
 	}
 	
 	public BufferedImage getImage() {
@@ -186,7 +179,7 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	 * 
 	 * @return The merged ActionMap
 	 */
-	public synchronized ApplicationActionMap getApplicationActionMap() {
+	public ApplicationActionMap getApplicationActionMap() {
 		if (actionMap == null && getVideoImpl() != null) {
 			// get the action map of the abstractions
 			ApplicationActionMap actionMap = getContext().getActionMap(VideoComponent.class, this);

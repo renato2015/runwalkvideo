@@ -136,7 +136,7 @@ public abstract class VideoCapturerFactory<T extends VideoCapturerSettings> exte
 		Window parentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
 		// create a dialog to let the user choose which capture device to start on which monitor
 		VideoCapturerDialog dialog = new VideoCapturerDialog(parentWindow, videoCapturer.getApplicationActionMap(), 
-				videoCapturer.getComponentId(), defaultVideoCapturerName, this);
+				defaultVideoCapturerName, this);
 		final PropertyChangeListener changeListener = createDialogListener(videoCapturer);
 		dialog.addPropertyChangeListener(changeListener);
 		// populate dialog with capture devices and look for connected monitors

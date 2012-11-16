@@ -378,9 +378,9 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 		return foundDevice;
 	}
 
-	public void setFullScreen(boolean fullScreen) {
-		if (!this.fullScreen && fullScreenFrame != null && !fullScreenFrame.isVisible()) {
-			this.fullScreen = fullScreen;
+	public void enterFullScreen() {
+		if (!isFullScreen() && fullScreenFrame != null && !fullScreenFrame.isVisible()) {
+			setFullScreen(true);
 			IntByReference monitorId = new IntByReference(getMonitorId());
 			String settingsFilePath = getSettingsFilePath();
 			// get rectangle for the currently selected monitor and position frame
@@ -396,13 +396,21 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 			LOGGER.debug("StartRunning " + isSuccess(result));
 		}
 	}
+	
+	public void leaveFullScreen() {
+		// not implemented
+	}
+	
+	public void setFullScreen(boolean fullScreen) {
+		this.fullScreen = fullScreen;
+	}
 
 	public boolean isFullScreen() {
 		return fullScreen || isNativeWindowing();
 	}
 
 	public boolean isToggleFullScreenEnabled() {
-		return true;
+		return false;
 	}
 
 	@Action(selectedProperty = FULL_SCREEN, enabledProperty = TOGGLE_FULL_SCREEN_ENABLED)
