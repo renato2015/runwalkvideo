@@ -200,19 +200,17 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 
 	@OnEdt
 	public void enterFullScreen() {
-		if (isToggleFullScreenEnabled()) {
-			GraphicsDevice foundDevice = getGraphicsDevice();
-			if (foundDevice != null) {
-				// disable toggling while switching full screen
-				setToggleFullScreenEnabled(false);
-				getFiltergraph().goFullScreen(foundDevice, 1);
-				getFullscreenFrame().addComponentListener(this);
-				getFullscreenFrame().setTitle(getTitle());
-				getFullscreenFrame().setName(getTitle());
-			}
-			setToggleFullScreenEnabled(true);
-			setFullScreen(true);
+		GraphicsDevice foundDevice = getGraphicsDevice();
+		if (foundDevice != null) {
+			// disable toggling while switching full screen
+			setToggleFullScreenEnabled(false);
+			getFiltergraph().goFullScreen(foundDevice, 1);
+			getFullscreenFrame().addComponentListener(this);
+			getFullscreenFrame().setTitle(getTitle());
+			getFullscreenFrame().setName(getTitle());
 		}
+		setToggleFullScreenEnabled(true);
+		setFullScreen(true);
 	}
 	
 	public void leaveFullScreen() {
@@ -241,7 +239,7 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 	}
 
 	public boolean isToggleFullScreenEnabled() {
-		return true;
+		return false;
 	}
 
 	public void setToggleFullScreenEnabled(boolean toggleFullScreenEnabled) {

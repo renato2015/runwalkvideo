@@ -80,8 +80,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			SelfContained selfContainedImpl = (SelfContained) videoImpl;
 			if (isFullScreenSupported && videoComponent.isFocusable()) {
 				FullScreenSupport fsVideoImpl = (FullScreenSupport) videoImpl;
-				boolean toggleFullScreenEnabled = fsVideoImpl.isToggleFullScreenEnabled();
-				if (toggleFullScreenEnabled && !fsVideoImpl.isFullScreen()) {
+				if (!fsVideoImpl.isFullScreen()) {
 					// go fullscreen if monitorId not on the default screen
 					if (monitorId != null && monitorId != getDefaultMonitorId()) {
 						fsVideoImpl.enterFullScreen();
