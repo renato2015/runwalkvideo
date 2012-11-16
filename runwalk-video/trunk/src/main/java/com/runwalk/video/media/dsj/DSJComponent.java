@@ -153,7 +153,7 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 				// this call is really needed to reopen a new video
 				fullScreenFrame.dispose();
 			}
-			getFiltergraph().dispose();
+			//getFiltergraph().dispose();
 		}
 	}
 

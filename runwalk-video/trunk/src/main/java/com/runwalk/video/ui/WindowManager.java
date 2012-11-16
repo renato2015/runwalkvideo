@@ -172,16 +172,15 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	public void disposeWindow(VideoComponent videoComponent) {
-		// TODO should be reviewed
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
 		// if Containable and not SelfContained then dispose the wrapping component
-		if (videoImpl instanceof SelfContained) {
-			// if the implementation implements both SelfContained and Containable, cast to SelfContained
-			disposeWindow((SelfContained) videoImpl);
-		} else if (videoImpl instanceof Containable) {
+		// if the implementation implements both SelfContained and Containable, cast to SelfContained
+		if (videoImpl instanceof Containable && videoImpl.getMonitorId() == getDefaultMonitorId()) {
 			Container container = disposeWindow((Containable) videoImpl);
 			container.removeHierarchyListener(videoComponent.getVideoImpl());
-		}  
+		} else if (videoImpl instanceof SelfContained) {
+			disposeWindow((SelfContained) videoImpl);
+		}
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -267,7 +266,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		Iterator<T> iterator = videoComponents.iterator();
 		while(iterator.hasNext() && result == null) {
 			T videoComponent = iterator.next();
-			if (videoComponent.getVideoImpl().getTitle().equals(title)) {
+			if (videoComponent.getTitle().equals(title)) {
 				result = videoComponent;
 			}
 		}
