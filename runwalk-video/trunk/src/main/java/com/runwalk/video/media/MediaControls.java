@@ -57,7 +57,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.runwalk.video.core.Containable;
-import com.runwalk.video.core.FullScreenSupport;
 import com.runwalk.video.core.OnEdt;
 import com.runwalk.video.core.WindowConstants;
 import com.runwalk.video.dao.DaoService;
