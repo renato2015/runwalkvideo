@@ -1,6 +1,5 @@
 package com.runwalk.video.media.dsj;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
