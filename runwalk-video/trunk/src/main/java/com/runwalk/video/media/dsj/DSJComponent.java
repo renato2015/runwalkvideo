@@ -200,7 +200,7 @@ public abstract class DSJComponent<T extends DSFiltergraph, V extends VideoCompo
 
 	@OnEdt
 	public void enterFullScreen() {
-		if (isToggleFullScreenEnabled() && !isFullScreen()) {
+		if (isToggleFullScreenEnabled()) {
 			GraphicsDevice foundDevice = getGraphicsDevice();
 			if (foundDevice != null) {
 				// disable toggling while switching full screen
