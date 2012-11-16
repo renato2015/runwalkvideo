@@ -1,10 +1,14 @@
 package com.runwalk.video.media.dsj;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.jdesktop.application.Action;
 
@@ -33,9 +37,9 @@ public class DSJPlayer extends AbstractDSJPlayer<DSMovie> {
 	}
 	
 	public boolean loadVideo(String path, int flags, PropertyChangeListener listener) {
-		boolean rebuilt = false;
+		boolean rebuilt = getFiltergraph() == null;
 		try {
-			if (rebuilt = getFiltergraph() == null) {
+			if (rebuilt) {
 				initFiltergraph(path, flags, listener);
 			} else {
 				// do not reload video if fourCc is not the same
@@ -57,9 +61,17 @@ public class DSJPlayer extends AbstractDSJPlayer<DSMovie> {
 	}
 	
 	private boolean rebuildFiltergraph(String path, int flags, PropertyChangeListener listener) {
-		// TODO clean this up.. should be done better
-		dispose();
-		initFiltergraph(path, flags, listener);
+		if (!isFullScreen()) {
+			Container parentFrame = SwingUtilities.getAncestorOfClass(JInternalFrame.class, getComponent());
+			parentFrame.remove(getComponent());
+			dispose();
+			initFiltergraph(path, flags, listener);
+			parentFrame.add(getComponent());
+		} else {
+			dispose();
+			initFiltergraph(path, flags, listener);
+			enterFullScreen();
+		}
 		return true;
 	}
 	

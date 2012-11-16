@@ -438,8 +438,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			public void succeeded(TaskEvent<VideoPlayer> event) {
 				VideoPlayer videoPlayer = event.getValue();
 				if (videoPlayer != null) {
-					int monitorId = WindowManager.getDefaultMonitorId(1, videoPlayer.getComponentId());
-					getWindowManager().addWindow(videoPlayer, monitorId);
+					getWindowManager().addWindow(videoPlayer);
 				}
 			}
 
@@ -683,24 +682,26 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				message("startMessage");
 				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
-				for(int i = 0; analysis != null && i < analysis.getRecordings().size(); i++) {
-					final Recording recording = analysis.getRecordings().get(i);
-					if (recording.isRecorded()) {
-						final File videoFile = getVideoFileManager().getVideoFile(recording);
-						if (recordingCount < getPlayers().size()) {
-							videoPlayer = getPlayers().get(recordingCount);
-							loadVideo(videoPlayer, videoFile);
-						} else {
-							startVideoPlayer(videoFile);
-						} 
+				if (analysis != null) {
+					for(int i = 0; i < analysis.getRecordings().size(); i++) {
+						final Recording recording = analysis.getRecordings().get(i);
+						if (recording.isRecorded()) {
+							final File videoFile = getVideoFileManager().getVideoFile(recording);
+							if (recordingCount < getPlayers().size()) {
+								videoPlayer = getPlayers().get(recordingCount);
+								loadVideo(videoPlayer, videoFile);
+							} else {
+								startVideoPlayer(videoFile);
+							} 
 
+						}
+						setSliderLabels(recording);
+						recordingCount++;
 					}
-					setSliderLabels(recording);
-					recordingCount++;
+					setSliderPosition(0);
+					new Robot().waitForIdle();
+					message("endMessage", recordingCount, analysis.getClient());
 				}
-				setSliderPosition(0);
-				new Robot().waitForIdle();
-				message("endMessage", recordingCount, analysis.getClient());
 				return null;
 			}
 
@@ -709,13 +710,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	@OnEdt
 	public void loadVideo(final VideoPlayer videoPlayer, final File videoFile) {
-		// TODO quick and dirty fix for graph rebuilding here.. cleanup please
 		// if loading fails, rebuild and show again
 		if (videoPlayer.loadVideo(videoFile.getAbsolutePath())) {
-			//getWindowManager().disposeWindow(player);
-			//getWindowManager().addWindow(player);
-			IVideoPlayer videoImpl = videoPlayer.getVideoImpl();
-			//((FullScreenSupport) videoImpl).setFullScreen(true);
 			getWindowManager().refreshScreen();
 		}
 		getWindowManager().toFront(videoPlayer);
@@ -829,8 +825,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				disableVideoComponentControls(component);
 				component.removePropertyChangeListener(this);
 			}
-		} else if (evt.getPropertyName().equals(VideoCapturer.CAPTURE_ENCODER_NAME)) {
-			// TODO save capture encoder name for the given videoCapturer?	
 		} else if (evt.getPropertyName().equals(WindowConstants.VISIBLE)) {
 			toggleVideoComponentControls((VideoComponent) evt.getSource(), (Boolean) evt.getNewValue());
 		}

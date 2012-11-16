@@ -1,5 +1,7 @@
 package com.runwalk.video.media;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
@@ -10,7 +12,7 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 	protected final static Logger LOGGER = Logger.getLogger(VideoCapturerFactory.class);
 	
 	private final Class<T> videoComponentSettingsClass;
-
+	
 	private VideoComponentFactorySettings<T> videoComponentFactorySettings;
 	
 	public VideoComponentFactory(Class<T> videoComponentSettingsClass) {
@@ -73,6 +75,25 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 	
 	public Class<T> getVideoComponentSettingsClass() {
 		return videoComponentSettingsClass;
+	}
+	
+	/**
+	 * This methods will find the associated monitor id for the given component name.
+	 * @param componentName The component name to find the monitor id for
+ 	 * @return The monitor id, or <code>null</code> if undefined
+	 */
+	public Integer getMonitorIdForComponent(String componentName) {
+		List<T> videoComponentSettingsList = getVideoComponentFactorySettings().getVideoComponentSettings();
+		for (T videoComponentSettings : videoComponentSettingsList) {
+			if (videoComponentSettings.getName() != null && 
+					videoComponentSettings.getName().equals(componentName)) {
+				String monitorId = videoComponentSettings.getMonitorId();
+				if (monitorId != null && monitorId.length() > 0) {
+					return Integer.parseInt(monitorId);
+				}
+			}
+		}
+		return null;
 	}
 
 }

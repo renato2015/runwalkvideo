@@ -36,7 +36,6 @@ import org.jdesktop.application.SingleFrameApplication;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.core.AppComponent;
 import com.runwalk.video.core.SelfContained;
-import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
 
 @SuppressWarnings("serial")
@@ -50,11 +49,9 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	
 	private final String defaultVideoCapturerName;
 
-	private final int videoCapturerId;
-
 	private final VideoCapturerFactory<?> videoCapturerFactory;
 
-	private JComboBox videoCapturerComboBox;
+	private JComboBox<String> videoCapturerComboBox;
 	
 	private String selectedVideoCapturerName;
 
@@ -72,15 +69,14 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * 
 	 * @param parent The parent {@link Window} whose focusing behavior will be inherited. If null, then the exit action will be available in the {@link Dialog}
 	 * @param actionMap An optional {@link ActionMap} which the {@link Dialog} can use to add extra {@link javax.swing.Action}s
-	 * @param videoCapturerId The unique id of the newly opened capturer. This will be used to determine the default monitor to run on
-	 * @param videoCapturerFactory TODO
+	 * @param defaultMonitorId The monitor for the default selection
+	 * @param videoCapturerFactory Factory instance needed to refresh the list of capturers
 	 * @param defaultCapturer The name of the default selected capturer
 	 */
-	public VideoCapturerDialog(Window parent, ActionMap actionMap, int videoCapturerId, 
+	public VideoCapturerDialog(Window parent, ActionMap actionMap, 
 			String defaultVideoCapturerName, VideoCapturerFactory<?> videoCapturerFactory) {
 		super(parent);
 		setModal(true);
-		this.videoCapturerId = videoCapturerId;
 		this.defaultVideoCapturerName = defaultVideoCapturerName;
 		this.videoCapturerFactory = videoCapturerFactory;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -105,7 +101,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 		JLabel videoCapturerDeviceLabel = new JLabel(getResourceMap().getString("videoCaptureDeviceLabel.text")); // NOI18N
 		add(videoCapturerDeviceLabel, "wrap");
 
-		videoCapturerComboBox = new JComboBox();
+		videoCapturerComboBox = new JComboBox<String>();
 		add(videoCapturerComboBox, "wrap, grow");
 
 		buttonPanel = new JPanel(new MigLayout("fill, gap 0, insets 0"));
@@ -129,7 +125,8 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 		videoCapturerComboBox.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
-				JComboBox source = (JComboBox) e.getSource();
+				@SuppressWarnings("unchecked")
+				JComboBox<String> source = (JComboBox<String>) e.getSource();
 				String videoCapturerName = source.getSelectedItem().toString();
 				setSelectedVideoCapturerName(videoCapturerName);
 			}
@@ -225,11 +222,10 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 	 * Add the available capturers to the {@link Dialog}.
 	 * 
 	 * @param videoCapturerNames The names of the available capturers
-	 * @param videoCapturerName TODO
 	 */
 	private void addVideoCapturers(Collection<String> videoCapturerNames) {
 		String[] captureDevicesArray = Iterables.toArray(videoCapturerNames, String.class);
-		videoCapturerComboBox.setModel(new DefaultComboBoxModel(captureDevicesArray));
+		videoCapturerComboBox.setModel(new DefaultComboBoxModel<String>(captureDevicesArray));
 		// determine the default capturer name as the passed name if available, otherwise use the default combobox model selection
 		String defaultVideoCapturerName = videoCapturerComboBox.getSelectedItem().toString();
 		// retain the previous selection if there was one. Otherwise use the default selected capturer name
@@ -259,8 +255,8 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 			buttonPanel.add(screenLabel, "wrap, grow, span");
 			// create buttongroup for selecting monitor
 			ButtonGroup screenButtonGroup = new ButtonGroup();
+			Integer defaultMonitorId = videoCapturerFactory.getMonitorIdForComponent(selectedVideoCapturerName);
 			// get the default monitor id for this capturer
-			int defaultMonitorId = WindowManager.getDefaultMonitorId(graphicsDevices.length, videoCapturerId);
 			for (GraphicsDevice graphicsDevice : graphicsDevices) {
 				String monitorIdString  = graphicsDevice.getIDstring();
 				DisplayMode displayMode = graphicsDevice.getDisplayMode();
@@ -282,7 +278,7 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 				button.setBackground(Color.WHITE);
 				// set default screen selection
 				int monitorId = Integer.parseInt(monitorIdString);
-				if (defaultMonitorId == monitorId) {
+				if (defaultMonitorId != null && defaultMonitorId == monitorId) {
 					button.setSelected(true);
 					screenButtonGroup.setSelected(button.getModel(), true);
 				} else {
@@ -295,5 +291,5 @@ public class VideoCapturerDialog extends JDialog implements ApplicationActionCon
 			buttonPanel.setVisible(true);
 		}
 	}
-
+	
 }

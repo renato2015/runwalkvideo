@@ -21,16 +21,9 @@ public class VideoCapturer extends VideoComponent {
 
 	public static final String CAPTURE_ENCODER_NAME = "captureEncoderName";
 
-	/**
-	 * Keeps track of the total number of capturer instances
-	 */
-	private static int capturerCount = 0;
-	
 	private IVideoCapturer videoImpl;
 	
-	VideoCapturer() {
-		super(++capturerCount);
-	}
+	VideoCapturer() { }
 	
 	@Action
 	public void setCaptureEncoderName() {
@@ -64,7 +57,6 @@ public class VideoCapturer extends VideoComponent {
 	public void dispose() {
 		super.dispose();
 		setVideoImpl(null);
-		capturerCount--;
 	}
 	
 	@Action(enabledProperty=STOPPED)

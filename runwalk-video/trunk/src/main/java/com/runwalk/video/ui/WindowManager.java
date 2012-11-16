@@ -8,7 +8,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -26,52 +25,21 @@ import com.runwalk.video.core.FullScreenSupport;
 import com.runwalk.video.core.SelfContained;
 import com.runwalk.video.core.WindowConstants;
 import com.runwalk.video.media.IVideoComponent;
-import com.runwalk.video.media.VideoCapturer;
 import com.runwalk.video.media.VideoComponent;
 import com.runwalk.video.media.VideoComponent.State;
-import com.runwalk.video.media.VideoPlayer;
 import com.tomtessier.scrollabledesktop.JScrollableDesktopPane;
 
 public class WindowManager implements PropertyChangeListener, WindowConstants {
 
 	private VideoMenuBar menuBar;
+	
 	private JScrollableDesktopPane pane;
 
 	/**
-	 * This method returns a monitor number for a given amount of monitors and a given {@link VideoComponent} instance number.
-	 * The resulting number will be used for showing a {@link VideoCapturer} or {@link VideoPlayer} instance, 
-	 * which both are uniquely numbered.
+	 * Returns the default (main) monitor id.
 	 * 
-	 * <ul>
-	 * <li>If the total number of available monitors is smaller than 2, then the last monitor index will be used at all times.</li>
-	 * <li>If the total number of available monitors is greater than 2, then the assigned monitor index will alternate between 1 and the last
-	 * monitor index according to the value of the componentId parameter.</li>
-	 * </ul>
-	 * 
-	 * @param graphicsDevicesCount The amount of available screens
-	 * @param componentId The instance number
-	 * @return The screen id
+	 * @return The default monitor id
 	 */
-	public static int getDefaultMonitorId(int monitorCount, int componentId) {
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		GraphicsDevice defaultGraphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
-		// assign default monitor number to initial result
-		int defaultMonitorId = Arrays.asList(graphicsDevices).indexOf(defaultGraphicsDevice);
-		int result = defaultMonitorId;
-		int availableScreenCount = monitorCount - 1;
-		if (monitorCount > 1) {
-			// set to monitor on which the main window is not showing
-			result = availableScreenCount - defaultMonitorId;
-		}
-		//TODO add support for three monitors
-		return result;
-	}
-
-	public static int getDefaultMonitorId(VideoComponent videoComponent) {
-		return getDefaultMonitorId(getMonitorCount(), videoComponent.getComponentId());
-	}
-
 	public static int getDefaultMonitorId() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
@@ -94,22 +62,14 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	}
 
 	public void addWindow(VideoComponent videoComponent) {
-		IVideoComponent videoImpl = videoComponent.getVideoImpl();
-		Integer monitorId = null;
-		if (videoImpl instanceof SelfContained) {
-			// set a monitor id here, as we cannot let the user select it himself
-			SelfContained selfContained = (SelfContained) videoImpl;
-			monitorId = selfContained.getMonitorId();
-			if (monitorId == null) {
-				monitorId = getDefaultMonitorId(getMonitorCount(), videoComponent.getComponentId());
-				selfContained.setMonitorId(monitorId);
-			}
+		Integer monitorId = videoComponent.getMonitorId();
+		if (monitorId == null) {
+			monitorId = getDefaultMonitorId();
 		}
 		addWindow(videoComponent, monitorId);
 	}
 
 	public void addWindow(VideoComponent videoComponent, Integer monitorId) {
-		// FIXME can be null here
 		videoComponent.addPropertyChangeListener(this);
 		IVideoComponent videoImpl = videoComponent.getVideoImpl();
 		boolean isContainable = videoImpl instanceof Containable;
@@ -124,7 +84,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 				if (toggleFullScreenEnabled && !fsVideoImpl.isFullScreen()) {
 					// go fullscreen if monitorId not on the default screen
 					if (monitorId != null && monitorId != getDefaultMonitorId()) {
-						fsVideoImpl.setFullScreen(true);
+						fsVideoImpl.enterFullScreen();
 						addWindow(selfContainedImpl, videoComponent.getApplicationActionMap(), title);
 					} else if (isContainable) {
 						Container container = addWindow((Containable) videoImpl, videoComponent.getApplicationActionMap(), title);
@@ -168,7 +128,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 			setVisible(selfContainedImpl, true);
 		}
 	}
-	
+
 	public void setVisible(SelfContained selfContained, boolean visible) {
 		selfContained.setVisible(visible);
 	}
