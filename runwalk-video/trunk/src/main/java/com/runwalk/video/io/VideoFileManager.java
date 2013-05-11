@@ -251,9 +251,10 @@ public class VideoFileManager {
 	 */
 	private void deleteVideoFile(Recording recording) {
 		File videoFile = getVideoFile(recording);
+		removeRecording(recording);
 		if (videoFile != null) {
 			videoFile.deleteOnExit();
-			LOGGER.debug(videoFile.getAbsolutePath() + " scheduled for deletion.");
+			LOGGER.debug(videoFile.getAbsolutePath() + " scheduled for removal.");
 		}
 	}
 

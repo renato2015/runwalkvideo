@@ -24,7 +24,6 @@ public class OpenMJPEGStream extends TestCase {
 	public static void main (String[] args) throws Exception {
 		//new OpenMJPEGStream().testOpenAsyncSource();
 		DSEnvironment.setDebugLevel(4);
-		DSEnvironment.unlockDLL("aa", 2, 3, 4);
 	}
 
 	public void testOpenStream() throws Exception {

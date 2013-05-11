@@ -17,21 +17,10 @@
 		<class>com.runwalk.video.entities.RedcordSession</class>
 		<class>com.runwalk.video.entities.RedcordExercise</class>
 		<properties>
-			<property name="hibernate.connection.driver_class" value="${jdbc.driverClass}" />
-			<property name="hibernate.connection.username" value="${jdbc.user}" />
-			<property name="hibernate.connection.password" value="${jdbc.password}" />
-			<property name="hibernate.connection.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8" />
-			<property name="hibernate.max_fetch_depth" value="4" />
-			<property name="hibernate.show_sql" value="true" />
-			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-			
  			<property name="eclipselink.cache.type.City" value="Full"/>
  			<!-- need to call the StaticWeave class at build time -->
  			<!-- property name="eclipselink.weaving" value="static" -->
 		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
-		    <property name="eclipselink.jdbc.url" value="${jdbc.url}?useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterSetResults=utf8" />
-		    <property name="eclipselink.jdbc.user" value="${jdbc.user}" />
-		    <property name="eclipselink.jdbc.password" value="${jdbc.password}" />
 			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$EclipseLinkLogger"/>
 			<property name="eclipselink.logging.level" value="FINE" />
 		</properties>

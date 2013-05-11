@@ -159,7 +159,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYER_CONTROLS_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recorded}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recordingsEmpty}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, analysisTablePanel, recorded, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
@@ -167,7 +167,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			@Override
 			public void sourceChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 				selectedRecordingRecordable = (Boolean) binding.getSourceValueForTarget().getValue();
-				getLogger().debug("source for binding changed");
 			}
 
 		});
@@ -228,7 +227,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				String property = e.getPropertyName();
 				Window activeWindow = focusManager.getActiveWindow();
 				if (activeWindow != null && e.getNewValue() != null) {
-					if (("focusedWindow".equals(property)) && !activeWindow.getName().equals("mainFrame") && Frame.class.isAssignableFrom(activeWindow.getClass())) {
+					if (!activeWindow.getName().equals("mainFrame") && Frame.class.isAssignableFrom(activeWindow.getClass())) {
 						enableVideoComponentControls(((Frame) activeWindow).getTitle());
 					} else if ("focusOwner".equals(property)) {
 						Component component = SwingUtilities.getAncestorOfClass(JInternalFrame.class, (Component) e.getNewValue());
@@ -846,7 +845,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private void enableVideoComponentControls(final String title) {
 		VideoComponent videoComponent = getWindowManager().findVideoComponent(videoComponents, title);
-		getLogger().debug("Focus requested for component " + (videoComponent == null ? "null" : videoComponent.getTitle()) +  "(title: " + title + ")");
+		getLogger().debug("Focus requested for " + title);
 		enableVideoComponentControls(videoComponent);
 	}
 
