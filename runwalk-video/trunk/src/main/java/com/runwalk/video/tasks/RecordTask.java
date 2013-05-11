@@ -76,18 +76,15 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			for (Recording recording : getAnalysis().getRecordings()) {
 				String videoPath = capturer.getVideoPath();
 				File videoFile = getVideoFileManager().getVideoFile(recording);
-				result = result &= videoFile != null;
-				if (!result) {
-					errorMessage("errorMessage", videoFile.getAbsoluteFile());
-				} else {
-					
-				}
-				if (videoPath != null && videoPath.equals(videoFile.getAbsolutePath())) {
+				result &= videoFile != null;
+				if (videoFile != null && videoPath != null && videoPath.equals(videoFile.getAbsolutePath())) {
 					if ("none".equals(capturer.getCaptureEncoderName())) {
 						recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
 					} else {
 						recording.setRecordingStatus(RecordingStatus.COMPRESSED);
 					}
+				} else {
+					errorMessage("errorMessage", recording);
 				}
 			}
 		}

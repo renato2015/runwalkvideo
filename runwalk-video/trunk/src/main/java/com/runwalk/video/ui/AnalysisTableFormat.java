@@ -16,7 +16,7 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 	}
 	
 	public Object getColumnValue(final Analysis analysis, int column) {
-		final boolean recordingNotNull = analysis.hasRecordings();
+		final boolean recordingNotNull = analysis.isRecordingsEmpty();
 		Recording recording = null;
 		if (recordingNotNull) {
 			recording = Iterables.getLast(analysis.getRecordings());

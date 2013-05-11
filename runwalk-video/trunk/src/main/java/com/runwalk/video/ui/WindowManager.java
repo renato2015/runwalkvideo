@@ -265,7 +265,7 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 		Iterator<T> iterator = videoComponents.iterator();
 		while(iterator.hasNext() && result == null) {
 			T videoComponent = iterator.next();
-			if (videoComponent.getTitle().equals(title)) {
+			if (videoComponent.getVideoImpl().getTitle().equals(title)) {
 				result = videoComponent;
 			}
 		}

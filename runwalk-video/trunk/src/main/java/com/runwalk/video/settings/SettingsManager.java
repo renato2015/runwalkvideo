@@ -339,7 +339,7 @@ public class SettingsManager {
 		
 		private String transcoderName = "XviD MPEG-4 Codec";
 
-		private String logFileUploadUrl = "http://www.runwalk.be/index.php/logs/upload";
+		private String logFileUploadUrl = "http://your.upload.url";
 		
 		@XmlAnyElement(lax=true)
 		@XmlElementWrapper(name="videoCapturerFactorySettingsList")

@@ -15,7 +15,7 @@ public class AnalysisOverviewTableFormat extends AbstractTableFormat<Analysis> {
 
 	public Object getColumnValue(final Analysis analysis, int column) {
 		// existance of the recording's video file should be checked by the videoFileManager upon load
-		final boolean recordingNotNull = analysis.hasRecordings();
+		final boolean recordingNotNull = analysis.isRecordingsEmpty();
 		Recording recording = null;
 		if (recordingNotNull) {
 			recording = Iterables.getLast(analysis.getRecordings());

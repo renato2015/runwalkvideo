@@ -170,7 +170,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
 	}
 
-	public boolean hasRecordings() {
+	public boolean isRecordingsEmpty() {
 		return getRecordings() != null && !getRecordings().isEmpty();
 	}
 	
