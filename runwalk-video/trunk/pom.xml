@@ -419,15 +419,7 @@
 			<exclusions>
 			    <exclusion>
 			       	<groupId>org.swinglabs.swingx</groupId>
-			        <artifactId>swingx-painters</artifactId>
-			    </exclusion>
-			    <exclusion>
-			       	<groupId>org.swinglabs.swingx</groupId>
 			        <artifactId>swingx-autocomplete</artifactId>
-			    </exclusion>
-			    <exclusion>
-			       	<groupId>org.swinglabs.swingx</groupId>
-			        <artifactId>swingx-action</artifactId>
 			    </exclusion>
 			</exclusions>
 		</dependency>
