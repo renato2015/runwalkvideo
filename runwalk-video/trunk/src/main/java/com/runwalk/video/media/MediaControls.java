@@ -206,9 +206,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		createJButton(FASTER_ACTION); 
 		createJButton(NEXT_KEYFRAME_ACTION); 
 		createJButton(CREATE_KEYFRAME_ACTION); 
-		createJButton(DECREASE_VOLUME_ACTION); 
-		createJButton(INCREASE_VOLUME_ACTION); 
-		createJButton(TOGGLE_MUTED_ACTION); 
+		//createJButton(DECREASE_VOLUME_ACTION); 
+		//createJButton(INCREASE_VOLUME_ACTION); 
+		//createJButton(TOGGLE_MUTED_ACTION); 
 		createJButton(SHOW_CAPTURER_SETTINGS_ACTION); 
 		createJButton(SHOW_CAMERA_SETTINGS_ACTION); 
 		// TODO bring consistency in button behavior, toggle fullscreen for all active windows??

@@ -40,11 +40,11 @@ public class WindowManager implements PropertyChangeListener, WindowConstants {
 	 * 
 	 * @return The default monitor id
 	 */
-	public static int getDefaultMonitorId() {
+	public static Integer getDefaultMonitorId() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String monitorIdString = graphicsEnvironment.getDefaultScreenDevice().getIDstring();
 		monitorIdString = monitorIdString.substring(monitorIdString.length() - 1);
-		return Integer.parseInt(monitorIdString);
+		return Integer.valueOf(monitorIdString);
 	}
 
 	public static int getMonitorCount() {

@@ -146,13 +146,13 @@ public abstract class VideoComponent implements PropertyChangeSupport {
 	@Action(enabledProperty = IDLE)
 	public void dispose() {
 		if (!isDisposed()) {
+			// fire a PCE before disposing the implementation
+			setState(State.DISPOSED);
 			if (getVideoImpl() != null) {			
 				// dispose on the video implementation will dispose resources for the full screen frame
 				getVideoImpl().dispose();
 			}
 			setVideoPath(null);
-			// fire a PCE after disposing the implementation
-			setState(State.DISPOSED);
 			actionMap = null;
 		}
 	}

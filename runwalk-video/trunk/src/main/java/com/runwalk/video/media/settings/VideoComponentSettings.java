@@ -2,7 +2,9 @@ package com.runwalk.video.media.settings;
 
 public abstract class VideoComponentSettings {
 
-	private String monitorId;
+	public static final String DEFAULT_MONITOR_ID = "0";
+
+	private String monitorId = DEFAULT_MONITOR_ID;
 	
 	private String monitorResolution;
 
