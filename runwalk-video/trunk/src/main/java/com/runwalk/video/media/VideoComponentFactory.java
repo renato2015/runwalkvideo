@@ -93,7 +93,7 @@ public class VideoComponentFactory<T extends VideoComponentSettings> {
 				}
 			}
 		}
-		return null;
+		return getVideoComponentFactorySettings().getDefaultMonitorId();
 	}
 
 }
