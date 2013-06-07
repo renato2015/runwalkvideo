@@ -119,9 +119,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo.webstart</groupId>
+				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>webstart-maven-plugin</artifactId>
-				<version>1.0-alpha-2</version>
+				<version>1.0-beta-3-05062013</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -159,13 +159,12 @@
 							<gen>true</gen> </keystoreConfig> <verify>true</verify> -->
 						<!-- KEYSTORE MANAGEMENT -->
 					</sign>
-
+					
 					<!-- BUILDING PROCESS -->
-
+					<unsignAlreadySignedJars>true</unsignAlreadySignedJars>
 					<pack200>false</pack200>
 					<gzip>false</gzip>
 					<outputJarVersions>false</outputJarVersions>
-					<verbose>false</verbose>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -557,7 +556,7 @@
 		<keystore.dnameSt>Antwerp</keystore.dnameSt>
 		<keystore.dnameC>Belgium</keystore.dnameC>
 		<keystore.dnameOu>None</keystore.dnameOu>
-		<keystore.location>${basedir}/src/main/jnlp/myKeys</keystore.location>
+		<keystore.location>${basedir}/src/main/jnlp/runwalk-video.keys</keystore.location>
 		<keystore.password>yourPwd</keystore.password>
 		<!-- JNLP file generation properties -->
 		<mainClass>com.runwalk.video.RunwalkVideoApp</mainClass>
