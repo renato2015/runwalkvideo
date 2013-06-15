@@ -1,0 +1,28 @@
+<persistence version="1.0"
+	xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+	<persistence-unit name="${jpa.persistenceUnitName}" transaction-type="RESOURCE_LOCAL">
+		<provider>${jpa.persistenceProvider}</provider>
+		<class>com.runwalk.video.entities.ProdSubcategory</class>
+		<class>com.runwalk.video.entities.ProdCategory</class>
+		<class>com.runwalk.video.entities.Client</class>
+		<class>com.runwalk.video.entities.Person</class>
+		<class>com.runwalk.video.entities.City</class>
+		<class>com.runwalk.video.entities.State</class>
+		<class>com.runwalk.video.entities.Article</class>
+		<class>com.runwalk.video.entities.Analysis</class>
+		<class>com.runwalk.video.entities.Recording</class>
+		<class>com.runwalk.video.entities.Keyframe</class>
+		<class>com.runwalk.video.entities.CalendarSlot</class>
+		<class>com.runwalk.video.entities.RedcordSession</class>
+		<class>com.runwalk.video.entities.RedcordExercise</class>
+		<properties>
+ 			<property name="eclipselink.cache.type.City" value="Full"/>
+ 			<!-- need to call the StaticWeave class at build time -->
+ 			<!-- property name="eclipselink.weaving" value="static" -->
+		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
+			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$EclipseLinkLogger"/>
+			<property name="eclipselink.logging.level" value="FINE" />
+		</properties>
+	</persistence-unit>
+</persistence>
