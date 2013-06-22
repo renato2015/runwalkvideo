@@ -28,7 +28,10 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 		case 0: return analysis.getCreationDate();
 		case 1: return analysis.getArticle();
 		case 2: return analysis.getProgression();
-		case 3: return recordingNotNull ? recording.getDuration() : 0L;
+		case 3:	if (analysis.getFeedbackId() == null) {
+				return recordingNotNull ? recording.getDuration() : 0L;
+			} 
+			return null;
 		case 4: return analysis.getComments();
 		case 5: return analysis.isRecorded();
 		default: return null;

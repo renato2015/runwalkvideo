@@ -78,15 +78,17 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	private final SettingsManager appSettings;
 
 	private Boolean clientSelected = false;
-	
+
 	private EventList<Article> articleList;
 
 	private boolean selectedItemRecorded;
-	
+
 	private boolean addAnalysisForFeedbackEnabled;
 
-	public AnalysisTablePanel(ClientTablePanel clientTablePanel, UndoableEditListener undoableEditListener, 
-			SettingsManager appSettings, VideoFileManager videoFileManager, DaoService daoService) {
+	public AnalysisTablePanel(ClientTablePanel clientTablePanel,
+			UndoableEditListener undoableEditListener,
+			SettingsManager appSettings, VideoFileManager videoFileManager,
+			DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.clientTablePanel = clientTablePanel;
 		this.appSettings = appSettings;
@@ -94,7 +96,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		this.daoService = daoService;
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
 		add(scrollPane, "wrap, grow, height :100:");
 
@@ -105,14 +108,17 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		setSecondButton(new JButton(getAction(DELETE_ANALYSIS_ACTION)));
 		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
-		
-		JButton addAnalysisForFeedbackButton = new JButton(getAction(ADD_ANALYSIS_FOR_FEEDBACK_ACTION));
+
+		JButton addAnalysisForFeedbackButton = new JButton(
+				getAction(ADD_ANALYSIS_FOR_FEEDBACK_ACTION));
 		addAnalysisForFeedbackButton.setFont(SettingsManager.MAIN_FONT);
-		addAnalysisForFeedbackButton.setActionCommand(ADD_ANALYSIS_FOR_FEEDBACK_ACTION);
+		addAnalysisForFeedbackButton
+				.setActionCommand(ADD_ANALYSIS_FOR_FEEDBACK_ACTION);
 		add(addAnalysisForFeedbackButton, "wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
-		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		tscrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(undoableEditListener);
 		comments.setFont(SettingsManager.MAIN_FONT);
@@ -121,41 +127,56 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		add(tscrollPane, "grow, height :60:");
 
 		BindingGroup bindingGroup = new BindingGroup();
-		//comments JTextArea binding
-		BeanProperty<AnalysisTablePanel, String> selectedItemComments = BeanProperty.create("selectedItem.comments");
-		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
-		Binding<? extends AbstractTablePanel<?> , String, JTextArea, String> commentsBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this, selectedItemComments, comments, jTextAreaValue);
+		// comments JTextArea binding
+		BeanProperty<AnalysisTablePanel, String> selectedItemComments = BeanProperty
+				.create("selectedItem.comments");
+		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty
+				.create("text");
+		Binding<? extends AbstractTablePanel<?>, String, JTextArea, String> commentsBinding = Bindings
+				.createAutoBinding(UpdateStrategy.READ_WRITE, this,
+						selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
 
-		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
-		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
-		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings.createAutoBinding(UpdateStrategy.READ, this, 
-				isSelected, comments, jTextAreaEnabled);
+		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty
+				.create(ROW_SELECTED);
+		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty
+				.create("enabled");
+		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings
+				.createAutoBinding(UpdateStrategy.READ, this, isSelected,
+						comments, jTextAreaEnabled);
 		enableCommentsBinding.setSourceNullValue(false);
 		enableCommentsBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(enableCommentsBinding);
 
-		BeanProperty<ClientTablePanel, Boolean> isClientSelected = BeanProperty.create(ROW_SELECTED);
-		BeanProperty<AnalysisTablePanel, Boolean> clientSelected = BeanProperty.create(CLIENT_SELECTED);
-		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> clientSelectedBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), isClientSelected, this, clientSelected);
+		BeanProperty<ClientTablePanel, Boolean> isClientSelected = BeanProperty
+				.create(ROW_SELECTED);
+		BeanProperty<AnalysisTablePanel, Boolean> clientSelected = BeanProperty
+				.create(CLIENT_SELECTED);
+		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> clientSelectedBinding = Bindings
+				.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(),
+						isClientSelected, this, clientSelected);
 		clientSelectedBinding.setSourceNullValue(false);
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recorded}");
-		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty.create(SELECTED_ITEM_RECORDED);
-		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> selectedItemRecordedBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ, this, recorded, this, selectedItemRecorded);
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty
+				.create("${rowSelected && selectedItem.recorded}");
+		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty
+				.create(SELECTED_ITEM_RECORDED);
+		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> selectedItemRecordedBinding = Bindings
+				.createAutoBinding(UpdateStrategy.READ, this, recorded, this,
+						selectedItemRecorded);
 		selectedItemRecordedBinding.setSourceUnreadableValue(false);
 		selectedItemRecordedBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(selectedItemRecordedBinding);
-		
-		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && clientTablePanel.selectedItem.emailAddress != null}");
-		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
-		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = 
-				Bindings.createAutoBinding(UpdateStrategy.READ, this, isAddFeedbackEnabled, this, analysisSelected);
+
+		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty
+				.create("${rowSelected && clientTablePanel.selectedItem.emailAddress != null}");
+		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty
+				.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
+		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = Bindings
+				.createAutoBinding(UpdateStrategy.READ, this,
+						isAddFeedbackEnabled, this, analysisSelected);
 		addAnalysisForFeedbackBinding.setSourceUnreadableValue(false);
 		addAnalysisForFeedbackBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(addAnalysisForFeedbackBinding);
@@ -167,20 +188,23 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void setSelectedItemRecorded(boolean selectedItemRecorded) {
-		firePropertyChange(SELECTED_ITEM_RECORDED, this.selectedItemRecorded, this.selectedItemRecorded = selectedItemRecorded);
+		firePropertyChange(SELECTED_ITEM_RECORDED, this.selectedItemRecorded,
+				this.selectedItemRecorded = selectedItemRecorded);
 	}
 
 	public void clearComments() {
 		comments.setText("");
 	}
-	
+
 	public boolean isAddAnalysisForFeedbackEnabled() {
 		return addAnalysisForFeedbackEnabled;
 	}
 
 	public void setAddAnalysisForFeedbackEnabled(
 			boolean addAnalysisForFeedbackEnabled) {
-		firePropertyChange(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED, this.addAnalysisForFeedbackEnabled, 
+		firePropertyChange(
+				ADD_ANALYSIS_FOR_FEEDBACK_ENABLED,
+				this.addAnalysisForFeedbackEnabled,
 				this.addAnalysisForFeedbackEnabled = addAnalysisForFeedbackEnabled);
 	}
 
@@ -188,7 +212,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public PersistTask<Analysis> addAnalysisForFeedback(ActionEvent event) {
 		return addAnalysis(event);
 	}
-	
+
 	private Date getDateForFeedback() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -200,23 +224,28 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public PersistTask<Analysis> addAnalysis(ActionEvent event) {
 		// insert a new analysis record
 		final Client selectedClient = getClientTablePanel().getSelectedItem();
-		if (("".equals(selectedClient.getName())  || selectedClient.getName() == null) && 
-			("".equals(selectedClient.getOrganization()) || selectedClient.getOrganization() == null)) {
-			JOptionPane.showMessageDialog(
-					SwingUtilities.windowForComponent(this), 
+		if (("".equals(selectedClient.getName()) || selectedClient.getName() == null)
+				&& ("".equals(selectedClient.getOrganization()) || selectedClient
+						.getOrganization() == null)) {
+			JOptionPane.showMessageDialog(SwingUtilities
+					.windowForComponent(this),
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
-					getResourceMap().getString("addAnalysis.Action.text"), 
+					getResourceMap().getString("addAnalysis.Action.text"),
 					JOptionPane.ERROR_MESSAGE);
-			getLogger().warn("Attempt to insert analysis for " + selectedClient + " failed.");
+			getLogger().warn(
+					"Attempt to insert analysis for " + selectedClient
+							+ " failed.");
 			return null;
 		}
 		Analysis analysis = null;
-		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand()))  {
-			analysis = new Analysis(selectedClient, getSelectedItem(), getDateForFeedback());
+		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand())) {
+			analysis = new Analysis(selectedClient, getSelectedItem(),
+					getDateForFeedback());
 		} else {
 			analysis = new Analysis(selectedClient);
 		}
-		PersistTask<Analysis> result = new PersistTask<Analysis>(getDaoService(), Analysis.class, analysis);
+		PersistTask<Analysis> result = new PersistTask<Analysis>(
+				getDaoService(), Analysis.class, analysis);
 		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
 			@Override
@@ -236,18 +265,22 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
-	public DeleteTask<Analysis> deleteAnalysis() {		
+	public DeleteTask<Analysis> deleteAnalysis() {
 		DeleteTask<Analysis> result = null;
-		int n = JOptionPane.showConfirmDialog(
-				SwingUtilities.windowForComponent(this),
-				getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
-				getResourceMap().getString("deleteAnalysis.Action.text"),
-				JOptionPane.WARNING_MESSAGE,
-				JOptionPane.OK_CANCEL_OPTION);
+		int n = JOptionPane
+				.showConfirmDialog(
+						SwingUtilities.windowForComponent(this),
+						getResourceMap().getString(
+								"deleteAnalysis.confirmDialog.text"),
+						getResourceMap()
+								.getString("deleteAnalysis.Action.text"),
+						JOptionPane.WARNING_MESSAGE,
+						JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
 			// TODO check if analysis doesn't have feedback analaysis
 			final Client selectedClient = getSelectedItem().getClient();
-			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class, getSelectedItem());
+			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class,
+					getSelectedItem());
 			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
 				@Override
@@ -255,7 +288,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					Analysis analysis = event.getValue();
 					getItemList().getReadWriteLock().writeLock().lock();
 					try {
-						int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
+						int lastSelectedRowIndex = getEventSelectionModel()
+								.getMinSelectionIndex();
 						getItemList().remove(analysis);
 						selectedClient.removeAnalysis(analysis);
 						// delete the video files
@@ -280,8 +314,10 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			Recording lastRecording = Iterables.getLast(recordings);
 			File videoFile = getVideoFileManager().getVideoFile(lastRecording);
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
-				String[] commands = new String[] {"cmd.exe", "/c", "explorer /select," + videoFile.getAbsolutePath()};
-				//String[] commands = new String[] {vlcPath, videoFile.getAbsolutePath(), " --rate=" + playRate};
+				String[] commands = new String[] { "cmd.exe", "/c",
+						"explorer /select," + videoFile.getAbsolutePath() };
+				// String[] commands = new String[] {vlcPath,
+				// videoFile.getAbsolutePath(), " --rate=" + playRate};
 				Runtime.getRuntime().exec(commands);
 			}
 			// TODO show the video file on different platforms?
@@ -303,40 +339,62 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	public void initialiseTableColumnModel() {
 		getTable().getColumnModel().getColumn(0).setMinWidth(60);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
-		DateTableCellRenderer cellRenderer = new DatePickerTableCellRenderer(AppUtil.DATE_FORMATTER, AppUtil.EXTENDED_DATE_FORMATTER);
+		DateTableCellRenderer cellRenderer = new DatePickerTableCellRenderer(
+				AppUtil.DATE_FORMATTER, AppUtil.EXTENDED_DATE_FORMATTER);
 		cellRenderer.setFont(SettingsManager.MAIN_FONT);
 		getTable().getColumnModel().getColumn(0).setCellRenderer(cellRenderer);
-		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
-		getTable().getColumnModel().getColumn(0).setCellEditor(datePickerCellEditor);
+		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(
+				AppUtil.DATE_FORMATTER);
+		getTable().getColumnModel().getColumn(0)
+				.setCellEditor(datePickerCellEditor);
 
 		// create special table cell editor for selecting articles
-		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
+		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport
+				.createTableCellEditor(getArticleList());
 		createTableCellEditor.setClickCountToStart(1);
 		createTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
 		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
 		comboBoxTableCellRenderer.setFont(SettingsManager.MAIN_FONT);
-		getTable().getColumnModel().getColumn(1).setCellRenderer(comboBoxTableCellRenderer);
-		getTable().getColumnModel().getColumn(1).setCellEditor(createTableCellEditor);
+		getTable().getColumnModel().getColumn(1)
+				.setCellRenderer(comboBoxTableCellRenderer);
+		getTable().getColumnModel().getColumn(1)
+				.setCellEditor(createTableCellEditor);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(2).setPreferredWidth(18);
-		
-		EventList<Progression> progression = GlazedLists.eventListOf(Progression.values());
-		AutoCompleteCellEditor<Progression> progressionTableCellEditor = AutoCompleteSupport.createTableCellEditor(progression);
-		progressionTableCellEditor.getAutoCompleteSupport().getComboBox().setEditable(false);
-		progressionTableCellEditor.getAutoCompleteSupport().getComboBox().setFont(SettingsManager.MAIN_FONT);
+
+		EventList<Progression> progression = GlazedLists
+				.eventListOf(Progression.values());
+		AutoCompleteCellEditor<Progression> progressionTableCellEditor = AutoCompleteSupport
+				.createTableCellEditor(progression);
+		progressionTableCellEditor.getAutoCompleteSupport().getComboBox()
+				.setEditable(false);
+		progressionTableCellEditor.getAutoCompleteSupport().getComboBox()
+				.setFont(SettingsManager.MAIN_FONT);
 		progressionTableCellEditor.getAutoCompleteSupport().setStrict(true);
-		progressionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
+		progressionTableCellEditor.getAutoCompleteSupport()
+				.setBeepOnStrictViolation(false);
 		progressionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
 		progressionTableCellEditor.setClickCountToStart(1);
-		getTable().getColumnModel().getColumn(2).setCellRenderer(comboBoxTableCellRenderer);
-		getTable().getColumnModel().getColumn(2).setCellEditor(progressionTableCellEditor);
-		
+		getTable().getColumnModel().getColumn(2)
+				.setCellRenderer(comboBoxTableCellRenderer);
+		getTable().getColumnModel().getColumn(2)
+				.setCellEditor(progressionTableCellEditor);
+
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(18);
-		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(AppUtil.DURATION_FORMATTER));
+		String defaultValue = getResourceMap().getString(
+				"tableFormat.defaultValue");
+		getTable()
+				.getColumnModel()
+				.getColumn(3)
+				.setCellRenderer(
+						new DateTableCellRenderer(defaultValue,
+								AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(5).setResizable(false);
-		final String buttonTitle = getResourceMap().getString("analysisTableFormat.openButton.text");
-		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
+		final String buttonTitle = getResourceMap().getString(
+				"analysisTableFormat.openButton.text");
+		getTable().getColumnModel().getColumn(5)
+				.setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
 	}
 
 	public boolean isClientSelected() {
@@ -344,7 +402,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	}
 
 	public void setClientSelected(boolean clientSelected) {
-		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
+		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected,
+				this.clientSelected = clientSelected);
 	}
 
 	public ClientTablePanel getClientTablePanel() {
