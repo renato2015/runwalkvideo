@@ -1,6 +1,5 @@
 package com.runwalk.video.media;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Insets;
@@ -11,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -71,7 +69,6 @@ import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CreateKeyframeTask;
-import com.runwalk.video.tasks.CreateOverlayImageTask;
 import com.runwalk.video.tasks.RecordTask;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -519,31 +516,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 		});
 		setPlaying(false);
-		return result;
-	}
-
-	@Action(enabledProperty = PLAYER_CONTROLS_ENABLED)
-	public CreateOverlayImageTask createOverlayImage() {
-		CreateOverlayImageTask result = null;
-		if (getFrontMostPlayer() != null) {
-			final VideoPlayer selectedPlayer = getFrontMostPlayer();
-			final int position = selectedPlayer.getPosition();
-			BufferedImage inputImage = selectedPlayer.getImage();
-			result = new CreateOverlayImageTask(inputImage);
-			result.addTaskListener(new TaskListener.Adapter<BufferedImage, Void>() {
-
-				@Override
-				public void succeeded(TaskEvent<BufferedImage> event) {
-					BufferedImage image = event.getValue();
-					selectedPlayer.setOverlayImage(image, Color.black);
-					// set selectedProperty manually as it won't be set when invoking it from code
-					setPlaying(false);
-					invokeAction(TOGGLE_PLAY_ACTION, event.getSource());
-					selectedPlayer.setPosition(position);
-				}
-
-			});
-		}
 		return result;
 	}
 

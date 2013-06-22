@@ -7,6 +7,8 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,7 +27,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="analysis")
+@Table(name="phppos_analysis")
 public class Analysis extends SerializableEntity<Analysis> {
 
 	public final static String RECORDING_COUNT = "recordingCount";
@@ -33,6 +35,8 @@ public class Analysis extends SerializableEntity<Analysis> {
 	public final static String COMMENTS = "comments";
 	
 	public final static String ARTICLE = "article";
+	
+	public final static String CREATION_DATE = "creationDate";
 		
 	@Id
 	@Column(name="id")
@@ -58,11 +62,28 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@Lob
 	private String comments;
 	
+	@Column(name="score")
+	@Enumerated(EnumType.ORDINAL)
+	private Progression progression;
+	
+	@Column(name="feedback_id")
+	private Long feedbackId;
+	
+	@Column(name="feedback_token")
+	private String tokenId;
+	
 	protected Analysis() { }
 	
 	public Analysis(Client client) {
 		creationDate = new Date();
 		this.client = client;
+	}
+	
+	public Analysis(Client client, Analysis analysis, Date creationDate) {
+		super();
+		this.client = client;
+		this.creationDate = creationDate;
+		this.feedbackId = analysis.getId();
 	}
 
 	public Client getClient() {
@@ -81,8 +102,8 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return creationDate;
 	}
 	
-	protected void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	public void setCreationDate(Date creationDate) {
+		firePropertyChange(CREATION_DATE, this.creationDate, this.creationDate = creationDate);
 	}
 
 	public String getComments() {
@@ -137,12 +158,28 @@ public class Analysis extends SerializableEntity<Analysis> {
 	protected void setId(Long id) {
 		this.id = id;
 	}
+	
+	public Progression getProgression() {
+		return progression;
+	}
+
+	public void setProgression(Progression progression) {
+		this.progression = progression;
+	}
+
+	public Long getFeedbackId() {
+		return feedbackId;
+	}
+	
+	public String getTokenId() {
+		return tokenId;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result	+ ((getCreationDate() == null) ? 0 : getCreationDate().hashCode());
+		result = prime * result	+ ((getId() == null) ? 0 : getCreationDate().hashCode());
 		return result;
 	}
 
@@ -151,7 +188,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 		boolean result = false;
 		if (obj != null && getClass() == obj.getClass()) {
 			Analysis other = (Analysis) obj;
-			result = getCreationDate() != null ? getCreationDate().equals(other.getCreationDate()) : other.getCreationDate() == null;
+			result = getId() != null ? getId().equals(other.getId()) : other.getId() == null;
 //			result &= getClient() != null ? getClient().equals(other.getClient()) : result;
 		}
 		return result;
@@ -160,7 +197,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	public int compareTo(Analysis analysis) {
 		int result = 1;
 		if (analysis != null) {
-			result =equals(analysis) ? 0 : getCreationDate().compareTo(analysis.getCreationDate());
+			result =equals(analysis) ? 0 : getId().compareTo(analysis.getId());
 		}
 		return result;
 	}
@@ -181,6 +218,10 @@ public class Analysis extends SerializableEntity<Analysis> {
 			}
 		}
 		return false;
+	}
+	
+	public enum Progression {
+		NOK, CAVA, OK
 	}
 
 }

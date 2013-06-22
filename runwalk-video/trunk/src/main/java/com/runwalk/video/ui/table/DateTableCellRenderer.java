@@ -30,18 +30,29 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	
 	private final static String DEFAULT_VALUE = "";
 	
-	private final DateFormat dateFormat;
+	private final DateFormat shortDateFormat;
+	
+	private final DateFormat extendedDateFormat;
 	
 	/** Value to show when there is no date to be parsed. */
 	private final String defaultValue;
 	
-	public DateTableCellRenderer(DateFormat format) {
-		this(DEFAULT_VALUE, format);
+	public DateTableCellRenderer(DateFormat shortDateFormat) {
+		this(DEFAULT_VALUE, shortDateFormat);
+	}
+	
+	public DateTableCellRenderer(String defaultValue, DateFormat shortDateFormat) {
+		this(defaultValue, shortDateFormat, null);
+	}
+	
+	public DateTableCellRenderer(DateFormat extendedDateFormat, DateFormat shortDateFormat) {
+		this(DEFAULT_VALUE, extendedDateFormat, shortDateFormat);
 	}
 
-	public DateTableCellRenderer(String defaultValue, DateFormat format) {
-		this.dateFormat = format;
+	public DateTableCellRenderer(String defaultValue, DateFormat extendedDateFormat, DateFormat shortDateFormat) {
 		this.defaultValue = defaultValue;
+		this.shortDateFormat = shortDateFormat;
+		this.extendedDateFormat = extendedDateFormat;
 	}
 	
 	public Component getTableCellRendererComponent(javax.swing.JTable table, 
@@ -52,6 +63,10 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 			setText(defaultValue);
 		} else {
 			Date date = parseDate(value);
+			DateFormat dateFormat = extendedDateFormat;
+			if (shortDateFormat != null && table.isCellEditable(row, column)) {
+				dateFormat = shortDateFormat;
+			}
 			synchronized(dateFormat) {
 				setText(date == null ? defaultValue : dateFormat.format(date));
 			}
@@ -79,7 +94,7 @@ public class DateTableCellRenderer extends DefaultTableCellRenderer {
 	}
 
 	private DateFormat getDateFormat() {
-		return dateFormat;
+		return shortDateFormat;
 	}    
 	
 }

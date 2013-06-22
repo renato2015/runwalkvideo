@@ -400,11 +400,6 @@
 			<classifier>natives-win-amd64</classifier>
 			<scope>runtime</scope>
 		</dependency>	
-		<dependency>
-			<groupId>imagej</groupId>
-			<artifactId>ij</artifactId>
-			<version>1.43</version>
-		</dependency>
 		<!-- Swing libraries -->
 		<dependency>
 			<groupId>com.miglayout</groupId>
@@ -414,19 +409,11 @@
 		<dependency>
 			<groupId>org.swinglabs.swingx</groupId>
 			<artifactId>swingx-core</artifactId>
-			<version>1.6.4</version>
+			<version>1.6.5</version>
 			<exclusions>
 			    <exclusion>
 			       	<groupId>org.swinglabs.swingx</groupId>
-			        <artifactId>swingx-painters</artifactId>
-			    </exclusion>
-			    <exclusion>
-			       	<groupId>org.swinglabs.swingx</groupId>
 			        <artifactId>swingx-autocomplete</artifactId>
-			    </exclusion>
-			    <exclusion>
-			       	<groupId>org.swinglabs.swingx</groupId>
-			        <artifactId>swingx-action</artifactId>
 			    </exclusion>
 			</exclusions>
 		</dependency>
