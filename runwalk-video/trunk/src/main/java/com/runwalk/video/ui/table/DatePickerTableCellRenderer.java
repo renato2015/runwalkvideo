@@ -7,10 +7,18 @@ import javax.swing.JTable;
 
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 
+import com.runwalk.video.settings.SettingsManager;
+
 @SuppressWarnings("serial")
 public class DatePickerTableCellRenderer extends DateTableCellRenderer {
 
 	private final DatePickerCellEditor editor;
+
+	public DatePickerTableCellRenderer(DateFormat shortDateFormat,
+			DateFormat extendedDateFormat) {
+		super(extendedDateFormat, shortDateFormat);
+		this.editor = new DatePickerCellEditor(shortDateFormat);
+	}
 
 	public DatePickerTableCellRenderer(DateFormat dateFormat) {
 		super(dateFormat);
@@ -23,6 +31,7 @@ public class DatePickerTableCellRenderer extends DateTableCellRenderer {
 		if (table.isCellEditable(row, column)) {
 			Component tableCellEditorComponent = editor.getTableCellEditorComponent(table, value, isSelected, row, column);
 			tableCellEditorComponent.setBackground(table.getSelectionBackground());
+			tableCellEditorComponent.setFont(SettingsManager.MAIN_FONT);
 			return tableCellEditorComponent;
 		}
 		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

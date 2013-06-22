@@ -28,6 +28,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	public static final String GENDER = "gender";
 	public static final String PERSON_ID = "person_id";
 	public static final String TYPE = "type";
+	public static final String EMAIL = "email";
 	
 	@Column(name = NAME)
 	private String name;
@@ -36,7 +37,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	@Embedded
 	private Address address = new Address();
 	@Column(name = "email")
-	private String emailAdress;
+	private String emailAddress;
 	@Column(name = "phone_number")
 	private String phoneNumber;
 	@Column(name = "birthdate")
@@ -75,11 +76,11 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public String getEmailAddress() {
-		return this.emailAdress;
+		return this.emailAddress;
 	}
 
 	public void setEmailAddress(String emailAddress) {
-		this.emailAdress = emailAddress;
+		firePropertyChange(EMAIL, this.emailAddress, this.emailAddress = emailAddress);
 	}
 	
 	public int getVersion() {
