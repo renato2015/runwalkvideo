@@ -351,7 +351,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport
 				.createTableCellEditor(getArticleList());
-		createTableCellEditor.setClickCountToStart(1);
+		createTableCellEditor.setClickCountToStart(0);
 		createTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
 		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
 		comboBoxTableCellRenderer.setFont(SettingsManager.MAIN_FONT);
