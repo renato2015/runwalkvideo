@@ -373,7 +373,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action
 	public Task<Void, Void> uploadLogFiles() {
-		return new UploadLogFilesTask(settingsManager.getLogFile(), settingsManager.getLogFileUploadUrl());
+		return new UploadLogFilesTask(settingsManager.getLogFile(), settingsManager.getLogFileUploadUrl(), getName());
 	}
 
 	private Containable createMainView() {
