@@ -61,8 +61,8 @@ public class ClientInfoPanel extends AbstractPanel {
 	private EventList<City> itemList;
 
 	private final JTextField firstnameField;
-	private final JComboBox zipCodeField;
-	private final JComboBox locationField;
+	private final JComboBox<City> zipCodeField;
+	private final JComboBox<City> locationField;
 	private AutoCompleteSupport<City> zipCodeCompletion;
 	private AutoCompleteSupport<City> locationCompletion;
 	private BindingGroup locationBindingGroup;
@@ -324,11 +324,11 @@ public class ClientInfoPanel extends AbstractPanel {
 		locationLabel.setText(getResourceMap().getString("locationLabel.text")); // NOI18N
 		add(locationLabel);		
 
-		zipCodeField = new JComboBox();
+		zipCodeField = new JComboBox<City>();
 		zipCodeField.setFont(SettingsManager.MAIN_FONT);
 		add(zipCodeField, "wmax 40%, wmin 40%");
 
-		locationField = new JComboBox();
+		locationField = new JComboBox<City>();
 		locationField.setFont(SettingsManager.MAIN_FONT);
 		add(locationField, "wmax 40%, wmin 40%");
 
@@ -351,6 +351,10 @@ public class ClientInfoPanel extends AbstractPanel {
 		if (zipCodeCompletion != null) {
 			zipCodeCompletion.uninstall();
 		}
+		if (locationBindingGroup != null) {
+			locationBindingGroup.unbind();
+		}
+		locationBindingGroup = new BindingGroup();
 		zipCodeCompletion = AutoCompleteSupport.install(zipCodeField, itemList, GlazedLists.textFilterator("code"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
@@ -375,13 +379,10 @@ public class ClientInfoPanel extends AbstractPanel {
 		zipCodeField.setRenderer(new CityInfoRenderer());
 
 		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
-		BeanProperty<JComboBox, City> selectedItem = BeanProperty.create("selectedItem");
-		if (locationBindingGroup != null) {
-			locationBindingGroup.unbind();
-		}
-		locationBindingGroup = new BindingGroup();
+		BeanProperty<JComboBox<City>, City> selectedItem = BeanProperty.create("selectedItem");
+		
 
-		Binding<ClientTablePanel, City, JComboBox, City> comboBoxBinding = 
+		Binding<ClientTablePanel, City, JComboBox<City>, City> comboBoxBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getClientTablePanel(), city, zipCodeField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
@@ -437,7 +438,7 @@ public class ClientInfoPanel extends AbstractPanel {
 	public static class CityInfoRenderer extends DefaultListCellRenderer {
 
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			JLabel result = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (value != null) {
 				City city = (City) value;

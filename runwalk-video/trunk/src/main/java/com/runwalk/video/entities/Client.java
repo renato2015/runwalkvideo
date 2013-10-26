@@ -43,9 +43,6 @@ public class Client extends Person {
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	private List<RedcordSession> redcordSessions = new ArrayList<RedcordSession>();
-
 	@Column(name = "account_number")
 	private String taxNumber;
 
@@ -78,13 +75,6 @@ public class Client extends Person {
 		this.taxNumber = taxNumber;
 	}
 	
-	public List<RedcordSession> getRedcordSessions() {
-		return redcordSessions;
-	}
-	
-	public int getRedcordSessionCount() {
-		return getRedcordSessions().size();
-	}
 	
 	public void incrementRedcordTableElementCount() {
 		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, ++this.redcordTableElementCount);
@@ -94,30 +84,6 @@ public class Client extends Person {
 		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, --this.redcordTableElementCount);
 	}
 	
-	public boolean addRedcordSession(RedcordSession redcordSession) {
-		boolean result = getRedcordSessions().add(redcordSession);
-		incrementRedcordTableElementCount();
-		return result;
-	}
-	
-	public boolean removeRedcordSession(RedcordSession redcordSession) {
-		boolean result = false;
-		if (redcordSession != null) {
-			result = getRedcordSessions().remove(redcordSession);
-			decrementRedcordTableElementCount();
-		}
-		return result;
-	}
-	
-	public boolean replaceRedcordSession(RedcordSession redcordSession) {
-		boolean result = false;
-		int index = getRedcordSessions().indexOf(redcordSession);
-		if (index > -1) {
-			result = getRedcordSessions().set(index, redcordSession) != null;
-		}
-		return result;
-	}
-
 	public List<Analysis> getAnalyses() {
 		return analyses;
 	}
