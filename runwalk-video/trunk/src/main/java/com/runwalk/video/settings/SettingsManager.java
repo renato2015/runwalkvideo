@@ -293,22 +293,6 @@ public class SettingsManager {
 		getSettings().videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
 
-	public String getVlcPath() {
-		return getSettings().vlcPath;
-	}
-
-	public void setVlcPath(String vlcPath) {
-		getSettings().vlcPath = vlcPath;
-	}
-
-	public AuthenticationSettings getCalendarSettings() {
-		return getSettings().calendarSettings;
-	}
-
-	public void setCalendarSettings(AuthenticationSettings calendarSettings) {
-		getSettings().calendarSettings = calendarSettings;
-	}
-
 	public AuthenticationSettings getDatabaseSettings() {
 		return getSettings().databaseSettings;
 	}
@@ -356,11 +340,7 @@ public class SettingsManager {
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
 		
-		private AuthenticationSettings calendarSettings = AuthenticationSettings.CALENDAR_DEFAULT;
-
 		private AuthenticationSettings databaseSettings = AuthenticationSettings.JDBC_DEFAULT;
-
-		private String vlcPath = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
 		
 		{
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {

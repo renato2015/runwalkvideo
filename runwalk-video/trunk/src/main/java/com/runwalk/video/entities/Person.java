@@ -120,9 +120,16 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public Address getAddress() {
+		if (address == null) {
+			this.address = new Address();
+		}
 		return address;
 	}
 	
+	public void setAddress(Address address) {
+		firePropertyChange(ADDRESS, this.address, this.address = address);
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

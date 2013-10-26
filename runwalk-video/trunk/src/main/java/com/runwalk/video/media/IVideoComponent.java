@@ -3,10 +3,9 @@ package com.runwalk.video.media;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.HierarchyListener;
 import java.awt.image.BufferedImage;
-
-import com.google.gdata.data.extensions.Image;
 
 /**
  * This class can be seen as the "implementor" of the used bridge pattern for providing the abstract {@link VideoPlayer} with a concrete

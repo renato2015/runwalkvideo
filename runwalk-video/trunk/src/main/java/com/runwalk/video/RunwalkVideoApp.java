@@ -35,7 +35,6 @@ import org.jdesktop.application.utils.AppHelper;
 import com.runwalk.video.core.Containable;
 import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.DaoService;
-import com.runwalk.video.dao.gdata.BaseEntryDaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.CompositeVideoCapturerFactory;
@@ -48,7 +47,6 @@ import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
 import com.runwalk.video.panels.ClientTablePanel;
-import com.runwalk.video.panels.RedcordTablePanel;
 import com.runwalk.video.panels.StatusPanel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
@@ -58,7 +56,6 @@ import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
 import com.runwalk.video.ui.ClientTableFormat;
-import com.runwalk.video.ui.RedcordTableFormat;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -90,7 +87,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private ClientTablePanel clientTablePanel;
 	private AnalysisTablePanel analysisTablePanel;
 	private AnalysisOverviewTablePanel analysisOverviewTablePanel;
-	private RedcordTablePanel redcordTablePanel;
 	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
 	private Containable clientMainView;
@@ -176,8 +172,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// set application default font
 		// create daoServices and add them to the composite
 		DaoService jpaDaoService = new JpaDaoService(getSettingsManager().getDatabaseSettings(), getName());
-		DaoService baseEntryDaoService = new BaseEntryDaoService(getSettingsManager().getCalendarSettings(), getVersionString());
-		daoService = new CompositeDaoService(jpaDaoService, baseEntryDaoService);
+		daoService = new CompositeDaoService(jpaDaoService);
 		// create video file manager
 		videoFileManager = new VideoFileManager(getSettingsManager());
 	}
@@ -198,8 +193,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		addTablePanel(analysisTablePanel);
 		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(getSettingsManager(), getVideoFileManager());
 		addTablePanel(analysisOverviewTablePanel);
-		redcordTablePanel = new RedcordTablePanel(getClientTablePanel(), createUndoableEditListener(), getDaoService());
-		addTablePanel(redcordTablePanel);
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();
 		getMainFrame().add(getScrollableDesktopPane());
@@ -223,7 +216,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(analysisOverviewTablePanel.getResourceMap()));
 		analysisOverviewTablePanel.registerClickHandler(getMediaControls().getClickHandler());
-		redcordTablePanel.setTableFormat(new RedcordTableFormat(redcordTablePanel.getResourceMap()));
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
 		// add all internal frames here!!!
@@ -368,7 +360,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
 		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), 
-				getAnalysisOverviewTablePanel(), getRedcordTablePanel());
+				getAnalysisOverviewTablePanel());
 	}
 
 	@org.jdesktop.application.Action
@@ -450,10 +442,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
 		return analysisOverviewTablePanel;
-	}
-
-	private RedcordTablePanel getRedcordTablePanel() {
-		return redcordTablePanel;
 	}
 
 	public ClientInfoPanel getClientInfoPanel() {

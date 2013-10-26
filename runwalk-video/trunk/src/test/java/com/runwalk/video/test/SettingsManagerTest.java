@@ -25,17 +25,12 @@ public class SettingsManagerTest extends BaseTestCase {
 		getSettingsManager().loadSettings();
 	
 		// test load/save functionality
-		AuthenticationSettings calendarSettings = new AuthenticationSettings("calUser", "calPwd", "calUrl");
-		getSettingsManager().setCalendarSettings(calendarSettings);
 		AuthenticationSettings databaseSettings = new AuthenticationSettings("dbUser", "dbPwd", "dbUrl");
 		getSettingsManager().setDatabaseSettings(databaseSettings);
 		getSettingsManager().saveSettings();
 		
 		// create a new settings manager and load those settings again
 		getSettingsManager().loadSettings();
-		assertEquals(calendarSettings.getUrl(), getSettingsManager().getCalendarSettings().getUrl());
-		assertEquals(calendarSettings.getUserName(), getSettingsManager().getCalendarSettings().getUserName());
-		assertEquals(calendarSettings.getPassword(), getSettingsManager().getCalendarSettings().getPassword());
 		assertEquals(databaseSettings.getUrl(), getSettingsManager().getDatabaseSettings().getUrl());
 		assertEquals(databaseSettings.getUserName(), getSettingsManager().getDatabaseSettings().getUserName());
 		assertEquals(databaseSettings.getPassword(), getSettingsManager().getDatabaseSettings().getPassword());
