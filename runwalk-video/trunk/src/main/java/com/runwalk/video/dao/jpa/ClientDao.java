@@ -57,7 +57,6 @@ public class ClientDao extends JpaDao<Client> {
 				"WHERE e.id = :id", getTypeParameter())
 				.setParameter("id", id)
 		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
-		.setHint(QueryHints.LEFT_FETCH, "client.redcordSessions.redcordExercises")
 		.setHint(QueryHints.REFRESH, HintValues.TRUE)
 		//.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts)
 		.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)
