@@ -4,7 +4,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import com.runwalk.video.settings.AuthenticationSettings;
+import com.runwalk.video.settings.DatabaseSettings;
 
 /**
  * A {@link TestCase} for the {@link getSettingsManager()} functionality.
@@ -25,7 +25,7 @@ public class SettingsManagerTest extends BaseTestCase {
 		getSettingsManager().loadSettings();
 	
 		// test load/save functionality
-		AuthenticationSettings databaseSettings = new AuthenticationSettings("dbUser", "dbPwd", "dbUrl");
+		DatabaseSettings databaseSettings = new DatabaseSettings("dbUser", "dbPwd", "dbUrl");
 		getSettingsManager().setDatabaseSettings(databaseSettings);
 		getSettingsManager().saveSettings();
 		

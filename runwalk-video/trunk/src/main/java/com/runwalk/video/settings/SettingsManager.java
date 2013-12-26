@@ -293,11 +293,11 @@ public class SettingsManager {
 		getSettings().videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
 	}
 
-	public AuthenticationSettings getDatabaseSettings() {
+	public DatabaseSettings getDatabaseSettings() {
 		return getSettings().databaseSettings;
 	}
 
-	public void setDatabaseSettings(AuthenticationSettings databaseSettings) {
+	public void setDatabaseSettings(DatabaseSettings databaseSettings) {
 		getSettings().databaseSettings = databaseSettings;
 	}
 
@@ -340,7 +340,7 @@ public class SettingsManager {
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
 		
-		private AuthenticationSettings databaseSettings = AuthenticationSettings.JDBC_DEFAULT;
+		private DatabaseSettings databaseSettings = DatabaseSettings.JDBC_DEFAULT;
 		
 		{
 			if (AppHelper.getPlatform() == PlatformType.WINDOWS) {
