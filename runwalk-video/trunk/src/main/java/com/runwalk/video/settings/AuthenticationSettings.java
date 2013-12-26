@@ -11,12 +11,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class AuthenticationSettings {
 	
-	public static final AuthenticationSettings JDBC_DEFAULT = 
-			new AuthenticationSettings("root", "password", "jdbc:mysql://localhost:3306");
-	
-	public static final AuthenticationSettings CALENDAR_DEFAULT = 
-			new AuthenticationSettings("user@gmail.com", "password", "http://www.google.com/my/agenda");
-
 	private String userName;
 	
 	private String password;

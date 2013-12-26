@@ -6,41 +6,24 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 import com.runwalk.video.dao.AbstractDaoService;
 import com.runwalk.video.dao.Dao;
-import com.runwalk.video.settings.AuthenticationSettings;
+import com.runwalk.video.dao.DataSourceBuilder;
+import com.runwalk.video.settings.DatabaseSettings;
 
 public class JpaDaoService extends AbstractDaoService {
 
-	private static final String UTF8 = "utf8";
-	private static final String UTF8_GENERAL_CI = "utf8_general_ci";
-	private static final String CHARACTER_SET_RESULTS = "characterSetResults";
-	private static final String CONNECTION_COLLATION = "connectionCollation";
-	private static final String USE_UNICODE = "useUnicode";
-	
-	private static final Map<String, String> DB_OPTIONS;
-	
-	static {
-		Builder<String, String> builder = ImmutableMap.builder();
-		builder.put(USE_UNICODE, Boolean.TRUE.toString());
-		builder.put(CONNECTION_COLLATION, UTF8_GENERAL_CI);
-		builder.put(CHARACTER_SET_RESULTS, UTF8);
-		DB_OPTIONS = builder.build();
-	};
-	
 	private final EntityManagerFactory entityManagerFactory;
 
-	public JpaDaoService(AuthenticationSettings authenticationSettings, String applicationName) {
+	public JpaDaoService(DatabaseSettings databaseSettings, String applicationName) {
 		// read db connection properties from settings file
-		Map<String, String> connectionProperties = Maps.newHashMap();
-		Joiner.MapJoiner joiner = Joiner.on("&amp;").withKeyValueSeparator("=");
-		connectionProperties.put("eclipselink.jdbc.url", authenticationSettings.getUrl() + "?" + joiner.join(DB_OPTIONS));
-		connectionProperties.put("eclipselink.jdbc.user", authenticationSettings.getUserName());
-		connectionProperties.put("eclipselink.jdbc.password", authenticationSettings.getPassword());
+		Map<String, Object> connectionProperties = Maps.newHashMap();
+		DataSourceBuilder dataSourceBuilder = new DataSourceBuilder(databaseSettings);
+		/*connectionProperties.put("eclipselink.jdbc.url", dataSourceBuilder.buildJdbcUrl());
+		connectionProperties.put("eclipselink.jdbc.user", databaseSettings.getUserName());
+		connectionProperties.put("eclipselink.jdbc.password", databaseSettings.getPassword());*/
+		connectionProperties.put("javax.persistence.nonJtaDataSource", dataSourceBuilder.build());
 		// create entityManagerFactory for default persistence unit
 		entityManagerFactory = Persistence.createEntityManagerFactory(applicationName, connectionProperties);
 		addSpecializedDaos(entityManagerFactory);
