@@ -56,8 +56,6 @@ extern "C" {
 	INT WINAPI Dispose(HIDS* m_hCam);
 	void WINAPI WndToFront(HIDS* hCam);
 	void WINAPI SetWndVisibility(HIDS* hCam, BOOL visible);
-	BOOL WINAPI FilterDllMsg(LPMSG lpMsg);
-	void WINAPI ProcessDllIdle();
 #ifdef __cplusplus
 	}
 #endif
