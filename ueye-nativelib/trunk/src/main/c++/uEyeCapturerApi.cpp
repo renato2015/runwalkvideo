@@ -113,27 +113,26 @@ INT LoadSettings(HIDS* m_hCam, const wchar_t* settingsFile) {
 			is_FreeImageMem( *m_hCam, m_pcImageMemory, m_lMemoryId );
 			GetImageSize( *m_hCam, m_nSizeX, m_nSizeY); 
 			switch( is_SetColorMode( *m_hCam, IS_GET_COLOR_MODE ) )
-			{
-			case IS_SET_CM_RGB32:
-				m_nBitsPerPixel = 32;
-				break;
-			case IS_SET_CM_RGB24:
-				m_nBitsPerPixel = 24;
-				break;
-			case IS_SET_CM_RGB16:
-			case IS_SET_CM_UYVY:
-				m_nBitsPerPixel = 16;
-				break;
-			case IS_SET_CM_RGB15:
-				m_nBitsPerPixel = 15;
-				break;
-			case IS_SET_CM_Y8:
-			case IS_SET_CM_RGB8:
-			case IS_SET_CM_BAYER:
-			default:
-				m_nBitsPerPixel = 8;
-				break;
-			}
+            {
+                case IS_CM_BGRA8_PACKED:
+					m_nBitsPerPixel = 32;
+					break;
+				case IS_CM_BGR8_PACKED:
+					m_nBitsPerPixel = 24;
+					break;
+				case IS_CM_BGR565_PACKED:
+				case IS_CM_UYVY_PACKED:
+					m_nBitsPerPixel = 16;
+					break;
+				case IS_CM_BGR5_PACKED:
+					m_nBitsPerPixel = 15;
+					break;
+				case IS_CM_MONO8:
+				case IS_CM_SENSOR_RAW8:
+				default:
+					m_nBitsPerPixel = 8;
+					break;
+            }  
 		}
 	}
 	return result;
@@ -216,11 +215,11 @@ int InitDisplayMode(HIDS* m_hCam)
         is_GetColorDepth(*m_hCam, &m_nBitsPerPixel, &nColorMode);
     } else if (m_sInfo.nColorMode == IS_COLORMODE_CBYCRY) {
         // for color camera models use RGB32 mode
-        nColorMode = IS_SET_CM_RGB32;
+        nColorMode = IS_CM_RGB8_PACKED;
         m_nBitsPerPixel = 32;
     } else {
         // for monochrome camera models use Y8 mode
-        nColorMode = IS_SET_CM_Y8;
+        nColorMode = IS_CM_MONO8;
         m_nBitsPerPixel = 8;
     }
 
@@ -383,28 +382,4 @@ INT WINAPI GetCameraNames(UEYE_CAMERA_LIST* pCameraList) {
 		}
 	} 	
 	return result;
-}
-
-BOOL WINAPI FilterDllMsg(LPMSG lpMsg)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	TRY
-	{
-		return AfxGetThread()->PreTranslateMessage(lpMsg);
-	}
-	END_TRY
-	return FALSE;
-}
-
-void WINAPI ProcessDllIdle()
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	TRY
-	{
-		// flush it all at once
-		long lCount = 0;
-		while (AfxGetThread()->OnIdle(lCount))
-			lCount++;
-	}
-	END_TRY
 }

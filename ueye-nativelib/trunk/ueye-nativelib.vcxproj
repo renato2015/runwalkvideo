@@ -195,7 +195,6 @@
   <ItemGroup>
     <None Include="ReadMe.txt" />
     <None Include="src\main\resources\ueye-nativelib.def" />
-    <None Include="src\main\resources\uEyeCapturer.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\main\include\FullscreenWnd.h" />

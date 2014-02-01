@@ -16,9 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
-    <None Include="src\main\resources\uEyeCapturer.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="src\main\resources\ueye-nativelib.def">
       <Filter>Resource Files</Filter>
     </None>

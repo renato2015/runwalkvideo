@@ -131,6 +131,7 @@ IDSAVIEXP isavi_SetImageSize		(INT nAviID,INT cMode, INT Width, INT Height, INT 
 *			IS_AVI_ERR_CREATESTREAM	The AVI stream could not be created (Recording only)
 ***********************************************************************************************************/
 IDSAVIEXP isavi_OpenAVI				(INT nAviID, const char* strFileName);
+IDSAVIEXP isavi_OpenAVIW		    (INT nAviID, const wchar_t* strFileName);
 
 
 /*! \brief Starts the picture compression thread.
@@ -249,6 +250,7 @@ IDSAVIEXP isavi_GetAVISize			(INT nAviID,float *size);
 *										call to isavi_ExitAVI().
 ***********************************************************************************************************/
 IDSAVIEXP isavi_GetAVIFileName		(INT nAviID, char* strName);
+IDSAVIEXP isavi_GetAVIFileNameW		(INT nAviID, wchar_t* strName);
 
 
 /*! \brief gets the actual number of pictures written in the avi file. 

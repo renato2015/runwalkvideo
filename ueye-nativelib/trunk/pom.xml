@@ -15,7 +15,7 @@
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>
-		<url>http://www.runwalk.be</url>
+		<url>http://code.google.com/p/runwalkvideo/</url>
 	</organization>
 	<developers>
 		<developer>
@@ -30,10 +30,19 @@
 	<distributionManagement>
 		<repository>                                
 			<id>runwalk-ftp</id>
-			<url>ftp://ftp.linuxsystems.be/maven2</url>
+			<url>ftp://${ftp.url}</url>
 		</repository>
 	</distributionManagement>
 	<build>
+	     <resources>
+	        <resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/*</exclude>
+				</excludes>
+			</resource>
+	    </resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -70,6 +79,7 @@
 				<version>2.7</version>
 				<configuration>
 					<skip>true</skip>
+					<url>ftp://${ftp.url}</url>
 				</configuration>
 				<executions>
 					<execution>
@@ -84,7 +94,7 @@
 							<file>target/${jarName}.jar</file>
 							<version>${project.version}</version>
 							<uniqueVersion>false</uniqueVersion>
-							<url>ftp://ftp.linuxsystems.be/maven2</url>
+        					<ftp.url>ftp://${ftp.url}</ftp.url>
 							<repositoryId>runwalk-ftp</repositoryId>
 							<packaging>jar</packaging>
 							<classifier>natives-win-${architecture}</classifier>
@@ -97,7 +107,7 @@
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ftp</artifactId>
-				<version>1.0-alpha-6</version>
+				<version>2.4</version>
 			</extension>
 		</extensions>
 	</build>
@@ -122,7 +132,8 @@
 		</profile>
 	</profiles>
 	<properties>
-  <jarName>${project.artifactId}-${project.version}-natives-win-${architecture}</jarName>
+        <ftp.url>your-ftp-server.com</ftp.url>
+        <jarName>${project.artifactId}-${project.version}-natives-win-${architecture}</jarName>
 	</properties>
 </project>
 
