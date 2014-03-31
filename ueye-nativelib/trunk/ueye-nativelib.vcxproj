@@ -80,6 +80,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)target\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)target\$(PlatformShortName)\$(Configuration)\temp\</IntDir>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
