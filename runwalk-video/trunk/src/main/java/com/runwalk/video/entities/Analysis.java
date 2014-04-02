@@ -53,7 +53,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	
 	@OneToOne
 	@JoinColumn(name="articleid")
-	private Article article;
+	private Item article;
 	
 	@Column(name="date")
 	@Temporal(value=TemporalType.TIMESTAMP)
@@ -90,11 +90,11 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return client;
 	}
 	
-	protected void setClient(Client client) {
+	public void setClient(Client client) {
 		this.client = client;
 	}
 
-	public Article getArticle() {
+	public Item getArticle() {
 		return article;
 	}
 	
@@ -114,7 +114,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
 	}
 	
-	public void setArticle(Article article) {
+	public void setArticle(Item article) {
 		this.article = article;
 	}
 

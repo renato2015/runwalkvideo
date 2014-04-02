@@ -51,7 +51,7 @@ public class AnalysisConnector implements Connector<Analysis> {
 	 * This inner class notifies the {@link ObservableElementList} about changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings( "rawtypes" )
 		public void propertyChange(PropertyChangeEvent event) {
 			Analysis analysis = null;
 			boolean dirty = true;

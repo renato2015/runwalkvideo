@@ -14,7 +14,7 @@ public class ClientTableFormat extends AbstractTableFormat<Client> {
 		if(column == 0)      return client.getId();
 		else if(column == 1) return client.getName();
 		else if(column == 2) return client.getFirstname();
-		else if(column == 3) return client.getLastAnalysisDate();
+		else if(column == 3) return null;//client.getLastAnalysisDate();
 		throw new IllegalStateException();
 	}
 
