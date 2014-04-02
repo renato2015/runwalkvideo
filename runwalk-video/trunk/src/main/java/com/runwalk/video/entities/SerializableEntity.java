@@ -43,4 +43,8 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 		return this.dirty;
 	}	
 	
+	public boolean isPersisted() {
+		return id == null;
+	}
+	
 }

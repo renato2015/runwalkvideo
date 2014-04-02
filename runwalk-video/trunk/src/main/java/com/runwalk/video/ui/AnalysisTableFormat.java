@@ -9,7 +9,7 @@ import ca.odell.glazedlists.gui.WritableTableFormat;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
-import com.runwalk.video.entities.Article;
+import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
 
 public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implements WritableTableFormat<Analysis> {
@@ -44,8 +44,8 @@ public class AnalysisTableFormat extends AbstractTableFormat<Analysis> implement
 	}
 
 	public Analysis setColumnValue(Analysis analysis, Object editedValue, int column) {
-		if (editedValue instanceof Article) {
-			analysis.setArticle((Article) editedValue);
+		if (editedValue instanceof Item) {
+			analysis.setArticle((Item) editedValue);
 		}
 		if (column == 0) {
 			analysis.setCreationDate((Date) editedValue);

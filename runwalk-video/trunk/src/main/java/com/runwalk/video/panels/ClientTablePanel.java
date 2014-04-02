@@ -149,10 +149,8 @@ public class ClientTablePanel extends AbstractTablePanel<Client> {
 	}
 
 	public void initialiseTableColumnModel() {
-		getTable().getColumnModel().getColumn(0).setMinWidth(35);
 		getTable().getColumnModel().getColumn(0).setPreferredWidth(35);
 		getTable().getColumnModel().getColumn(0).setMaxWidth(35);
-		getTable().getColumnModel().getColumn(1).setMinWidth(70);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(1).setMaxWidth(160);
 		getTable().getColumnModel().getColumn(3).setMinWidth(80);

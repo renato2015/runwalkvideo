@@ -30,17 +30,15 @@ public class Client extends Person {
 	// discriminator value for customer
 	public static final String PERSON_TYPE = "0";
 	
+	public static final String ANALYSES = "analyses";
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
-	public static final String REDCORD_TABLE_ELEMENT_COUNT = "redcordTableElementCount";
-	
 	public static final String ANALYSIS_COUNT = "analysisCount";
 	
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-	@JoinFetch(JoinFetchType.OUTER)
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	
 	@Column(name = "account_number")
@@ -50,8 +48,6 @@ public class Client extends Person {
 	private String organization;
 	@Transient
 	private Date lastAnalysisDate;
-	@Transient
-	private Integer redcordTableElementCount = 0;
 
 	public Client() {	}
 	
@@ -73,15 +69,6 @@ public class Client extends Person {
 
 	public void setTaxNumber(String taxNumber) {
 		this.taxNumber = taxNumber;
-	}
-	
-	
-	public void incrementRedcordTableElementCount() {
-		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, ++this.redcordTableElementCount);
-	}
-	
-	public void decrementRedcordTableElementCount() {
-		firePropertyChange(REDCORD_TABLE_ELEMENT_COUNT, this.redcordTableElementCount, --this.redcordTableElementCount);
 	}
 	
 	public List<Analysis> getAnalyses() {
@@ -106,14 +93,24 @@ public class Client extends Person {
 			int oldSize = getAnalysesCount();
 			result = getAnalyses().remove(analysis);
 			firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
-			Date lastAnalysisDate = null;
-			if (!getAnalyses().isEmpty()) {
-				Analysis lastAnalysis = getAnalyses().get(getAnalysesCount() - 1);
-				lastAnalysisDate = lastAnalysis.getCreationDate();
-			}
-			setLastAnalysisDate(lastAnalysisDate);
+			updateLastAnalysisDate();
 		}
 		return result;
+	}
+
+	private void updateLastAnalysisDate() {
+		Date lastAnalysisDate = null;
+		if (!getAnalyses().isEmpty()) {
+			Analysis lastAnalysis = getAnalyses().get(getAnalysesCount() - 1);
+			lastAnalysisDate = lastAnalysis.getCreationDate();
+		}
+		setLastAnalysisDate(lastAnalysisDate);
+	}
+	
+	public void setAnalyses(List<Analysis> analyses) {
+		firePropertyChange(ANALYSIS_COUNT, this.analyses.size(), analyses.size());
+		this.analyses = analyses;
+		updateLastAnalysisDate();
 	}
 
 	public String getOrganization() {

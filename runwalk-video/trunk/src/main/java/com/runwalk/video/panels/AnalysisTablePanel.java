@@ -39,7 +39,7 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
-import com.runwalk.video.entities.Article;
+import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
@@ -79,7 +79,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	private Boolean clientSelected = false;
 
-	private EventList<Article> articleList;
+	private EventList<Item> articleList = GlazedLists.eventListOf();
 
 	private boolean selectedItemRecorded;
 
@@ -324,7 +324,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		}
 	}
 
-	public void setArticleList(EventList<Article> articleList) {
+	public void setArticleList(EventList<Item> articleList) {
 		if (this.articleList != null) {
 			// dispose the current list, so it can be garbage collected
 			this.articleList.dispose();
@@ -332,8 +332,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		this.articleList = articleList;
 	}
 
-	public EventList<Article> getArticleList() {
-		return this.articleList;
+	public EventList<Item> getArticleList() {
+		return articleList;
 	}
 
 	public void initialiseTableColumnModel() {
@@ -349,7 +349,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				.setCellEditor(datePickerCellEditor);
 
 		// create special table cell editor for selecting articles
-		AutoCompleteCellEditor<Article> createTableCellEditor = AutoCompleteSupport
+		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport
 				.createTableCellEditor(getArticleList());
 		createTableCellEditor.setClickCountToStart(0);
 		createTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);

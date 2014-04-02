@@ -72,10 +72,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
 
-		JScrollPane scrollPane = new  JScrollPane();
+		/*JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(getTable());
-		add(scrollPane, "wrap, grow");
+		add(scrollPane, "wrap, grow");*/
 
 		JButton cleanupButton = new JButton(getAction(CLEANUP_VIDEO_FILES_ACTION));
 		cleanupButton.setFont(SettingsManager.MAIN_FONT);

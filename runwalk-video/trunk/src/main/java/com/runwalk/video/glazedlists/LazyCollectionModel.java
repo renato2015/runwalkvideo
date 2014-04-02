@@ -15,7 +15,7 @@ import com.runwalk.video.tasks.AbstractTask;
 
 /**
  * An extension of {@link CollectionList.Model} that will fetch a parent entity's property in a background thread.
- * Caching can be enabled only if the implementation of {@link #getLazyChildren(SerializableEntity)} returns the same
+ * Caching can be enabled only if the implementation of {@link #loadChildren(SerializableEntity)} returns the same
  * result after populating the entity's lazy associations.
  *
  * @param <E> The parent entity that owns the property collection to be loaded
@@ -27,45 +27,37 @@ public abstract class LazyCollectionModel<E extends SerializableEntity<? super E
 	
 	private final TaskService taskService;
 	
-	private List<S> cachedList;
-	
-	private final boolean useCache;
-	
-	public LazyCollectionModel(TaskService taskService, String attributeName, boolean useCache) {
+	public LazyCollectionModel(TaskService taskService, String attributeName) {
 		this.taskService = taskService;
 		this.attributeName = attributeName;
-		this.useCache = useCache;
 	}
 	
-	public abstract List<S> getLazyChildren(E parent);
+	public abstract List<S> getLoadedChildren(E parent);
 	
-	public abstract void refreshParent(E parent, List<S> children);	
+	public abstract List<S> loadChildren(E parent);
+	
+	public abstract void refreshParent(E parent, List<S> children);
+	
+	public boolean isLoaded(E parent) {
+		PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
+		return !parent.isPersisted() || persistenceUtil.isLoaded(parent, getAttributeName());
+	}
 	
 	public List<S> getChildren(final E parent) {
 		List<S> result = Collections.emptyList();
-		PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
-		if (persistenceUtil.isLoaded(parent, getAttributeName())) {
-			if (useCache && cachedList != null) {
-				result = cachedList;
-				cachedList = null;
-			} else {
-				result = getLazyChildren(parent);
-			}
+		if (isLoaded(parent)) {
+			result = getLoadedChildren(parent);
 		} else {
 			getTaskService().execute(new AbstractTask<List<S>, Void>("loadEntities") {
 				
 				protected List<S> doInBackground() throws Exception {
-					List<S> result = getLazyChildren(parent);
+					List<S> result = loadChildren(parent);
 					message("endMessage", parent);
 					return result;
 				}
 				
 				@Override
 				protected void succeeded(List<S> children) {
-					if (useCache) {
-						// cache the fetched result
-						cachedList = children;
-					}
 					// execute callback and refresh the parent list
 					refreshParent(parent, children);
 				}
