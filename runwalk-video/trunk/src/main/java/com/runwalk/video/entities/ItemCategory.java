@@ -13,6 +13,7 @@ import javax.persistence.Table;
 public class ItemCategory implements Serializable {
 	
 	@Id
+	@Column(name="id")
 	private Long id;
 
 	@Column(name="name")

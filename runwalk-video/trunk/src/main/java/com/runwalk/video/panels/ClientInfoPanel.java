@@ -47,6 +47,8 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Person.Gender;
+import com.runwalk.video.model.AbstractEntityModel;
+import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.ui.EnumButtonGroup;
 
@@ -73,7 +75,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		@Override
 		public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 			ClientTablePanel clientTablePanel = (ClientTablePanel) binding.getSourceObject();
-			Client selectedItem = clientTablePanel.getSelectedItem();
+			AbstractEntityModel<Client> selectedItem = clientTablePanel.getSelectedItem();
 			if (selectedItem != null) {
 				selectedItem.setDirty(true);
 			}
@@ -89,9 +91,9 @@ public class ClientInfoPanel extends AbstractPanel {
 		setLayout(new MigLayout("fill", "[right]10[grow,fill]", "10[grow,fill]"));
 		BindingGroup bindingGroup = new BindingGroup();
 		// component value binding
-		Binding<? extends AbstractTablePanel<Client>, String, JTextField, String> valueBinding = null;
+		Binding<? extends AbstractTablePanel<ClientModel>, String, JTextField, String> valueBinding = null;
 		// component enabling binding
-		Binding<? extends AbstractTablePanel<Client>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
+		Binding<? extends AbstractTablePanel<ClientModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
 
 		/**
 		 * Converts first characters to uppercase
@@ -161,7 +163,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
 		taxField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.taxNumber");
+		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.entity.taxNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, TEXT);
 		valueBinding.setValidator(new Validator<String> () {
 
@@ -188,7 +190,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
 		emailField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
+		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.entity.emailAddress");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, TEXT);
 		/*valueBinding.setValidator(new Validator() {
 
@@ -214,7 +216,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		add(mailingListLabel, "grow 0");
 
 		JCheckBox mailingListCheckbox = new JCheckBox();
-		BeanProperty<ClientTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.inMailingList");
+		BeanProperty<ClientTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.entity.inMailingList");
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, inMailingList, mailingListCheckbox, SELECTED);
 		bindingGroup.addBinding(enabledBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, mailingListCheckbox, ENABLED);
@@ -253,9 +255,9 @@ public class ClientInfoPanel extends AbstractPanel {
 			}
 
 		});
-		BeanProperty<ClientTablePanel, Date> birthDate = BeanProperty.create("selectedItem.birthdate");
+		BeanProperty<ClientTablePanel, Date> birthDate = BeanProperty.create("selectedItem.entity.birthdate");
 		BeanProperty<JFormattedTextField, ?> formattedValue = BeanProperty.create("value"); 
-		Binding<? extends AbstractTablePanel<Client>, Date, JFormattedTextField, ?> birthDateBinding = 
+		Binding<? extends AbstractTablePanel<ClientModel>, Date, JFormattedTextField, ?> birthDateBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, birthDate, birthdateField, formattedValue);
 		bindingGroup.addBinding(birthDateBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, birthdateField, ENABLED);
@@ -284,8 +286,8 @@ public class ClientInfoPanel extends AbstractPanel {
 		ebg.add(Gender.MALE, maleRadioButton);
 		ebg.assertButtonGroupCoversAllEnumConstants();
 		//add the binding for the radio buttons
-		BeanProperty<ClientTablePanel, Gender> gender = BeanProperty.create("selectedItem.gender");
-		Binding<? extends AbstractTablePanel<Client>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
+		BeanProperty<ClientTablePanel, Gender> gender = BeanProperty.create("selectedItem.entity.gender");
+		Binding<? extends AbstractTablePanel<ClientModel>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, gender, ebg, EnumButtonGroup.SELECTED_ENUM_PROPERTY);
 		bindingGroup.addBinding(genderBinding);
 
@@ -297,7 +299,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
 		addressField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.address.address");
+		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.entity.address.address");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, address, addressField, TEXT);
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, addressField, ENABLED);
@@ -312,7 +314,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
 		phoneField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.phoneNumber");
+		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.entity.phoneNumber");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, phone, phoneField, TEXT);
 		bindingGroup.addBinding(valueBinding);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, phoneField, ENABLED);
@@ -341,19 +343,15 @@ public class ClientInfoPanel extends AbstractPanel {
 	}
 
 	public void setItemList(final EventList<City> itemList) {
-		if (this.itemList != null) {
-			// dispose the current list, so it can be garbage collected
-			this.itemList.dispose();
-		}
+		disposeItemList();
 		this.itemList = itemList;
+		installLocationCompletion(itemList);
+	}
+
+	private void installLocationCompletion(final EventList<City> itemList) {
 		final TextMatcherEditor<City> matcherEditor = new TextMatcherEditor<City>(GlazedLists.toStringTextFilterator());
 		final FilterList<City> filterList = new FilterList<City>(itemList, matcherEditor);
-		if (zipCodeCompletion != null) {
-			zipCodeCompletion.uninstall();
-		}
-		if (locationBindingGroup != null) {
-			locationBindingGroup.unbind();
-		}
+		uninstallLocationCompletion();
 		locationBindingGroup = new BindingGroup();
 		zipCodeCompletion = AutoCompleteSupport.install(zipCodeField, itemList, GlazedLists.textFilterator("code"), new Format() {
 
@@ -387,12 +385,9 @@ public class ClientInfoPanel extends AbstractPanel {
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
 		locationBindingGroup.addBinding(comboBoxBinding);
-		Binding<? extends AbstractTablePanel<Client>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
+		Binding<? extends AbstractTablePanel<ClientModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), ITEM_SELECTED, zipCodeField, ENABLED);
 		locationBindingGroup.addBinding(enabledBinding);
-		if (locationCompletion != null) {
-			locationCompletion.uninstall();
-		}
 		locationCompletion = AutoCompleteSupport.install(locationField, itemList, GlazedLists.textFilterator("name"), new Format() {
 
 			public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
@@ -424,6 +419,25 @@ public class ClientInfoPanel extends AbstractPanel {
 		locationBindingGroup.addBinding(enabledBinding);
 		locationBindingGroup.addBindingListener(changeListener);
 		locationBindingGroup.bind();
+	}
+
+	private void disposeItemList() {
+		if (this.itemList != null) {
+			// dispose the current list, so it can be garbage collected
+			this.itemList.dispose();
+		}
+	}
+
+	private void uninstallLocationCompletion() {
+		if (zipCodeCompletion != null) {
+			zipCodeCompletion.uninstall();
+		}
+		if (locationBindingGroup != null) {
+			locationBindingGroup.unbind();
+		}
+		if (locationCompletion != null) {
+			locationCompletion.uninstall();
+		}
 	}
 
 	private ClientTablePanel getClientTablePanel() {

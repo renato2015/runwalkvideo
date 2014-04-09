@@ -63,8 +63,8 @@ import com.runwalk.video.entities.Keyframe;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.VideoComponent.State;
+import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.panels.AbstractTablePanel;
-import com.runwalk.video.panels.AnalysisOverviewTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
@@ -92,8 +92,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private static final String TITLE = "Media Controls";
 
 	private final SettingsManager appSettings;
-	private final AbstractTablePanel<Analysis> analysisTablePanel;
-	private final AnalysisOverviewTablePanel analysisOverviewTablePanel;
+	private final AbstractTablePanel<AnalysisModel> analysisTablePanel;
 
 	private final WindowManager windowManager;
 	private final VideoFileManager videoFileManager;
@@ -104,9 +103,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final Timer timer;
 
 	// open the selected recording
-	private final AbstractTablePanel.ClickHandler<Analysis> clickHandler = new AbstractTablePanel.ClickHandler<Analysis>() {
+	private final AbstractTablePanel.ClickHandler<AnalysisModel> clickHandler = new AbstractTablePanel.ClickHandler<AnalysisModel>() {
 
-		public void handleClick(Analysis element) {
+		public void handleClick(AnalysisModel element) {
 			if (element.isRecorded()) {
 				getTaskService().execute(openRecordings(element));
 			}
@@ -141,7 +140,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	public MediaControls(SettingsManager appSettings, VideoFileManager videoFileManager, WindowManager windowManager, 
 			DaoService daoService, VideoCapturerFactory<?> videoCapturerFactory, VideoPlayerFactory<?> videoPlayerFactory,
-			AnalysisTablePanel analysisTablePanel, AnalysisOverviewTablePanel analysisOverviewTablePanel) {
+			AnalysisTablePanel analysisTablePanel) {
 		this.appSettings = appSettings;
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
@@ -149,7 +148,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		this.videoCapturerFactory = videoCapturerFactory;
 		this.videoPlayerFactory = videoPlayerFactory;
 		this.analysisTablePanel = analysisTablePanel;
-		this.analysisOverviewTablePanel = analysisOverviewTablePanel;
 
 		setLayout(new MigLayout("insets 10 10 0 10, nogrid, fill"));
 		BindingGroup bindingGroup = new BindingGroup();
@@ -254,7 +252,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return button;
 	}
 
-	public AbstractTablePanel.ClickHandler<Analysis> getClickHandler() {
+	public AbstractTablePanel.ClickHandler<AnalysisModel> getClickHandler() {
 		return clickHandler;
 	}
 
@@ -587,18 +585,13 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	@Action(enabledProperty = RECORDING_ENABLED)
 	public RecordTask record() {
-		Analysis analysis = getAnalysisTablePanel().getSelectedItem();
+		AnalysisModel selectedModel = getAnalysisTablePanel().getSelectedItem();
 		RecordTask result = null;
-		if (recordTask == null && analysis != null) {
+		if (recordTask == null && selectedModel != null) {
 			setRecordingEnabled(false);
 			setStopEnabled(true);
-			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), analysis);
+			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), selectedModel.getEntity());
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-
-				@Override
-				public void succeeded(TaskEvent<Boolean> event) {
-					getAnalysisOverviewTablePanel().setCompressionEnabled(event.getValue());
-				}
 
 				@Override
 				public void finished(TaskEvent<Void> event) {
@@ -641,7 +634,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		};
 	}
 
-	public Task<?, ?> openRecordings(final Analysis analysis) {
+	public Task<?, ?> openRecordings(final AnalysisModel analysisModel) {
 		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
 			{ 
@@ -652,9 +645,9 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				message("startMessage");
 				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
-				if (analysis != null) {
-					for(int i = 0; i < analysis.getRecordings().size(); i++) {
-						final Recording recording = analysis.getRecordings().get(i);
+				if (analysisModel != null) {
+					for(int i = 0; i < analysisModel.getRecordings().size(); i++) {
+						final Recording recording = analysisModel.getRecordings().get(i);
 						if (recording.isRecorded()) {
 							final File videoFile = getVideoFileManager().getVideoFile(recording);
 							if (recordingCount < getPlayers().size()) {
@@ -670,7 +663,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 					}
 					setSliderPosition(0);
 					new Robot().waitForIdle();
-					message("endMessage", recordingCount, analysis.getClient());
+					message("endMessage", recordingCount, analysisModel.getEntity().getClient());
 				}
 				return null;
 			}
@@ -961,12 +954,8 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		return appSettings;
 	}
 
-	public AbstractTablePanel<Analysis> getAnalysisTablePanel() {
+	public AbstractTablePanel<AnalysisModel> getAnalysisTablePanel() {
 		return analysisTablePanel;
-	}
-
-	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
-		return analysisOverviewTablePanel;
 	}
 
 	public Component getComponent() {

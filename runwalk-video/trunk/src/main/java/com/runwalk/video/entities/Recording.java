@@ -70,10 +70,11 @@ public class Recording extends SerializableEntity<Recording> {
 	protected Recording() { }
 
 	public Recording(Analysis analysis) {
+		// TODO should move this logic out of here!!
 		Client client = analysis.getClient();
 		int totalRecordings = 0;
 		for (Analysis an : client.getAnalyses()) {
-			totalRecordings += an.getRecordingCount();
+			totalRecordings += an.getRecordings().size();
 		}
 		this.videoFileName = buildFileName(analysis.getClient(), analysis.getCreationDate(), totalRecordings);
 		this.analysis = analysis;

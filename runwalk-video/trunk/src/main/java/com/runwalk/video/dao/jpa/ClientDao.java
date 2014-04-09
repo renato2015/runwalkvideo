@@ -12,6 +12,7 @@ import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.model.ClientModel;
 
 /**
  * This {@link Dao} defines some specialized behavior for the {@link Client} entity.
@@ -22,6 +23,11 @@ public class ClientDao extends JpaDao<Client> {
 
 	public ClientDao(EntityManagerFactory entityManagerFactory) {
 		super(Client.class, entityManagerFactory);
+	}
+	
+	public List<ClientModel> getAllAsModels() {
+		TypedQuery<ClientModel> query = createEntityManager().createQuery("SELECT NEW com.runwalk.video.model.ClientModel(client, MAX(analyses.creationDate)) FROM " + getTypeParameter().getSimpleName() + " client LEFT OUTER JOIN client.analyses analyses GROUP BY client.id", ClientModel.class);
+		return query.getResultList();
 	}
 
 	@Override

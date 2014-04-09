@@ -32,6 +32,10 @@ public class Item implements Serializable {
 	@JoinColumn(name="subcategory_id", nullable=false )
 	private ItemSubcategory subcategory;
 	
+	@ManyToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name="item_size_id")
+	private ItemSize itemSize;
+	
 	public Long getId() {
 		return id;
 	}
@@ -40,32 +44,20 @@ public class Item implements Serializable {
 		return this.itemNumber;
 	}
 
-	public void setItemNumber(String itemNumber) {
-		this.itemNumber = itemNumber;
-	}
-
 	public String getName() {
 		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getDescription() {
 		return this.description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	public ItemSubcategory getSubcategory() {
 		return subcategory;
 	}
-
-	public void setSubcategory(ItemSubcategory subcategory) {
-		this.subcategory = subcategory;
+	
+	public ItemSize getItemSize() {
+		return itemSize;
 	}
 
 	@Override

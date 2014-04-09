@@ -9,6 +9,7 @@
 		<class>com.runwalk.video.entities.State</class>
 		<class>com.runwalk.video.entities.Item</class>
 		<class>com.runwalk.video.entities.ItemCategory</class>
+		<class>com.runwalk.video.entities.ItemSize</class>
 		<class>com.runwalk.video.entities.ItemSubcategory</class>
 		<class>com.runwalk.video.entities.Analysis</class>
 		<class>com.runwalk.video.entities.Recording</class>

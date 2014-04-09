@@ -1,5 +1,6 @@
 package com.runwalk.video.panels;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task.BlockingScope;
+import org.jdesktop.application.Task;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
@@ -39,11 +41,14 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
-import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.model.AnalysisModel;
+import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.ui.table.DatePickerTableCellRenderer;
@@ -53,10 +58,14 @@ import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
+public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	private static final int WEEKS_AHEAD = 3;
 
+	private static final String COMPRESSION_ENABLED = "compressionEnabled";
+
+	public static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
+	
 	private static final String DELETE_ANALYSIS_ACTION = "deleteAnalysis";
 
 	private static final String ADD_ANALYSIS_ACTION = "addAnalysis";
@@ -78,6 +87,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	private final SettingsManager appSettings;
 
 	private Boolean clientSelected = false;
+	
+	private boolean compressionEnabled;
 
 	private EventList<Item> articleList = GlazedLists.eventListOf();
 
@@ -114,11 +125,15 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		addAnalysisForFeedbackButton.setFont(SettingsManager.MAIN_FONT);
 		addAnalysisForFeedbackButton
 				.setActionCommand(ADD_ANALYSIS_FOR_FEEDBACK_ACTION);
-		add(addAnalysisForFeedbackButton, "wrap");
+		add(addAnalysisForFeedbackButton);
+		
+		JButton compressAnalysisButton = new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION));
+		compressAnalysisButton.setFont(SettingsManager.MAIN_FONT);
+		compressAnalysisButton.setActionCommand(ADD_ANALYSIS_FOR_FEEDBACK_ACTION);
+		add(compressAnalysisButton, "gapleft push, wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
-		tscrollPane
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		tscrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		comments = new JTextArea();
 		comments.getDocument().addUndoableEditListener(undoableEditListener);
 		comments.setFont(SettingsManager.MAIN_FONT);
@@ -171,7 +186,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		bindingGroup.addBinding(selectedItemRecordedBinding);
 
 		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty
-				.create("${rowSelected && clientTablePanel.selectedItem.emailAddress != null}");
+				.create("${rowSelected && clientTablePanel.selectedItem.entity.emailAddress != null}");
 		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty
 				.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = Bindings
@@ -202,8 +217,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 
 	public void setAddAnalysisForFeedbackEnabled(
 			boolean addAnalysisForFeedbackEnabled) {
-		firePropertyChange(
-				ADD_ANALYSIS_FOR_FEEDBACK_ENABLED,
+		firePropertyChange(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED,
 				this.addAnalysisForFeedbackEnabled,
 				this.addAnalysisForFeedbackEnabled = addAnalysisForFeedbackEnabled);
 	}
@@ -223,29 +237,21 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<Analysis> addAnalysis(ActionEvent event) {
 		// insert a new analysis record
-		final Client selectedClient = getClientTablePanel().getSelectedItem();
-		if (("".equals(selectedClient.getName()) || selectedClient.getName() == null)
-				&& ("".equals(selectedClient.getOrganization()) || selectedClient
+		final ClientModel selectedModel = getClientTablePanel().getSelectedItem();
+		final Client selectedClient = selectedModel.getEntity();
+		if (("".equals(selectedModel.getName()) || selectedModel.getName() == null)
+				&& ("".equals(selectedModel.getOrganization()) || selectedClient
 						.getOrganization() == null)) {
 			JOptionPane.showMessageDialog(SwingUtilities
 					.windowForComponent(this),
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
 					getResourceMap().getString("addAnalysis.Action.text"),
 					JOptionPane.ERROR_MESSAGE);
-			getLogger().warn(
-					"Attempt to insert analysis for " + selectedClient
-							+ " failed.");
+			getLogger().warn("Attempt to insert analysis for " + selectedClient + " failed.");
 			return null;
 		}
-		Analysis analysis = null;
-		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand())) {
-			analysis = new Analysis(selectedClient, getSelectedItem(),
-					getDateForFeedback());
-		} else {
-			analysis = new Analysis(selectedClient);
-		}
-		PersistTask<Analysis> result = new PersistTask<Analysis>(
-				getDaoService(), Analysis.class, analysis);
+		Analysis analysis = createAnalysisForEvent(event, selectedClient);
+		PersistTask<Analysis> result = new PersistTask<Analysis>(getDaoService(), Analysis.class, analysis);
 		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
 			@Override
@@ -253,8 +259,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				Analysis result = event.getValue();
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					selectedClient.addAnalysis(result);
-					setSelectedItemRow(result);
+					AnalysisModel analysisModel = new AnalysisModel(result);
+					selectedModel.addAnalysisModel(analysisModel);
+					setSelectedItemRow(analysisModel);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
@@ -264,23 +271,32 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 		return result;
 	}
 
+	private Analysis createAnalysisForEvent(ActionEvent event, final Client selectedClient) {
+		Analysis analysis;
+		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand())) {
+			analysis = new Analysis(selectedClient, getSelectedItem().getEntity(), getDateForFeedback());
+		} else {
+			analysis = new Analysis(selectedClient);
+		}
+		return analysis;
+	}
+
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
 	public DeleteTask<Analysis> deleteAnalysis() {
 		DeleteTask<Analysis> result = null;
-		int n = JOptionPane
-				.showConfirmDialog(
+		int n = JOptionPane.showConfirmDialog(
 						SwingUtilities.windowForComponent(this),
-						getResourceMap().getString(
-								"deleteAnalysis.confirmDialog.text"),
-						getResourceMap()
-								.getString("deleteAnalysis.Action.text"),
+						getResourceMap().getString("deleteAnalysis.confirmDialog.text"),
+						getResourceMap().getString("deleteAnalysis.Action.text"),
 						JOptionPane.WARNING_MESSAGE,
 						JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
+			// TODO can we get selected client starting from analysis??
 			// TODO check if analysis doesn't have feedback analaysis
-			final Client selectedClient = getSelectedItem().getClient();
+			final AnalysisModel selectedModel = getSelectedItem();
+			//final ClientModel selectedClientModel = clientTablePanel.getSelectedItem();
 			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class,
-					getSelectedItem());
+					selectedModel.getEntity());
 			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
 				@Override
@@ -290,8 +306,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 					try {
 						int lastSelectedRowIndex = getEventSelectionModel()
 								.getMinSelectionIndex();
-						getItemList().remove(analysis);
-						selectedClient.removeAnalysis(analysis);
+						getItemList().remove(selectedModel);
+						// FIXME selectedModel.removeAnalysisModel(selectedModel);
 						// delete the video files
 						if (lastSelectedRowIndex > 0) {
 							setSelectedItemRow(lastSelectedRowIndex - 1);
@@ -322,6 +338,15 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 			}
 			// TODO show the video file on different platforms?
 		}
+	}
+	
+	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
+	public Task<Boolean, Void> compressVideoFiles() {
+		setCompressionEnabled(false);
+		String transcoder = getAppSettings().getTranscoderName();
+		Window parentComponent = SwingUtilities.windowForComponent(this);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
+				getSelectedItem().getRecordings(), transcoder);
 	}
 
 	public void setArticleList(EventList<Item> articleList) {
@@ -395,6 +420,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<Analysis> {
 				"analysisTableFormat.openButton.text");
 		getTable().getColumnModel().getColumn(5)
 				.setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
+	}
+	
+	public boolean isCompressionEnabled() {
+		return compressionEnabled;
+	}
+
+	public void setCompressionEnabled(boolean compressionEnabled) {
+		// compression only works on windows
+		boolean isWindows = AppHelper.getPlatform() == PlatformType.WINDOWS;
+		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled && isWindows);
 	}
 
 	public boolean isClientSelected() {

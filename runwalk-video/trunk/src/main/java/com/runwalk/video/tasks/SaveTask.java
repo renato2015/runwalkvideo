@@ -3,8 +3,6 @@ package com.runwalk.video.tasks;
 import java.util.List;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
@@ -29,15 +27,8 @@ public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractT
 		List<T> result = null;
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			FilterList<T> dirtyItems = new FilterList<T>(getItemList(), new Matcher<T>() {
-
-				public boolean matches(T item) {
-					return item.isDirty();
-				}
-				
-			});
 			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
-			result = getDaoService().getDao(getTypeParameter()).merge(dirtyItems);
+			result = getDaoService().getDao(getTypeParameter()).merge(itemList);
 			message("endMessage", result.size());
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();

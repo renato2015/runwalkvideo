@@ -1,8 +1,6 @@
 package com.runwalk.video.entities;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -16,9 +14,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.eclipse.persistence.annotations.JoinFetch;
-import org.eclipse.persistence.annotations.JoinFetchType;
-
 @Entity
 @SuppressWarnings("serial")
 @DiscriminatorValue(Client.PERSON_TYPE)
@@ -26,7 +21,6 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Table(name = "phppos_customers")
 public class Client extends Person {
 	
-	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	// discriminator value for customer
 	public static final String PERSON_TYPE = "0";
 	
@@ -34,8 +28,6 @@ public class Client extends Person {
 	/**
 	 * 'Synthetic' property to allow firing events when adding/removing analyses
 	 */
-	public static final String ANALYSIS_COUNT = "analysisCount";
-	
 	public static final String ORGANIZATION = "organization";
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
@@ -46,21 +38,12 @@ public class Client extends Person {
 
 	@Transient
 	private String organization;
-	@Transient
-	private Date lastAnalysisDate;
-
-	public Client() {	}
+	
+	public Client() { }
 	
 	public Client(String name, String firstName) {
 		setFirstname(firstName);
 		setName(name);
-	}
-	
-	public Client(Client client, Date lastAnalysisDate) {
-		this(client.getName(), client.getFirstname());
-		setId(client.getId());
-		setVersion(client.getVersion());
-		setLastAnalysisDate(lastAnalysisDate);
 	}
 	
 	public String getTaxNumber() {
@@ -78,39 +61,17 @@ public class Client extends Person {
 	public int getAnalysesCount() {
 		return getAnalyses().size();
 	}
-
+	
 	public boolean addAnalysis(Analysis analysis) {
-		int oldSize = getAnalysesCount();
-		boolean result = getAnalyses().add(analysis);
-		firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
-		setLastAnalysisDate(analysis.getCreationDate());
-		return result;
+		return getAnalyses().add(analysis);
 	}
 	
 	public boolean removeAnalysis(Analysis analysis) {
-		boolean result = false;
-		if (analysis != null) {
-			int oldSize = getAnalysesCount();
-			result = getAnalyses().remove(analysis);
-			firePropertyChange(ANALYSIS_COUNT, oldSize, getAnalysesCount());
-			updateLastAnalysisDate();
-		}
-		return result;
-	}
-
-	private void updateLastAnalysisDate() {
-		Date lastAnalysisDate = null;
-		if (!getAnalyses().isEmpty()) {
-			Analysis lastAnalysis = getAnalyses().get(getAnalysesCount() - 1);
-			lastAnalysisDate = lastAnalysis.getCreationDate();
-		}
-		setLastAnalysisDate(lastAnalysisDate);
+		return getAnalyses().remove(analysis);
 	}
 	
 	public void setAnalyses(List<Analysis> analyses) {
-		firePropertyChange(ANALYSIS_COUNT, this.analyses.size(), analyses.size());
 		this.analyses = analyses;
-		updateLastAnalysisDate();
 	}
 
 	public String getOrganization() {
@@ -119,18 +80,6 @@ public class Client extends Person {
 
 	public void setOrganization(String organization) {
 		this.organization = organization;
-	}
-
-	public Date getLastAnalysisDate() {
-		if (lastAnalysisDate == null && !getAnalyses().isEmpty()) {
-			Collections.sort(getAnalyses());
-			lastAnalysisDate = getAnalyses().get(getAnalysesCount()-1).getCreationDate();
-		}
-		return lastAnalysisDate;
-	}
-	
-	private void setLastAnalysisDate(Date lastAnalysisDate) {
-		firePropertyChange(LAST_ANALYSIS_DATE, this.lastAnalysisDate, this.lastAnalysisDate = lastAnalysisDate);
 	}
 
 }

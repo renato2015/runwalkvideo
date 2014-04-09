@@ -52,7 +52,6 @@ import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
-import com.runwalk.video.ui.AnalysisOverviewTableFormat;
 import com.runwalk.video.ui.AnalysisTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
 import com.runwalk.video.ui.ClientTableFormat;
@@ -182,7 +181,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 */
 	protected void startup() {
 		// create common application actions class
-		applicationActions = new ApplicationActions();
+		applicationActions = new ApplicationActions(getVideoFileManager());
 		statusPanel = new StatusPanel();
 		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
 		addTablePanel(clientTablePanel);
@@ -191,8 +190,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
-		analysisOverviewTablePanel = new AnalysisOverviewTablePanel(getSettingsManager(), getVideoFileManager());
-		addTablePanel(analysisOverviewTablePanel);
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();
 		getMainFrame().add(getScrollableDesktopPane());
@@ -208,14 +205,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		CompositeVideoPlayerFactory videoPlayerFactory = CompositeVideoPlayerFactory.createInstance(videoPlayerFactorySettingsList);
 		mediaControls = new MediaControls(getSettingsManager(), getVideoFileManager(), 
 				windowManager, getDaoService(), videoCapturerFactory, videoPlayerFactory,
-				getAnalysisTablePanel(), getAnalysisOverviewTablePanel());
+				getAnalysisTablePanel());
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));
 		analysisTablePanel.setTableFormat(new AnalysisTableFormat(analysisTablePanel.getResourceMap()));
 		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
-		analysisOverviewTablePanel.setTableFormat(new AnalysisOverviewTableFormat(analysisOverviewTablePanel.getResourceMap()));
-		analysisOverviewTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
 		// add all internal frames here!!!
@@ -389,7 +384,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		mainPanel.add(getClientTablePanel(), "growx");
 		mainPanel.add(tabPanel, "height :280:, growx");
 		mainPanel.add(getStatusPanel(), "height 30!, gapleft push");
-		mainPanel.setMinimumSize(new Dimension(minimumWidth, MAIN_PANEL_MIN_HEIGHT));
+		//mainPanel.setMinimumSize(new Dimension(minimumWidth, MAIN_PANEL_MIN_HEIGHT));
 		return new Containable() {
 
 			public Component getComponent() {

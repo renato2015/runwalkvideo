@@ -60,16 +60,16 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		JMenuItem saveSettingsMenuItem = new JMenuItem( getAction(SAVE_SETTINGS_ACTION));
 		fileMenu.add(saveSettingsMenuItem);
 
-		fileMenu.add(new JSeparator());
+		/*fileMenu.add(new JSeparator());
 		JMenuItem selectVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectVideoDir"));
 		fileMenu.add(selectVideoDir);
 		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectUncompressedVideoDir"));
-		fileMenu.add(selectUncompressedVideoDir);
+		fileMenu.add(selectUncompressedVideoDir);*/
 
-		fileMenu.add(new JSeparator());
-		JMenuItem organiseVideoFiles = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("organiseVideoFiles"));
+		//fileMenu.add(new JSeparator());
+		/*JMenuItem organiseVideoFiles = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("organiseVideoFiles"));
 		fileMenu.add(organiseVideoFiles);
-
+*/
 		fileMenu.add(new JSeparator());
 		JMenuItem exitMenuItem = new JMenuItem( getAction(QUIT_ACTION) );
 		fileMenu.add(exitMenuItem);
