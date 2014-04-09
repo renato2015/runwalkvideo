@@ -11,6 +11,7 @@ import org.jdesktop.application.TaskService;
 import ca.odell.glazedlists.CollectionList;
 
 import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.model.AbstractEntityModel;
 import com.runwalk.video.tasks.AbstractTask;
 
 /**
@@ -21,7 +22,7 @@ import com.runwalk.video.tasks.AbstractTask;
  * @param <E> The parent entity that owns the property collection to be loaded
  * @param <S> The type of the child entity
  */
-public abstract class LazyCollectionModel<E extends SerializableEntity<? super E>, S> implements CollectionList.Model<E, S> {
+public abstract class LazyCollectionModel<P extends SerializableEntity<? super P>, C extends SerializableEntity<C>, PM extends AbstractEntityModel<P>, CM extends AbstractEntityModel<C>> implements CollectionList.Model<PM, CM> {
 
 	private final String attributeName;
 	
@@ -32,34 +33,35 @@ public abstract class LazyCollectionModel<E extends SerializableEntity<? super E
 		this.attributeName = attributeName;
 	}
 	
-	public abstract List<S> getLoadedChildren(E parent);
+	public abstract List<CM> getLoadedChildren(PM parentModel);
 	
-	public abstract List<S> loadChildren(E parent);
+	public abstract List<C> loadChildren(P parent);
 	
-	public abstract void refreshParent(E parent, List<S> children);
+	public abstract void refreshParent(PM parentModel, List<C> children);
 	
-	public boolean isLoaded(E parent) {
+	public boolean isLoaded(PM parentModel) {
 		PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
-		return !parent.isPersisted() || persistenceUtil.isLoaded(parent, getAttributeName());
+		return !parentModel.isPersisted() || persistenceUtil.isLoaded(parentModel.getEntity(), getAttributeName());
 	}
 	
-	public List<S> getChildren(final E parent) {
-		List<S> result = Collections.emptyList();
-		if (isLoaded(parent)) {
-			result = getLoadedChildren(parent);
+	public List<CM> getChildren(final PM parentModel) {
+		List<CM> result = Collections.emptyList();
+		if (isLoaded(parentModel)) {
+			result = getLoadedChildren(parentModel);
 		} else {
-			getTaskService().execute(new AbstractTask<List<S>, Void>("loadEntities") {
+			final P parent = parentModel.getEntity();
+			getTaskService().execute(new AbstractTask<List<C>, Void>("loadEntities") {
 				
-				protected List<S> doInBackground() throws Exception {
-					List<S> result = loadChildren(parent);
+				protected List<C> doInBackground() throws Exception {
+					List<C> result = loadChildren(parent);
 					message("endMessage", parent);
 					return result;
 				}
 				
 				@Override
-				protected void succeeded(List<S> children) {
+				protected void succeeded(List<C> children) {
 					// execute callback and refresh the parent list
-					refreshParent(parent, children);
+					refreshParent(parentModel, children);
 				}
 				
 			});

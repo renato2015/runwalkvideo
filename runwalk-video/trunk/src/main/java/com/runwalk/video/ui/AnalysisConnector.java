@@ -7,35 +7,26 @@ import java.util.EventListener;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 
-import com.google.common.collect.Iterables;
-import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Recording;
-import com.runwalk.video.entities.RecordingStatus;
+import com.runwalk.video.model.AnalysisModel;
 
-public class AnalysisConnector implements Connector<Analysis> {
+public class AnalysisConnector implements Connector<AnalysisModel> {
 
 	/** The list which contains the elements being observed via this {@link ObservableElementList.Connector}. */
-	private ObservableElementList<? extends Analysis> list;
+	private ObservableElementList<? extends AnalysisModel> list;
 
 	/** The PropertyChangeListener to install on each list element. */
 	protected final PropertyChangeListener propertyChangeListener = createPropertyChangeListener();
 
-	public EventListener installListener(Analysis element) {
+	public EventListener installListener(AnalysisModel element) {
 		element.addPropertyChangeListener(propertyChangeListener);
-		for (Recording recording : element.getRecordings()) {
-			recording.addPropertyChangeListener(propertyChangeListener);
-		}
 		return propertyChangeListener;
 	}
 
-	public void uninstallListener(Analysis element, EventListener listener) {
+	public void uninstallListener(AnalysisModel element, EventListener listener) {
 		element.removePropertyChangeListener(propertyChangeListener);
-		for (Recording recording : element.getRecordings()) {
-			recording.removePropertyChangeListener(propertyChangeListener);
-		}
 	}
 
-	public void setObservableElementList(ObservableElementList<? extends Analysis> list) {
+	public void setObservableElementList(ObservableElementList<? extends AnalysisModel> list) {
 		this.list = list;
 	}
 
@@ -53,25 +44,10 @@ public class AnalysisConnector implements Connector<Analysis> {
 	public class PropertyChangeHandler implements PropertyChangeListener {
 		@SuppressWarnings( "rawtypes" )
 		public void propertyChange(PropertyChangeEvent event) {
-			Analysis analysis = null;
-			boolean dirty = true;
-			if (event.getSource() instanceof Recording) {
-				analysis = ((Recording) event.getSource()).getAnalysis();
-				if (event.getPropertyName().equals(Recording.RECORDING_STATUS)) {
-					RecordingStatus newState = (RecordingStatus) event.getNewValue();
-					// events that set a recording's state to an erroneous state should not make it too dirty
-					dirty = !newState.isErroneous();
-				}
-			} else {
-				analysis = (Analysis) event.getSource();
-				if (event.getPropertyName().equals(Analysis.RECORDING_COUNT)) {
-					// a recording was added, listen for changes..
-					Recording lastRecording = Iterables.getLast(analysis.getRecordings());
-					lastRecording.addPropertyChangeListener(propertyChangeListener);
-				}
-			}
-			analysis.getClient().setDirty(dirty);
-			((ObservableElementList) list).elementChanged(analysis);
+			AnalysisModel analysisModel = null;
+			analysisModel = (AnalysisModel) event.getSource();
+			analysisModel.setDirty(true);
+			((ObservableElementList) list).elementChanged(analysisModel);
 		}
 	}
 

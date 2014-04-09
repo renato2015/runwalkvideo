@@ -30,8 +30,6 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @Table(name="phppos_analysis")
 public class Analysis extends SerializableEntity<Analysis> {
 
-	public final static String RECORDING_COUNT = "recordingCount";
-	
 	public final static String COMMENTS = "comments";
 	
 	public final static String ARTICLE = "article";
@@ -103,7 +101,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 	
 	public void setCreationDate(Date creationDate) {
-		firePropertyChange(CREATION_DATE, this.creationDate, this.creationDate = creationDate);
+		this.creationDate = creationDate;
 	}
 
 	public String getComments() {
@@ -128,10 +126,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	 * @param recording The recording to add
 	 */
 	public boolean addRecording(Recording recording) {
-		int oldSize = getRecordingCount();
-		boolean result = getRecordings().add(recording);
-		firePropertyChange(RECORDING_COUNT, oldSize, getRecordingCount());
-		return result;
+		return getRecordings().add(recording);
 	}	
 	
 	/**
@@ -141,14 +136,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	 * @return <code>true</code> if the recording was removed
 	 */
 	public boolean removeRecording(Recording recording) {
-		int oldSize = getRecordingCount();
-		boolean result = getRecordings().remove(recording);
-		firePropertyChange(RECORDING_COUNT, oldSize, getRecordingCount());
-		return result;
-	}
-	
-	public int getRecordingCount() {
-		return getRecordings().size();
+		return getRecordings().remove(recording);
 	}
 	
 	public Long getId() {
@@ -207,19 +195,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
 	}
 
-	public boolean isRecordingsEmpty() {
-		return getRecordings() != null && !getRecordings().isEmpty();
-	}
-	
-	public boolean isRecorded() {
-		for (Recording recording : getRecordings()) {
-			if (recording.isRecorded()) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public enum Progression {
 		NOK, CAVA, OK
 	}

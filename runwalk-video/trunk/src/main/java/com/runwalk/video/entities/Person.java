@@ -56,7 +56,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public void setName(String name) {
-		firePropertyChange(NAME, this.name, this.name = name);
+		this.name = name;
 	}
 
 	public void setGender(Gender gender) {
@@ -116,6 +116,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public void setFirstname(String firstname) {
+		this.firstname = firstname;
 		firePropertyChange(FIRSTNAME, this.firstname, this.firstname = firstname);
 	}
 

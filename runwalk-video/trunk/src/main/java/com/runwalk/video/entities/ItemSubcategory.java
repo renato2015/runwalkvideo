@@ -15,6 +15,7 @@ import javax.persistence.Table;
 public class ItemSubcategory implements Serializable {
 	
 	@Id
+	@Column(name="id")
 	private Long id;
 
 	@ManyToOne

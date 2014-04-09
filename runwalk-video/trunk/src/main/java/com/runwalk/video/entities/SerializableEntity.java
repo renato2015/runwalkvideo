@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 
 import com.runwalk.video.core.PropertyChangeSupport;
 
@@ -17,15 +16,10 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 
 	public static final String ID = "id";
 	
-	public static final String DIRTY = "dirty";
-	
 	@Id
 	@Column(name = ID)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	@Transient
-	private boolean dirty;
 
 	public Long getId() {
 		return this.id;
@@ -33,18 +27,6 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 	
 	protected void setId(Long id) {
 		this.id = id;
-	}
-	
-	public void setDirty(boolean dirty) {
-		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
-	}
-	
-	public boolean isDirty() {
-		return this.dirty;
-	}	
-	
-	public boolean isPersisted() {
-		return id == null;
 	}
 	
 }

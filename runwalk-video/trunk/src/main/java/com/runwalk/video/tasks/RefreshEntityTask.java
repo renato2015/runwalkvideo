@@ -12,8 +12,9 @@ import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.model.AbstractEntityModel;
 
-public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends AbstractTask<List<T>, Void> {
+public class RefreshEntityTask<T extends AbstractEntityModel<?>> extends AbstractTask<List<T>, Void> {
 
 	private final EventList<T> itemList;
 
@@ -47,11 +48,12 @@ public class RefreshEntityTask<T extends SerializableEntity<? super T>> extends 
 	protected List<T> doInBackground() throws Exception {
 		message("startMessage");
 		List<T> result = null;
+		// FIXME should be item dao
 		Dao<T> itemDao = getDaoService().getDao(getItemClass());
 		// get the last added entities
 		result = itemDao.getNewEntities(findMaxEntityId());
 		T selectedItem = itemDao.getById(getItem().getId());
-		// add selected client to the end
+		// add selected item to the end of the list
 		result.add(selectedItem);
 		message("endMessage", result.size());
 		return result;

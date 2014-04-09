@@ -17,10 +17,13 @@ import ca.odell.glazedlists.GlazedLists;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.AnalysisDao;
+import com.runwalk.video.dao.jpa.ClientDao;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.glazedlists.LazyCollectionModel;
+import com.runwalk.video.model.AnalysisModel;
+import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.ui.AnalysisConnector;
@@ -34,10 +37,10 @@ import com.runwalk.video.ui.AnalysisConnector;
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
-	private final AbstractTablePanel<Client> clientTablePanel;
+	private final AbstractTablePanel<ClientModel> clientTablePanel;
 	private final AnalysisTablePanel analysisTablePanel;
 
-	public RefreshTask(DaoService daoService, AbstractTablePanel<Client> clientTablePanel, AnalysisTablePanel analysisTablePanel) {
+	public RefreshTask(DaoService daoService, AbstractTablePanel<ClientModel> clientTablePanel, AnalysisTablePanel analysisTablePanel) {
 		super("refresh");
 		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
@@ -52,9 +55,10 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			List<City> allCities = getDaoService().getDao(City.class).getAll();
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
 			// get all clients from the db
-			List<Client> allClients = getDaoService().getDao(Client.class).getAll();
-			final DebugList<Client> clientList = new DebugList<Client>();
-			clientList.addAll(allClients);
+			ClientDao clientDao = getDaoService().getDao(Client.class);
+			List<ClientModel> clientModels = clientDao.getAllAsModels();
+			final DebugList<ClientModel> clientList = new DebugList<ClientModel>();
+			clientList.addAll(clientModels);
 			clientList.setLockCheckingEnabled(true);
 			//final EventList<Item> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
@@ -62,44 +66,30 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				public void run() {
 					RunwalkVideoApp.getApplication().getClientInfoPanel().setItemList(cityList);
 					// get client table panel and inject data
-					getClientTablePanel().setItemList(clientList, Client.class);
-					final EventList<Client> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
+					getClientTablePanel().setItemList(clientList, ClientModel.class);
+					final EventList<ClientModel> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
 					
 					final AnalysisDao analysisDao = daoService.getDao(Analysis.class);
-					CollectionList<Client, Analysis> selectedClientAnalyses = new CollectionList<Client, Analysis>(selectedClients, 
-							new LazyCollectionModel<Client, Analysis>(getTaskService(), Client.ANALYSES) {
+					CollectionList<ClientModel, AnalysisModel> selectedClientAnalyses = new CollectionList<ClientModel, AnalysisModel>(selectedClients, 
+							new LazyCollectionModel<Client, Analysis, ClientModel, AnalysisModel>(getTaskService(), Client.ANALYSES) {
 						
-						public List<Analysis> getLoadedChildren(Client client) {
-							return client.getAnalyses();
+						public List<AnalysisModel> getLoadedChildren(ClientModel client) {
+							return client.getAnalysisModels();
 						}
 						
                         public List<Analysis> loadChildren(Client client) {
                             return analysisDao.getAnalysesByClient(client);
                         }
                        
-                        public void refreshParent(Client client, List<Analysis> analyses) {
-                        	for (Analysis analysis : analyses) {
-                        		analysis.setClient(client);
-							}
-                        	client.setAnalyses(analyses);
-                            getClientTablePanel().getObservableElementList().elementChanged(client);
+                        public void refreshParent(ClientModel clientModel, List<Analysis> analyses) {
+                        	clientModel.addAnalysisModels(analyses);
+                            getClientTablePanel().getObservableElementList().elementChanged(clientModel);
                         }
 
                     });
 					// get analysis tablepanel and inject data
 					//getAnalysisTablePanel().setArticleList(articleList);
 					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
-					// create pipeline for overview tablepanel
-					/*final EventList<Client> deselectedClients = getClientTablePanel().getEventSelectionModel().getDeselected();
-					final CollectionList<Client, Analysis> deselectedClientAnalyses = new CollectionList<Client, Analysis>(deselectedClients, model);
-					// get analysis overview tablepanel and inject data
-					final CompositeList<Analysis> analysesOverview = new CompositeList<Analysis>(selectedClientAnalyses.getPublisher(), selectedClientAnalyses.getReadWriteLock());
-					analysesOverview.addMemberList(selectedClientAnalyses);
-					analysesOverview.addMemberList(deselectedClientAnalyses);
-					// create the overview with unfinished analyses
-					getAnalysisOverviewTablePanel().setItemList(analysesOverview, new AnalysisConnector());*/
-					// create pipeline for redord tablepanel
-					//ThreadProxyEventList<Client> taskProxyEventList = new TaskProxyEventList<Client> (getTaskService(), selectedClients);
 				}
 
 			});
@@ -117,7 +107,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return daoService;
 	}
 	
-	private AbstractTablePanel<Client> getClientTablePanel() {
+	private AbstractTablePanel<ClientModel> getClientTablePanel() {
 		return clientTablePanel;
 	}
 

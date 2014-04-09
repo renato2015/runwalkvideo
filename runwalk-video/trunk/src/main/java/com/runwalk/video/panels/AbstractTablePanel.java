@@ -137,35 +137,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 	}
 
 	/**
-	 * Find an item with the same object identity as the given item
-	 * @param item The item's object identitty to look for
-	 * @return The found item or <code>null</code> if not in the list
-	 */
-	public T findItem(T item) {
-		T result = null;
-		int index = getItemList().indexOf(item); 
-		if (index > -1) {
-			result = getItemList().get(index);
-		}
-		return result;
-	}
-
-	/**
-	 * Find an item using the identity of the given item
-	 * and replace it.
-	 * 
-	 * Calling this method implies that the result of 
-	 * {@link #equals(Object)} is the same for the item 
-	 * already in the list and the given item.
-	 * 
-	 * @param item The item to be replaced
-	 * @return The old item if successful, otherwise <code>null</code>
-	 */
-	public T refreshItem(T item) {
-		return refreshItem(item, item);
-	}
-
-	/**
 	 * Replace the old item with the given new one.
 	 * Use this method or the one argument version depending
 	 * on how the {@link #equals(Object)} is implemented 
