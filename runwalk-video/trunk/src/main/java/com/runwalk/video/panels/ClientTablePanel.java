@@ -4,7 +4,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 
 import javax.persistence.NoResultException;
 import javax.swing.BorderFactory;
@@ -178,15 +177,14 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 			Dao<Client> dao = getDaoService().getDao(Client.class);
 			for(ClientModel clientModel : getItemList()) {
 				if (clientModel.isDirty()) {
-					//Client client = clientModel.getEntity();
-					Client mergedClient = dao.merge(clientModel.getEntity());
-					clientModel.setEntity(mergedClient);
+					Client client = clientModel.getEntity();
+					Client mergedClient = dao.merge(client);
 					// set dirty flag to false again
 					clientModel.setDirty(false);
 					// set version field on old client
-//					if (mergedClient.getVersion() != client.getVersion()) {
-//						client.incrementVersion();
-//					}
+					if (mergedClient.getVersion() != client.getVersion()) {
+						client.incrementVersion();
+					}
 				}
 			}
 		} finally {
@@ -280,9 +278,8 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 		return result;
 	}
 
-	// TODO should be reviewed..
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
-	public RefreshEntityTask<ClientModel> refreshClient() {
+	public RefreshEntityTask<Client> refreshClient() {
 		final ClientModel selectedModel = getSelectedItem();
 		if (selectedModel.isDirty() && isDirty()) {
 			int n = JOptionPane.showConfirmDialog(
@@ -293,28 +290,20 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 					JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
 		}
-		return new RefreshEntityTask<ClientModel>(getDaoService(), getObservableElementList(), ClientModel.class, getSelectedItem()) {
+		return new RefreshEntityTask<Client>(getDaoService(), Client.class, getSelectedItem().getEntity()) {
 
 			@Override
-			protected List<ClientModel> doInBackground() throws Exception {
-				List<ClientModel> clientModelList = super.doInBackground();
+			protected Client doInBackground() throws Exception {
+				Client client = super.doInBackground();
 				// refresh file cache for newly added clients
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					for (ClientModel clientModel : clientModelList) {
-						if (!getItemList().contains(clientModel)) {
-							getItemList().add(clientModel);
-						} else {
-							// selected item is always the last in the list
-							refreshItem(selectedModel, clientModel);
-							clientModel.setDirty(false);
-						}
-						setProgress(clientModelList.indexOf(clientModel), 0, clientModelList.size());
-					}
+					selectedModel.setEntity(client);
+					selectedModel.setDirty(false);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
-				return clientModelList;
+				return client;
 			}
 
 			@Override

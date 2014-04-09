@@ -24,12 +24,6 @@ public class Client extends Person {
 	// discriminator value for customer
 	public static final String PERSON_TYPE = "0";
 	
-	public static final String ANALYSES = "analyses";
-	/**
-	 * 'Synthetic' property to allow firing events when adding/removing analyses
-	 */
-	public static final String ORGANIZATION = "organization";
-	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	

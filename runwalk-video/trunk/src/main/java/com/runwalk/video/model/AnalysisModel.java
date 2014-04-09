@@ -17,10 +17,15 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 
 	public static final String CREATION_DATE = "creationDate";
 
-	private static final String PROGRESSION = "progression";
+	public static final String PROGRESSION = "progression";
+	
+	public static final String COMMENTS = "comments";
 
-	public AnalysisModel(Analysis entity) {
+	private ClientModel clientModel;
+
+	public AnalysisModel(ClientModel clientModel, Analysis entity) {
 		super(entity);
+		this.clientModel = clientModel;
 	}
 	
 	/**
@@ -111,7 +116,12 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 		firePropertyChange(PROGRESSION, getEntity().getProgression(), progression);
 		getEntity().setProgression(progression);
 	}
-
+	
+	public void setComments(String comments) {
+		firePropertyChange(COMMENTS, getEntity().getComments(), comments);
+		getEntity().setComments(comments);
+	}
+	
 	public Long getDuration() {
 		Recording recording = null;
 		if (!getRecordings().isEmpty()) {
@@ -119,6 +129,16 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 			return recording.getDuration();
 		}
 		return isFeedbackRecord() ? null : 0L;
+	}
+
+	@Override
+	public void setDirty(boolean dirty) {
+		clientModel.setDirty(dirty);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return clientModel.isDirty();
 	}
 	
 }

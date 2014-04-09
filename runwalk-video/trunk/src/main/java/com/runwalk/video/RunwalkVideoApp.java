@@ -2,7 +2,6 @@ package com.runwalk.video;
 
 import java.awt.AWTException;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -75,8 +74,6 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	public static final String APP_MAIN_FONT = "Application.mainFont";
 
 	private final static Logger LOGGER = Logger.getLogger(RunwalkVideoApp.class);
-
-	private final static int MAIN_PANEL_MIN_HEIGHT = 600;
 
 	private static final String SAVE_NEEDED = "saveNeeded";
 
@@ -354,7 +351,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel());
+		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getVideoFileManager());
 	}
 
 	@org.jdesktop.application.Action

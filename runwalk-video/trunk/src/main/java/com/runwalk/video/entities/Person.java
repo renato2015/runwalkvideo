@@ -80,7 +80,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 
 	public void setEmailAddress(String emailAddress) {
-		firePropertyChange(EMAIL, this.emailAddress, this.emailAddress = emailAddress);
+		this.emailAddress = emailAddress;
 	}
 	
 	public int getVersion() {
@@ -117,7 +117,6 @@ public abstract class Person extends SerializableEntity<Person> {
 
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
-		firePropertyChange(FIRSTNAME, this.firstname, this.firstname = firstname);
 	}
 
 	public Address getAddress() {
@@ -128,7 +127,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 	
 	public void setAddress(Address address) {
-		firePropertyChange(ADDRESS, this.address, this.address = address);
+		this.address = address;
 	}
 
 	@Override

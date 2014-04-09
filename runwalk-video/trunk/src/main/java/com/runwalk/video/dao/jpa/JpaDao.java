@@ -92,12 +92,6 @@ public class JpaDao<E> extends AbstractDao<E> {
 		.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
-	
-	public <T> List<E> getNewEntities(T id) {
-		TypedQuery<E> query = createEntityManager().createQuery("SELECT e FROM " + getTypeParameter().getSimpleName() + " e WHERE e.id > :id", getTypeParameter())
-		.setParameter("id", id).setHint(QueryHints.REFRESH, HintValues.TRUE);
-		return query.getResultList();
-	}
 
 	public E getById(Object id) {
 		TypedQuery<E> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +

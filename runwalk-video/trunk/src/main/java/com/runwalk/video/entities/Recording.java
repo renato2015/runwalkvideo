@@ -27,15 +27,9 @@ import com.runwalk.video.util.AppUtil;
 @Table(name="movies")
 public class Recording extends SerializableEntity<Recording> {
 	
-	public static final String RECORDED = "recorded";
-
-	public static final String COMPRESSED = "compressed";
-
 	public static final String RECORDING_STATUS = "recordingStatus";
 
 	public static final String DURATION = "duration";
-
-	public static final String KEYFRAME_COUNT = "keyframeCount";
 
 	public static final String VIDEO_CONTAINER_FORMAT = ".avi";
 	
@@ -107,7 +101,6 @@ public class Recording extends SerializableEntity<Recording> {
 	
 	public void addKeyframe(Keyframe keyframe) {
 		keyframes.add(keyframe);
-		firePropertyChange(KEYFRAME_COUNT, getKeyframeCount() - 1, getKeyframeCount());
 	}
 
 	public void sortKeyframes() {
@@ -149,8 +142,6 @@ public class Recording extends SerializableEntity<Recording> {
 	 */
 	public void setRecordingStatus(RecordingStatus recordingStatus) {
 		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE && this.recordingStatus != null) {
-			firePropertyChange(RECORDING_STATUS, this.recordingStatus, this.recordingStatus = recordingStatus);
-			
 			if (!recordingStatus.isErroneous()) {
 				// don't change the statuscode if it is erroneous.
 				this.statusCode = recordingStatus.getCode();

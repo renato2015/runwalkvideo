@@ -109,7 +109,7 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 
 	public void setComments(String comments) {
-		firePropertyChange(COMMENTS, this.comments, this.comments = comments);
+		this.comments = comments;
 	}
 	
 	public void setArticle(Item article) {

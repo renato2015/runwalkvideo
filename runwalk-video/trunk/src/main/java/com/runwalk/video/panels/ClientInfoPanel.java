@@ -146,7 +146,7 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		JTextField organisationField = new JTextField();
 		organisationField.getDocument().addUndoableEditListener(undoListener);
-		BeanProperty<ClientTablePanel, String> organization = BeanProperty.create("selectedItem.organization");
+		BeanProperty<ClientTablePanel, String> organization = BeanProperty.create("selectedItem.entity.organization");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, organization, organisationField, TEXT);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
@@ -376,7 +376,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		zipCodeCompletion.setBeepOnStrictViolation(false);
 		zipCodeField.setRenderer(new CityInfoRenderer());
 
-		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.address.city");
+		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.entity.address.city");
 		BeanProperty<JComboBox<City>, City> selectedItem = BeanProperty.create("selectedItem");
 		
 

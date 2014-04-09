@@ -23,6 +23,4 @@ public interface Dao<E> {
 
 	void deleteById(Object id);
 
-	<T> List<E> getNewEntities(T id);
-
 }

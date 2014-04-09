@@ -154,7 +154,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYER_CONTROLS_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recordingsEmpty && selectedItem.feedbackId == null}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recordingsEmpty && selectedItem.feedbackRecord}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, analysisTablePanel, recorded, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
