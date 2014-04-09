@@ -22,6 +22,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.glazedlists.LazyCollectionModel;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.panels.AbstractTablePanel;
@@ -39,12 +40,15 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 	private final DaoService daoService;
 	private final AbstractTablePanel<ClientModel> clientTablePanel;
 	private final AnalysisTablePanel analysisTablePanel;
+	private final VideoFileManager videoFileManager;
 
-	public RefreshTask(DaoService daoService, AbstractTablePanel<ClientModel> clientTablePanel, AnalysisTablePanel analysisTablePanel) {
+	public RefreshTask(DaoService daoService, AbstractTablePanel<ClientModel> clientTablePanel, AnalysisTablePanel analysisTablePanel,
+			VideoFileManager videoFileManager) {
 		super("refresh");
 		this.daoService = daoService;
 		this.clientTablePanel = clientTablePanel;
 		this.analysisTablePanel = analysisTablePanel;
+		this.videoFileManager = videoFileManager;
 	}
 
 	protected Boolean doInBackground() {
@@ -56,11 +60,10 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
 			// get all clients from the db
 			ClientDao clientDao = getDaoService().getDao(Client.class);
-			List<ClientModel> clientModels = clientDao.getAllAsModels();
+			List<ClientModel> clientModels = GlazedLists.eventList(clientDao.getAllAsModels());
 			final DebugList<ClientModel> clientList = new DebugList<ClientModel>();
 			clientList.addAll(clientModels);
 			clientList.setLockCheckingEnabled(true);
-			//final EventList<Item> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
@@ -71,24 +74,29 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					
 					final AnalysisDao analysisDao = daoService.getDao(Analysis.class);
 					CollectionList<ClientModel, AnalysisModel> selectedClientAnalyses = new CollectionList<ClientModel, AnalysisModel>(selectedClients, 
-							new LazyCollectionModel<Client, Analysis, ClientModel, AnalysisModel>(getTaskService(), Client.ANALYSES) {
+							new LazyCollectionModel<Client, Analysis, ClientModel, AnalysisModel>(getTaskService(), ClientModel.ANALYSES) {
 						
 						public List<AnalysisModel> getLoadedChildren(ClientModel client) {
 							return client.getAnalysisModels();
 						}
 						
                         public List<Analysis> loadChildren(Client client) {
-                            return analysisDao.getAnalysesByClient(client);
+                        	List<Analysis> analysesByClient = analysisDao.getAnalysesByClient(client);
+                        	getVideoFileManager().refreshCache(analysesByClient);
+							return analysesByClient;
                         }
                        
                         public void refreshParent(ClientModel clientModel, List<Analysis> analyses) {
-                        	clientModel.addAnalysisModels(analyses);
-                            getClientTablePanel().getObservableElementList().elementChanged(clientModel);
+                        	try {
+                        		clientList.getReadWriteLock().writeLock().lock();
+                        		clientModel.addAnalysisModels(analyses);
+                        		getClientTablePanel().getObservableElementList().elementChanged(clientModel);
+                        	} finally {
+                        		clientList.getReadWriteLock().writeLock().unlock();
+                        	}
                         }
 
                     });
-					// get analysis tablepanel and inject data
-					//getAnalysisTablePanel().setArticleList(articleList);
 					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
 				}
 
@@ -115,4 +123,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return analysisTablePanel;
 	}
 
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
+	
 }

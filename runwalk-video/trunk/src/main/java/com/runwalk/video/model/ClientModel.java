@@ -10,22 +10,29 @@ import com.runwalk.video.entities.Client;
 
 public class ClientModel extends AbstractEntityModel<Client> {
 	
-	public static final String NAME = "last_name";
-	
+	public static final String NAME = "name";
+	public static final String FIRSTNAME = "firstname";
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
-	
 	public static final String ANALYSIS_COUNT = "analysisCount";
+	public static final String ANALYSES = "analyses";
 	
 	private Date lastAnalysisDate;
 	
 	private List<AnalysisModel> analysisModels = Lists.newArrayList();
 	
-	public ClientModel(Client client) {
+	public ClientModel(Client client, boolean update) {
 		super(client);
+		if (update) {
+			updateLastAnalysisDate();
+		}
+	}
+	
+	public ClientModel(Client client) {
+		this(client, true);
 	}
 	
 	public ClientModel(Client client, Date lastAnalysisDate) {
-		this(client);
+		this(client, false);
 		this.lastAnalysisDate = lastAnalysisDate;
 	}
 	
@@ -43,9 +50,11 @@ public class ClientModel extends AbstractEntityModel<Client> {
 		for (Analysis analysis : analyses) {
 			if (getEntity().equals(analysis.getClient())) {
 				analysis.setClient(getEntity());
-				addAnalysisModel(new AnalysisModel(analysis));
+				getAnalyses().add(analysis);
+				analysisModels.add(new AnalysisModel(this, analysis));
 			}
 		}
+		getEntity().setAnalyses(analyses);
 	}
 	
 	public boolean removeAnalysisModel(AnalysisModel analysisModel) {
@@ -107,8 +116,24 @@ public class ClientModel extends AbstractEntityModel<Client> {
 		getEntity().setName(name);
 	}
 	
+	public void setFirstname(String firstname) {
+		firePropertyChange(FIRSTNAME, getEntity().getFirstname(), firstname);
+		getEntity().setFirstname(firstname);
+	}
+	
 	public String getOrganization() {
 		return getEntity().getOrganization();
 	}
 
+	@Override
+	public void setEntity(Client entity) {
+		updateLastAnalysisDate();
+		super.setEntity(entity);
+	}
+
+	@Override
+	public String toString() {
+		return getEntity().toString();
+	}
+	
 }

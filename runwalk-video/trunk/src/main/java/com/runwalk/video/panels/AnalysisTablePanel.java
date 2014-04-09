@@ -259,7 +259,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 				Analysis result = event.getValue();
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					AnalysisModel analysisModel = new AnalysisModel(result);
+					AnalysisModel analysisModel = new AnalysisModel(selectedModel, result);
 					selectedModel.addAnalysisModel(analysisModel);
 					setSelectedItemRow(analysisModel);
 				} finally {
