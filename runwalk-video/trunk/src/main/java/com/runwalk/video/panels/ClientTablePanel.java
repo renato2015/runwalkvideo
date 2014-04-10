@@ -269,15 +269,6 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 		}
 	}
 
-	@Override
-	public ClientModel refreshItem(ClientModel oldClient, ClientModel newClient) {
-		ClientModel result = super.refreshItem(oldClient, newClient);
-		if (result != null) {
-			getVideoFileManager().refreshCache(newClient.getEntity().getAnalyses());
-		}
-		return result;
-	}
-
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
 	public RefreshEntityTask<Client> refreshClient() {
 		final ClientModel selectedModel = getSelectedItem();

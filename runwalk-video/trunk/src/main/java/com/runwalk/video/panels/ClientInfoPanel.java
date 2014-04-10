@@ -71,7 +71,7 @@ public class ClientInfoPanel extends AbstractPanel {
 
 	/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
 	private final BindingListener changeListener = new AbstractBindingListener() {
-
+		
 		@Override
 		public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
 			ClientTablePanel clientTablePanel = (ClientTablePanel) binding.getSourceObject();
@@ -376,7 +376,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		zipCodeCompletion.setBeepOnStrictViolation(false);
 		zipCodeField.setRenderer(new CityInfoRenderer());
 
-		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.entity.address.city");
+		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.city");
 		BeanProperty<JComboBox<City>, City> selectedItem = BeanProperty.create("selectedItem");
 		
 

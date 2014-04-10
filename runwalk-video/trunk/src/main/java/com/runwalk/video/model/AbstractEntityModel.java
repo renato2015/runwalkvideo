@@ -45,6 +45,7 @@ public class AbstractEntityModel<T extends SerializableEntity<? super T>> implem
 	}
 	
 	public void setEntity(T entity) {
+		// won't fire cuz most of the time identity is the same??
 		firePropertyChange(ENTITY, this.entity, this.entity = entity);
 	}
 

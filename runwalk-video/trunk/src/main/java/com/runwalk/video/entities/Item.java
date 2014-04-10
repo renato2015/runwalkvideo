@@ -1,6 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,6 +59,21 @@ public class Item implements Serializable {
 	
 	public ItemSize getItemSize() {
 		return itemSize;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj != null && obj.getClass() == getClass()) {
+			Item other = (Item) obj;
+			return Objects.equals(getItemNumber(), other.getItemNumber())
+				&& Objects.equals(getId(), other.getId());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getItemNumber(), getId());
 	}
 
 	@Override

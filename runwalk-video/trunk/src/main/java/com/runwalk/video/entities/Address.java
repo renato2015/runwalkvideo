@@ -7,11 +7,9 @@ import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.jdesktop.application.AbstractBean;
-
 @Embeddable
 @SuppressWarnings("serial")
-public class Address extends AbstractBean implements Serializable {
+public class Address implements Serializable {
 	
 	@Column(name = "address_1")
 	private String address;
@@ -28,7 +26,7 @@ public class Address extends AbstractBean implements Serializable {
 	}
 	
 	public void setAddress(String address) {
-		this.firePropertyChange("address", this.address, this.address = address);
+		this.address = address;
 	}
 	
 	public City getCity() {
@@ -36,7 +34,7 @@ public class Address extends AbstractBean implements Serializable {
 	}
 	
 	public void setCity(City city) {
-		this.firePropertyChange("city", this.city, this.city = city);
+		this.city = city;
 	}
 	
 	public String getPostalcode() {

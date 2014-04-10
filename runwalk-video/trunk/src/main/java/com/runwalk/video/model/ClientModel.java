@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Analysis;
+import com.runwalk.video.entities.City;
 import com.runwalk.video.entities.Client;
 
 public class ClientModel extends AbstractEntityModel<Client> {
@@ -15,6 +16,7 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	public static final String LAST_ANALYSIS_DATE = "lastAnalysisDate";
 	public static final String ANALYSIS_COUNT = "analysisCount";
 	public static final String ANALYSES = "analyses";
+	public static final String CITY = "city";
 	
 	private Date lastAnalysisDate;
 	
@@ -119,6 +121,15 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	public void setFirstname(String firstname) {
 		firePropertyChange(FIRSTNAME, getEntity().getFirstname(), firstname);
 		getEntity().setFirstname(firstname);
+	}
+	
+	public void setCity(City city) {
+		firePropertyChange(CITY, getEntity().getAddress().getCity(), city);
+		getEntity().getAddress().setCity(city);
+	}
+	
+	public City getCity() {
+		return getEntity().getAddress().getCity();
 	}
 	
 	public String getOrganization() {
