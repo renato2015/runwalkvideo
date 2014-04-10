@@ -136,30 +136,6 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		return selectedItem;
 	}
 
-	/**
-	 * Replace the old item with the given new one.
-	 * Use this method or the one argument version depending
-	 * on how the {@link #equals(Object)} is implemented 
-	 * for the {@link Class} at hand.
-	 * 
-	 * @param oldItem The old item to replace
-	 * @param newItem The new item
-	 * @return The old item if successful, otherwise <code>null</code>
-	 * 
-	 * @see #refreshItem(Comparable)
-	 */
-	public T refreshItem(T oldItem, T newItem) {
-		T result = null;
-		int itemIndex = getItemList().indexOf(oldItem);
-		if (itemIndex != -1) {
-			result = getItemList().set(itemIndex, newItem);
-			if (newItem.equals(getSelectedItem())) {
-				setSelectedItem(newItem);
-			}
-		}
-		return result;
-	}
-
 	public JTable getTable() {
 		return table;
 	}

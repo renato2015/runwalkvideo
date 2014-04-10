@@ -1,6 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -132,12 +133,7 @@ public abstract class Person extends SerializableEntity<Person> {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getFirstname() == null) ? 0 : getFirstname().hashCode());
-		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
-		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-		return result;
+		return Objects.hash(getFirstname(), getName(), getId());
 	}
 
 	@Override
@@ -145,9 +141,13 @@ public abstract class Person extends SerializableEntity<Person> {
 		boolean result = false;
 		if (obj != null && getClass() == obj.getClass()) {
 			Client other = (Client) obj;
-			result = getFirstname() != null ? getFirstname().equals(other.getFirstname()) : other.getFirstname() == null;
-			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
-			result &= getId() != null ? getId().equals(other.getId()) : result;
+			return Objects.equals(getFirstname(), other.getFirstname()) &&
+				Objects.equals(getName(), other.getName()) &&
+				Objects.equals(getBirthdate(), other.getBirthdate()) &&
+				Objects.equals(getEmailAddress(), other.getEmailAddress()) &&
+				Objects.equals(getAddress(), other.getAddress()) &&
+				Objects.equals(getGender(), other.getGender()) &&
+				Objects.equals(getId(), other.getId());
 		}
 		return result;
 	}
