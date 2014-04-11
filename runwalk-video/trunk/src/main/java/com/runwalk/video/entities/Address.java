@@ -7,6 +7,8 @@ import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.google.common.base.Objects;
+
 @Embeddable
 @SuppressWarnings("serial")
 public class Address implements Serializable {
@@ -44,6 +46,23 @@ public class Address implements Serializable {
 	public void setPostalcode(String postalcode) {
 		this.postalcode = postalcode;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj != null && obj.getClass() == getClass()) {
+			Address other = (Address) obj;
+			return Objects.equal(getAddress(), other.getAddress()) &&
+				Objects.equal(getPostalcode(), other.getPostalcode()) &&
+				Objects.equal(getCity(), other.getCity());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getPostalcode(), getAddress(), getCity());
+	}
+	
 	
 	
 	
