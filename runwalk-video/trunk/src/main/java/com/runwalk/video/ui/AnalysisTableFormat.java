@@ -6,10 +6,8 @@ import org.jdesktop.application.ResourceMap;
 
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
-import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Item;
-import com.runwalk.video.entities.Recording;
 import com.runwalk.video.model.AnalysisModel;
 
 public class AnalysisTableFormat extends AbstractTableFormat<AnalysisModel> implements WritableTableFormat<AnalysisModel> {
@@ -21,7 +19,7 @@ public class AnalysisTableFormat extends AbstractTableFormat<AnalysisModel> impl
 	public Object getColumnValue(final AnalysisModel analysisModel, int column) {
 		switch(column) {
 		case 0: return analysisModel.getCreationDate();
-		case 1: return analysisModel.getArticle();
+		case 1: return analysisModel.getItem();
 		case 2: return analysisModel.getProgression();
 		case 3: return analysisModel.getDuration();	
 		case 4: return analysisModel.getComments();
@@ -37,7 +35,7 @@ public class AnalysisTableFormat extends AbstractTableFormat<AnalysisModel> impl
 
 	public AnalysisModel setColumnValue(AnalysisModel analysisModel, Object editedValue, int column) {
 		if (editedValue instanceof Item) {
-			analysisModel.setArticle((Item) editedValue);
+			analysisModel.setItem((Item) editedValue);
 		}
 		if (column == 0) {
 			analysisModel.setCreationDate((Date) editedValue);
