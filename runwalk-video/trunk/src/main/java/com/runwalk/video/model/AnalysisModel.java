@@ -82,7 +82,7 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 		return getEntity().getComments();
 	}
 
-	public Item getArticle() {
+	public Item getItem() {
 		return getEntity().getArticle();
 	}
 
@@ -102,7 +102,7 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 		return getEntity().getTokenId();
 	}
 
-	public void setArticle(Item article) {
+	public void setItem(Item article) {
 		firePropertyChange(ARTICLE, getEntity().getArticle(), article);
 		getEntity().setArticle(article);
 	}

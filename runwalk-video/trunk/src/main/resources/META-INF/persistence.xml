@@ -11,6 +11,9 @@
 		<class>com.runwalk.video.entities.ItemCategory</class>
 		<class>com.runwalk.video.entities.ItemSize</class>
 		<class>com.runwalk.video.entities.ItemSubcategory</class>
+		<class>com.runwalk.video.entities.SuspendedSale</class>
+		<class>com.runwalk.video.entities.SuspendedSaleItem</class>
+		<class>com.runwalk.video.entities.SuspendedSaleItemTax</class>
 		<class>com.runwalk.video.entities.Analysis</class>
 		<class>com.runwalk.video.entities.Recording</class>
 		<class>com.runwalk.video.entities.Keyframe</class>

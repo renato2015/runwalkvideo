@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -18,8 +19,8 @@ import javax.swing.event.UndoableEditListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.Task;
+import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
@@ -39,6 +40,7 @@ import ca.odell.glazedlists.swing.AutoCompleteSupport.AutoCompleteCellEditor;
 
 import com.google.common.collect.Iterables;
 import com.runwalk.video.dao.DaoService;
+import com.runwalk.video.dao.jpa.ItemDao;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Client;
@@ -48,6 +50,7 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
@@ -60,21 +63,15 @@ import com.runwalk.video.util.AppUtil;
 @SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
-	private static final int WEEKS_AHEAD = 3;
-
-	private static final String COMPRESSION_ENABLED = "compressionEnabled";
-
+	public static final int WEEKS_AHEAD = 3;
+	public static final String COMPRESSION_ENABLED = "compressionEnabled";
 	public static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
-	
 	private static final String DELETE_ANALYSIS_ACTION = "deleteAnalysis";
-
 	private static final String ADD_ANALYSIS_ACTION = "addAnalysis";
-
 	private static final String SELECTED_ITEM_RECORDED = "selectedItemRecorded";
-
 	private static final String ADD_ANALYSIS_FOR_FEEDBACK_ENABLED = "addAnalysisForFeedbackEnabled";
-
 	private static final String ADD_ANALYSIS_FOR_FEEDBACK_ACTION = "addAnalysisForFeedback";
+	private static final String FIND_ITEM_BY_NUMBER_ACTION = "findItemByNumber";
 
 	private final JTextArea comments;
 
@@ -348,6 +345,21 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
 				getSelectedItem().getRecordings(), transcoder);
 	}
+	
+	public Task<Item, Void> findItemByNumber(final ActionEvent event) {
+		return new AbstractTask<Item, Void>(FIND_ITEM_BY_NUMBER_ACTION) {
+
+			@Override
+			protected Item doInBackground() throws Exception {
+				@SuppressWarnings("unchecked")
+				JComboBox<Item> itemComboBox = (JComboBox<Item>) event.getSource();
+				String itemNumber = itemComboBox.getEditor().getItem().toString();
+				ItemDao itemDao = daoService.getDao(Item.class);
+				return itemDao.getItemByItemNumber(itemNumber);
+			}
+			
+		};
+	}
 
 	public void setArticleList(EventList<Item> articleList) {
 		if (this.articleList != null) {
@@ -376,6 +388,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport
 				.createTableCellEditor(getArticleList());
+		createTableCellEditor.getAutoCompleteSupport().getComboBox()
+				.addActionListener(getAction("test"));
 		createTableCellEditor.setClickCountToStart(0);
 		createTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
 		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
