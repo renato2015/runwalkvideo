@@ -183,6 +183,11 @@ public class VideoFileManager {
 		Recording removedRecording = fileNameRecordingMap.remove(recording.getVideoFileName());
 		return removedFile != null && removedRecording != null;
 	}
+	
+	public void clearCache() {
+		recordingFileMap.clear();
+		fileNameRecordingMap.clear();
+	}
 
 	public boolean canReadAndExists(File videoFile) {
 		return videoFile != null && videoFile.exists() && videoFile.canRead();

@@ -42,7 +42,7 @@ import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
-import com.runwalk.video.panels.AnalysisOverviewTablePanel;
+import com.runwalk.video.panels.RecordingTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
 import com.runwalk.video.panels.ClientTablePanel;
@@ -51,9 +51,10 @@ import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
-import com.runwalk.video.ui.AnalysisTableFormat;
+import com.runwalk.video.ui.AnalysisModelTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.ClientTableFormat;
+import com.runwalk.video.ui.ClientModelTableFormat;
+import com.runwalk.video.ui.RecordingModelTableFormat;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
 import com.runwalk.video.ui.actions.ApplicationActionConstants;
@@ -82,7 +83,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private List<AbstractPanel> panels = new ArrayList<AbstractPanel>();
 	private ClientTablePanel clientTablePanel;
 	private AnalysisTablePanel analysisTablePanel;
-	private AnalysisOverviewTablePanel analysisOverviewTablePanel;
+	private RecordingTablePanel recordingTablePanel;
 	private ClientInfoPanel clientInfoPanel;
 	private MediaControls mediaControls;
 	private Containable clientMainView;
@@ -187,6 +188,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
+		recordingTablePanel = new RecordingTablePanel(getSettingsManager(), getVideoFileManager());
+		addTablePanel(recordingTablePanel);
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();
 		getMainFrame().add(getScrollableDesktopPane());
@@ -205,9 +208,11 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				getAnalysisTablePanel());
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
-		clientTablePanel.setTableFormat(new ClientTableFormat(clientTablePanel.getResourceMap()));
-		analysisTablePanel.setTableFormat(new AnalysisTableFormat(analysisTablePanel.getResourceMap()));
+		clientTablePanel.setTableFormat(new ClientModelTableFormat(clientTablePanel.getResourceMap()));
+		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap()));
 		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
+		recordingTablePanel.setTableFormat(new RecordingModelTableFormat(recordingTablePanel.getResourceMap()));
+		recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
 		// add all internal frames here!!!
@@ -431,8 +436,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return analysisTablePanel;
 	}
 
-	public AnalysisOverviewTablePanel getAnalysisOverviewTablePanel() {
-		return analysisOverviewTablePanel;
+	public RecordingTablePanel getRecordingTablePanel() {
+		return recordingTablePanel;
 	}
 
 	public ClientInfoPanel getClientInfoPanel() {

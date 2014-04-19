@@ -182,14 +182,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 		return result;
 	}
 
-	public int compareTo(Analysis analysis) {
-		int result = 1;
-		if (analysis != null) {
-			result =equals(analysis) ? 0 : getId().compareTo(analysis.getId());
-		}
-		return result;
-	}
-
 	@Override
 	public String toString() {
 		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	

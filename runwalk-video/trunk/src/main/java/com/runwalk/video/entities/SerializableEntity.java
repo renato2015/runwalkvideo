@@ -12,7 +12,7 @@ import com.runwalk.video.core.PropertyChangeSupport;
 
 @SuppressWarnings("serial")
 @MappedSuperclass
-public abstract class SerializableEntity<T> implements Comparable<T>, Serializable, PropertyChangeSupport {
+public abstract class SerializableEntity<T extends SerializableEntity<T>> implements Comparable<T>, Serializable, PropertyChangeSupport {
 
 	public static final String ID = "id";
 	
@@ -27,6 +27,14 @@ public abstract class SerializableEntity<T> implements Comparable<T>, Serializab
 	
 	protected void setId(Long id) {
 		this.id = id;
+	}
+	
+	public int compareTo(T other) {
+		int result = 1;
+		if (other != null) {
+			result = equals(other) ? 0 : getId().compareTo(other.getId());
+		}
+		return result;
 	}
 	
 }

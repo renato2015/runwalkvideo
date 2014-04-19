@@ -8,33 +8,28 @@ import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+@SuppressWarnings("serial")
 @Entity
-@Table(name="suspended_sale_item")
-public class SuspendedSaleItem {
+@Table(name="phppos_sales_suspended_items")
+public class SuspendedSaleItem implements Serializable {
+	
+	public static final BigDecimal DEFAULT_DISCOUNT = BigDecimal.valueOf(10.0d);
 
 	@EmbeddedId
 	private SuspendedSaleItemKey id;
 	
 	@OneToOne
-	@JoinColumn(name="item_id")
+	@JoinColumn(name="item_id", updatable=false, insertable=false)
 	private Item item;
-	
-	@ManyToOne
-	@JoinColumn(name="person_id")
-	private Client client;
 	
 	@Column(name="quantity_purchased")
 	private int quantity;
 	
 	@Column(name="line")
 	private int line;
-	
-	@Column(name="sale_id")
-	private Long saleId;
 	
 	@Column(name="description")
 	private String description;
@@ -46,8 +41,21 @@ public class SuspendedSaleItem {
 	private BigDecimal costPrice;
 	
 	@Column(name="discount_percent")
-	private int discountPercent;
+	private BigDecimal discountPercent = DEFAULT_DISCOUNT;
 	
+	public SuspendedSaleItem() { }
+
+	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Client client) {
+		this(suspendedSale, item);
+		costPrice = item.getCostPrice();
+		unitPrice = item.getUnitPrice();
+	}
+
+	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item) {
+		id = new SuspendedSaleItemKey(suspendedSale, item);
+		line = suspendedSale.getSaleItems().size();
+	}
+
 	public SuspendedSaleItemKey getId() {
 		return id;
 	}
@@ -56,24 +64,16 @@ public class SuspendedSaleItem {
 		this.id = id;
 	}
 	
-	public void setSaleId(Long saleId) {
-		this.saleId = saleId;
+	public Long getSaleId() {
+		return id.saleId;
 	}
-
+	
 	public Item getItem() {
 		return item;
 	}
 
 	public void setItem(Item item) {
 		this.item = item;
-	}
-
-	public Client getClient() {
-		return client;
-	}
-
-	public void setClient(Client client) {
-		this.client = client;
 	}
 
 	public int getQuantity() {
@@ -116,25 +116,32 @@ public class SuspendedSaleItem {
 		this.costPrice = costPrice;
 	}
 
-	public int getDiscountPercent() {
+	public BigDecimal getDiscountPercent() {
 		return discountPercent;
 	}
 
-	public void setDiscountPercent(int discountPercent) {
+	public void setDiscountPercent(BigDecimal discountPercent) {
 		this.discountPercent = discountPercent;
 	}
 	
-	public Long getSaleId() {
-		return id.saleId;
+	public Long getItemId() {
+		return id.itemId;
 	}
 	
 	@Embeddable
 	public static class SuspendedSaleItemKey implements Serializable {
 		
-		@Column(name="sale_id", updatable=false, insertable=false)
+		public SuspendedSaleItemKey() {	}
+
+		public SuspendedSaleItemKey(SuspendedSale suspendedSale, Item item) {
+			saleId = suspendedSale.getId();
+			itemId = item.getId();
+		}
+
+		@Column(name="sale_id")
 		private Long saleId;
 		
-		@Column(name="item_id", updatable=false, insertable=false)
+		@Column(name="item_id")
 		private Long itemId;
 		
 	}
