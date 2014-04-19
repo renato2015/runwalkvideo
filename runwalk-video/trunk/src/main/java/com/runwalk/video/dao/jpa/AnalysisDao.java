@@ -16,7 +16,8 @@ public class AnalysisDao extends JpaDao<Analysis> {
 	
 	public List<Analysis> getAnalysesByClient(Client client) {
 		TypedQuery<Analysis> query = createEntityManager().createQuery(
-				"SELECT analysis FROM " + getTypeParameter().getSimpleName() + " analysis WHERE analysis.client = :client ", Analysis.class);
+				"SELECT analysis FROM " + getTypeParameter().getSimpleName() + " analysis "
+					+ "LEFT JOIN FETCH analysis.recordings WHERE analysis.client = :client ", Analysis.class);
 		query.setParameter("client", client);
 		return query.getResultList();
 	}

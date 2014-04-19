@@ -10,9 +10,9 @@ import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.model.AnalysisModel;
 
-public class AnalysisTableFormat extends AbstractTableFormat<AnalysisModel> implements WritableTableFormat<AnalysisModel> {
+public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel> implements WritableTableFormat<AnalysisModel> {
 	
-	public AnalysisTableFormat(ResourceMap resourceMap) {
+	public AnalysisModelTableFormat(ResourceMap resourceMap) {
 		super(resourceMap);
 	}
 	

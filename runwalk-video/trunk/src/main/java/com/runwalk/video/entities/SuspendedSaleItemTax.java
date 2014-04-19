@@ -1,6 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -9,18 +10,37 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="phppos_suspended_sales_item_taxes")
+@Table(name="phppos_sales_suspended_items_taxes")
 public class SuspendedSaleItemTax {
+
+	public static final String DEFAULT_VAT_NAME = "VAT";
+	
+	public static final BigDecimal DEFAULT_VAT_PCT = BigDecimal.valueOf(21d);
 
 	@EmbeddedId
 	private SuspendedSaleItemTaxKey id;
 	
 	@Column(name="name")
-	private String name;
+	private String name = DEFAULT_VAT_NAME;
 	
 	@Column(name="percent")
-	private Double percent;
+	private BigDecimal percent = DEFAULT_VAT_PCT;
 	
+	public SuspendedSaleItemTax() {	}
+	
+	public SuspendedSaleItemTax(SuspendedSaleItemTaxKey suspendedSaleItemKey) {
+		id = suspendedSaleItemKey;
+	}
+	
+	public SuspendedSaleItemTax(Item item, SuspendedSale suspendedSale) {
+		this(new SuspendedSaleItemTaxKey(item, suspendedSale));
+	}	
+
+	public SuspendedSaleItemTax(String name, BigDecimal percent) {
+		this.name = name;
+		this.percent = percent;
+	}
+
 	public SuspendedSaleItemTaxKey getId() {
 		return id;
 	}
@@ -37,11 +57,11 @@ public class SuspendedSaleItemTax {
 		this.name = name;
 	}
 
-	public Double getPercent() {
+	public BigDecimal getPercent() {
 		return percent;
 	}
 
-	public void setPercent(Double percent) {
+	public void setPercent(BigDecimal percent) {
 		this.percent = percent;
 	}
 
@@ -57,6 +77,14 @@ public class SuspendedSaleItemTax {
 		
 		@Column(name = "line")
 		private String line;
+		
+		public SuspendedSaleItemTaxKey() { }
+		
+		public SuspendedSaleItemTaxKey(Item item, SuspendedSale suspendedSale) {
+			itemId = item.getId();
+			saleId = suspendedSale.getId();
+			line = Integer.toString(suspendedSale.getSaleItems().size());
+		}
 
 		public Long getItemId() {
 			return itemId;

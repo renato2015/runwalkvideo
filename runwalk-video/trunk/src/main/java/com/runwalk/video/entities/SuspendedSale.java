@@ -1,10 +1,14 @@
 package com.runwalk.video.entities;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -14,31 +18,38 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
+@SuppressWarnings("serial")
 @Table(name="phppos_sales_suspended")
-public class SuspendedSale {
-
+public class SuspendedSale implements Serializable {
+	
 	@Id
 	@Column(name="sale_id")
-	private Long id;
-	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long saleId;
+
 	@Column(name="sale_time")
 	@Temporal(value=TemporalType.TIMESTAMP)
-	private Date saleTime;
+	private Date saleTime = new Date();
 	
 	@ManyToOne
-	@JoinColumn(name="client")
+	@JoinColumn(name="customer_id", nullable=false )
 	private Client client;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name="sale_id")
 	private List<SuspendedSaleItem> saleItems;
+	
+	@Column(name="comment")
+	private String comment = "";
+	
+	public SuspendedSale() {}
 
-	public Long getId() {
-		return id;
+	public SuspendedSale(Client client) {
+		this.client = client;
 	}
-
-	public void setId(Long id) {
-		this.id = id;
+	
+	public Long getId() {
+		return saleId;
 	}
 
 	public Date getSaleTime() {
@@ -63,6 +74,14 @@ public class SuspendedSale {
 
 	public void setSaleItems(List<SuspendedSaleItem> saleItems) {
 		this.saleItems = saleItems;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 	
 }

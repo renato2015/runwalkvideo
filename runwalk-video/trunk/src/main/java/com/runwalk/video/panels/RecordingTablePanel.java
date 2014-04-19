@@ -1,8 +1,6 @@
 package com.runwalk.video.panels;
 
 import java.awt.Window;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,37 +17,26 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
-import org.jdesktop.application.TaskEvent;
-import org.jdesktop.application.TaskListener;
-import org.jdesktop.application.TaskMonitor;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.matchers.Matcher;
-
-import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
+import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.OrganiseVideoFilesTask;
-import com.runwalk.video.tasks.RefreshTask;
-import com.runwalk.video.tasks.RefreshVideoFilesTask;
-import com.runwalk.video.ui.actions.ApplicationActionConstants;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> implements PropertyChangeListener {
+public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 
@@ -62,12 +49,10 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
 	final ImageIcon incompleteIcon = getResourceMap().getImageIcon("status.incomplete.icon");
 
-	private EventList<Analysis> analysisList = GlazedLists.eventListOf();
-
 	private final VideoFileManager videoFileManager;
 	private final SettingsManager appSettings;
 
-	public AnalysisOverviewTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager) {
+	public RecordingTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
@@ -83,22 +68,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
 		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
-		// add a listener to start tasks upon finishing the refresh task
-		getTaskMonitor().addPropertyChangeListener(this);
-	}
-
-	@Action(block = BlockingScope.APPLICATION)
-	public Task<Boolean, Void> refreshVideoFiles() {
-		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), getAnalysisList());
-		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
-
-			@Override
-			public void succeeded(TaskEvent<Boolean> event) {
-				setCompressionEnabled(event.getValue());
-			}
-
-		});
-		return refreshVideoFilesTask;
 	}
 
 	@Action
@@ -134,8 +103,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
-		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
-				getCompressableRecordings(), transcoder);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), getCompressableRecordings(), transcoder);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -147,7 +115,8 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setUncompressedVideoDir(newDir);
-			result = refreshVideoFiles();
+			// TODO should find a way to reload uncached video files properly
+			getVideoFileManager().clearCache();
 		}
 		return result;
 	}
@@ -161,7 +130,7 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setVideoDir(newDir);
-			result = refreshVideoFiles();
+			getVideoFileManager().clearCache();
 		}
 		return result;
 	}
@@ -195,53 +164,13 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 		List<Recording> list = new ArrayList<Recording>();
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			for (Analysis analysis : getItemList()) {
-				for (Recording recording : analysis.getRecordings()) {
-					File file = getVideoFileManager().getUncompressedVideoFile(recording);
-					if (recording.isUncompressed() && file.exists()) {
-						list.add(recording);
-					}
-				}
-			}
+			// TODO query for recordings!!
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();
 		}
 		return list;
 	}
 
-	private EventList<Analysis> getAnalysisList() { 
-		return analysisList;
-	}
-
-	/**
-	 * This setter will make a copy of the given {@link EventList}, 
-	 * which is primarily meant to be used by background {@link Task}s.
-	 *
-	 * @param analysisList The list with analyses
-	 */
-	private void setAnalysisList(EventList<Analysis> analysisList) {
-		//		this.analysisList = analysisList;
-		this.analysisList = GlazedLists.eventList(analysisList);
-		GlazedLists.syncEventListToList(analysisList, this.analysisList);
-	}
-
-	@Override
-	protected EventList<Analysis> specializeItemList(EventList<Analysis> eventList) {
-		setAnalysisList(eventList);
-		return new FilterList<Analysis>(eventList, new Matcher<Analysis>() {
-
-			public boolean matches(Analysis item) {
-				for (Recording recording : item.getRecordings()) {
-					if (recording.isCompressable()) {
-						return true;
-					}
-				}
-				return false;
-			}
-
-		});
-	}
-	
 	public void initialiseTableColumnModel() {
 		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
@@ -263,19 +192,6 @@ public class AnalysisOverviewTablePanel extends AbstractTablePanel<Analysis> imp
 
 	public SettingsManager getAppSettings() {
 		return appSettings;
-	}
-
-	public void propertyChange(PropertyChangeEvent evt) {
-		Object oldValue = evt.getOldValue();
-		if (TaskMonitor.PROP_FOREGROUND_TASK.equals(evt.getPropertyName()) && oldValue != null) {
-			Window parentComponent = SwingUtilities.windowForComponent(this);
-			Class<?> taskClass = oldValue.getClass();
-			if (taskClass == RefreshTask.class) {
-				invokeAction(ApplicationActionConstants.REFRESH_VIDEO_FILES_ACTION, parentComponent);
-			} else if (taskClass == RefreshVideoFilesTask.class) {
-				invokeAction(ApplicationActionConstants.CHECK_FREE_DISK_SPACE_ACTION, parentComponent);
-			}
-		}
 	}
 
 }

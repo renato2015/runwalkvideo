@@ -205,7 +205,7 @@ public class Recording extends SerializableEntity<Recording> {
 			if (lastModified != null && o != null && o.lastModified != null) {
 				result = lastModified.compareTo(o.lastModified);
 			} else {
-				result = o != null && getId() != null ? getId().compareTo(o.getId()) : 1;
+				result = super.compareTo(o);
 			}
 		}
 		return result;

@@ -1,6 +1,7 @@
 package com.runwalk.video.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -37,6 +38,12 @@ public class Item implements Serializable {
 	@JoinColumn(name="item_size_id")
 	private ItemSize itemSize;
 	
+	@Column(name="unit_price")
+	private BigDecimal costPrice;
+	
+	@Column(name="cost_price")
+	private BigDecimal unitPrice;
+	
 	public Long getId() {
 		return id;
 	}
@@ -61,6 +68,18 @@ public class Item implements Serializable {
 		return itemSize;
 	}
 	
+	private String getSizeAsString() {
+		return getItemSize() == null ?  "" : getItemSize().getSize();
+	}
+	
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+
+	public BigDecimal getUnitPrice() {
+		return unitPrice;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj != null && obj.getClass() == getClass()) {
@@ -78,7 +97,7 @@ public class Item implements Serializable {
 
 	@Override
 	public String toString() {
-		return getDescription() + " " + getItemSize().getSize();
+		return getName() + " " + getSizeAsString();
 	}
 
 }
