@@ -73,7 +73,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 		part = 100 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
-			RecordingStatus statusCode = recording.getRecordingStatus();
+			RecordingStatus statusCode = RecordingStatus.getByCode(recording.getStatusCode());
 			File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
 			File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
 			try {
@@ -95,7 +95,6 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 					getLogger().error("graph reconnect failed!");
 					errorCount++;
 				} else {
-					recording.setRecordingStatus(RecordingStatus.COMPRESSING);
 					synchronized(recording) {
 						while (!finished) {
 							recording.wait(2000);
@@ -112,7 +111,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 				if (exporter != null && exporter.getFiltergraph().getActive()) {
 					exporter.getFiltergraph().stop();
 				}
-				recording.setRecordingStatus(statusCode);
+				recording.setStatusCode(statusCode.getCode());
 				// video file needs to be refreshed in the cache
 				getVideoFileManager().refreshCache(recording);
 			}
@@ -133,7 +132,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 		}
 		if (recording != null) {
 			//TODO clean up file that failed to convert..
-			recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+			recording.setStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
 		}
 	}
 

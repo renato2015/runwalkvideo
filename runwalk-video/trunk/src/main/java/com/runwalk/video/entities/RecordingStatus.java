@@ -27,8 +27,6 @@ public enum RecordingStatus {
 	
 	private int code;
 	
-	private boolean refreshNeeded = false;
-	
 	private String resourceKey; 
 
 	private RecordingStatus(int code, String resourceKey) {
@@ -38,7 +36,6 @@ public enum RecordingStatus {
 	
 	private RecordingStatus(int code, boolean refreshNeeded, String resourceKey) {
 		this(code, resourceKey);
-		this.refreshNeeded = refreshNeeded;
 	}
 	
 	public String getResourceKey() {
@@ -60,10 +57,6 @@ public enum RecordingStatus {
 	
 	public boolean isErroneous() {
 		return getCode() < 0 || getCode() == 4;
-	}
-	
-	public boolean refreshNeeded() {
-		return isErroneous() || refreshNeeded;
 	}
 	
 }

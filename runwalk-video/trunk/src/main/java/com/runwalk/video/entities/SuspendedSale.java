@@ -35,9 +35,13 @@ public class SuspendedSale implements Serializable {
 	@JoinColumn(name="customer_id", nullable=false )
 	private Client client;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany
 	@JoinColumn(name="sale_id")
 	private List<SuspendedSaleItem> saleItems;
+	
+	@OneToMany
+	@JoinColumn(name="sale_id")
+	private List<SuspendedSaleItemTax> saleItemTaxes;
 	
 	@Column(name="comment")
 	private String comment = "";
@@ -74,6 +78,14 @@ public class SuspendedSale implements Serializable {
 
 	public void setSaleItems(List<SuspendedSaleItem> saleItems) {
 		this.saleItems = saleItems;
+	}
+	
+	public List<SuspendedSaleItemTax> getSaleItemTaxes() {
+		return saleItemTaxes;
+	}
+
+	public void setSaleItemTaxes(List<SuspendedSaleItemTax> saleItemTaxes) {
+		this.saleItemTaxes = saleItemTaxes;
 	}
 
 	public String getComment() {

@@ -38,6 +38,7 @@ public class JpaDaoService extends AbstractDaoService {
 		addDao(new CityDao(entityManagerFactory));
 		addDao(new ItemDao(entityManagerFactory));
 		addDao(new AnalysisDao(entityManagerFactory));
+		addDao(new RecordingDao(entityManagerFactory));
 		addDao(new SuspendedSaleDao(entityManagerFactory));
 	}
 

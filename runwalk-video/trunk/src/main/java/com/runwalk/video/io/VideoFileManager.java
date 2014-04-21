@@ -89,22 +89,22 @@ public class VideoFileManager {
 				File compressedVideoFile = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
 				File uncompressedVideoFile = getUncompressedVideoFile(recording);
 				if (canReadAndExists(compressedVideoFile)) {
-					recording.setRecordingStatus(RecordingStatus.COMPRESSED);
+					recording.setStatusCode(RecordingStatus.COMPRESSED.getCode());
 					// duration wasn't saved.. set again
 					videoFile = compressedVideoFile;
 					checkRecordingDuration(recording, videoFile);
 				} else if (canReadAndExists(uncompressedVideoFile)) {
-					recording.setRecordingStatus(RecordingStatus.UNCOMPRESSED);
+					recording.setStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
 					// duration wasn't saved.. set again
 					videoFile = uncompressedVideoFile;
 					checkRecordingDuration(recording, videoFile);
 				} else if (recording.getDuration() == 0) {
 					// video file does not exist and duration is set to 0, prolly nothing recorded yet
-					recording.setRecordingStatus(RecordingStatus.READY);
+					recording.setStatusCode(RecordingStatus.READY.getCode());
 					videoFile = uncompressedVideoFile;
 				} else {
 					LOGGER.warn("No videofile found for recording with filename " + recording.getVideoFileName());
-					recording.setRecordingStatus(RecordingStatus.NON_EXISTANT_FILE);
+					recording.setStatusCode(RecordingStatus.NON_EXISTANT_FILE.getCode());
 				} 
 				addToCache(recording, videoFile);
 			}
@@ -142,6 +142,14 @@ public class VideoFileManager {
 			LOGGER.warn("Previously unsaved duration for " + recording.getVideoFileName() + " now set to " + duration);
 		}
 	}
+	
+	public int refreshCache() {
+		int filesMissing = 0;
+		for (Recording recording : recordingFileMap.keySet()) {
+			filesMissing += refreshCache(recording);
+		}
+		return filesMissing;
+	}
 
 	public int refreshCache(List<Analysis> analyses) {
 		int filesMissing = 0;
@@ -161,16 +169,16 @@ public class VideoFileManager {
 	public int refreshCache(Analysis analysis) {
 		int filesMissing = 0;
 		for (Recording recording : analysis.getRecordings()) {
-			File videoFile = refreshCache(recording);
-			filesMissing = videoFile == null ? ++filesMissing : filesMissing;
+			filesMissing += refreshCache(recording);
 		}
 		return filesMissing;
 	}
 
-	public File refreshCache(Recording recording) {
-		return refreshCache(getVideoFolderRetrievalStrategy(), recording);
+	public int refreshCache(Recording recording) {
+		File videoFile = refreshCache(getVideoFolderRetrievalStrategy(), recording);;
+		return videoFile == null ? 1 : 0;
 	}
-
+	
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		if (!removeRecording(recording)) {
 			LOGGER.info("Cache miss for " + recording.getVideoFileName());
@@ -182,11 +190,6 @@ public class VideoFileManager {
 		File removedFile = recordingFileMap.remove(recording);
 		Recording removedRecording = fileNameRecordingMap.remove(recording.getVideoFileName());
 		return removedFile != null && removedRecording != null;
-	}
-	
-	public void clearCache() {
-		recordingFileMap.clear();
-		fileNameRecordingMap.clear();
 	}
 
 	public boolean canReadAndExists(File videoFile) {
@@ -282,5 +285,5 @@ public class VideoFileManager {
 	public File getUncompressedVideoDir() {
 		return getAppSettings().getUncompressedVideoDir();
 	}
-
+	
 }

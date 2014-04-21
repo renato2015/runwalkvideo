@@ -2,7 +2,6 @@ package com.runwalk.video.panels;
 
 import java.awt.Window;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -17,26 +16,33 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
+import org.jdesktop.application.TaskEvent;
+import org.jdesktop.application.TaskListener;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
+
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FunctionList;
 
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.io.VideoFolderRetrievalStrategy;
-import com.runwalk.video.model.AnalysisModel;
+import com.runwalk.video.model.RecordingModel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CheckFreeDiskSpaceTask;
 import com.runwalk.video.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.OrganiseVideoFilesTask;
+import com.runwalk.video.tasks.RefreshVideoFilesTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
+public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 	private static final String COMPRESSION_ENABLED = "compressionEnabled";
 
@@ -68,6 +74,32 @@ public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
 		getSecondButton().setFont(SettingsManager.MAIN_FONT);
 		add(getSecondButton());
+	}
+
+	@Action(block = BlockingScope.APPLICATION)
+	public Task<Boolean, Void> refreshVideoFiles() {
+		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), transformRecordingModelList());
+		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
+
+			@Override
+			public void succeeded(TaskEvent<Boolean> event) {
+				setCompressionEnabled(event.getValue());
+			}
+
+		});
+		return refreshVideoFilesTask;
+	}
+	
+	public AbstractTask<List<Recording>, Void> refreshRecordings() {
+		return new AbstractTask<List<Recording>, Void>("refreshRecordings") {
+
+			@Override
+			protected List<Recording> doInBackground() throws Exception {
+				//return getDaoService().getDao(Recording.class);
+				return null;
+			}
+			
+		};
 	}
 
 	@Action
@@ -103,7 +135,7 @@ public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
-		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), getCompressableRecordings(), transcoder);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), transformRecordingModelList(), transcoder);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -115,8 +147,7 @@ public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setUncompressedVideoDir(newDir);
-			// TODO should find a way to reload uncached video files properly
-			getVideoFileManager().clearCache();
+			result = refreshVideoFiles();
 		}
 		return result;
 	}
@@ -130,7 +161,7 @@ public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 		File newDir = selectDirectory(oldDir, title);
 		if (!newDir.equals(oldDir)) {
 			getAppSettings().setVideoDir(newDir);
-			getVideoFileManager().clearCache();
+			result = refreshVideoFiles();
 		}
 		return result;
 	}
@@ -160,15 +191,20 @@ public class RecordingTablePanel extends AbstractTablePanel<AnalysisModel> {
 	 * 
 	 * @return The list
 	 */
-	private List<Recording> getCompressableRecordings() {
-		List<Recording> list = new ArrayList<Recording>();
+	private EventList<Recording> transformRecordingModelList() {
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			// TODO query for recordings!!
+			return new FunctionList<RecordingModel, Recording>(getItemList(), new FunctionList.Function<RecordingModel, Recording>() {
+
+				@Override
+				public Recording evaluate(RecordingModel sourceValue) {
+					return sourceValue.getEntity();
+				}
+					
+			});
 		} finally {
 			getItemList().getReadWriteLock().readLock().unlock();
 		}
-		return list;
 	}
 
 	public void initialiseTableColumnModel() {

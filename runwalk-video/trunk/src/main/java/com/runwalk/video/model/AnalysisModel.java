@@ -8,6 +8,7 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 
 public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	
@@ -22,7 +23,7 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public static final String COMMENTS = "comments";
 
 	private ClientModel clientModel;
-
+	
 	public AnalysisModel(ClientModel clientModel, Analysis entity) {
 		super(entity);
 		this.clientModel = clientModel;
@@ -61,15 +62,6 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 		return getEntity().getRecordings() != null && !getEntity().getRecordings().isEmpty();
 	}
 	
-	public boolean isRecorded() {
-		for (Recording recording : getRecordings()) {
-			if (recording.isRecorded()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public List<Recording> getRecordings() {
 		return getEntity().getRecordings();
 	}
@@ -129,6 +121,15 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 			return recording.getDuration();
 		}
 		return isFeedbackRecord() ? null : 0L;
+	}
+	
+	public boolean isRecorded() {
+		for (Recording recording : getEntity().getRecordings()) {
+			RecordingStatus recordingStatus = RecordingStatus.getByCode(recording.getStatusCode());
+			return recordingStatus == RecordingStatus.COMPRESSED || 
+					recordingStatus == RecordingStatus.UNCOMPRESSED;
+		}
+		return false;
 	}
 
 	@Override

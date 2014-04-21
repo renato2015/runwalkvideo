@@ -1,6 +1,5 @@
 package com.runwalk.video.entities;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -15,11 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.PostLoad;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
-import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
@@ -50,16 +46,11 @@ public class Recording extends SerializableEntity<Recording> {
 	@Column(name="lastmodified")
 	private Long lastModified;
 	
+	@Column(name = "statusCode")
 	private Integer statusCode = RecordingStatus.READY.getCode();
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
-
-	/**
-	 * Transient field containing the actual status code. The value of this code is initialized at {@link PostLoad} time.
-	 */
-	@Transient
-	private RecordingStatus recordingStatus;
 
 	protected Recording() { }
 
@@ -96,61 +87,17 @@ public class Recording extends SerializableEntity<Recording> {
 	}
 	
 	public void setDuration(long duration) {
-		this.firePropertyChange(DURATION, this.duration, this.duration = duration);
+		this.duration = duration;
 	}
 	
-	public void addKeyframe(Keyframe keyframe) {
-		keyframes.add(keyframe);
-	}
-
 	public void sortKeyframes() {
 		Collections.sort(keyframes);
 	}
 
 	public List<Keyframe> getKeyframes() {
-		if (this.keyframes == null) {
-			this.keyframes = Collections.emptyList();
-		}
-		return Collections.unmodifiableList(keyframes);
+		return keyframes;
 	}
 
-	public int getKeyframeCount() {
-		return getKeyframes().size();
-	}
-
-	public RecordingStatus getRecordingStatus() {
-		return recordingStatus;
-	}
-	
-	@PostLoad
-	@SuppressWarnings("unused")
-	private void postLoad() {
-		// initialize transient fields
-		if (statusCode != null) {
-			recordingStatus = RecordingStatus.getByCode(statusCode);
-		}
-	}
-
-	/**
-	 * This method should set the right {@link RecordingStatus} constant for this {@link Recording} 
-	 * according to the {@link File} returned by {@link VideoFileManager#getVideoFile(Recording)}.
-	 * The status code will not be persisted to the database if it is found to be erroneous, because
-	 * the video files are always local to an application's file system.
-	 * 
-	 * @param recordingStatus The status to be applied
-	 * @see VideoFileManager#getVideoFile(Recording)
-	 */
-	public void setRecordingStatus(RecordingStatus recordingStatus) {
-		if (recordingStatus != RecordingStatus.NON_EXISTANT_FILE && this.recordingStatus != null) {
-			if (!recordingStatus.isErroneous()) {
-				// don't change the statuscode if it is erroneous.
-				this.statusCode = recordingStatus.getCode();
-			}
-		} else {
-			this.recordingStatus = recordingStatus;
-		}
-	}
-	
 	public Long getLastModified() {
 		return lastModified;
 	}
@@ -162,27 +109,15 @@ public class Recording extends SerializableEntity<Recording> {
 	public String getVideoFileName() {
 		return videoFileName;
 	}
+	
+	public Integer getStatusCode() {
+		return statusCode;
+	}
 
-	public boolean isCompressable() {
-		return getRecordingStatus() != RecordingStatus.COMPRESSED && 
-		getRecordingStatus() != RecordingStatus.FILE_NOT_ACCESSIBLE &&
-		getRecordingStatus() != RecordingStatus.READY && 
-//		getRecordingStatus() != RecordingStatus.NON_EXISTANT_FILE &&
-		getRecordingStatus() != RecordingStatus.DSJ_ERROR;
+	public void setStatusCode(Integer statusCode) {
+		this.statusCode = statusCode;
 	}
 	
-	public  boolean isUncompressed() {
-		return getRecordingStatus() == RecordingStatus.UNCOMPRESSED;
-	}
-
-	public boolean isCompressed() {
-		return getRecordingStatus() == RecordingStatus.COMPRESSED;
-	}
-
-	public boolean isRecorded() {
-		return isUncompressed() || isCompressed();
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;

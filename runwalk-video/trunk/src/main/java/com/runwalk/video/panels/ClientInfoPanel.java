@@ -190,7 +190,7 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
 		emailField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.entity.emailAddress");
+		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
 		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, TEXT);
 		/*valueBinding.setValidator(new Validator() {
 

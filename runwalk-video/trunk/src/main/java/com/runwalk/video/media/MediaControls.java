@@ -483,7 +483,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 			String videoPath = videoPlayer.getVideoPath();
 			Recording recording = getVideoFileManager().getRecording(videoPath);
 			recording.sortKeyframes();
-			for (int i = recording.getKeyframeCount()-1; i >= 0; i--) {
+			for (int i = recording.getKeyframes().size()-1; i >= 0; i--) {
 				Keyframe frame = recording.getKeyframes().get(i);
 				if (frame.getPosition() < videoPlayer.getPosition()) {
 					setPlayerPosition(videoPlayer, frame.getPosition());
@@ -590,7 +590,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		if (recordTask == null && selectedModel != null) {
 			setRecordingEnabled(false);
 			setStopEnabled(true);
-			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), selectedModel.getEntity());
+			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), selectedModel);
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 				@Override
@@ -648,7 +648,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				if (analysisModel != null) {
 					for(int i = 0; i < analysisModel.getRecordings().size(); i++) {
 						final Recording recording = analysisModel.getRecordings().get(i);
-						if (recording.isRecorded()) {
+						if (analysisModel.isRecorded()) {
 							final File videoFile = getVideoFileManager().getVideoFile(recording);
 							if (recordingCount < getPlayers().size()) {
 								videoPlayer = getPlayers().get(recordingCount);
@@ -759,6 +759,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				// set duration for recording
 				long executionDuration = recordTask.getExecutionDuration(TimeUnit.MILLISECONDS);
 				recording.setDuration(executionDuration);	
+				// TODO fire a PCE to update recording duration
 				// only update status info if it is the fronmost capturer
 				updateTimeStamps(executionDuration, 0);
 			} else if (getFrontMostPlayer() != null && isPlaying()) {

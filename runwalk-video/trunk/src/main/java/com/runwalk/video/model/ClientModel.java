@@ -17,6 +17,7 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	public static final String ANALYSIS_COUNT = "analysisCount";
 	public static final String ANALYSES = "analyses";
 	public static final String CITY = "city";
+	public static final String EMAIL_ADDRESS = "emailAddress";
 	
 	private Date lastAnalysisDate;
 	
@@ -130,6 +131,15 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	
 	public City getCity() {
 		return getEntity().getAddress().getCity();
+	}
+	
+	public void setEmailAddress(String emailAddress) {
+		firePropertyChange(EMAIL_ADDRESS, getEntity().getEmailAddress(), emailAddress);
+		getEntity().setEmailAddress(emailAddress);
+	}
+	
+	public String getEmailAddress() {
+		return getEntity().getEmailAddress();
 	}
 	
 	public String getOrganization() {

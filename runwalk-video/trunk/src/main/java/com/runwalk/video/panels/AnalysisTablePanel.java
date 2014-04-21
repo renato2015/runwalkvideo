@@ -60,6 +60,7 @@ import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
+import com.runwalk.video.util.BarcodeReader;
 
 @SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
@@ -140,14 +141,14 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		// comments JTextArea binding
 		BeanProperty<AnalysisTablePanel, String> selectedItemComments = BeanProperty.create("selectedItem.comments");
 		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
-		Binding<? extends AbstractTablePanel<?>, String, JTextArea, String> commentsBinding = Bindings
-				.createAutoBinding(UpdateStrategy.READ_WRITE, this,	selectedItemComments, comments, jTextAreaValue);
+		Binding<? extends AbstractTablePanel<?>, String, JTextArea, String> commentsBinding = 
+				Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this,	selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
 
 		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
-		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = Bindings
-				.createAutoBinding(UpdateStrategy.READ, this, isSelected, comments, jTextAreaEnabled);
+		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = 
+				Bindings.createAutoBinding(UpdateStrategy.READ, this, isSelected, comments, jTextAreaEnabled);
 		enableCommentsBinding.setSourceNullValue(false);
 		enableCommentsBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(enableCommentsBinding);
@@ -171,7 +172,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && clientTablePanel.selectedItem.emailAddress != null}");
 		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = 
-				Bindings.createAutoBinding(UpdateStrategy.READ, this, isAddFeedbackEnabled, this, analysisSelected);
+			Bindings.createAutoBinding(UpdateStrategy.READ, this, isAddFeedbackEnabled, this, analysisSelected);
 		addAnalysisForFeedbackBinding.setSourceUnreadableValue(false);
 		addAnalysisForFeedbackBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(addAnalysisForFeedbackBinding);
@@ -194,8 +195,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		return addAnalysisForFeedbackEnabled;
 	}
 
-	public void setAddAnalysisForFeedbackEnabled(
-			boolean addAnalysisForFeedbackEnabled) {
+	public void setAddAnalysisForFeedbackEnabled(boolean addAnalysisForFeedbackEnabled) {
 		firePropertyChange(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED, this.addAnalysisForFeedbackEnabled, 
 				this.addAnalysisForFeedbackEnabled = addAnalysisForFeedbackEnabled);
 	}
@@ -269,10 +269,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
-			// TODO can we get selected client starting from analysis??
 			// TODO check if analysis doesn't have feedback analaysis
 			final AnalysisModel selectedModel = getSelectedItem();
-			//final ClientModel selectedClientModel = clientTablePanel.getSelectedItem();
 			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class,
 					selectedModel.getEntity());
 			result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
@@ -333,18 +331,23 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 			@Override
 			protected Item doInBackground() throws Exception {
+				String itemNumber = null;
 				if ("comboBoxEdited".equals(event.getActionCommand())) {
 					@SuppressWarnings("unchecked")
 					JComboBox<Item> itemComboBox = (JComboBox<Item>) event.getSource();
 					Object item = itemComboBox.getEditor().getItem();
 					// TODO check if selection changed??
-					Object selectedItem = itemComboBox.getSelectedItem();
-					if (item != null) {
-						String itemNumber = item.toString();
-						ItemDao itemDao = daoService.getDao(Item.class);
-						return itemDao.getItemByItemNumber(itemNumber);
-						
+					Item selectedItem = (Item) itemComboBox.getSelectedItem();
+					if (item != null && !selectedItem.getItemNumber().equals(item.toString())) {
+						itemNumber = item.toString();
 					}
+				} else if ("barcodeReceived".equals(event.getActionCommand())) {
+					BarcodeReader barcodeReader = (BarcodeReader) event.getSource();
+					itemNumber = barcodeReader.getBarcode();
+				}
+				if (itemNumber != null) {
+					ItemDao itemDao = daoService.getDao(Item.class);
+					return itemDao.getItemByItemNumber(itemNumber);
 				}
 				return null;
 			}
@@ -383,6 +386,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
 		getTable().getColumnModel().getColumn(0).setCellEditor(datePickerCellEditor);
 
+		BarcodeReader reader = new BarcodeReader();
+		reader.addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		createTableCellEditor.getAutoCompleteSupport().getComboBox().addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
