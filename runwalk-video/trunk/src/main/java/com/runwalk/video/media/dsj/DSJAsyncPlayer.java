@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import com.runwalk.video.media.settings.VideoPlayerSettings;
 
 import de.humatic.dsj.DSConstants;
-import de.humatic.dsj.DSFilter;
 import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSGraph;
 import de.humatic.dsj.DSJUtils;

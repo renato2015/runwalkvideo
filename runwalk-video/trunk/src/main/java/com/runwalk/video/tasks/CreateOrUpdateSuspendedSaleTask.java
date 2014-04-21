@@ -1,10 +1,7 @@
 package com.runwalk.video.tasks;
 
-import java.util.Collections;
-
 import javax.persistence.NoResultException;
 
-import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.SuspendedSaleDao;
 import com.runwalk.video.entities.Client;
@@ -31,12 +28,11 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		message("startMessage");
 		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getClient());
 		SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getItem(), getClient());
-		SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(getItem(), suspendedSale);
-		suspendedSale.setSaleItems(Collections.singletonList(suspendedSaleItem));
+		SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getItem());
+		suspendedSale.getSaleItems().add(suspendedSaleItem);
+		suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
 		SuspendedSaleDao suspendedSaleDao = getDaoService().getDao(SuspendedSale.class);
 		suspendedSaleDao.merge(suspendedSale);
-		Dao<SuspendedSaleItemTax> suspendedsSaleItemTaxDao = getDaoService().getDao(SuspendedSaleItemTax.class);
-		suspendedsSaleItemTaxDao.persist(suspendedSaleItemTax);
 		message("endMessage");
 		return null;
 	}

@@ -78,7 +78,6 @@ public class Analysis extends SerializableEntity<Analysis> {
 	}
 	
 	public Analysis(Client client, Analysis analysis, Date creationDate) {
-		super();
 		this.client = client;
 		this.creationDate = creationDate;
 		this.feedbackId = analysis.getId();

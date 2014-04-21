@@ -45,13 +45,6 @@ public class AppUtil {
 		return directory;
 	}
 
-	public static float round(float Rval, int Rpl) {
-		float p = (float)Math.pow(10,Rpl);
-		Rval = Rval * p;
-		float tmp = Math.round(Rval);
-		return tmp/p;
-	}
-
 	public static String formatDate(Date date, SimpleDateFormat formatter) {
 		StringBuffer result = new StringBuffer("");
 		if (date != null) {

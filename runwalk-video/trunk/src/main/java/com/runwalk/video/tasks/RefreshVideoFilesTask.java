@@ -11,31 +11,29 @@ import com.runwalk.video.io.VideoFileManager;
 
 public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 
-	private final EventList<Analysis> analysisList;
+	private final EventList<Recording> recordingList;
 	private final VideoFileManager videoFileManager;
 
-	public RefreshVideoFilesTask(VideoFileManager videoFileManager, EventList<Analysis> analysisList) {
+	public RefreshVideoFilesTask(VideoFileManager videoFileManager, EventList<Recording> recordingList) {
 		super("refreshVideoFiles");
 		this.videoFileManager = videoFileManager;
-		this.analysisList = analysisList;
+		this.recordingList = recordingList;
 	}
 
 	protected Boolean doInBackground() throws Exception {
 		message("startMessage");
 		int progress = 0, filesMissing = 0;
 		boolean compressable = false;
-		getAnalysisList().getReadWriteLock().readLock().lock();
+		getRecordingList().getReadWriteLock().readLock().lock();
 		try {
-			for (Analysis analysis : getAnalysisList()) {
-				for (Recording recording  : analysis.getRecordings()) {
-					File videoFile = getVideoFileManager().getVideoFile(recording);
-					compressable |= recording.isCompressable();
-					filesMissing = videoFile == null ? ++filesMissing : filesMissing;
-				}
-				setProgress(++progress, 0, getAnalysisList().size() + 1);
+			for (Recording recording  : recordingList) {
+				File videoFile = getVideoFileManager().getVideoFile(recording);
+				compressable |= getVideoFileManager().canReadAndExists(videoFile);
+				filesMissing = videoFile == null ? ++filesMissing : filesMissing;
 			}
+			setProgress(++progress, 0, getRecordingList().size() + 1);
 		} finally {
-			getAnalysisList().getReadWriteLock().readLock().unlock();
+			getRecordingList().getReadWriteLock().readLock().unlock();
 		}
 		message("waitForIdleMessage");
 		new Robot().waitForIdle();
@@ -44,8 +42,8 @@ public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 		return compressable;
 	}
 
-	public EventList<Analysis> getAnalysisList() {
-		return analysisList;
+	public EventList<Recording> getRecordingList() {
+		return recordingList;
 	}
 
 	public VideoFileManager getVideoFileManager() {

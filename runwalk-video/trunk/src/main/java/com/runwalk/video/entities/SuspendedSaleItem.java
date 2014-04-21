@@ -7,8 +7,6 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -21,15 +19,8 @@ public class SuspendedSaleItem implements Serializable {
 	@EmbeddedId
 	private SuspendedSaleItemKey id;
 	
-	@OneToOne
-	@JoinColumn(name="item_id", updatable=false, insertable=false)
-	private Item item;
-	
 	@Column(name="quantity_purchased")
 	private int quantity;
-	
-	@Column(name="line")
-	private int line;
 	
 	@Column(name="description")
 	private String description;
@@ -53,7 +44,6 @@ public class SuspendedSaleItem implements Serializable {
 
 	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item) {
 		id = new SuspendedSaleItemKey(suspendedSale, item);
-		line = suspendedSale.getSaleItems().size();
 	}
 
 	public SuspendedSaleItemKey getId() {
@@ -68,28 +58,12 @@ public class SuspendedSaleItem implements Serializable {
 		return id.saleId;
 	}
 	
-	public Item getItem() {
-		return item;
-	}
-
-	public void setItem(Item item) {
-		this.item = item;
-	}
-
 	public int getQuantity() {
 		return quantity;
 	}
 
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
-	}
-
-	public int getLine() {
-		return line;
-	}
-
-	public void setLine(int line) {
-		this.line = line;
 	}
 
 	public String getDescription() {
@@ -136,6 +110,7 @@ public class SuspendedSaleItem implements Serializable {
 		public SuspendedSaleItemKey(SuspendedSale suspendedSale, Item item) {
 			saleId = suspendedSale.getId();
 			itemId = item.getId();
+			line = suspendedSale.getSaleItems().size();
 		}
 
 		@Column(name="sale_id")
@@ -143,6 +118,33 @@ public class SuspendedSaleItem implements Serializable {
 		
 		@Column(name="item_id")
 		private Long itemId;
+		
+		@Column(name = "line")
+		private int line;
+
+		public Long getSaleId() {
+			return saleId;
+		}
+
+		public void setSaleId(Long saleId) {
+			this.saleId = saleId;
+		}
+
+		public Long getItemId() {
+			return itemId;
+		}
+
+		public void setItemId(Long itemId) {
+			this.itemId = itemId;
+		}
+
+		public int getLine() {
+			return line;
+		}
+
+		public void setLine(int line) {
+			this.line = line;
+		}
 		
 	}
 	

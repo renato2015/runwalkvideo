@@ -32,7 +32,7 @@ public class SuspendedSaleItemTax {
 		id = suspendedSaleItemKey;
 	}
 	
-	public SuspendedSaleItemTax(Item item, SuspendedSale suspendedSale) {
+	public SuspendedSaleItemTax(SuspendedSale suspendedSale, Item item) {
 		this(new SuspendedSaleItemTaxKey(item, suspendedSale));
 	}	
 
@@ -64,26 +64,26 @@ public class SuspendedSaleItemTax {
 	public void setPercent(BigDecimal percent) {
 		this.percent = percent;
 	}
-
+	
 	@SuppressWarnings("serial")
 	@Embeddable
 	public static class SuspendedSaleItemTaxKey implements Serializable {
 		
-		@Column(name="item_id")
+		@Column(name="item_id", nullable=false)
 		private Long itemId;
 		
-		@Column(name = "sale_id")
+		@Column(name = "sale_id", nullable=false)
 		private Long saleId;
 		
 		@Column(name = "line")
-		private String line;
+		private int line;
 		
 		public SuspendedSaleItemTaxKey() { }
 		
 		public SuspendedSaleItemTaxKey(Item item, SuspendedSale suspendedSale) {
 			itemId = item.getId();
 			saleId = suspendedSale.getId();
-			line = Integer.toString(suspendedSale.getSaleItems().size());
+			line = suspendedSale.getSaleItems().size();
 		}
 
 		public Long getItemId() {
@@ -102,11 +102,11 @@ public class SuspendedSaleItemTax {
 			this.saleId = saleId;
 		}
 
-		public String getLine() {
+		public int getLine() {
 			return line;
 		}
 
-		public void setLine(String line) {
+		public void setLine(int line) {
 			this.line = line;
 		}
 		

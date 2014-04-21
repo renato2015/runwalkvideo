@@ -44,5 +44,5 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 		}
 		return analysisModel;
 	}
-	
+
 }

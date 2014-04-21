@@ -8,11 +8,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
-import com.runwalk.video.core.PropertyChangeSupport;
-
 @SuppressWarnings("serial")
 @MappedSuperclass
-public abstract class SerializableEntity<T extends SerializableEntity<T>> implements Comparable<T>, Serializable, PropertyChangeSupport {
+public abstract class SerializableEntity<T extends SerializableEntity<T>> implements Comparable<T>, Serializable {
 
 	public static final String ID = "id";
 	

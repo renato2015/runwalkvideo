@@ -45,7 +45,7 @@ public class CreateKeyframeTask extends AbstractTask<Keyframe, Void> {
 			final Recording recording = getVideoFileManager().getRecording(videoPath);
 			Keyframe keyframe = new Keyframe(recording, position);
 			getDaoService().getDao(Keyframe.class).persist(keyframe);
-			recording.addKeyframe(keyframe);
+			recording.getKeyframes().add(keyframe);
 			if (getFrontmostPlayer() == videoPlayer) {
 				result = keyframe;
 			}

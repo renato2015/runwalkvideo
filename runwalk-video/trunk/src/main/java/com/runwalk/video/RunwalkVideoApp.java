@@ -212,7 +212,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap()));
 		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		recordingTablePanel.setTableFormat(new RecordingModelTableFormat(recordingTablePanel.getResourceMap()));
-		recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
+		//recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
 		// add all internal frames here!!!
