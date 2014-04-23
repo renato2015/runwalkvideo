@@ -154,7 +154,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		BeanProperty<MediaControls, Boolean> playingEnabled = BeanProperty.create(PLAYER_CONTROLS_ENABLED);
 		Binding<?, Boolean, ?, Boolean> enabledBinding = null;
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recordingsEmpty && selectedItem.feedbackRecord}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && !selectedItem.recorded && !selectedItem.feedbackRecord}");
 		BeanProperty<MediaControls, Boolean> recordingEnabled = BeanProperty.create(RECORDING_ENABLED);
 		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, analysisTablePanel, recorded, this, recordingEnabled);
 		enabledBinding.addBindingListener(new AbstractBindingListener() {
@@ -585,19 +585,25 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	@Action(enabledProperty = RECORDING_ENABLED)
 	public RecordTask record() {
-		AnalysisModel selectedModel = getAnalysisTablePanel().getSelectedItem();
+		final AnalysisModel selectedModel = getAnalysisTablePanel().getSelectedItem();
 		RecordTask result = null;
 		if (recordTask == null && selectedModel != null) {
 			setRecordingEnabled(false);
 			setStopEnabled(true);
 			result = new RecordTask(getVideoFileManager(), getDaoService(), getCapturers(), selectedModel);
 			result.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
+				
+				@Override
+				public void process(TaskEvent<List<Void>> event) {
+					getAnalysisTablePanel().updateRow(selectedModel);
+				}
 
 				@Override
 				public void finished(TaskEvent<Void> event) {
 					// set this manually as such a specific propertyChangeEvent won't be fired
 					selectedRecordingRecordable = false;
 					setRecordingEnabled(false);
+					getAnalysisTablePanel().updateRow(selectedModel);
 				}
 
 			});
@@ -759,7 +765,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				// set duration for recording
 				long executionDuration = recordTask.getExecutionDuration(TimeUnit.MILLISECONDS);
 				recording.setDuration(executionDuration);	
-				// TODO fire a PCE to update recording duration
 				// only update status info if it is the fronmost capturer
 				updateTimeStamps(executionDuration, 0);
 			} else if (getFrontMostPlayer() != null && isPlaying()) {

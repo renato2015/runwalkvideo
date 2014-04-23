@@ -17,9 +17,12 @@ public class RecordingModel extends AbstractEntityModel<Recording> {
 	
 	private RecordingStatus recordingStatus;
 	
-	public RecordingModel(Recording entity, Date creationDate) {
+	private Long keyframeCount;
+	
+	public RecordingModel(Recording entity, Date creationDate, Long keyframeCount) {
 		super(entity);
 		this.creationDate = creationDate;
+		this.keyframeCount = keyframeCount;
 	}
 
 	// add plain properties for list view..
@@ -31,15 +34,18 @@ public class RecordingModel extends AbstractEntityModel<Recording> {
 		}
 	}
 	
+	public String getVideoFileName() {
+		return getEntity().getVideoFileName();
+	}
+	
 	/**
 	 * Add a recording to the association. Fires a 'synthetic' PCE to notify listeners about this change.
 	 * 
 	 * @param recording The recording to add
 	 */
 	public boolean addKeyFrame(Keyframe keyframe) {
-		int oldSize = getKeyframeCount();
 		boolean result = getEntity().getKeyframes().add(keyframe);
-		firePropertyChange(KEYFRAME_COUNT, oldSize, getKeyframeCount());
+		firePropertyChange(KEYFRAME_COUNT, keyframeCount++, keyframeCount);
 		return result;
 	}	
 	
@@ -50,14 +56,13 @@ public class RecordingModel extends AbstractEntityModel<Recording> {
 	 * @return <code>true</code> if the recording was removed
 	 */
 	public boolean removeKeyframe(Keyframe keyframe) {
-		int oldSize = getKeyframeCount();
 		boolean result = getEntity().getKeyframes().remove(keyframe);
-		firePropertyChange(KEYFRAME_COUNT, oldSize, getKeyframeCount());
+		firePropertyChange(KEYFRAME_COUNT, keyframeCount--, keyframeCount);
 		return result;
 	}
 
-	public int getKeyframeCount() {
-		return getEntity().getKeyframes().size();
+	public Long getKeyframeCount() {
+		return keyframeCount;
 	}
 	
 	public Long getDuration() {

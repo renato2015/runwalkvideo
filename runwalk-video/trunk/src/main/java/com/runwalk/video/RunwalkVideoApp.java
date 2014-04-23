@@ -40,6 +40,7 @@ import com.runwalk.video.media.CompositeVideoCapturerFactory;
 import com.runwalk.video.media.CompositeVideoPlayerFactory;
 import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
+import com.runwalk.video.media.ueye.UEyeCapturerFactory;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.RecordingTablePanel;
@@ -188,7 +189,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
-		recordingTablePanel = new RecordingTablePanel(getSettingsManager(), getVideoFileManager());
+		recordingTablePanel = new RecordingTablePanel(getSettingsManager(), getVideoFileManager(), getDaoService());
 		addTablePanel(recordingTablePanel);
 		// create main desktop scrollpane
 		scrollableDesktopPane = new JScrollableDesktopPane();

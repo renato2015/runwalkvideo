@@ -141,5 +141,11 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public boolean isDirty() {
 		return clientModel.isDirty();
 	}
+
+	@Override
+	public String toString() {
+		return getEntity().toString();
+	}
+	
 	
 }
