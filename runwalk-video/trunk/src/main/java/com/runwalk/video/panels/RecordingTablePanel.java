@@ -23,7 +23,10 @@ import org.jdesktop.application.utils.PlatformType;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FunctionList;
+import ca.odell.glazedlists.GlazedLists;
 
+import com.runwalk.video.dao.DaoService;
+import com.runwalk.video.dao.jpa.RecordingDao;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
@@ -50,6 +53,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	public static final String CLEANUP_VIDEO_FILES_ACTION = "cleanupVideoFiles";
 	public static final String SELECT_VIDEO_DIR_ACTION = "selectVideoDir";
 	public static final String SELECT_UNCOMPRESSED_VIDEO_DIR_ACTION = "selectUncompressedVideoDir";
+	public static final String REFRESH_RECORDINGS_ACTION = "refreshRecordings";
 
 	private boolean compressionEnabled;
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
@@ -57,11 +61,15 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 	private final VideoFileManager videoFileManager;
 	private final SettingsManager appSettings;
+	private final DaoService daoService;
+	
+	private EventList<Recording> recordingList;
 
-	public RecordingTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager) {
+	public RecordingTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
 		this.videoFileManager = videoFileManager;
 		this.appSettings = appSettings;
+		this.daoService = daoService;
 
 		JScrollPane scrollPane = new  JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -71,14 +79,19 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		JButton cleanupButton = new JButton(getAction(CLEANUP_VIDEO_FILES_ACTION));
 		cleanupButton.setFont(SettingsManager.MAIN_FONT);
 		add(cleanupButton);
-		setSecondButton(new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION)));
-		getSecondButton().setFont(SettingsManager.MAIN_FONT);
-		add(getSecondButton());
+		
+		JButton compressButton = new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION));
+		compressButton.setFont(SettingsManager.MAIN_FONT);
+		add(compressButton);
+		
+		JButton refreshButton = new JButton(getAction(REFRESH_RECORDINGS_ACTION));
+		refreshButton.setFont(SettingsManager.MAIN_FONT);
+		add(refreshButton);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
-		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), transformRecordingModelList());
+		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), recordingList);
 		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 			@Override
@@ -90,16 +103,50 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		return refreshVideoFilesTask;
 	}
 	
-	public AbstractTask<List<Recording>, Void> refreshRecordings() {
-		return new AbstractTask<List<Recording>, Void>("refreshRecordings") {
+	@Action(block = BlockingScope.APPLICATION)
+	public AbstractTask<EventList<RecordingModel>, Void> refreshRecordings() {
+		return new AbstractTask<EventList<RecordingModel>, Void>(REFRESH_RECORDINGS_ACTION) {
 
 			@Override
-			protected List<Recording> doInBackground() throws Exception {
-				//return getDaoService().getDao(Recording.class);
-				return null;
+			protected EventList<RecordingModel> doInBackground() throws Exception {
+				message("startMessage");
+				RecordingDao recordingDao = getDaoService().getDao(Recording.class);
+				List<RecordingModel> recordingModelList = recordingDao
+						.getRecordingsAsModelByStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
+				EventList<RecordingModel> recordingModelEventList = GlazedLists.eventList(recordingModelList);
+				recordingList = transformRecordingModelList(recordingModelEventList);
+				message("endMessage");
+				return recordingModelEventList;
+			}
+
+			@Override
+			protected void succeeded(EventList<RecordingModel> recordingModels) {
+				setItemList(recordingModels, RecordingModel.class);
+				setCompressionEnabled(recordingModels.size() > 0);
 			}
 			
 		};
+	}
+	
+	/**
+	 * Returns a {@link java.awt.List} of {@link Recording}s that are in the {@link RecordingStatus#UNCOMPRESSED} state.
+	 * 
+	 * @return The list
+	 */
+	private EventList<Recording> transformRecordingModelList(EventList<RecordingModel> sourceList) {
+		sourceList.getReadWriteLock().readLock().lock();
+		try {
+			return new FunctionList<RecordingModel, Recording>(sourceList, new FunctionList.Function<RecordingModel, Recording>() {
+
+				@Override
+				public Recording evaluate(RecordingModel sourceValue) {
+					return sourceValue.getEntity();
+				}
+					
+			});
+		} finally {
+			sourceList.getReadWriteLock().readLock().unlock();
+		}
 	}
 
 	@Action
@@ -135,7 +182,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
-		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), transformRecordingModelList(), transcoder);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), recordingList, transcoder);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -186,27 +233,6 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled && isWindows);
 	}
 
-	/**
-	 * Returns a {@link java.awt.List} of {@link Recording}s that are in the {@link RecordingStatus#UNCOMPRESSED} state.
-	 * 
-	 * @return The list
-	 */
-	private EventList<Recording> transformRecordingModelList() {
-		getItemList().getReadWriteLock().readLock().lock();
-		try {
-			return new FunctionList<RecordingModel, Recording>(getItemList(), new FunctionList.Function<RecordingModel, Recording>() {
-
-				@Override
-				public Recording evaluate(RecordingModel sourceValue) {
-					return sourceValue.getEntity();
-				}
-					
-			});
-		} finally {
-			getItemList().getReadWriteLock().readLock().unlock();
-		}
-	}
-
 	public void initialiseTableColumnModel() {
 		// previously an icon was rendered in the first column, this is not the case any more
 		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
@@ -216,7 +242,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.DURATION_FORMATTER));
 		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
-		final String buttonTitle = getResourceMap().getString("analysisOverviewTableFormat.openButton.text");
+		final String buttonTitle = getResourceMap().getString("recordingModelTableFormat.openButton.text");
 		getTable().getColumnModel().getColumn(6).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
 		getTable().getColumnModel().getColumn(6).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
@@ -228,6 +254,10 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 	public SettingsManager getAppSettings() {
 		return appSettings;
+	}
+
+	public DaoService getDaoService() {
+		return daoService;
 	}
 
 }

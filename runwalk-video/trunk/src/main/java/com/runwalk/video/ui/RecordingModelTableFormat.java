@@ -14,12 +14,11 @@ public class RecordingModelTableFormat extends AbstractTableFormat<RecordingMode
 	public Object getColumnValue(final RecordingModel recordingModel, int column) {
 		// existance of the recording's video file should be checked by the videoFileManager upon load
 		switch(column) {
-		case 0: return 1;//recordingModel.getRecordingCount();
-		case 1: return recordingModel.getCreationDate();
-		case 2: return null;//analysisModel.getClient().toString();
-		case 3: return recordingModel.getKeyframeCount();
-		case 4: return recordingModel.getDuration();
-		case 5: {
+		case 0: return recordingModel.getCreationDate();
+		case 1: return recordingModel.getVideoFileName();
+		case 2: return recordingModel.getKeyframeCount();
+		case 3: return recordingModel.getDuration();
+		case 4: {
 			String result = getResourceString(RecordingStatus.NONE.getResourceKey());
 			RecordingStatus recordingStatus = recordingModel.getRecordingStatus();
 			if (recordingStatus != null) {
@@ -27,7 +26,7 @@ public class RecordingModelTableFormat extends AbstractTableFormat<RecordingMode
 			}
 			return result;
 		}
-		case 6: return recordingModel.isRecorded();
+		case 5: return recordingModel.isRecorded();
 		default: return null;
 		}
 	}

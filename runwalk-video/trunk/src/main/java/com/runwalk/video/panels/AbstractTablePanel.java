@@ -131,6 +131,10 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 		firePropertyChange(SELECTED_ITEM, this.selectedItem, this.selectedItem = selectedItem);
 	}
+	
+	public void updateRow(T element) {
+		getObservableElementList().elementChanged(element);
+	}
 
 	public T getSelectedItem() {
 		return selectedItem;

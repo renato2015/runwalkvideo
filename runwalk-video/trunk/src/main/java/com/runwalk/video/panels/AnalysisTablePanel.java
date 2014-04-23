@@ -66,12 +66,13 @@ import com.runwalk.video.util.BarcodeReader;
 public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	public static final int WEEKS_AHEAD = 3;
-	public static final String COMPRESSION_ENABLED = "compressionEnabled";
-	public static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
-	private static final String DELETE_ANALYSIS_ACTION = "deleteAnalysis";
-	private static final String ADD_ANALYSIS_ACTION = "addAnalysis";
+	
 	private static final String SELECTED_ITEM_RECORDED = "selectedItemRecorded";
 	private static final String ADD_ANALYSIS_FOR_FEEDBACK_ENABLED = "addAnalysisForFeedbackEnabled";
+
+	private static final String COMPRESS_VIDEO_FILES_ACTION = "compressVideoFiles";
+	private static final String DELETE_ANALYSIS_ACTION = "deleteAnalysis";
+	private static final String ADD_ANALYSIS_ACTION = "addAnalysis";
 	private static final String ADD_ANALYSIS_FOR_FEEDBACK_ACTION = "addAnalysisForFeedback";
 	private static final String FIND_ITEM_BY_NUMBER_ACTION = "findItemByNumber";
 
@@ -86,8 +87,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 	private final SettingsManager appSettings;
 
 	private Boolean clientSelected = false;
-
-	private boolean compressionEnabled;
 
 	private EventList<Item> articleList = GlazedLists.eventListOf();
 
@@ -316,9 +315,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		}
 	}
 
-	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
+	@Action(enabledProperty = SELECTED_ITEM_RECORDED, block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> compressVideoFiles() {
-		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
 		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
@@ -417,16 +415,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		getTable().getColumnModel().getColumn(5).setResizable(false);
 		final String buttonTitle = getResourceMap().getString("analysisModelTableFormat.openButton.text");
 		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
-	}
-
-	public boolean isCompressionEnabled() {
-		return compressionEnabled;
-	}
-
-	public void setCompressionEnabled(boolean compressionEnabled) {
-		// compression only works on windows
-		boolean isWindows = AppHelper.getPlatform() == PlatformType.WINDOWS;
-		firePropertyChange(COMPRESSION_ENABLED, this.compressionEnabled, this.compressionEnabled = compressionEnabled && isWindows);
 	}
 
 	public boolean isClientSelected() {

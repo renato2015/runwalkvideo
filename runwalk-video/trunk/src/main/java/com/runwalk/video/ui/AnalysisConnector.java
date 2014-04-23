@@ -42,13 +42,14 @@ public class AnalysisConnector implements Connector<AnalysisModel> {
 	 * This inner class notifies the {@link ObservableElementList} about changes to list elements.
 	 */
 	public class PropertyChangeHandler implements PropertyChangeListener {
-		@SuppressWarnings( "rawtypes" )
+		
 		public void propertyChange(PropertyChangeEvent event) {
 			AnalysisModel analysisModel = null;
 			analysisModel = (AnalysisModel) event.getSource();
 			analysisModel.setDirty(true);
-			((ObservableElementList) list).elementChanged(analysisModel);
+			list.elementChanged(analysisModel);
 		}
+		
 	}
 
 }
