@@ -7,26 +7,27 @@ import java.util.EventListener;
 import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 
-import com.runwalk.video.model.AnalysisModel;
+import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.model.AbstractEntityModel;
 
-public class AnalysisConnector implements Connector<AnalysisModel> {
+public class AbstractEntityModelConnector<T extends AbstractEntityModel<? extends SerializableEntity<?>>> implements Connector<T> {
 
 	/** The list which contains the elements being observed via this {@link ObservableElementList.Connector}. */
-	private ObservableElementList<? extends AnalysisModel> list;
+	private ObservableElementList<? extends T> list;
 
 	/** The PropertyChangeListener to install on each list element. */
 	protected final PropertyChangeListener propertyChangeListener = createPropertyChangeListener();
 
-	public EventListener installListener(AnalysisModel element) {
+	public EventListener installListener(T element) {
 		element.addPropertyChangeListener(propertyChangeListener);
 		return propertyChangeListener;
 	}
 
-	public void uninstallListener(AnalysisModel element, EventListener listener) {
+	public void uninstallListener(T element, EventListener listener) {
 		element.removePropertyChangeListener(propertyChangeListener);
 	}
 
-	public void setObservableElementList(ObservableElementList<? extends AnalysisModel> list) {
+	public void setObservableElementList(ObservableElementList<? extends T> list) {
 		this.list = list;
 	}
 
@@ -44,10 +45,10 @@ public class AnalysisConnector implements Connector<AnalysisModel> {
 	public class PropertyChangeHandler implements PropertyChangeListener {
 		
 		public void propertyChange(PropertyChangeEvent event) {
-			AnalysisModel analysisModel = null;
-			analysisModel = (AnalysisModel) event.getSource();
-			analysisModel.setDirty(true);
-			list.elementChanged(analysisModel);
+			AbstractEntityModel<?> sourceModel = null;
+			sourceModel = (AbstractEntityModel<?>) event.getSource();
+			sourceModel.setDirty(true);
+			list.elementChanged(sourceModel);
 		}
 		
 	}

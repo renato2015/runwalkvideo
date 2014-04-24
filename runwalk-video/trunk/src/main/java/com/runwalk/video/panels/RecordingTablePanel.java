@@ -121,7 +121,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 			@Override
 			protected void succeeded(EventList<RecordingModel> recordingModels) {
-				setItemList(recordingModels, RecordingModel.class);
+				setItemList(recordingModels);
 				setCompressionEnabled(recordingModels.size() > 0);
 			}
 			
@@ -235,17 +235,16 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 	public void initialiseTableColumnModel() {
 		// previously an icon was rendered in the first column, this is not the case any more
-		getTable().getColumnModel().getColumn(0).setMaxWidth(25);
 		String defaultValue = getResourceMap().getString("tableFormat.defaultValue");
-		getTable().getColumnModel().getColumn(1).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.EXTENDED_DATE_FORMATTER));
-		getTable().getColumnModel().getColumn(1).setPreferredWidth(80);
-		getTable().getColumnModel().getColumn(4).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.DURATION_FORMATTER));
-		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
-		getTable().getColumnModel().getColumn(5).setPreferredWidth(60);
-		final String buttonTitle = getResourceMap().getString("recordingModelTableFormat.openButton.text");
-		getTable().getColumnModel().getColumn(6).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
-		getTable().getColumnModel().getColumn(6).setPreferredWidth(40);
+		getTable().getColumnModel().getColumn(0).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.EXTENDED_DATE_FORMATTER));
+		getTable().getColumnModel().getColumn(0).setPreferredWidth(80);
 		getTable().getColumnModel().getColumn(0).setResizable(false);
+		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.DURATION_FORMATTER));
+		getTable().getColumnModel().getColumn(3).setPreferredWidth(60);
+		getTable().getColumnModel().getColumn(4).setPreferredWidth(60);
+		final String buttonTitle = getResourceMap().getString("recordingModelTableFormat.openButton.text");
+		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
+		getTable().getColumnModel().getColumn(5).setPreferredWidth(40);
 	}
 
 	public VideoFileManager getVideoFileManager() {

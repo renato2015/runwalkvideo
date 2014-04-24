@@ -1,6 +1,7 @@
 package com.runwalk.video.model;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
@@ -124,12 +125,13 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	}
 	
 	public boolean isRecorded() {
-		for (Recording recording : getEntity().getRecordings()) {
-			RecordingStatus recordingStatus = RecordingStatus.getByCode(recording.getStatusCode());
-			return recordingStatus == RecordingStatus.COMPRESSED || 
+		boolean isRecorded = false;
+		for (Iterator<Recording> it = getEntity().getRecordings().iterator(); it.hasNext() && !isRecorded; ) {
+			RecordingStatus recordingStatus = RecordingStatus.getByCode(it.next().getStatusCode());
+			isRecorded |= recordingStatus == RecordingStatus.COMPRESSED || 
 					recordingStatus == RecordingStatus.UNCOMPRESSED;
 		}
-		return false;
+		return isRecorded;
 	}
 
 	@Override

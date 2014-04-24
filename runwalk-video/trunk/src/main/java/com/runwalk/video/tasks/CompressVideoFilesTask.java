@@ -22,25 +22,26 @@ import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
 public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implements PropertyChangeListener { 
+	private final List<Recording> recordings;
+	private final VideoFileManager videoFileManager;
+	private final Component parentComponent;
+	/** volatile so changes to this field can be seen directly by all threads */
+	private volatile boolean finished = false;
+	private String transcoderName;
+	private DSFilterInfo transcoder;
 	private int errorCount = 0;
 	private int conversionCounter, conversionCount;
 	private double part;
 	private DSJPlayer exporter;
 	private Recording recording;
-	private final List<Recording> recordings;
-	private final DSFilterInfo transcoder;
-	private final VideoFileManager videoFileManager;
-	/** volatile so changes to this field can be seen directly by all threads */
-	private volatile boolean finished = false;
-	private final Component parentComponent;
 
 	public CompressVideoFilesTask(Component parentComponent, VideoFileManager videoFileManager, 
-			List<Recording> recordings, String transcoder) {
+			List<Recording> recordings, String transcoderName) {
 		super("compressVideoFiles");
 		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
 		this.recordings = recordings;
-		this.transcoder = DSFilterInfo.filterInfoForName(transcoder);
+		this.transcoderName = transcoderName;
 		setUserCanCancel(true);
 	}
 
@@ -69,6 +70,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 	@Override
 	protected Boolean doInBackground() {
 		message("startMessage");
+		this.transcoder = DSFilterInfo.filterInfoForName(transcoderName);
 		conversionCount = recordings.size();
 		part = 100 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {

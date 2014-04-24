@@ -35,6 +35,7 @@ import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.model.AbstractEntityModel;
 import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
@@ -134,7 +135,7 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 
 					@Override
 					public void propertyChange(PropertyChangeEvent event) {
-						if (ClientModel.DIRTY.equals(event.getPropertyName())) {
+						if (AbstractEntityModel.DIRTY.equals(event.getPropertyName())) {
 							if ((Boolean) event.getNewValue()) {
 								setDirty(true);
 							}

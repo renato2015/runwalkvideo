@@ -38,7 +38,5 @@ public class AbstractPanel extends JPanel {
 	public void setDirty(Boolean dirty) {
 		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 	}
-	
-	
 
 }

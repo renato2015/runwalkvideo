@@ -18,22 +18,23 @@ import org.apache.log4j.Level;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ListSelection;
 import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
-import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
 import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
+import com.runwalk.video.entities.SerializableEntity;
+import com.runwalk.video.model.AbstractEntityModel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.ui.AbstractEntityModelConnector;
 
 @SuppressWarnings("serial")
-public abstract class AbstractTablePanel<T extends Comparable<? super T>> extends AbstractPanel {
+public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends SerializableEntity<?>>> extends AbstractPanel {
 
 	public static final String ROW_SELECTED = "rowSelected";
 	public static final String CLIENT_SELECTED = "clientSelected";
@@ -217,9 +218,9 @@ public abstract class AbstractTablePanel<T extends Comparable<? super T>> extend
 		}
 	}
 
-	public void setItemList(EventList<T> itemList, Class<T> itemClass) {
-		Connector<T> beanConnector = new BeanConnector<T>(itemClass);
-		setItemList(itemList, beanConnector);
+	public void setItemList(EventList<T> itemList) {
+		AbstractEntityModelConnector<T> itemConnector = new AbstractEntityModelConnector<T>();
+		setItemList(itemList, itemConnector);
 	}
 
 	/**

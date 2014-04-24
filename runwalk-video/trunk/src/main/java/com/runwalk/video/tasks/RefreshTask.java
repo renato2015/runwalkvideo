@@ -27,7 +27,6 @@ import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
-import com.runwalk.video.ui.AnalysisConnector;
 
 /**
  * This {@link Task} handles all database lookups and injects the results in the appropriate application component.
@@ -69,7 +68,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 				public void run() {
 					RunwalkVideoApp.getApplication().getClientInfoPanel().setItemList(cityList);
 					// get client table panel and inject data
-					getClientTablePanel().setItemList(clientList, ClientModel.class);
+					getClientTablePanel().setItemList(clientList);
 					final EventList<ClientModel> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
 					
 					final AnalysisDao analysisDao = daoService.getDao(Analysis.class);
@@ -97,7 +96,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
                         }
 
                     });
-					getAnalysisTablePanel().setItemList(selectedClientAnalyses, new AnalysisConnector());
+					getAnalysisTablePanel().setItemList(selectedClientAnalyses);
 				}
 
 			});
