@@ -127,6 +127,11 @@ public class VideoFileManager {
 	public File getVideoFile(Recording recording) {
 		return getVideoFile(getVideoFolderRetrievalStrategy(), recording);
 	}
+	
+	public void clear() {
+		recordingFileMap.clear();
+		fileNameRecordingMap.clear();
+	}
 
 	/**
 	 * Check if the duration for the given recording and videofile is synchronized correctly.

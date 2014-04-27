@@ -60,16 +60,16 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		JMenuItem saveSettingsMenuItem = new JMenuItem( getAction(SAVE_SETTINGS_ACTION));
 		fileMenu.add(saveSettingsMenuItem);
 
-		/*fileMenu.add(new JSeparator());
-		JMenuItem selectVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectVideoDir"));
+		fileMenu.add(new JSeparator());
+		JMenuItem selectVideoDir = new JMenuItem( getApplication().getRecordingTablePanel().getAction("selectVideoDir"));
 		fileMenu.add(selectVideoDir);
-		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("selectUncompressedVideoDir"));
-		fileMenu.add(selectUncompressedVideoDir);*/
+		JMenuItem selectUncompressedVideoDir = new JMenuItem( getApplication().getRecordingTablePanel().getAction("selectUncompressedVideoDir"));
+		fileMenu.add(selectUncompressedVideoDir);
 
 		//fileMenu.add(new JSeparator());
-		/*JMenuItem organiseVideoFiles = new JMenuItem( getApplication().getAnalysisOverviewTablePanel().getAction("organiseVideoFiles"));
+		JMenuItem organiseVideoFiles = new JMenuItem( getApplication().getRecordingTablePanel().getAction("organiseVideoFiles"));
 		fileMenu.add(organiseVideoFiles);
-*/
+
 		fileMenu.add(new JSeparator());
 		JMenuItem exitMenuItem = new JMenuItem( getAction(QUIT_ACTION) );
 		fileMenu.add(exitMenuItem);

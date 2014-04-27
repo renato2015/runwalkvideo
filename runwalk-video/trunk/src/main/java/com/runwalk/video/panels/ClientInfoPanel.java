@@ -78,6 +78,7 @@ public class ClientInfoPanel extends AbstractPanel {
 			AbstractEntityModel<Client> selectedItem = clientTablePanel.getSelectedItem();
 			if (selectedItem != null) {
 				selectedItem.setDirty(true);
+				clientTablePanel.setDirty(true);
 			}
 		}
 

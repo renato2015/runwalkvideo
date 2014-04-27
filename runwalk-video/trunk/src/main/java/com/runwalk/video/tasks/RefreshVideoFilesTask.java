@@ -5,7 +5,6 @@ import java.io.File;
 
 import ca.odell.glazedlists.EventList;
 
-import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 
@@ -26,6 +25,7 @@ public class RefreshVideoFilesTask extends AbstractTask<Boolean, Void> {
 		boolean compressable = false;
 		getRecordingList().getReadWriteLock().readLock().lock();
 		try {
+			getVideoFileManager().clear();
 			for (Recording recording  : recordingList) {
 				File videoFile = getVideoFileManager().getVideoFile(recording);
 				compressable |= getVideoFileManager().canReadAndExists(videoFile);

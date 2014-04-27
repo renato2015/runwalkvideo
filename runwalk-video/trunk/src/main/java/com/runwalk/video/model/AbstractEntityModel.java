@@ -50,7 +50,8 @@ public class AbstractEntityModel<T extends SerializableEntity<? super T>> implem
 	}
 
 	public void setDirty(boolean dirty) {
-		firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
+		//firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
+		this.dirty = dirty;
 	}
 
 	public boolean isDirty() {

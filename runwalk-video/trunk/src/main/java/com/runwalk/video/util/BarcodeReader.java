@@ -29,6 +29,7 @@ public class BarcodeReader {
 				if (e.getID() != KeyEvent.KEY_RELEASED) {
 					return false;
 				}
+				
 
 				if (e.getWhen() - lastEventTimeStamp > THRESHOLD) {
 					barcode.delete(0, barcode.length());

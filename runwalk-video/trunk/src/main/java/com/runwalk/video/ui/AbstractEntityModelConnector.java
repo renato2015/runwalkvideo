@@ -9,6 +9,7 @@ import ca.odell.glazedlists.ObservableElementList.Connector;
 
 import com.runwalk.video.entities.SerializableEntity;
 import com.runwalk.video.model.AbstractEntityModel;
+import com.runwalk.video.panels.AbstractTablePanel;
 
 public class AbstractEntityModelConnector<T extends AbstractEntityModel<? extends SerializableEntity<?>>> implements Connector<T> {
 
@@ -17,6 +18,12 @@ public class AbstractEntityModelConnector<T extends AbstractEntityModel<? extend
 
 	/** The PropertyChangeListener to install on each list element. */
 	protected final PropertyChangeListener propertyChangeListener = createPropertyChangeListener();
+	
+	protected final AbstractTablePanel<?> tablePanel;
+
+	public AbstractEntityModelConnector(AbstractTablePanel<?> tablePanel) {
+		this.tablePanel = tablePanel;
+	}
 
 	public EventListener installListener(T element) {
 		element.addPropertyChangeListener(propertyChangeListener);
@@ -48,6 +55,7 @@ public class AbstractEntityModelConnector<T extends AbstractEntityModel<? extend
 			AbstractEntityModel<?> sourceModel = null;
 			sourceModel = (AbstractEntityModel<?>) event.getSource();
 			sourceModel.setDirty(true);
+			tablePanel.setDirty(true);
 			list.elementChanged(sourceModel);
 		}
 		
