@@ -2,8 +2,6 @@ package com.runwalk.video.panels;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.persistence.NoResultException;
 import javax.swing.BorderFactory;
@@ -27,15 +25,12 @@ import org.jdesktop.application.TaskListener;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList.Connector;
-import ca.odell.glazedlists.impl.beans.BeanConnector;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.io.VideoFileManager;
-import com.runwalk.video.model.AbstractEntityModel;
 import com.runwalk.video.model.ClientModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
@@ -123,30 +118,6 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 
 		add(theLabel, "gapleft push");
 		add(searchField, "width :100:, growy");
-	}
-
-	@Override
-	public void setItemList(EventList<ClientModel> itemList, Connector<? super ClientModel> connector) {
-		super.setItemList(itemList, new BeanConnector<ClientModel>(ClientModel.class) { 
-
-			@Override
-			protected PropertyChangeListener createPropertyChangeListener() {
-				return new PropertyChangeHandler() {
-
-					@Override
-					public void propertyChange(PropertyChangeEvent event) {
-						if (AbstractEntityModel.DIRTY.equals(event.getPropertyName())) {
-							if ((Boolean) event.getNewValue()) {
-								setDirty(true);
-							}
-						} else {
-							super.propertyChange(event);
-						}
-					}
-				};
-			}
-
-		});
 	}
 
 	public void initialiseTableColumnModel() {

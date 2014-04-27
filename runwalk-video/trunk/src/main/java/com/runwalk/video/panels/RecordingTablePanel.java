@@ -22,8 +22,10 @@ import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.matchers.Matcher;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.RecordingDao;
@@ -40,6 +42,7 @@ import com.runwalk.video.tasks.CleanupVideoFilesTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
 import com.runwalk.video.tasks.OrganiseVideoFilesTask;
 import com.runwalk.video.tasks.RefreshVideoFilesTask;
+import com.runwalk.video.tasks.SaveTask;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
@@ -63,7 +66,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	private final SettingsManager appSettings;
 	private final DaoService daoService;
 	
-	private EventList<Recording> recordingList;
+	private EventList<Recording> recordingList = GlazedLists.eventListOf();
 
 	public RecordingTablePanel(SettingsManager appSettings, VideoFileManager videoFileManager, DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
@@ -105,6 +108,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	
 	@Action(block = BlockingScope.APPLICATION)
 	public AbstractTask<EventList<RecordingModel>, Void> refreshRecordings() {
+		dispose();
 		return new AbstractTask<EventList<RecordingModel>, Void>(REFRESH_RECORDINGS_ACTION) {
 
 			@Override
@@ -178,11 +182,53 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	}
 
 	@Action(enabledProperty = COMPRESSION_ENABLED, block = Task.BlockingScope.APPLICATION)
-	public Task<Boolean, Void> compressVideoFiles() {
+	public Task<Boolean, ?> compressVideoFiles() {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
-		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), recordingList, transcoder);
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), recordingList, transcoder) {
+
+			@Override
+			protected void process(List<Recording> recordings) {
+				try {
+					getItemList().getReadWriteLock().readLock().lock();
+					for (Recording recording : recordings) {
+						for(RecordingModel recordingModel : getItemList()) {
+							if (recording.getId().equals(recordingModel.getId())) {
+								recordingModel.setDirty(true);
+							}
+						}
+					}
+				} finally {
+					getItemList().getReadWriteLock().readLock().unlock();
+				}
+				
+			}
+
+			@Override
+			protected void succeeded(Boolean result) {
+				setDirty(true);
+			}
+			
+		};
+	}
+	
+	@Override
+	public boolean save() {
+		try {
+			getRecordingList().getReadWriteLock().readLock().lock();
+			EventList<Recording> transformRecordingModelList = transformRecordingModelList(new FilterList<RecordingModel>(getItemList(), new Matcher<RecordingModel>() {
+
+				public boolean matches(RecordingModel item) {
+					return item.isDirty();
+				}
+					
+			}));
+			getTaskService().execute(new SaveTask<Recording>(getDaoService(), Recording.class, transformRecordingModelList));
+		} finally {
+			getRecordingList().getReadWriteLock().readLock().unlock();
+		}
+		return true;
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -259,4 +305,8 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		return daoService;
 	}
 
+	public EventList<Recording> getRecordingList() {
+		return recordingList;
+	}
+	
 }

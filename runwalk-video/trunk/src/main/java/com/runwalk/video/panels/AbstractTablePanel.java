@@ -177,10 +177,10 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 			eventTableModel.dispose();
 			eventSelectionModel.getTogglingSelected().removeListEventListener(listEventListener);
 			eventSelectionModel.dispose();
-			itemList.dispose();
 			sortedList.dispose();
 			observableElementList.dispose();
 			sourceList.dispose();
+			itemList.dispose();
 		}
 	}
 
@@ -218,9 +218,12 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 		}
 	}
 
+	public void setItemList(EventList<T> itemList, AbstractTablePanel<?> panel) {
+		setItemList(itemList, new AbstractEntityModelConnector<T>(panel));
+	}
+	
 	public void setItemList(EventList<T> itemList) {
-		AbstractEntityModelConnector<T> itemConnector = new AbstractEntityModelConnector<T>();
-		setItemList(itemList, itemConnector);
+		setItemList(itemList, this);
 	}
 
 	/**

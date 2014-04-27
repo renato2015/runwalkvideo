@@ -21,7 +21,7 @@ import de.humatic.dsj.DSFiltergraph;
 import de.humatic.dsj.DSJUtils;
 import de.humatic.dsj.DSMovie;
 
-public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implements PropertyChangeListener { 
+public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> implements PropertyChangeListener { 
 	private final List<Recording> recordings;
 	private final VideoFileManager videoFileManager;
 	private final Component parentComponent;
@@ -116,6 +116,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Void> implemen
 				recording.setStatusCode(statusCode.getCode());
 				// video file needs to be refreshed in the cache
 				getVideoFileManager().refreshCache(recording);
+				publish(recording);
 			}
 		}
 		if (exporter != null) {

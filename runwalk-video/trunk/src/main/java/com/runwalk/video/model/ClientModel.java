@@ -1,5 +1,6 @@
 package com.runwalk.video.model;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +46,9 @@ public class ClientModel extends AbstractEntityModel<Client> {
 		analysisModels.add(analysisModel);
 		boolean result = getAnalyses().add(analysis);
 		firePropertyChange(ANALYSIS_COUNT, size, size + 1);
-		lastAnalysisDate = analysis.getCreationDate();
+		if (analysis.getFeedbackId() == null) {
+			lastAnalysisDate = analysis.getCreationDate();
+		}
 		return result;
 	}
 	
@@ -87,6 +90,13 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	}
 	
 	private Analysis getLastAnalysis() {
+		Collections.sort(getAnalyses());
+		for (int i = getAnalysesCount()-1; i > 0; i--) {
+			Analysis analysis = getAnalyses().get(i);
+			if (analysis.getFeedbackId() == null) {
+				return analysis;
+			}
+		}
 		return Iterables.getLast(getAnalyses());
 	}
 

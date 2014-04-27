@@ -1,8 +1,6 @@
 package com.runwalk.video.tasks;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Recording;
@@ -17,7 +15,6 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 	private final VideoFileManager videoFileManager;
 	private final Iterable<VideoCapturer> capturers;
 	private final AnalysisModel analysisModel;
-	private final List<Void> emptyList = Collections.emptyList();
 
 	private volatile boolean recording = false;
 
@@ -35,7 +32,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 		startRecording();
 		synchronized(this) {
 			while (isRecording()) {
-				process(emptyList);
+				publish();
 				wait(250);
 			}
 		}
@@ -65,7 +62,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			// set recording to true if recording / file key value pair added to file manager
 			setRecording(true);
 		}
-		message("recordingMessage", getAnalysisModel().toString());
+		message("recordingMessage", getAnalysisModel().getEntity().getClient().toString());
 	}
 
 	/**
@@ -92,7 +89,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 				}
 			}
 		}
-		message("endMessage", getAnalysisModel().toString());
+		message("endMessage", getAnalysisModel().getEntity().getClient());
 		return result;
 	}
 

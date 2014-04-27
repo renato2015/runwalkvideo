@@ -168,7 +168,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		selectedItemRecordedBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(selectedItemRecordedBinding);
 		
-		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && clientTablePanel.selectedItem.emailAddress != null}");
+		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && not empty clientTablePanel.selectedItem.emailAddress}");
 		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, this, isAddFeedbackEnabled, this, analysisSelected);
@@ -202,6 +202,14 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 	@Action(enabledProperty = ADD_ANALYSIS_FOR_FEEDBACK_ENABLED, block = BlockingScope.ACTION)
 	public PersistTask<Analysis> addAnalysisForFeedback(ActionEvent event) {
 		return addAnalysis(event);
+	}
+	
+	private void deleteAnalysisForFeedback(AnalysisModel selectedModel) {
+		for(AnalysisModel analysisModel : getItemList()) {
+			if (selectedModel.getId().equals(analysisModel.getFeedbackId())) {
+				getItemList().remove(analysisModel);
+			}
+		}
 	}
 
 	private Date getDateForFeedback() {
@@ -268,7 +276,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.OK_OPTION) {
-			// TODO check if analysis doesn't have feedback analaysis
 			final AnalysisModel selectedModel = getSelectedItem();
 			result = new DeleteTask<Analysis>(getDaoService(), Analysis.class,
 					selectedModel.getEntity());
@@ -282,7 +289,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 						int lastSelectedRowIndex = getEventSelectionModel()
 								.getMinSelectionIndex();
 						getItemList().remove(selectedModel);
-						// FIXME selectedModel.removeAnalysisModel(selectedModel);
+						deleteAnalysisForFeedback(selectedModel);
 						// delete the video files
 						if (lastSelectedRowIndex > 0) {
 							setSelectedItemRow(lastSelectedRowIndex - 1);
@@ -297,7 +304,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		}
 		return result;
 	}
-
+	
 	@Action(enabledProperty = SELECTED_ITEM_RECORDED)
 	public void showVideoFile() throws IOException {
 		List<Recording> recordings = getSelectedItem().getRecordings();
@@ -316,7 +323,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 	}
 
 	@Action(enabledProperty = SELECTED_ITEM_RECORDED, block = Task.BlockingScope.APPLICATION)
-	public Task<Boolean, Void> compressVideoFiles() {
+	public Task<Boolean, ?> compressVideoFiles() {
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
 		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
@@ -334,10 +341,15 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 					@SuppressWarnings("unchecked")
 					JComboBox<Item> itemComboBox = (JComboBox<Item>) event.getSource();
 					Object item = itemComboBox.getEditor().getItem();
-					// TODO check if selection changed??
-					Item selectedItem = (Item) itemComboBox.getSelectedItem();
-					if (item != null && !selectedItem.getItemNumber().equals(item.toString())) {
-						itemNumber = item.toString();
+					if (item != null) {
+						if (itemComboBox.getSelectedItem() instanceof Item) {
+							Item selectedItem = (Item) itemComboBox.getSelectedItem();
+							if (!selectedItem.getItemNumber().equals(item.toString())) {
+								itemNumber = item.toString();
+							}
+						} else {
+							itemNumber = item.toString();
+						}
 					}
 				} else if ("barcodeReceived".equals(event.getActionCommand())) {
 					BarcodeReader barcodeReader = (BarcodeReader) event.getSource();
