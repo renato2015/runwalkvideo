@@ -94,7 +94,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refreshVideoFiles() {
-		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager(), recordingList);
+		RefreshVideoFilesTask refreshVideoFilesTask = new RefreshVideoFilesTask(getVideoFileManager());
 		refreshVideoFilesTask.addTaskListener(new TaskListener.Adapter<Boolean, Void>() {
 
 			@Override

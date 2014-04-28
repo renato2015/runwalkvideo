@@ -60,7 +60,6 @@ import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.ui.table.JButtonTableCellRenderer;
 import com.runwalk.video.ui.table.JComboBoxTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
-import com.runwalk.video.util.BarcodeReader;
 
 @SuppressWarnings("serial")
 public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
@@ -329,11 +328,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), 
 				getSelectedItem().getRecordings(), transcoder);
 	}
-
+	
 	@Action
 	public Task<Item, Void> findItemByNumber(final ActionEvent event) {
 		return new AbstractTask<Item, Void>(FIND_ITEM_BY_NUMBER_ACTION) {
-
+			
 			@Override
 			protected Item doInBackground() throws Exception {
 				String itemNumber = null;
@@ -344,16 +343,14 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 					if (item != null) {
 						if (itemComboBox.getSelectedItem() instanceof Item) {
 							Item selectedItem = (Item) itemComboBox.getSelectedItem();
-							if (!selectedItem.getItemNumber().equals(item.toString())) {
+							if (!selectedItem.getItemNumber().equals(item.toString()) && 
+									!selectedItem.toString().equals(item.toString())) {
 								itemNumber = item.toString();
 							}
 						} else {
 							itemNumber = item.toString();
 						}
 					}
-				} else if ("barcodeReceived".equals(event.getActionCommand())) {
-					BarcodeReader barcodeReader = (BarcodeReader) event.getSource();
-					itemNumber = barcodeReader.getBarcode();
 				}
 				if (itemNumber != null) {
 					ItemDao itemDao = daoService.getDao(Item.class);
@@ -396,8 +393,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
 		getTable().getColumnModel().getColumn(0).setCellEditor(datePickerCellEditor);
 
-		BarcodeReader reader = new BarcodeReader();
-		reader.addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
+		//BarcodeReader reader = new BarcodeReader();
+		//reader.addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		createTableCellEditor.getAutoCompleteSupport().getComboBox().addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
