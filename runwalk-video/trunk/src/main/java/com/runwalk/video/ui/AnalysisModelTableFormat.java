@@ -29,8 +29,9 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 	}
 
 	public boolean isEditable(AnalysisModel baseObject, int column) {
-		return (baseObject.getFeedbackId() != null && baseObject.getTokenId() == null 
-				&& column == 0) || column == 1 || baseObject.getFeedbackId() == null && column == 2;
+		return (baseObject.getFeedbackId() != null && baseObject.getTokenId() == null && column == 0) || 
+				(column == 1 && baseObject.getFeedbackId() == null) || 
+				baseObject.getFeedbackId() == null && column == 2;
 	}
 
 	public AnalysisModel setColumnValue(AnalysisModel analysisModel, Object editedValue, int column) {

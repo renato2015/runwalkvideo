@@ -15,6 +15,8 @@ import javax.persistence.Table;
 public class SuspendedSaleItem implements Serializable {
 	
 	public static final BigDecimal DEFAULT_DISCOUNT = BigDecimal.valueOf(10.0d);
+	
+	public static final int DEFAULT_QUANTITY = 1;
 
 	@EmbeddedId
 	private SuspendedSaleItemKey id;
@@ -38,6 +40,7 @@ public class SuspendedSaleItem implements Serializable {
 
 	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Client client) {
 		this(suspendedSale, item);
+		quantity = DEFAULT_QUANTITY;
 		costPrice = item.getCostPrice();
 		unitPrice = item.getUnitPrice();
 	}

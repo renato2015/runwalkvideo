@@ -38,10 +38,10 @@ public class Item implements Serializable {
 	@JoinColumn(name="item_size_id")
 	private ItemSize itemSize;
 	
-	@Column(name="unit_price")
+	@Column(name="cost_price")
 	private BigDecimal costPrice;
 	
-	@Column(name="cost_price")
+	@Column(name="unit_price")
 	private BigDecimal unitPrice;
 	
 	public Long getId() {
