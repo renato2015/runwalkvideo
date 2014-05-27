@@ -317,6 +317,14 @@ public class SettingsManager {
 		getSettings().videoCapturerFactorySettings = Lists.newArrayList(videoPlayerFactorySettings);
 	}
 	
+	public void setEmployeeId(Long employeeId) {
+		getSettings().employeeId = employeeId;
+	}
+	
+	public Long getEmployeeId() {
+		return getSettings().employeeId;
+	}
+	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings {
@@ -339,6 +347,8 @@ public class SettingsManager {
 		private String videoDir;
 		// TODO create a separate strategy object for uncompressed video's, too
 		private String uncompressedVideoDir;
+		
+		private Long employeeId = 1L;
 		
 		private DatabaseSettings databaseSettings = DatabaseSettings.JDBC_DEFAULT;
 		

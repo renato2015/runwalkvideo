@@ -19,12 +19,12 @@
 		<class>com.runwalk.video.entities.Keyframe</class>
 		<properties>
 		    <property name="eclipselink.target-database" value="MYSQL" />
- 			<property name="eclipselink.cache.type.City" value="Full"/>
  			<!-- need to call the StaticWeave class at build time -->
  			<!-- property name="eclipselink.weaving" value="static" -->
 		  	<property name="eclipselink.jdbc.driver" value="${jdbc.driverClass}" />
 			<property name="eclipselink.logging.logger" value="com.runwalk.video.RunwalkVideoApp$EclipseLinkLogger"/>
-			<property name="eclipselink.logging.level" value="FINEST" />
+			<property name="eclipselink.logging.level.sql" value="FINE"/>
+			<property name="eclipselink.logging.parameters" value="true"/>
 		</properties>
 	</persistence-unit>
 </persistence>

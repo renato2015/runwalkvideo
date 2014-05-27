@@ -143,7 +143,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 				Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, this,	selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
 
-		BeanProperty<AnalysisTablePanel, Boolean> isSelected = BeanProperty.create(ROW_SELECTED);
+		ELProperty<AnalysisTablePanel, Boolean> isSelected = ELProperty.create("${rowSelected && selectedItem.feedbackId == null}");
 		BeanProperty<JTextArea, Boolean> jTextAreaEnabled = BeanProperty.create("enabled");
 		Binding<?, Boolean, JTextArea, Boolean> enableCommentsBinding = 
 				Bindings.createAutoBinding(UpdateStrategy.READ, this, isSelected, comments, jTextAreaEnabled);
@@ -240,19 +240,22 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 			@Override
 			public void succeeded(TaskEvent<Analysis> event) {
-				Analysis result = event.getValue();
-				getItemList().getReadWriteLock().writeLock().lock();
-				try {
-					AnalysisModel analysisModel = new AnalysisModel(selectedModel, result);
-					selectedModel.addAnalysisModel(analysisModel);
-					setSelectedItemRow(analysisModel);
-				} finally {
-					getItemList().getReadWriteLock().writeLock().unlock();
-				}
+				addAnalysisModel(selectedModel, event.getValue());
 			}
 
 		});
 		return result;
+	}
+	
+	private void addAnalysisModel(final ClientModel selectedModel, Analysis result) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			AnalysisModel analysisModel = new AnalysisModel(selectedModel, result);
+			selectedModel.addAnalysisModel(analysisModel);
+			setSelectedItemRow(analysisModel);
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
 	}
 
 	private Analysis createAnalysisForEvent(ActionEvent event, final Client selectedClient) {
@@ -282,26 +285,29 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 				@Override
 				public void succeeded(TaskEvent<Analysis> event) {
-					Analysis analysis = event.getValue();
-					getItemList().getReadWriteLock().writeLock().lock();
-					try {
-						int lastSelectedRowIndex = getEventSelectionModel()
-								.getMinSelectionIndex();
-						getItemList().remove(selectedModel);
-						deleteAnalysisForFeedback(selectedModel);
-						// delete the video files
-						if (lastSelectedRowIndex > 0) {
-							setSelectedItemRow(lastSelectedRowIndex - 1);
-						}
-						getVideoFileManager().deleteVideoFiles(analysis);
-					} finally {
-						getItemList().getReadWriteLock().writeLock().unlock();
-					}
+					getVideoFileManager().deleteVideoFiles(event.getValue());
+					deleteAnalysisModel(selectedModel);
 				}
 
 			});
 		}
 		return result;
+	}
+	
+	private void deleteAnalysisModel(final AnalysisModel selectedModel) {
+		getItemList().getReadWriteLock().writeLock().lock();
+		try {
+			int lastSelectedRowIndex = getEventSelectionModel()
+					.getMinSelectionIndex();
+			getItemList().remove(selectedModel);
+			deleteAnalysisForFeedback(selectedModel);
+			// delete the video files
+			if (lastSelectedRowIndex > 0) {
+				setSelectedItemRow(lastSelectedRowIndex - 1);
+			}
+		} finally {
+			getItemList().getReadWriteLock().writeLock().unlock();
+		}
 	}
 	
 	@Action(enabledProperty = SELECTED_ITEM_RECORDED)
@@ -370,7 +376,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 						getSelectedItem().setItem(result);
 						Client selectedClient = clientTablePanel.getSelectedItem().getEntity();
 						AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
-								selectedClient, result));
+								selectedClient, result, getAppSettings().getEmployeeId()));
 					}
 				} finally {
 					getArticleList().getReadWriteLock().writeLock().unlock();
@@ -393,8 +399,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		DatePickerCellEditor datePickerCellEditor = new DatePickerCellEditor(AppUtil.DATE_FORMATTER);
 		getTable().getColumnModel().getColumn(0).setCellEditor(datePickerCellEditor);
 
-		//BarcodeReader reader = new BarcodeReader();
-		//reader.addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
 		// create special table cell editor for selecting articles
 		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
 		createTableCellEditor.getAutoCompleteSupport().getComboBox().addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));

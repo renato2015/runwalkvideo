@@ -34,6 +34,9 @@ public class SuspendedSale implements Serializable {
 	@JoinColumn(name="customer_id", nullable=false )
 	private Client client;
 	
+	@Column(name="employee_id")
+	private Long employeeId;
+	
 	@OneToMany
 	@JoinColumn(name="sale_id")
 	private List<SuspendedSaleItem> saleItems;
@@ -47,12 +50,17 @@ public class SuspendedSale implements Serializable {
 	
 	public SuspendedSale() {}
 
-	public SuspendedSale(Client client) {
+	public SuspendedSale(Client client, Long employeeId) {
 		this.client = client;
+		this.employeeId = employeeId;
 	}
 	
 	public Long getId() {
 		return saleId;
+	}
+	
+	public Long getEmployeeId() {
+		return employeeId;
 	}
 
 	public Date getSaleTime() {

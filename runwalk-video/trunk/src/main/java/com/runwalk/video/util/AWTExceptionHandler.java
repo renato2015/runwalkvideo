@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  * @author Jeroen Peelaerts
  *
  */
-public class AWTExceptionHandler {
+public class AWTExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 	public void handle(Throwable t) {
 		try {
@@ -25,5 +25,10 @@ public class AWTExceptionHandler {
 
 	public static void registerExceptionHandler() {
 		System.setProperty("sun.awt.exception.handler", AWTExceptionHandler.class.getName());
+		Thread.setDefaultUncaughtExceptionHandler(new AWTExceptionHandler());
+	}
+
+	public void uncaughtException(Thread t, Throwable e) {
+		Logger.getLogger(getClass()).error(e.getMessage(), e);
 	}
 }
