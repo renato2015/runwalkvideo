@@ -24,7 +24,6 @@ import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
 import ca.odell.glazedlists.swing.DefaultEventTableModel;
-import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.google.common.collect.Iterables;
@@ -203,7 +202,6 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 			sortedList.setMode(SortedList.AVOID_MOVING_ELEMENTS);
 			specializedList = specializeItemList(sortedList);
 			firePropertyChange(EVENT_LIST, this.itemList, this.itemList = specializedList); 
-			specializedList = GlazedListsSwing.swingThreadProxyList(specializedList);
 			eventSelectionModel = new DefaultEventSelectionModel<T>(specializedList);
 			eventSelectionModel.setSelectionMode(ListSelection.SINGLE_SELECTION);
 			eventSelectionModel.getTogglingSelected().addListEventListener(listEventListener);
