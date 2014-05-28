@@ -1,9 +1,10 @@
 package com.runwalk.video.model;
 
-import com.runwalk.video.core.PropertyChangeSupport;
+import org.jdesktop.application.AbstractBean;
+
 import com.runwalk.video.entities.SerializableEntity;
 
-public class AbstractEntityModel<T extends SerializableEntity<? super T>> implements PropertyChangeSupport, Comparable<AbstractEntityModel<T>> {
+public class AbstractEntityModel<T extends SerializableEntity<? super T>> extends AbstractBean implements Comparable<AbstractEntityModel<T>> {
 	
 	public static final String DIRTY = "dirty";
 	
