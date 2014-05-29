@@ -366,17 +366,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 			}
 			
 			@Override
-			protected void succeeded(Item result) {
+			protected void succeeded(Item newItem) {
 				try {
 					getArticleList().getReadWriteLock().writeLock().lock();
-					if (result != null) {
-						if (!getArticleList().contains(result)) {
-							getArticleList().add(result);
+					if (newItem != null) {
+						if (!getArticleList().contains(newItem)) {
+							getArticleList().add(newItem);
 						}
-						getSelectedItem().setItem(result);
+						Item oldItem = getSelectedItem().getItem();
+						getSelectedItem().setItem(newItem);
 						Client selectedClient = clientTablePanel.getSelectedItem().getEntity();
 						AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
-								selectedClient, result, getAppSettings().getEmployeeId()));
+								selectedClient, oldItem, newItem, getAppSettings().getEmployeeId()));
 					}
 				} finally {
 					getArticleList().getReadWriteLock().writeLock().unlock();
