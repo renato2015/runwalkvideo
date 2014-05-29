@@ -1,5 +1,7 @@
 package com.runwalk.video.tasks;
 
+import java.util.Iterator;
+
 import javax.persistence.NoResultException;
 
 import com.runwalk.video.dao.DaoService;
@@ -13,15 +15,17 @@ import com.runwalk.video.entities.SuspendedSaleItemTax;
 public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 
 	private final DaoService daoService;
-	private final Item item;
+	private final Item oldItem;
+	private final Item newItem;
 	private final Client client;
 	private final Long employeeId;
 	
-	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Client client, Item item, Long employeeId) {
+	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Client client, Item oldItem, Item newItem, Long employeeId) {
 		super("createOrUpdateSuspendedSale");
 		this.daoService = daoService;
 		this.client = client;
-		this.item = item;
+		this.oldItem = oldItem;
+		this.newItem = newItem;
 		this.employeeId = employeeId;
 	}
 
@@ -29,14 +33,26 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 	protected Void doInBackground() throws Exception {
 		message("startMessage");
 		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getClient());
-		SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getItem(), getClient());
-		SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getItem());
+		replaceSuspendedSaleItems(suspendedSale);
+		SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getClient());
+		SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getNewItem());
 		suspendedSale.getSaleItems().add(suspendedSaleItem);
 		suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
 		SuspendedSaleDao suspendedSaleDao = getDaoService().getDao(SuspendedSale.class);
 		suspendedSaleDao.merge(suspendedSale);
 		message("endMessage");
 		return null;
+	}
+
+	private void replaceSuspendedSaleItems(SuspendedSale suspendedSale) {
+		Iterator<SuspendedSaleItem> iterator = suspendedSale.getSaleItems().iterator();
+		while (oldItem != null && iterator.hasNext()) {
+			SuspendedSaleItem suspendedSaleItem = iterator.next();
+			if (suspendedSaleItem.getItemId().equals(getOldItem().getId())) {
+				getDaoService().getDao(SuspendedSaleItem.class).delete(suspendedSaleItem);
+				iterator.remove();
+			}
+		}
 	}
 	
 	private SuspendedSale findOrCreateSuspendedSale(Client client) {
@@ -58,8 +74,12 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		return client;
 	}
 
-	public Item getItem() {
-		return item;
+	public Item getNewItem() {
+		return newItem;
+	}
+
+	public Item getOldItem() {
+		return oldItem;
 	}
 
 	public Long getEmployeeId() {

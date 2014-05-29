@@ -128,11 +128,6 @@ public class VideoFileManager {
 		return getVideoFile(getVideoFolderRetrievalStrategy(), recording);
 	}
 	
-	public void clear() {
-		recordingFileMap.clear();
-		fileNameRecordingMap.clear();
-	}
-
 	/**
 	 * Check if the duration for the given recording and videofile is synchronized correctly.
 	 * If not, then get the duration of the video file and set it on the recording.
@@ -180,7 +175,7 @@ public class VideoFileManager {
 	}
 
 	public int refreshCache(Recording recording) {
-		File videoFile = refreshCache(getVideoFolderRetrievalStrategy(), recording);;
+		File videoFile = refreshCache(getVideoFolderRetrievalStrategy(), recording);
 		return videoFile == null ? 1 : 0;
 	}
 	
