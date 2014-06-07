@@ -3,7 +3,7 @@ package com.runwalk.video.tasks;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -19,21 +19,22 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 	private final VideoFolderRetrievalStrategy videoFolderRetrievalStrategy;
 	private final Component parentComponent;
 	private int deletedDirectories = 0, filesMoved = 0;
+	private final List<Recording> recordings;
 
 	public OrganiseVideoFilesTask(Component parentComponent, 
-			VideoFileManager videoFileManager, VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
+			VideoFileManager videoFileManager, List<Recording> recordings, VideoFolderRetrievalStrategy videoFolderRetrievalStrategy) {
 		super("organiseVideoFiles");
 		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
 		this.videoFolderRetrievalStrategy = videoFolderRetrievalStrategy;
+		this.recordings = recordings;
 	}
 
 	protected Void doInBackground() throws Exception {
 		message("startMessage");
 		File videoDir = getVideoFileManager().getVideoDir();
 		int progress = 0, filesMissing = 0;
-		Set<Recording> recordings = getVideoFileManager().getCachedRecordings();
-		for(Recording recording : recordings) {
+		for(Recording recording : getRecordings()) {
 			File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
 			// check whether a compressed video file exists for the given recording
 			if (compressedVideoFile.exists()) {
@@ -107,6 +108,10 @@ public class OrganiseVideoFilesTask extends AbstractTask<Void, Void> {
 
 	public VideoFolderRetrievalStrategy getVideoFolderRetrievalStrategy() {
 		return videoFolderRetrievalStrategy;
+	}
+	
+	public List<Recording> getRecordings() {
+		return recordings;
 	}
 
 	public Component getParentComponent() {

@@ -123,7 +123,6 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 		JButton compressAnalysisButton = new JButton(getAction(COMPRESS_VIDEO_FILES_ACTION));
 		compressAnalysisButton.setFont(SettingsManager.MAIN_FONT);
-		compressAnalysisButton.setActionCommand(ADD_ANALYSIS_FOR_FEEDBACK_ACTION);
 		add(compressAnalysisButton, "gapleft push, wrap");
 
 		JScrollPane tscrollPane = new JScrollPane();
@@ -224,8 +223,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		final ClientModel selectedModel = getClientTablePanel().getSelectedItem();
 		final Client selectedClient = selectedModel.getEntity();
 		if (("".equals(selectedModel.getName()) || selectedModel.getName() == null)
-				&& ("".equals(selectedModel.getOrganization()) || selectedClient
-						.getOrganization() == null)) {
+				&& ("".equals(selectedModel.getOrganization()) || selectedClient.getOrganization() == null)) {
 			JOptionPane.showMessageDialog(SwingUtilities
 					.windowForComponent(this),
 					getResourceMap().getString("addAnalysis.errorDialog.text"),

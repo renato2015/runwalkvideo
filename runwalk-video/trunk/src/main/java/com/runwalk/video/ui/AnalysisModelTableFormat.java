@@ -8,12 +8,16 @@ import ca.odell.glazedlists.gui.WritableTableFormat;
 
 import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Item;
+import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 
 public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel> implements WritableTableFormat<AnalysisModel> {
 	
-	public AnalysisModelTableFormat(ResourceMap resourceMap) {
+	private VideoFileManager videoFileManager;
+
+	public AnalysisModelTableFormat(ResourceMap resourceMap, VideoFileManager videoFileManager) {
 		super(resourceMap);
+		this.videoFileManager = videoFileManager;
 	}
 	
 	public Object getColumnValue(final AnalysisModel analysisModel, int column) {
@@ -23,7 +27,7 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 		case 2: return analysisModel.getProgression();
 		case 3: return analysisModel.getDuration();	
 		case 4: return analysisModel.getComments();
-		case 5: return analysisModel.isRecorded();
+		case 5: return getVideoFileManager().isRecorded(analysisModel.getRecordings());
 		default: return null;
 		}
 	}
@@ -46,4 +50,8 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 		return analysisModel;
 	}
 
+	public VideoFileManager getVideoFileManager() {
+		return videoFileManager;
+	}
+	
 }

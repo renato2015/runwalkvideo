@@ -106,7 +106,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 	private final AbstractTablePanel.ClickHandler<AnalysisModel> clickHandler = new AbstractTablePanel.ClickHandler<AnalysisModel>() {
 
 		public void handleClick(AnalysisModel element) {
-			if (element.isRecorded()) {
+			if (getVideoFileManager().isRecorded(element.getRecordings())) {
 				getTaskService().execute(openRecordings(element));
 			}
 		}
@@ -600,7 +600,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 				@Override
 				public void finished(TaskEvent<Void> event) {
-					// set this manually as such a specific propertyChangeEvent won't be fired
 					selectedRecordingRecordable = false;
 					setRecordingEnabled(false);
 					getAnalysisTablePanel().updateRow(selectedModel);
@@ -654,7 +653,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				if (analysisModel != null) {
 					for(int i = 0; i < analysisModel.getRecordings().size(); i++) {
 						final Recording recording = analysisModel.getRecordings().get(i);
-						if (analysisModel.isRecorded()) {
+						if (getVideoFileManager().isRecorded(recording)) {
 							final File videoFile = getVideoFileManager().getVideoFile(recording);
 							if (recordingCount < getPlayers().size()) {
 								videoPlayer = getPlayers().get(recordingCount);

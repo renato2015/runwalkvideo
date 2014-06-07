@@ -75,7 +75,7 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 		part = 100 / (double) conversionCount;
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
-			RecordingStatus statusCode = RecordingStatus.getByCode(recording.getStatusCode());
+			RecordingStatus recordingStatus = getVideoFileManager().getRecordingStatus(recording);
 			File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
 			File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
 			try {
@@ -104,18 +104,17 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 						finished = false;
 					}
 				}
-				statusCode = RecordingStatus.COMPRESSED;
+				recordingStatus = RecordingStatus.COMPRESSED;
 			} catch(Throwable thr) {
-				statusCode = RecordingStatus.DSJ_ERROR;
+				recordingStatus = RecordingStatus.DSJ_ERROR;
 				getLogger().error("Compression error for file " + sourceFile.getAbsolutePath(), thr);
 				errorCount++;
 			} finally {
 				if (exporter != null && exporter.getFiltergraph().getActive()) {
 					exporter.getFiltergraph().stop();
 				}
-				recording.setStatusCode(statusCode.getCode());
 				// video file needs to be refreshed in the cache
-				getVideoFileManager().refreshCache(recording);
+				getVideoFileManager().updateCache(recording, recordingStatus);
 				publish(recording);
 			}
 		}
@@ -134,8 +133,8 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 			exporter.dispose();
 		}
 		if (recording != null) {
+			getVideoFileManager().updateCache(recording, RecordingStatus.UNCOMPRESSED);
 			//TODO clean up file that failed to convert..
-			recording.setStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
 		}
 	}
 

@@ -59,4 +59,8 @@ public enum RecordingStatus {
 		return getCode() < 0 || getCode() == 4;
 	}
 	
+	public boolean isRecorded() {
+		return this == COMPRESSED || this == UNCOMPRESSED || this == RECORDED;
+	}
+	
 }

@@ -1,8 +1,10 @@
 package com.runwalk.video.panels;
 
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -57,6 +59,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	public static final String SELECT_VIDEO_DIR_ACTION = "selectVideoDir";
 	public static final String SELECT_UNCOMPRESSED_VIDEO_DIR_ACTION = "selectUncompressedVideoDir";
 	public static final String REFRESH_RECORDINGS_ACTION = "refreshRecordings";
+	public static final String REFRESH_ALL_RECORDINGS_ACTION  = "refreshAllRecordings";
 
 	private boolean compressionEnabled;
 	final ImageIcon completedIcon = getResourceMap().getImageIcon("status.complete.icon");
@@ -89,7 +92,13 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		
 		JButton refreshButton = new JButton(getAction(REFRESH_RECORDINGS_ACTION));
 		refreshButton.setFont(SettingsManager.MAIN_FONT);
+		refreshButton.setActionCommand(REFRESH_RECORDINGS_ACTION);
 		add(refreshButton);
+		
+		JButton refreshAllButton = new JButton(getAction(REFRESH_ALL_RECORDINGS_ACTION));
+		refreshAllButton.setFont(SettingsManager.MAIN_FONT);
+		refreshAllButton.setActionCommand(REFRESH_ALL_RECORDINGS_ACTION);
+		add(refreshAllButton);
 	}
 
 	@Action(block = BlockingScope.APPLICATION)
@@ -107,18 +116,28 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	}
 	
 	@Action(block = BlockingScope.APPLICATION)
-	public AbstractTask<EventList<RecordingModel>, Void> refreshRecordings() {
-		dispose();
+	public AbstractTask<EventList<RecordingModel>, Void> refreshAllRecordings(ActionEvent event) {
+		return refreshRecordings(event);
+	}
+	
+	@Action(block = BlockingScope.APPLICATION)
+	public AbstractTask<EventList<RecordingModel>, Void> refreshRecordings(final ActionEvent event) {
 		return new AbstractTask<EventList<RecordingModel>, Void>(REFRESH_RECORDINGS_ACTION) {
 
 			@Override
 			protected EventList<RecordingModel> doInBackground() throws Exception {
 				message("startMessage");
-				RecordingDao recordingDao = getDaoService().getDao(Recording.class);
-				List<RecordingModel> recordingModelList = recordingDao
-						.getRecordingsAsModelByStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
-				EventList<RecordingModel> recordingModelEventList = GlazedLists.eventList(recordingModelList);
-				recordingList = transformRecordingModelList(recordingModelEventList);
+				EventList<RecordingModel> recordingModelEventList = GlazedLists.eventListOf();
+				if (REFRESH_ALL_RECORDINGS_ACTION.equals(event.getActionCommand())) {
+					RecordingDao recordingDao = getDaoService().getDao(Recording.class);
+					List<RecordingModel> recordingModelList = recordingDao.getAllAsModels();
+					recordingModelEventList.addAll(recordingModelList);
+					recordingList = transformRecordingModelList(recordingModelEventList);
+				} else {
+					Set<Recording> cachedRecordings = getVideoFileManager().getCachedRecordings();
+					recordingList = GlazedLists.eventList(cachedRecordings);
+					recordingModelEventList.addAll(transformRecordingList(recordingList));
+				}
 				message("endMessage");
 				return recordingModelEventList;
 			}
@@ -132,25 +151,29 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		};
 	}
 	
+	private EventList<RecordingModel> transformRecordingList(EventList<Recording> sourceList) {
+		return new FunctionList<Recording, RecordingModel>(sourceList, new FunctionList.Function<Recording, RecordingModel>() {
+
+			public RecordingModel evaluate(Recording sourceValue) {
+				return new RecordingModel(sourceValue);
+			}
+				
+		});
+	}
+	
 	/**
 	 * Returns a {@link java.awt.List} of {@link Recording}s that are in the {@link RecordingStatus#UNCOMPRESSED} state.
 	 * 
 	 * @return The list
 	 */
 	private EventList<Recording> transformRecordingModelList(EventList<RecordingModel> sourceList) {
-		sourceList.getReadWriteLock().readLock().lock();
-		try {
-			return new FunctionList<RecordingModel, Recording>(sourceList, new FunctionList.Function<RecordingModel, Recording>() {
+		return new FunctionList<RecordingModel, Recording>(sourceList, new FunctionList.Function<RecordingModel, Recording>() {
 
-				@Override
-				public Recording evaluate(RecordingModel sourceValue) {
-					return sourceValue.getEntity();
-				}
-					
-			});
-		} finally {
-			sourceList.getReadWriteLock().readLock().unlock();
-		}
+			public Recording evaluate(RecordingModel sourceValue) {
+				return sourceValue.getEntity();
+			}
+				
+		});
 	}
 
 	@Action
@@ -162,7 +185,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 	@Action(block = BlockingScope.APPLICATION)
 	public Task<Boolean, Void> cleanupVideoFiles() {
 		Window parentWindow = SwingUtilities.windowForComponent(this);
-		return new CleanupVideoFilesTask(parentWindow, getVideoFileManager());
+		return new CleanupVideoFilesTask(parentWindow, getVideoFileManager(), getRecordingList());
 	}
 
 	@Action(block = Task.BlockingScope.APPLICATION)
@@ -176,7 +199,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 			// create a new retrieval strategy using the specified format string
 			VideoFolderRetrievalStrategy newStrategy = new DateVideoFolderRetrievalStrategy(formatString.toString());
 			Window parentComponent = SwingUtilities.windowForComponent(this);
-			return new OrganiseVideoFilesTask(parentComponent, getVideoFileManager(), newStrategy);
+			return new OrganiseVideoFilesTask(parentComponent, getVideoFileManager(), getRecordingList(), newStrategy);
 		}
 		return null;
 	}
@@ -186,7 +209,7 @@ public class RecordingTablePanel extends AbstractTablePanel<RecordingModel> {
 		setCompressionEnabled(false);
 		String transcoder = getAppSettings().getTranscoderName();
 		Window parentComponent = SwingUtilities.windowForComponent(this);
-		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), recordingList, transcoder) {
+		return new CompressVideoFilesTask(parentComponent, getVideoFileManager(), getRecordingList(), transcoder) {
 
 			@Override
 			protected void process(List<Recording> recordings) {

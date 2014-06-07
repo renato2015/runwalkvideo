@@ -209,9 +209,9 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientModelTableFormat(clientTablePanel.getResourceMap()));
-		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap()));
+		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap(), getVideoFileManager()));
 		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
-		recordingTablePanel.setTableFormat(new RecordingModelTableFormat(recordingTablePanel.getResourceMap()));
+		recordingTablePanel.setTableFormat(new RecordingModelTableFormat(recordingTablePanel.getResourceMap(), getVideoFileManager()));
 		//recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();
