@@ -124,16 +124,6 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 		return isFeedbackRecord() ? null : 0L;
 	}
 	
-	public boolean isRecorded() {
-		boolean isRecorded = false;
-		for (Iterator<Recording> it = getEntity().getRecordings().iterator(); it.hasNext() && !isRecorded; ) {
-			RecordingStatus recordingStatus = RecordingStatus.getByCode(it.next().getStatusCode());
-			isRecorded |= recordingStatus == RecordingStatus.COMPRESSED || 
-					recordingStatus == RecordingStatus.UNCOMPRESSED;
-		}
-		return isRecorded;
-	}
-
 	@Override
 	public void setDirty(boolean dirty) {
 		clientModel.setDirty(dirty);

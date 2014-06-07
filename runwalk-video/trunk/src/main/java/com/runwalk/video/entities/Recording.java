@@ -46,9 +46,6 @@ public class Recording extends SerializableEntity<Recording> {
 	@Column(name="lastmodified")
 	private Long lastModified;
 	
-	@Column(name = "statusCode")
-	private Integer statusCode = RecordingStatus.READY.getCode();
-
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="recording")
 	private List<Keyframe> keyframes;
 
@@ -110,14 +107,6 @@ public class Recording extends SerializableEntity<Recording> {
 		return videoFileName;
 	}
 	
-	public Integer getStatusCode() {
-		return statusCode;
-	}
-
-	public void setStatusCode(Integer statusCode) {
-		this.statusCode = statusCode;
-	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -148,7 +137,7 @@ public class Recording extends SerializableEntity<Recording> {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + " [id=" + id + ", statuscode=" + statusCode	+ ", videoFileName=" + videoFileName + "]";
+		return getClass().getSimpleName() + " [id=" + id + ", videoFileName=" + videoFileName + "]";
 	}
 
 

@@ -1,6 +1,7 @@
 package com.runwalk.video.io;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,8 @@ public class VideoFileManager {
 
 	private static final Logger LOGGER = Logger.getLogger(VideoFileManager.class);
 
-	private Map<Recording, File> recordingFileMap = new HashMap<Recording, File>();
-	/** A sorted view on the key set of the cached {@link #recordingFileMap}. */
+	private Map<Recording, RecordingStatus> recordingStatusMap = new HashMap<Recording, RecordingStatus>();
+	/** A sorted view on the key set of the cached {@link #recordingStatusMap}. */
 	private Map<String, Recording> fileNameRecordingMap = new HashMap<String, Recording>();
 
 	private final SettingsManager appSettings;
@@ -62,66 +63,89 @@ public class VideoFileManager {
 		}
 		return result;
 	}
+	
+	public RecordingStatus getRecordingStatus(Recording recording) {
+		RecordingStatus recordingStatus = recordingStatusMap.get(recording);
+		return recordingStatus == null ? RecordingStatus.NON_EXISTANT_FILE : recordingStatus;
+	}
 
-	public boolean addToCache(Recording recording, File videoFile) {
-		synchronized(recordingFileMap) {
-			File cachedVideoFile = recordingFileMap.get(recording);
-			if (videoFile != null && cachedVideoFile == null) {
+	public boolean addToCache(Recording recording, RecordingStatus recordingStatus) {
+		synchronized(recordingStatusMap) {
+			RecordingStatus cachedRecordingStatus = recordingStatusMap.get(recording);
+			if (recordingStatus != null && cachedRecordingStatus == null) {
 				// O(1) time complexity for this operation
 				fileNameRecordingMap.put(recording.getVideoFileName(), recording);
 				// O(1) time complexity for this operation
-				return recordingFileMap.put(recording, videoFile) != null;
-			} else if (cachedVideoFile != null && !cachedVideoFile.equals(videoFile)) {
-				LOGGER.debug("Videofile was already present in cache for filename " + recording.getVideoFileName());
-				// O(1) time complexity for this operation
-				fileNameRecordingMap.put(recording.getVideoFileName(), recording);
-				// O(1) time complexity for this operation
-				return recordingFileMap.put(recording, videoFile) != null;
+				return recordingStatusMap.put(recording, recordingStatus) != null;
 			}
 		}
 		return false;
 	}
+	
+	private File resolveVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording, RecordingStatus recordingStatus) {
+		File result = null;
+		if (recordingStatus == RecordingStatus.COMPRESSED) {
+			result = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
+		} else if (recordingStatus == RecordingStatus.UNCOMPRESSED) {
+			result = getUncompressedVideoFile(recording);
+		}
+		return result;
+	}
 
 	private  File getVideoFile(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
-		synchronized(recordingFileMap) {
-			File videoFile = recordingFileMap.get(recording);
-			if (videoFile == null || !canReadAndExists(videoFile))  {
+		synchronized(recordingStatusMap) {
+			RecordingStatus recordingStatus = recordingStatusMap.get(recording);
+			File videoFile = resolveVideoFile(videoFolderRetrievalStrategy, recording, recordingStatus);
+			if (recordingStatus == null)  {
 				File compressedVideoFile = getCompressedVideoFile(videoFolderRetrievalStrategy, recording);
 				File uncompressedVideoFile = getUncompressedVideoFile(recording);
 				if (canReadAndExists(compressedVideoFile)) {
-					recording.setStatusCode(RecordingStatus.COMPRESSED.getCode());
-					// duration wasn't saved.. set again
+					recordingStatus = RecordingStatus.COMPRESSED;
 					videoFile = compressedVideoFile;
+					// duration wasn't saved.. set again
 					checkRecordingDuration(recording, videoFile);
 				} else if (canReadAndExists(uncompressedVideoFile)) {
-					recording.setStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
+					recordingStatus = RecordingStatus.UNCOMPRESSED;
 					// duration wasn't saved.. set again
 					videoFile = uncompressedVideoFile;
 					checkRecordingDuration(recording, videoFile);
 				} else if (recording.getDuration() == 0) {
 					// video file does not exist and duration is set to 0, prolly nothing recorded yet
-					recording.setStatusCode(RecordingStatus.READY.getCode());
+					recordingStatus = RecordingStatus.READY;
 					videoFile = uncompressedVideoFile;
 				} else {
 					LOGGER.warn("No videofile found for recording with filename " + recording.getVideoFileName());
-					recording.setStatusCode(RecordingStatus.NON_EXISTANT_FILE.getCode());
+					recordingStatus = RecordingStatus.NON_EXISTANT_FILE;
 				} 
-				addToCache(recording, videoFile);
+				addToCache(recording, recordingStatus);
 			}
 			return videoFile;
 		}
+	}
+	
+	public boolean isRecorded(List<Recording> recordings) {
+		boolean result = false;
+		for (Recording recording : recordings) {
+			RecordingStatus recordingStatus = recordingStatusMap.get(recording);
+			result |= recordingStatus != null && recordingStatus.isRecorded();
+		}
+		return result;
+	}
+	
+	public boolean isRecorded(Recording... recordings) {
+		return isRecorded(Arrays.asList(recordings));
 	}
 
 	/**
 	 * Returns an {@link ImmutableSet} containing all the currently cached {@link Recording}s .
 	 * Best practice is to assign this {@link Set} to a local variable directly, as calls to this method can 
-	 * become expensive as the cached {@link #recordingFileMap} size grows larger.
+	 * become expensive as the cached {@link #recordingStatusMap} size grows larger.
 	 * 
 	 * @return The immutable set
 	 */
 	public Set<Recording> getCachedRecordings() {
 		ImmutableSet.Builder<Recording> setBuilder = ImmutableSet.builder();
-		return setBuilder.addAll(recordingFileMap.keySet()).build();
+		return setBuilder.addAll(recordingStatusMap.keySet()).build();
 	}
 
 	public File getVideoFile(Recording recording) {
@@ -143,9 +167,16 @@ public class VideoFileManager {
 		}
 	}
 	
+	public boolean updateCache(Recording recording, RecordingStatus recordingStatus) {
+		// O(1) time complexity for this operation
+		fileNameRecordingMap.put(recording.getVideoFileName(), recording);
+		// O(1) time complexity for this operation
+		return recordingStatusMap.put(recording, recordingStatus) != null;
+	}
+	
 	public int refreshCache() {
 		int filesMissing = 0;
-		for (Recording recording : recordingFileMap.keySet()) {
+		for (Recording recording : recordingStatusMap.keySet()) {
 			filesMissing += refreshCache(recording);
 		}
 		return filesMissing;
@@ -181,15 +212,15 @@ public class VideoFileManager {
 	
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
 		if (!removeRecording(recording)) {
-			LOGGER.info("Cache miss for " + recording.getVideoFileName());
+			LOGGER.debug("Cache eviction failed for " + recording);
 		}
 		return getVideoFile(videoFolderRetrievalStrategy, recording);
 	}
 	
 	private boolean removeRecording(Recording recording) {
-		File removedFile = recordingFileMap.remove(recording);
+		RecordingStatus removedRecordingStatus = recordingStatusMap.remove(recording);
 		Recording removedRecording = fileNameRecordingMap.remove(recording.getVideoFileName());
-		return removedFile != null && removedRecording != null;
+		return removedRecordingStatus != null && removedRecording != null;
 	}
 
 	public boolean canReadAndExists(File videoFile) {

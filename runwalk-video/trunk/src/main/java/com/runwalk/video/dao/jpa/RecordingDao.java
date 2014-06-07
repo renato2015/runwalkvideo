@@ -14,12 +14,11 @@ public class RecordingDao extends JpaDao<Recording> {
 		super(Recording.class, entityManagerFactory);
 	}
 	
-	public List<RecordingModel> getRecordingsAsModelByStatusCode(int statusCode) {
+	public List<RecordingModel> getAllAsModels() {
 		TypedQuery<RecordingModel> query = createEntityManager().createQuery(
-				"SELECT NEW com.runwalk.video.model.RecordingModel(recording, recording.analysis.creationDate, COUNT(recording.keyframes)) from " + 
-						getTypeParameter().getSimpleName() + " recording WHERE recording.statusCode = :statusCode", RecordingModel.class);
-		query.setParameter("statusCode", statusCode);
+				"SELECT NEW com.runwalk.video.model.RecordingModel(recording, analysis.creationDate, COUNT(recording.keyframes)) from " + 
+						getTypeParameter().getSimpleName() + " recording LEFT JOIN FETCH recording.analysis analysis GROUP BY recording.id", RecordingModel.class);
 		return query.getResultList();
 	}
-
+	
 }

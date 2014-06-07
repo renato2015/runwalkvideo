@@ -3,11 +3,12 @@ package com.runwalk.video.tasks;
 import java.awt.Component;
 import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.JOptionPane;
 
 import com.google.common.collect.Lists;
+import com.runwalk.video.dao.Dao;
+import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 
@@ -19,10 +20,13 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 
 	private final Component parentComponent;
 
-	public CleanupVideoFilesTask(Component parentComponent, VideoFileManager videoFileManager) {
+	private final List<Recording> recordings;
+
+	public CleanupVideoFilesTask(Component parentComponent, VideoFileManager videoFileManager, List<Recording> recordings) {
 		super("cleanupVideoFiles");
 		this.parentComponent = parentComponent;
 		this.videoFileManager = videoFileManager;
+		this.recordings = recordings;
 	}
 
 	@Override
@@ -30,7 +34,7 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 		message("startMessage");
 		List<File> filesToDelete = Lists.newArrayList();
 		int progress = 0;
-		Set<Recording> recordings = getVideoFileManager().getCachedRecordings();
+		// should get all video files in db??
 		for(Recording recording : recordings) {
 			File compressedVideoFile = getVideoFileManager().getCompressedVideoFile(recording);
 			File uncompressedVideoFile = getVideoFileManager().getUncompressedVideoFile(recording);
@@ -92,6 +96,10 @@ public class CleanupVideoFilesTask extends AbstractTask<Boolean, Void> {
 
 	public VideoFileManager getVideoFileManager() {
 		return videoFileManager;
+	}
+	
+	public List<Recording> getRecordings() {
+		return recordings;
 	}
 
 	public Component getParentComponent() {

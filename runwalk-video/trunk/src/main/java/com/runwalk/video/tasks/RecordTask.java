@@ -48,11 +48,11 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			// persist recording first, then add it to the analysis
 			getDaoService().getDao(Recording.class).persist(recording);
 			getAnalysisModel().addRecording(recording);
+			getVideoFileManager().addToCache(recording, RecordingStatus.RECORDING);
 			File videoFile = getVideoFileManager().getUncompressedVideoFile(recording);
 			if (!"none".equals(capturer.getVideoImpl().getCaptureEncoderName())) {
 				videoFile = getVideoFileManager().getCompressedVideoFile(recording);
 			}
-			getVideoFileManager().addToCache(recording, videoFile);
 			File parentDir = videoFile.getParentFile();
 			if (!parentDir.exists()) {
 				boolean mkdirs = parentDir.mkdirs();
@@ -75,16 +75,12 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 		for (VideoCapturer capturer : getCapturers()) {
 			capturer.stopRecording();
 			for (Recording recording : getAnalysisModel().getEntity().getRecordings()) {
-				String videoPath = capturer.getVideoPath();
-				File videoFile = getVideoFileManager().getVideoFile(recording);
-				result &= videoFile != null;
-				if (videoFile != null && videoPath != null && videoPath.equals(videoFile.getAbsolutePath())) {
-					if ("none".equals(capturer.getCaptureEncoderName())) {
-						recording.setStatusCode(RecordingStatus.UNCOMPRESSED.getCode());
-					} else {
-						recording.setStatusCode(RecordingStatus.COMPRESSED.getCode());
-					}
+				if ("none".equals(capturer.getCaptureEncoderName())) {
+					getVideoFileManager().updateCache(recording, RecordingStatus.UNCOMPRESSED);
 				} else {
+					getVideoFileManager().updateCache(recording, RecordingStatus.COMPRESSED);
+				}
+				if (!getVideoFileManager().canReadAndExists(recording)) {
 					errorMessage("errorMessage", recording);
 				}
 			}
