@@ -1,7 +1,6 @@
 package com.runwalk.video.model;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
@@ -9,7 +8,6 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
-import com.runwalk.video.entities.RecordingStatus;
 
 public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	

@@ -76,46 +76,50 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 		for (conversionCounter = 0; conversionCounter < conversionCount; conversionCounter++) {
 			recording = recordings.get(conversionCounter);
 			RecordingStatus recordingStatus = getVideoFileManager().getRecordingStatus(recording);
-			File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
-			File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
-			try {
-				// create parent folder if it doesn't exist yet
-				File parentFolder = destinationFile.getParentFile();
-				if (!parentFolder.exists()) {
-					FileUtils.forceMkdir(parentFolder);
-				}
-				if (exporter == null) {
-					exporter = new DSJPlayer(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
-				} else {
-					exporter.loadVideo(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
-				}
-				setProgress((int) (conversionCounter * part));
-				message("progressMessage", conversionCounter + 1, conversionCount);
-				int result = exporter.getFiltergraph().export(destinationFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
-				if (result < 0) {
-					//reconnect failed.. exception will be thrown here in future versions..
-					getLogger().error("graph reconnect failed!");
-					errorCount++;
-				} else {
-					synchronized(recording) {
-						while (!finished) {
-							recording.wait(2000);
-						}
-						finished = false;
+			// currently only supported for uncompressed recordings
+			if (recordingStatus == RecordingStatus.UNCOMPRESSED) {
+				File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
+				File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
+				try {
+					// create parent folder if it doesn't exist yet
+					File parentFolder = destinationFile.getParentFile();
+					if (!parentFolder.exists()) {
+						FileUtils.forceMkdir(parentFolder);
 					}
+					if (exporter == null) {
+						exporter = new DSJPlayer(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
+					} else {
+						exporter.loadVideo(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
+					}
+					setProgress((int) (conversionCounter * part));
+					message("progressMessage", conversionCounter + 1, conversionCount);
+					int result = exporter.getFiltergraph().export(destinationFile.getAbsolutePath(), transcoder, DSFilterInfo.doNotRender());
+					if (result < 0) {
+						//reconnect failed.. exception will be thrown here in future versions..
+						getLogger().error("graph reconnect failed!");
+						errorCount++;
+					} else {
+						synchronized(recording) {
+							while (!finished) {
+								recording.wait(2000);
+							}
+							finished = false;
+						}
+					}
+					recordingStatus = RecordingStatus.COMPRESSED;
+				} catch(Throwable thr) {
+					getLogger().error("Compression error for file " + sourceFile.getAbsolutePath(), thr);
+					errorCount++;
+				} finally {
+					if (exporter != null && exporter.getFiltergraph().getActive()) {
+						exporter.getFiltergraph().stop();
+					}
+					// video file needs to be refreshed in the cache
+					getVideoFileManager().updateCache(recording, recordingStatus);
+					publish(recording);
 				}
-				recordingStatus = RecordingStatus.COMPRESSED;
-			} catch(Throwable thr) {
-				recordingStatus = RecordingStatus.DSJ_ERROR;
-				getLogger().error("Compression error for file " + sourceFile.getAbsolutePath(), thr);
+			} else {
 				errorCount++;
-			} finally {
-				if (exporter != null && exporter.getFiltergraph().getActive()) {
-					exporter.getFiltergraph().stop();
-				}
-				// video file needs to be refreshed in the cache
-				getVideoFileManager().updateCache(recording, recordingStatus);
-				publish(recording);
 			}
 		}
 		if (exporter != null) {

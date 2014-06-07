@@ -158,7 +158,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recorded}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recordingsEmpty}");
 		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty.create(SELECTED_ITEM_RECORDED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> selectedItemRecordedBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, this, recorded, this, selectedItemRecorded);
