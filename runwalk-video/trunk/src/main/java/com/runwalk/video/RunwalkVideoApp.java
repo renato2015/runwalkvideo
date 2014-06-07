@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,13 +36,17 @@ import com.runwalk.video.core.Containable;
 import com.runwalk.video.dao.CompositeDaoService;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.JpaDaoService;
+import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.media.CompositeVideoCapturerFactory;
 import com.runwalk.video.media.CompositeVideoPlayerFactory;
 import com.runwalk.video.media.MediaControls;
 import com.runwalk.video.media.settings.VideoComponentFactorySettings;
+import com.runwalk.video.model.AnalysisModel;
+import com.runwalk.video.model.RecordingModel;
 import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
+import com.runwalk.video.panels.AbstractTablePanel.ClickHandler;
 import com.runwalk.video.panels.AnalysisTablePanel;
 import com.runwalk.video.panels.ClientInfoPanel;
 import com.runwalk.video.panels.ClientTablePanel;
@@ -210,8 +215,26 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		// set tableformats for the two last panels
 		clientTablePanel.setTableFormat(new ClientModelTableFormat(clientTablePanel.getResourceMap()));
 		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap(), getVideoFileManager()));
-		analysisTablePanel.registerClickHandler(getMediaControls().getClickHandler());
+		analysisTablePanel.registerClickHandler(new ClickHandler<AnalysisModel>() {
+			
+			public void handleClick(AnalysisModel element) {
+				if (getVideoFileManager().isRecorded(element.getRecordings())) {
+					getContext().getTaskService().execute(mediaControls.openRecordings(element.getRecordings()));
+				}
+			}
+			
+		});
 		recordingTablePanel.setTableFormat(new RecordingModelTableFormat(recordingTablePanel.getResourceMap(), getVideoFileManager()));
+		recordingTablePanel.registerClickHandler(new ClickHandler<RecordingModel>() {
+			
+			public void handleClick(RecordingModel element) {
+				if (getVideoFileManager().isRecorded(element.getEntity())) {
+					List<Recording> recordings = Collections.singletonList(element.getEntity());
+					getContext().getTaskService().execute(mediaControls.openRecordings(recordings));
+				}
+			}
+			
+		});
 		//recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
 		clientMainView = createMainView();

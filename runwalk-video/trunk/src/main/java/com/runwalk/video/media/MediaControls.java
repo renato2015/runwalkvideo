@@ -102,17 +102,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 
 	private final Timer timer;
 
-	// open the selected recording
-	private final AbstractTablePanel.ClickHandler<AnalysisModel> clickHandler = new AbstractTablePanel.ClickHandler<AnalysisModel>() {
-
-		public void handleClick(AnalysisModel element) {
-			if (getVideoFileManager().isRecorded(element.getRecordings())) {
-				getTaskService().execute(openRecordings(element));
-			}
-		}
-
-	};
-	
 	final JComponent busyGlassPane = new JComponent() {{
 			setOpaque(true);
 	}};
@@ -250,10 +239,6 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		button.setActionCommand(actionName);
 		add(button, "gap 0");
 		return button;
-	}
-
-	public AbstractTablePanel.ClickHandler<AnalysisModel> getClickHandler() {
-		return clickHandler;
 	}
 
 	@Action(block=BlockingScope.APPLICATION)
@@ -639,7 +624,7 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 		};
 	}
 
-	public Task<?, ?> openRecordings(final AnalysisModel analysisModel) {
+	public Task<?, ?> openRecordings(final List<Recording> recordings) {
 		return new AbstractTask<Void, Void>(OPEN_RECORDINGS_ACTION) {
 
 			{ 
@@ -650,25 +635,24 @@ public class MediaControls extends JPanel implements PropertyChangeListener, App
 				message("startMessage");
 				VideoPlayer videoPlayer = null;
 				int recordingCount = 0;
-				if (analysisModel != null) {
-					for(int i = 0; i < analysisModel.getRecordings().size(); i++) {
-						final Recording recording = analysisModel.getRecordings().get(i);
+				if (recordings != null) {
+					File videoFile = null;
+					for(Recording recording : recordings) {
 						if (getVideoFileManager().isRecorded(recording)) {
-							final File videoFile = getVideoFileManager().getVideoFile(recording);
+							videoFile = getVideoFileManager().getVideoFile(recording);
 							if (recordingCount < getPlayers().size()) {
 								videoPlayer = getPlayers().get(recordingCount);
 								loadVideo(videoPlayer, videoFile);
 							} else {
 								startVideoPlayer(videoFile);
 							} 
-
 						}
 						setSliderLabels(recording);
 						recordingCount++;
 					}
 					setSliderPosition(0);
 					new Robot().waitForIdle();
-					message("endMessage", recordingCount, analysisModel.getEntity().getClient());
+					message("endMessage", recordingCount, videoFile.getName());
 				}
 				return null;
 			}
