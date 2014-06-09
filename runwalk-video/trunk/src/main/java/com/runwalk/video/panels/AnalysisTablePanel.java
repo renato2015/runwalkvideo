@@ -46,6 +46,7 @@ import com.runwalk.video.entities.Analysis.Progression;
 import com.runwalk.video.entities.Client;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
+import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.ClientModel;
@@ -92,6 +93,8 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 	private boolean selectedItemRecorded;
 
 	private boolean addAnalysisForFeedbackEnabled;
+
+	private AutoCompleteCellEditor<Item> itemTableCellEditor;
 
 	public AnalysisTablePanel(ClientTablePanel clientTablePanel,
 			UndoableEditListener undoableEditListener, 
@@ -158,7 +161,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		clientSelectedBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(clientSelectedBinding);
 
-		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recordingsEmpty}");
+		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recordingsEmpty && selectedVideoFilePresent}");
 		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty.create(SELECTED_ITEM_RECORDED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> selectedItemRecordedBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, this, recorded, this, selectedItemRecorded);
@@ -367,15 +370,18 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 			protected void succeeded(Item newItem) {
 				try {
 					getArticleList().getReadWriteLock().writeLock().lock();
-					if (newItem != null) {
-						if (!getArticleList().contains(newItem)) {
+					Object selectedItem = itemTableCellEditor.getAutoCompleteSupport().getComboBox().getEditor().getItem();
+					if (newItem != null || selectedItem == null) {
+						if (newItem != null && !getArticleList().contains(newItem)) {
 							getArticleList().add(newItem);
 						}
 						Item oldItem = getSelectedItem().getItem();
-						getSelectedItem().setItem(newItem);
-						Client selectedClient = clientTablePanel.getSelectedItem().getEntity();
-						AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
-								selectedClient, oldItem, newItem, getAppSettings().getEmployeeId()));
+						if (newItem != oldItem) {
+							getSelectedItem().setItem(newItem);
+							Client selectedClient = clientTablePanel.getSelectedItem().getEntity();
+							AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
+									selectedClient, oldItem, newItem, getAppSettings().getEmployeeId()));
+						}
 					}
 				} finally {
 					getArticleList().getReadWriteLock().writeLock().unlock();
@@ -399,11 +405,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		getTable().getColumnModel().getColumn(0).setCellEditor(datePickerCellEditor);
 
 		// create special table cell editor for selecting articles
-		AutoCompleteCellEditor<Item> createTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
-		createTableCellEditor.getAutoCompleteSupport().getComboBox().addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
-		createTableCellEditor.setClickCountToStart(0);
-		createTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
-		getTable().getColumnModel().getColumn(1).setCellEditor(createTableCellEditor);
+		itemTableCellEditor = AutoCompleteSupport.createTableCellEditor(getArticleList());
+		itemTableCellEditor.getAutoCompleteSupport().getComboBox().addActionListener(getAction(FIND_ITEM_BY_NUMBER_ACTION));
+		itemTableCellEditor.setClickCountToStart(0);
+		itemTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
+		getTable().getColumnModel().getColumn(1).setCellEditor(itemTableCellEditor);
 		getTable().getColumnModel().getColumn(1).setPreferredWidth(120);
 		getTable().getColumnModel().getColumn(2).setPreferredWidth(18);
 
@@ -427,6 +433,15 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		getTable().getColumnModel().getColumn(5).setResizable(false);
 		final String buttonTitle = getResourceMap().getString("analysisModelTableFormat.openButton.text");
 		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
+	}
+	
+	public boolean isSelectedVideoFilePresent() {
+		boolean selectedVideoFilePresent = false;
+		for(Recording recording : getSelectedItem().getRecordings()) {
+			RecordingStatus recordingStatus = getVideoFileManager().getRecordingStatus(recording);
+			selectedVideoFilePresent |= recordingStatus.isRecorded();
+		}
+		return selectedVideoFilePresent;
 	}
 
 	public boolean isClientSelected() {

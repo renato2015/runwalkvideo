@@ -34,10 +34,12 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		message("startMessage");
 		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getClient());
 		replaceSuspendedSaleItems(suspendedSale);
-		SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getClient());
-		SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getNewItem());
-		suspendedSale.getSaleItems().add(suspendedSaleItem);
-		suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
+		if (getNewItem() != null) {
+			SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getClient());
+			SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getNewItem());
+			suspendedSale.getSaleItems().add(suspendedSaleItem);
+			suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
+		}
 		SuspendedSaleDao suspendedSaleDao = getDaoService().getDao(SuspendedSale.class);
 		suspendedSaleDao.merge(suspendedSale);
 		message("endMessage");
