@@ -1,5 +1,5 @@
 package com.runwalk.video.ui.table;
-
+ 
 import java.awt.Component;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -15,7 +15,7 @@ import javax.swing.table.TableCellEditor;
 public class JSpinnerTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 	
 	private final JSpinner spinner;
-
+	
 	public JSpinnerTableCellEditor(JSpinner spinner) {
 		this.spinner = spinner;
 		final JFormattedTextField editor = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();

@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -66,6 +67,23 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 		}
 		}
 	}
+	
+	private File resolveSourceFile(Recording recording, RecordingStatus recordingStatus) {
+		File result = getVideoFileManager().getUncompressedVideoFile(recording);
+		if (recordingStatus == RecordingStatus.COMPRESSED) {
+			result = getVideoFileManager().getCompressedVideoFile(recording);
+		}
+		return result;
+	}
+	
+	private File resolveDestinationFile(Recording recording, RecordingStatus recordingStatus) {
+		File result = getVideoFileManager().getCompressedVideoFile(recording);
+		if (recordingStatus == RecordingStatus.COMPRESSED) {
+			String fileName = result.getName().replaceAll("(.*?)\\.(.*)", "$1.COMPRESSED.$2");
+			result = new File(result.getParentFile(), fileName);
+		}
+		return result;
+	}
 
 	@Override
 	protected Boolean doInBackground() {
@@ -77,15 +95,11 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 			recording = recordings.get(conversionCounter);
 			RecordingStatus recordingStatus = getVideoFileManager().getRecordingStatus(recording);
 			// currently only supported for uncompressed recordings
-			if (recordingStatus == RecordingStatus.UNCOMPRESSED) {
-				File sourceFile = getVideoFileManager().getUncompressedVideoFile(recording);
-				File destinationFile = getVideoFileManager().getCompressedVideoFile(recording);
+			if (recordingStatus == RecordingStatus.UNCOMPRESSED || recordingStatus == RecordingStatus.COMPRESSED) {
+				File sourceFile = resolveSourceFile(recording, recordingStatus);
+				File destinationFile = resolveDestinationFile(recording, recordingStatus);
 				try {
-					// create parent folder if it doesn't exist yet
-					File parentFolder = destinationFile.getParentFile();
-					if (!parentFolder.exists()) {
-						FileUtils.forceMkdir(parentFolder);
-					}
+					createParentDirectory(destinationFile);
 					if (exporter == null) {
 						exporter = new DSJPlayer(sourceFile.getAbsolutePath(), /*DSFiltergraph.HEADLESS | DSFiltergraph.NO_AMW*/ DSFiltergraph.RENDER_NATIVE, this);
 					} else {
@@ -127,6 +141,14 @@ public class CompressVideoFilesTask extends AbstractTask<Boolean, Recording> imp
 		}
 		message("endMessage", getExecutionDuration(TimeUnit.SECONDS));
 		return (errorCount == 0);
+	}
+
+	private void createParentDirectory(File destinationFile) throws IOException {
+		// create parent folder if it doesn't exist yet
+		File parentFolder = destinationFile.getParentFile();
+		if (!parentFolder.exists()) {
+			FileUtils.forceMkdir(parentFolder);
+		}
 	}
 
 	@Override
