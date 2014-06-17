@@ -234,7 +234,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 					JOptionPane.ERROR_MESSAGE);
 			getLogger().warn("Attempt to insert analysis for " + selectedClient + " failed.");
 			return null;
-		}
+		} 
 		Analysis analysis = createAnalysisForEvent(event, selectedClient);
 		PersistTask<Analysis> result = new PersistTask<Analysis>(getDaoService(), Analysis.class, analysis);
 		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
@@ -429,10 +429,13 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		getTable().getColumnModel().getColumn(3).setPreferredWidth(18);
 		String defaultValue = getResourceMap().getString("tableFormat.defaultValue");
 		getTable().getColumnModel().getColumn(3).setCellRenderer(new DateTableCellRenderer(defaultValue, AppUtil.DURATION_FORMATTER));
+		getTable().getColumnModel().getColumn(3).setCellEditor(null);
+		getTable().getColumnModel().getColumn(4).setCellEditor(null);
 		getTable().getColumnModel().getColumn(5).setPreferredWidth(40);
 		getTable().getColumnModel().getColumn(5).setResizable(false);
 		final String buttonTitle = getResourceMap().getString("analysisModelTableFormat.openButton.text");
 		getTable().getColumnModel().getColumn(5).setCellRenderer(new JButtonTableCellRenderer(buttonTitle));
+		getTable().getColumnModel().getColumn(5).setCellEditor(null);
 	}
 	
 	public boolean isSelectedVideoFilePresent() {
