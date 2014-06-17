@@ -211,9 +211,7 @@ public class VideoFileManager {
 	}
 	
 	public File refreshCache(VideoFolderRetrievalStrategy videoFolderRetrievalStrategy, Recording recording) {
-		if (!removeRecording(recording)) {
-			LOGGER.debug("Cache eviction failed for " + recording);
-		}
+		removeRecording(recording);
 		return getVideoFile(videoFolderRetrievalStrategy, recording);
 	}
 	
