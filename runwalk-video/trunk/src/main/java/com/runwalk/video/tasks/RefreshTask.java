@@ -10,7 +10,6 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.application.Task;
 
 import ca.odell.glazedlists.CollectionList;
-import ca.odell.glazedlists.DebugList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
@@ -60,9 +59,7 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 			// get all clients from the db
 			ClientDao clientDao = getDaoService().getDao(Client.class);
 			List<ClientModel> clientModels = clientDao.getAllAsModels();
-			final DebugList<ClientModel> clientList = new DebugList<ClientModel>();
-			clientList.addAll(clientModels);
-			clientList.setLockCheckingEnabled(true);
+			final EventList<ClientModel> clientList = GlazedLists.eventList(clientModels);
 			//final EventList<Item> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 

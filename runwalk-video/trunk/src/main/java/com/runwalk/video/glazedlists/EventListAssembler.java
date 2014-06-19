@@ -8,8 +8,8 @@ import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.ObservableElementList.Connector;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.gui.TableFormat;
-import ca.odell.glazedlists.swing.EventSelectionModel;
-import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
+import ca.odell.glazedlists.swing.DefaultEventTableModel;
 
 import com.runwalk.video.entities.SerializableEntity;
 
@@ -18,9 +18,9 @@ public abstract class EventListAssembler<E extends EventList<T>, T extends Seria
 	
 	private final LinkedList<EventList<T>> eventListQueue = new LinkedList<EventList<T>>();		
 	
-	private EventTableModel<T> eventTableModel;
+	private DefaultEventTableModel<T> eventTableModel;
 	
-	private EventSelectionModel<T> eventSelectionModel;
+	private DefaultEventSelectionModel<T> eventSelectionModel;
 	
 	protected EventListAssembler() { }
 	
@@ -57,13 +57,13 @@ public abstract class EventListAssembler<E extends EventList<T>, T extends Seria
 	}
 	
 	public EventListAssembler<E, T> addEventTableModel(TableFormat<? super T> tableFormat) {
-		eventTableModel = new EventTableModel<T>(getOuterList(), tableFormat);
+		eventTableModel = new DefaultEventTableModel<T>(getOuterList(), tableFormat);
 		return this;
 	}
 	
 	public EventListAssembler<E, T> addEventSelectionModel() {
-		eventSelectionModel = new EventSelectionModel<T>(getOuterList());
-		eventSelectionModel.setSelectionMode(EventSelectionModel.SINGLE_SELECTION);
+		eventSelectionModel = new DefaultEventSelectionModel<T>(getOuterList());
+		eventSelectionModel.setSelectionMode(DefaultEventSelectionModel.SINGLE_SELECTION);
 		return this;
 	}
 	

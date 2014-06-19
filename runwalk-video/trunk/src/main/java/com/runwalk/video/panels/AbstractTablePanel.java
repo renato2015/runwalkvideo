@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -83,7 +84,19 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 
 	protected AbstractTablePanel(LayoutManager mgr) {
 		setLayout(mgr);
-		table = new JTable();
+		table = new JTable() {
+			
+			@Override
+			public void editingStopped(ChangeEvent e) {
+				if (getItemList().size() <= editingRow) {
+					removeEditor();
+				} else {
+					super.editingStopped(e);
+				}
+			}
+			
+		};
+		getTable().putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		getTable().getTableHeader().setFont(SettingsManager.MAIN_FONT);
 		getTable().setShowGrid(false);
 		getTable().setFont(SettingsManager.MAIN_FONT);
