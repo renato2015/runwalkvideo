@@ -14,7 +14,7 @@
 #end
   </information>
 #if($allPermissions)
-  <security>
+  <security>  
      <all-permissions/>
   </security>
   <update check="always" policy="prompt-update" />
@@ -63,7 +63,7 @@
 #end
 #end
 	</resources>
-	<resources os="Linux" arch="x86">
+	<resources os="Linux" arch="i86">
 #foreach( $dependency in $fulldependencies )
 #if ( $dependency.classifier == 'natives-linux-x86' )
 		<nativelib href="$libFolder/${dependency.file.name}" />

@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/3.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.runwalk</groupId>
 	<artifactId>runwalk-video</artifactId>
@@ -121,7 +121,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>webstart-maven-plugin</artifactId>
-				<version>1.0-beta-3-05062013</version>
+				<version>1.0-beta-6-22062014</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -137,7 +137,7 @@
 					<libPath>${libFolder}</libPath>
 					<!-- JNLP generation -->
 					<jnlp>
-						<inputTemplate>src/main/jnlp/jnlptemplate.vm</inputTemplate> <!-- relative to inputTemplateResourcePath -->
+						<inputTemplate>jnlptemplate.vm</inputTemplate> <!-- relative to inputTemplateResourcePath -->
 						<outputFile>${jnlpOutputFilename}</outputFile> <!-- defaults to launch.jnlp -->
 						<j2seVersion>1.7+</j2seVersion>
 						<spec>7.0+</spec>
@@ -162,9 +162,12 @@
 					
 					<!-- BUILDING PROCESS -->
 					<unsignAlreadySignedJars>true</unsignAlreadySignedJars>
-					<pack200>false</pack200>
 					<gzip>false</gzip>
 					<outputJarVersions>false</outputJarVersions>
+					<updatedManifestEntries>
+						<Permissions>all-permissions</Permissions>
+						<Codebase>*</Codebase>
+					</updatedManifestEntries>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -521,6 +524,20 @@
                 <activeByDefault>false</activeByDefault>
                 <os>
                     <family>mac</family>
+                </os>
+            </activation>
+        </profile>
+        <profile>
+            <id>linux</id>
+            <properties>
+            	<platform>unix</platform>
+                <architecture>x86</architecture>
+            </properties>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <os>
+                    <family>unix</family>
+		    <name>linux</name>
                 </os>
             </activation>
         </profile>
