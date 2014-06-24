@@ -369,7 +369,7 @@ public class UEyeCapturer implements IVideoCapturer, PropertyChangeSupport, Cont
 	
 	private GraphicsDevice getGraphicsDevice() {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice foundDevice = null;
+		GraphicsDevice foundDevice = graphicsEnvironment.getDefaultScreenDevice();
 		for (GraphicsDevice device : graphicsEnvironment.getScreenDevices()) {
 			if (monitorId != null && device.getIDstring().endsWith(monitorId.toString())) {
 				foundDevice = device;
