@@ -121,12 +121,11 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>webstart-maven-plugin</artifactId>
-				<version>1.0-beta-6-22062014</version>
+				<version>1.0-beta-6-23062014</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
 						<goals>
-							<goal>jnlp</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
+							<goal>jnlp</goal> <!-- use  ,, jnlp-inline or jnlp-single as appropriate -->
 						</goals>
 					</execution>
 				</executions>
@@ -164,10 +163,10 @@
 					<unsignAlreadySignedJars>true</unsignAlreadySignedJars>
 					<gzip>false</gzip>
 					<outputJarVersions>false</outputJarVersions>
-					<updatedManifestEntries>
+					<updateManifestEntries>
 						<Permissions>all-permissions</Permissions>
 						<Codebase>*</Codebase>
-					</updatedManifestEntries>
+					</updateManifestEntries>
 				</configuration>
 			</plugin>
 			<plugin>
