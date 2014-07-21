@@ -96,7 +96,6 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 			}
 			
 		};
-		getTable().putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		getTable().getTableHeader().setFont(SettingsManager.MAIN_FONT);
 		getTable().setShowGrid(false);
 		getTable().setFont(SettingsManager.MAIN_FONT);
