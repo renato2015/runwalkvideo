@@ -363,16 +363,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 					ItemDao itemDao = daoService.getDao(Item.class);
 					return itemDao.getItemByItemNumber(itemNumber);
 				}
-				stopCellEditor();
 				return null;
 			}
 
-			private void stopCellEditor() {
-				if (getTable().isEditing() && !getTable().getCellEditor().stopCellEditing()) {
-					getTable().getCellEditor().cancelCellEditing();
-				}
-			}
-			
 			@Override
 			protected void succeeded(Item newItem) {
 				try {
