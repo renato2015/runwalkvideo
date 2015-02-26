@@ -14,7 +14,7 @@ import org.jdesktop.application.utils.PlatformType;
 
 import com.google.common.collect.ImmutableSet;
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.settings.SettingsManager;
@@ -27,7 +27,7 @@ import de.humatic.dsj.DSJUtils;
  * It performs some simple file checking at data loading time to see whether the files actually exist.
  * This file checking logic was previously encapsulated in the {@link Recording} bean itself, 
  * which was a bad design choice when the idea came up to create a server component for the application, 
- * as the files are only locally accessible from each client's file system.
+ * as the files are only locally accessible from each customer's file system.
  * 
  * @author Jeroen Peelaerts
  *
@@ -301,8 +301,8 @@ public class VideoFileManager {
 		}
 	}
 
-	public void deleteVideoFiles(Client client) {
-		for (Analysis analysis : client.getAnalyses()) {
+	public void deleteVideoFiles(Customer customer) {
+		for (Analysis analysis : customer.getAnalyses()) {
 			deleteVideoFiles(analysis);
 		}
 	}

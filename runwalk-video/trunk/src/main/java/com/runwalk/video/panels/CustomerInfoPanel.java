@@ -45,18 +45,18 @@ import ca.odell.glazedlists.matchers.TextMatcherEditor;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
 
 import com.runwalk.video.entities.City;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Person.Gender;
 import com.runwalk.video.model.AbstractEntityModel;
-import com.runwalk.video.model.ClientModel;
+import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.ui.EnumButtonGroup;
 
 @SuppressWarnings("serial")
-public class ClientInfoPanel extends AbstractPanel {
+public class CustomerInfoPanel extends AbstractPanel {
 
 	private final static BeanProperty<JComponent, Boolean> ENABLED = BeanProperty.create("enabled");
-	private final static ELProperty<ClientTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");
+	private final static ELProperty<CustomerTablePanel, Boolean> ITEM_SELECTED = ELProperty.create("${selectedItem != null}");
 	private final static BeanProperty<JComponent, Boolean> SELECTED = BeanProperty.create("selected");
 	private final static BeanProperty<JTextField, String> TEXT = BeanProperty.create("text");
 
@@ -69,32 +69,32 @@ public class ClientInfoPanel extends AbstractPanel {
 	private AutoCompleteSupport<City> locationCompletion;
 	private BindingGroup locationBindingGroup;
 
-	/** This listener can be added to each binding group that contains bindings that have a {@link ClientTablePanel} as source. */
+	/** This listener can be added to each binding group that contains bindings that have a {@link CustomerTablePanel} as source. */
 	private final BindingListener changeListener = new AbstractBindingListener() {
 		
 		@Override
 		public void targetChanged(@SuppressWarnings("rawtypes") Binding binding, PropertyStateEvent event) {
-			ClientTablePanel clientTablePanel = (ClientTablePanel) binding.getSourceObject();
-			AbstractEntityModel<Client> selectedItem = clientTablePanel.getSelectedItem();
+			CustomerTablePanel customerTablePanel = (CustomerTablePanel) binding.getSourceObject();
+			AbstractEntityModel<Customer> selectedItem = customerTablePanel.getSelectedItem();
 			if (selectedItem != null) {
 				selectedItem.setDirty(true);
-				clientTablePanel.setDirty(true);
+				customerTablePanel.setDirty(true);
 			}
 		}
 
 	};
 
-	private final ClientTablePanel clientTablePanel;
+	private final CustomerTablePanel customerTablePanel;
 
-	public ClientInfoPanel(final ClientTablePanel clientTablePanel, UndoableEditListener undoListener) {
-		this.clientTablePanel = clientTablePanel;
+	public CustomerInfoPanel(final CustomerTablePanel customerTablePanel, UndoableEditListener undoListener) {
+		this.customerTablePanel = customerTablePanel;
 		// set layout constraints
 		setLayout(new MigLayout("fill", "[right]10[grow,fill]", "10[grow,fill]"));
 		BindingGroup bindingGroup = new BindingGroup();
 		// component value binding
-		Binding<? extends AbstractTablePanel<ClientModel>, String, JTextField, String> valueBinding = null;
+		Binding<? extends AbstractTablePanel<CustomerModel>, String, JTextField, String> valueBinding = null;
 		// component enabling binding
-		Binding<? extends AbstractTablePanel<ClientModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
+		Binding<? extends AbstractTablePanel<CustomerModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
 
 		/**
 		 * Converts first characters to uppercase
@@ -120,23 +120,23 @@ public class ClientInfoPanel extends AbstractPanel {
 		firstnameField.setFont(SettingsManager.MAIN_FONT);
 		firstnameField.getDocument().addUndoableEditListener(undoListener);
 
-		BeanProperty<ClientTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, firstname, firstnameField, TEXT, "firstNameBinding");
+		BeanProperty<CustomerTablePanel, String> firstname = BeanProperty.create("selectedItem.firstname");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, firstname, firstnameField, TEXT, "firstNameBinding");
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, firstnameField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, firstnameField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(firstnameField);
 
 		JTextField nameField = new JTextField();
 		nameField.getDocument().addUndoableEditListener(undoListener);
 		nameField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> name = BeanProperty.create("selectedItem.name");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, name, nameField, TEXT, "lastNameBinding");
+		BeanProperty<CustomerTablePanel, String> name = BeanProperty.create("selectedItem.name");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, name, nameField, TEXT, "lastNameBinding");
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, nameField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, nameField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(nameField, "wrap");
 
@@ -147,11 +147,11 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		JTextField organisationField = new JTextField();
 		organisationField.getDocument().addUndoableEditListener(undoListener);
-		BeanProperty<ClientTablePanel, String> organization = BeanProperty.create("selectedItem.entity.organization");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, organization, organisationField, TEXT);
+		BeanProperty<CustomerTablePanel, String> organization = BeanProperty.create("selectedItem.entity.organization");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, organization, organisationField, TEXT);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, organisationField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, organisationField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		organisationField.setFont(SettingsManager.MAIN_FONT);
 		add(organisationField);
@@ -164,8 +164,8 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField taxField = new JTextField();
 		taxField.getDocument().addUndoableEditListener(undoListener);
 		taxField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> taxNumber = BeanProperty.create("selectedItem.entity.taxNumber");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, taxNumber, taxField, TEXT);
+		BeanProperty<CustomerTablePanel, String> taxNumber = BeanProperty.create("selectedItem.entity.taxNumber");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, taxNumber, taxField, TEXT);
 		valueBinding.setValidator(new Validator<String> () {
 
 			public Validator<String>.Result validate(String arg) {
@@ -179,7 +179,7 @@ public class ClientInfoPanel extends AbstractPanel {
 			}
 		});
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, taxField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, taxField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(taxField, "wrap, grow");
 
@@ -191,8 +191,8 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField emailField = new JTextField();
 		emailField.getDocument().addUndoableEditListener(undoListener);
 		emailField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, email, emailField, TEXT);
+		BeanProperty<CustomerTablePanel, String> email = BeanProperty.create("selectedItem.emailAddress");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, email, emailField, TEXT);
 		/*valueBinding.setValidator(new Validator() {
 
 					public Validator.Result validate(Object arg) {        
@@ -207,7 +207,7 @@ public class ClientInfoPanel extends AbstractPanel {
 				}
 		);*/
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, emailField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, emailField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(emailField, "span, split");
 
@@ -217,10 +217,10 @@ public class ClientInfoPanel extends AbstractPanel {
 		add(mailingListLabel, "grow 0");
 
 		JCheckBox mailingListCheckbox = new JCheckBox();
-		BeanProperty<ClientTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.entity.inMailingList");
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, inMailingList, mailingListCheckbox, SELECTED);
+		BeanProperty<CustomerTablePanel, Boolean> inMailingList = BeanProperty.create("selectedItem.entity.inMailingList");
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, inMailingList, mailingListCheckbox, SELECTED);
 		bindingGroup.addBinding(enabledBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, mailingListCheckbox, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, mailingListCheckbox, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(mailingListCheckbox, "wrap, grow 0");
 
@@ -256,12 +256,12 @@ public class ClientInfoPanel extends AbstractPanel {
 			}
 
 		});
-		BeanProperty<ClientTablePanel, Date> birthDate = BeanProperty.create("selectedItem.entity.birthdate");
+		BeanProperty<CustomerTablePanel, Date> birthDate = BeanProperty.create("selectedItem.entity.birthdate");
 		BeanProperty<JFormattedTextField, ?> formattedValue = BeanProperty.create("value"); 
-		Binding<? extends AbstractTablePanel<ClientModel>, Date, JFormattedTextField, ?> birthDateBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, birthDate, birthdateField, formattedValue);
+		Binding<? extends AbstractTablePanel<CustomerModel>, Date, JFormattedTextField, ?> birthDateBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, birthDate, birthdateField, formattedValue);
 		bindingGroup.addBinding(birthDateBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, birthdateField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, birthdateField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(birthdateField);
 
@@ -272,13 +272,13 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		JRadioButton maleRadioButton = new JRadioButton();
 		maleRadioButton.setText(getResourceMap().getString("maleRadioButton.text")); // NOI18N
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, maleRadioButton, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, maleRadioButton, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(maleRadioButton);
 
 		JRadioButton femaleRadioButton = new JRadioButton();
 		femaleRadioButton.setText(getResourceMap().getString("femaleRadioButton.text")); // NOI18N
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, femaleRadioButton, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, femaleRadioButton, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(femaleRadioButton, "wrap, gapright push");
 		//create a model for the radio buttons
@@ -287,9 +287,9 @@ public class ClientInfoPanel extends AbstractPanel {
 		ebg.add(Gender.MALE, maleRadioButton);
 		ebg.assertButtonGroupCoversAllEnumConstants();
 		//add the binding for the radio buttons
-		BeanProperty<ClientTablePanel, Gender> gender = BeanProperty.create("selectedItem.entity.gender");
-		Binding<? extends AbstractTablePanel<ClientModel>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, gender, ebg, EnumButtonGroup.SELECTED_ENUM_PROPERTY);
+		BeanProperty<CustomerTablePanel, Gender> gender = BeanProperty.create("selectedItem.entity.gender");
+		Binding<? extends AbstractTablePanel<CustomerModel>, Gender, EnumButtonGroup<? extends Enum<?>>, ? extends Enum<?>> genderBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, gender, ebg, EnumButtonGroup.SELECTED_ENUM_PROPERTY);
 		bindingGroup.addBinding(genderBinding);
 
 		JLabel addressLabel = new JLabel();
@@ -300,10 +300,10 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField addressField = new JTextField();
 		addressField.getDocument().addUndoableEditListener(undoListener);
 		addressField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> address = BeanProperty.create("selectedItem.entity.address.address");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, address, addressField, TEXT);
+		BeanProperty<CustomerTablePanel, String> address = BeanProperty.create("selectedItem.entity.address.address");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, address, addressField, TEXT);
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, addressField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, addressField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(addressField, "span, wrap");
 
@@ -315,10 +315,10 @@ public class ClientInfoPanel extends AbstractPanel {
 		JTextField phoneField = new JTextField();
 		phoneField.getDocument().addUndoableEditListener(undoListener);
 		phoneField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<ClientTablePanel, String> phone = BeanProperty.create("selectedItem.entity.phoneNumber");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, clientTablePanel, phone, phoneField, TEXT);
+		BeanProperty<CustomerTablePanel, String> phone = BeanProperty.create("selectedItem.entity.phoneNumber");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, phone, phoneField, TEXT);
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, clientTablePanel, ITEM_SELECTED, phoneField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, phoneField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
 		add(phoneField, "wrap, span");
 
@@ -329,11 +329,11 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		zipCodeField = new JComboBox<City>();
 		zipCodeField.setFont(SettingsManager.MAIN_FONT);
-		add(zipCodeField, "wmax 40%, wmin 40%");
+		add(zipCodeField, "width max(150, 40%)");
 
 		locationField = new JComboBox<City>();
 		locationField.setFont(SettingsManager.MAIN_FONT);
-		add(locationField, "wmax 40%, wmin 40%");
+		add(locationField, "width max(150, 40%)");
 
 		bindingGroup.addBindingListener(changeListener);
 		bindingGroup.bind();
@@ -366,7 +366,7 @@ public class ClientInfoPanel extends AbstractPanel {
 
 			public Object parseObject(String value, ParsePosition pos) {
 				City selectedCity = (City) zipCodeField.getSelectedItem();
-				if (selectedCity != null && !value.equals(Integer.toString(selectedCity.getCode()))) {
+				if (selectedCity != null && !value.equals(selectedCity.getCode())) {
 					matcherEditor.setFilterText(new String[] {value});
 				}
 				return !filterList.isEmpty() ? filterList.get(0) : selectedCity;
@@ -374,20 +374,20 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		});
 		zipCodeCompletion.setFirstItem(null);
-		zipCodeCompletion.setBeepOnStrictViolation(false);
+		zipCodeCompletion.setStrict(false);
 		zipCodeField.setRenderer(new CityInfoRenderer());
 
-		BeanProperty<ClientTablePanel, City> city = BeanProperty.create("selectedItem.city");
+		BeanProperty<CustomerTablePanel, City> city = BeanProperty.create("selectedItem.city");
 		BeanProperty<JComboBox<City>, City> selectedItem = BeanProperty.create("selectedItem");
 		
 
-		Binding<ClientTablePanel, City, JComboBox<City>, City> comboBoxBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getClientTablePanel(), city, zipCodeField, selectedItem);
+		Binding<CustomerTablePanel, City, JComboBox<City>, City> comboBoxBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getCustomerTablePanel(), city, zipCodeField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
 		locationBindingGroup.addBinding(comboBoxBinding);
-		Binding<? extends AbstractTablePanel<ClientModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), ITEM_SELECTED, zipCodeField, ENABLED);
+		Binding<? extends AbstractTablePanel<CustomerModel>, Boolean, ? extends JComponent, Boolean> enabledBinding = null;
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getCustomerTablePanel(), ITEM_SELECTED, zipCodeField, ENABLED);
 		locationBindingGroup.addBinding(enabledBinding);
 		locationCompletion = AutoCompleteSupport.install(locationField, itemList, GlazedLists.textFilterator("name"), new Format() {
 
@@ -409,14 +409,14 @@ public class ClientInfoPanel extends AbstractPanel {
 
 		});
 		locationCompletion.setFirstItem(null);
-		locationCompletion.setBeepOnStrictViolation(false);				
+		locationCompletion.setStrict(false);				
 		locationField.setRenderer(new CityInfoRenderer());
 
-		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getClientTablePanel(), city, locationField, selectedItem);
+		comboBoxBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, getCustomerTablePanel(), city, locationField, selectedItem);
 		comboBoxBinding.setSourceNullValue(null);
 		comboBoxBinding.setSourceUnreadableValue(null);
 		locationBindingGroup.addBinding(comboBoxBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), ITEM_SELECTED, locationField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, getCustomerTablePanel(), ITEM_SELECTED, locationField, ENABLED);
 		locationBindingGroup.addBinding(enabledBinding);
 		locationBindingGroup.addBindingListener(changeListener);
 		locationBindingGroup.bind();
@@ -441,8 +441,8 @@ public class ClientInfoPanel extends AbstractPanel {
 		}
 	}
 
-	private ClientTablePanel getClientTablePanel() {
-		return clientTablePanel;
+	private CustomerTablePanel getCustomerTablePanel() {
+		return customerTablePanel;
 	}
 
 	@Override

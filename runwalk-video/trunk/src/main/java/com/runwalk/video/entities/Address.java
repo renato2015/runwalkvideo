@@ -4,8 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.Embedded;
 
 import com.google.common.base.Objects;
 
@@ -16,12 +15,8 @@ public class Address implements Serializable {
 	@Column(name = "address_1")
 	private String address;
 	
-	@ManyToOne
-	@JoinColumn(name = "city_id")
-	private City city;
-	
-	@Column(name = "zip")
-	private String postalcode;
+	@Embedded
+	private City city = new City();
 	
 	public String getAddress() {
 		return address;
@@ -32,6 +27,9 @@ public class Address implements Serializable {
 	}
 	
 	public City getCity() {
+		if (city == null) {
+			this.city = new City();
+		}
 		return city;
 	}
 	
@@ -40,11 +38,11 @@ public class Address implements Serializable {
 	}
 	
 	public String getPostalcode() {
-		return (postalcode == null && city != null) ? "" + city.getCode() : postalcode;
+		return city.getCode();
 	}
 	
 	public void setPostalcode(String postalcode) {
-		this.postalcode = postalcode;
+		city.setCode(postalcode);
 	}
 
 	@Override

@@ -34,7 +34,7 @@ public class JpaDaoService extends AbstractDaoService {
 	 * @param entityManagerFactory The factory the dao's should use
 	 */
 	private void addSpecializedDaos(EntityManagerFactory entityManagerFactory) {
-		addDao(new ClientDao(entityManagerFactory));
+		addDao(new CustomerDao(entityManagerFactory));
 		addDao(new CityDao(entityManagerFactory));
 		addDao(new ItemDao(entityManagerFactory));
 		addDao(new AnalysisDao(entityManagerFactory));

@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="phppos_sales_suspended_items")
+@Table(name="ospos_sales_suspended_items")
 public class SuspendedSaleItem implements Serializable {
 	
 	public static final BigDecimal DEFAULT_DISCOUNT = BigDecimal.valueOf(10.0d);
@@ -38,7 +38,7 @@ public class SuspendedSaleItem implements Serializable {
 	
 	public SuspendedSaleItem() { }
 
-	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Client client) {
+	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Customer customer) {
 		this(suspendedSale, item);
 		quantity = DEFAULT_QUANTITY;
 		costPrice = item.getCostPrice();

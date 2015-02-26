@@ -27,7 +27,7 @@ public class SaveTask<T extends SerializableEntity<? super T>> extends AbstractT
 		List<T> result = null;
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
+			// advantage of dirty checking on the customer is that we don't need to serialize the complete list for saving just a few items
 			result = getDaoService().getDao(getTypeParameter()).merge(itemList);
 			message("endMessage", result.size());
 		} finally {

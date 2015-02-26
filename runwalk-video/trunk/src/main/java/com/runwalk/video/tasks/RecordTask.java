@@ -62,7 +62,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 			// set recording to true if recording / file key value pair added to file manager
 			setRecording(true);
 		}
-		message("recordingMessage", getAnalysisModel().getEntity().getClient().toString());
+		message("recordingMessage", getAnalysisModel().getEntity().getCustomer().toString());
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class RecordTask extends AbstractTask<Boolean, Void> {
 				}
 			}
 		}
-		message("endMessage", getAnalysisModel().getEntity().getClient());
+		message("endMessage", getAnalysisModel().getEntity().getCustomer());
 		return result;
 	}
 

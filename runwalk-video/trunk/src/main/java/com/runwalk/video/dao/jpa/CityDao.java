@@ -5,8 +5,6 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
-import org.eclipse.persistence.config.QueryHints;
-
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.entities.City;
 
@@ -23,8 +21,7 @@ public class CityDao extends JpaDao<City> {
 
 	@Override
 	public List<City> getAll() {
-		TypedQuery<City> query = createEntityManager().createQuery("SELECT city FROM " + getTypeParameter().getSimpleName() + " city", City.class)
-				.setHint(QueryHints.LEFT_FETCH, "city.state");
+		TypedQuery<City> query = createEntityManager().createQuery("SELECT person.address.city FROM Person person", City.class);
 		return query.getResultList();
 	}
 	

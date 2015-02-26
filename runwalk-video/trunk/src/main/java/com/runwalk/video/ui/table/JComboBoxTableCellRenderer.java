@@ -7,7 +7,14 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 @SuppressWarnings("serial")
-public class JComboBoxTableCellRenderer extends JComboBox implements TableCellRenderer {
+public class JComboBoxTableCellRenderer<T> extends JComboBox<T> implements TableCellRenderer {
+	
+	private Class<T> contentType;
+	
+	public JComboBoxTableCellRenderer(Class<T> contentType)
+	{
+		this.contentType = contentType;
+	}
 	
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected,
@@ -18,7 +25,7 @@ public class JComboBoxTableCellRenderer extends JComboBox implements TableCellRe
 		} else if ((table.getModel().isCellEditable(row, column))) {
 			// add the item to the comboxbox.
 			removeAllItems();
-			addItem(value);
+			addItem(contentType.cast(value));
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
 			return this;

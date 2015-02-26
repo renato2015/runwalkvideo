@@ -18,7 +18,7 @@ public class Keyframe extends SerializableEntity<Keyframe> {
 	private Long id;
 
 	@ManyToOne
-	@JoinColumn(name="movie_id", nullable=false)
+	@JoinColumn(name="recording_id", nullable=false)
 	private Recording recording; 
 
 	@Column(name="position")

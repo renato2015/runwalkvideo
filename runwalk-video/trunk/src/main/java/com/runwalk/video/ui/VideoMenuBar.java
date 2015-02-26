@@ -35,10 +35,10 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		// TODO generate file menu using the tablePanels list here!
 		JSeparator separator = new JSeparator();
 		JMenu fileMenu = new  JMenu(getResourceMap().getString("fileMenu.text"));
-		JMenuItem newClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("addClient"));
-		fileMenu.add(newClientMenuItem);
-		JMenuItem deleteClientMenuItem = new JMenuItem(getApplication().getClientTablePanel().getAction("deleteClient"));
-		fileMenu.add(deleteClientMenuItem);
+		JMenuItem newCustomerMenuItem = new JMenuItem(getApplication().getCustomerTablePanel().getAction("addCustomer"));
+		fileMenu.add(newCustomerMenuItem);
+		JMenuItem deleteCustomerMenuItem = new JMenuItem(getApplication().getCustomerTablePanel().getAction("deleteCustomer"));
+		fileMenu.add(deleteCustomerMenuItem);
 		fileMenu.add(separator);
 
 		JMenuItem createAnalysisItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("addAnalysis"));
@@ -55,7 +55,7 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 		fileMenu.add(new JSeparator());
 		JMenuItem refreshMenuItem = new JMenuItem( getAction(REFRESH_ACTION));
 		fileMenu.add(refreshMenuItem);
-		JMenuItem saveMenuItem = new JMenuItem( getApplication().getClientTablePanel().getAction("save"));
+		JMenuItem saveMenuItem = new JMenuItem( getApplication().getCustomerTablePanel().getAction("save"));
 		fileMenu.add(saveMenuItem);
 		JMenuItem saveSettingsMenuItem = new JMenuItem( getAction(SAVE_SETTINGS_ACTION));
 		fileMenu.add(saveSettingsMenuItem);

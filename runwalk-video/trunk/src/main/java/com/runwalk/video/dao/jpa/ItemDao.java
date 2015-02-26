@@ -15,7 +15,7 @@ public class ItemDao extends JpaDao<Item> {
 	
 	public List<Item> getItemsByCategoryId(int categoryId) {
 		TypedQuery<Item> query = createEntityManager().createQuery(
-				"SELECT item FROM " + getTypeParameter().getSimpleName() + " item LEFT JOIN FETCH item.itemSize WHERE item.subcategory.category.id = :categoryId", Item.class);
+				"SELECT item FROM " + getTypeParameter().getSimpleName() + " item LEFT JOIN FETCH item.itemSize WHERE item.itemCategory.id = :categoryId", Item.class);
 		query.setParameter("categoryId", categoryId);
 		return query.getResultList();
 	}

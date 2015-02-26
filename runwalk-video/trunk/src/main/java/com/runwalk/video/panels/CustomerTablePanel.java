@@ -29,9 +29,9 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.io.VideoFileManager;
-import com.runwalk.video.model.ClientModel;
+import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
@@ -40,28 +40,28 @@ import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
-public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
+public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 
 	private static final String SAVE_ACTION = "save";
 
-	private static final String REFRESH_CLIENT_ACTION = "refreshClient";
+	private static final String REFRESH_CLIENT_ACTION = "refreshCustomer";
 
-	private static final String DELETE_CLIENT_ACTION = "deleteClient";
+	private static final String DELETE_CLIENT_ACTION = "deleteCustomer";
 
-	private static final String ADD_CLIENT_ACTION = "addClient";
+	private static final String ADD_CLIENT_ACTION = "addCustomer";
 
 	private final JTextField searchField;
-	private final TextComponentMatcherEditor<ClientModel> matcherEditor;
+	private final TextComponentMatcherEditor<CustomerModel> matcherEditor;
 
 	private final VideoFileManager videoFileManager;
 	private final DaoService daoService;
 
-	public ClientTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
+	public CustomerTablePanel(VideoFileManager videoFileManager, DaoService daoManager) {
 		super(new MigLayout("nogrid, fill"));
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoManager;
 
-		String borderTitle = getResourceMap().getString("clientTablePanel.border.title");
+		String borderTitle = getResourceMap().getString("customerTablePanel.border.title");
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 
 				borderTitle, TitledBorder.LEFT, TitledBorder.TOP, SettingsManager.MAIN_FONT.deriveFont(12))); // NOI18N
 		getTable().getTableHeader().setVisible(true);
@@ -79,9 +79,9 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 		getFirstButton().setFont(SettingsManager.MAIN_FONT);
 		add(getFirstButton());
 
-		JButton refreshClientButton = new JButton(getAction(REFRESH_CLIENT_ACTION));
-		refreshClientButton.setFont(SettingsManager.MAIN_FONT);
-		add(refreshClientButton);
+		JButton refreshCustomerButton = new JButton(getAction(REFRESH_CLIENT_ACTION));
+		refreshCustomerButton.setFont(SettingsManager.MAIN_FONT);
+		add(refreshCustomerButton);
 
 		JButton saveButton = new JButton(getAction(SAVE_ACTION));
 		saveButton.setFont(SettingsManager.MAIN_FONT);
@@ -92,7 +92,7 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 
 		searchField = new JTextField();
 		searchField.setFont(SettingsManager.MAIN_FONT);
-		matcherEditor = new TextComponentMatcherEditor<ClientModel>(searchField.getDocument(), GlazedLists.toStringTextFilterator());
+		matcherEditor = new TextComponentMatcherEditor<CustomerModel>(searchField.getDocument(), GlazedLists.toStringTextFilterator());
 
 		final JLabel theLabel = new JLabel(getResourceMap().getString("searchPanel.searchFieldLabel.text"));
 		theLabel.setFont(SettingsManager.MAIN_FONT);
@@ -132,30 +132,30 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 
 	@Override
-	protected EventList<ClientModel> specializeItemList(EventList<ClientModel> eventList) {
-		FilterList<ClientModel> filterList = new FilterList<ClientModel>(eventList);
+	protected EventList<CustomerModel> specializeItemList(EventList<CustomerModel> eventList) {
+		FilterList<CustomerModel> filterList = new FilterList<CustomerModel>(eventList);
 		filterList.setMatcherEditor(getSearchEngineTextFieldMatcherEditor());
 		return filterList;
 	}
 
-	private TextComponentMatcherEditor<ClientModel> getSearchEngineTextFieldMatcherEditor() {
+	private TextComponentMatcherEditor<CustomerModel> getSearchEngineTextFieldMatcherEditor() {
 		return matcherEditor;
 	}
 
 	public boolean save() {
 		getItemList().getReadWriteLock().readLock().lock();
 		try {
-			// advantage of dirty checking on the client is that we don't need to serialize the complete list for saving just a few items
-			Dao<Client> dao = getDaoService().getDao(Client.class);
-			for(ClientModel clientModel : getItemList()) {
-				if (clientModel.isDirty()) {
-					Client client = clientModel.getEntity();
-					Client mergedClient = dao.merge(client);
+			// advantage of dirty checking on the customer is that we don't need to serialize the complete list for saving just a few items
+			Dao<Customer> dao = getDaoService().getDao(Customer.class);
+			for(CustomerModel customerModel : getItemList()) {
+				if (customerModel.isDirty()) {
+					Customer customer = customerModel.getEntity();
+					Customer mergedCustomer = dao.merge(customer);
 					// set dirty flag to false again
-					clientModel.setDirty(false);
-					// set version field on old client
-					if (mergedClient.getVersion() != client.getVersion()) {
-						client.incrementVersion();
+					customerModel.setDirty(false);
+					// set version field on old customer
+					if (mergedCustomer.getVersion() != customer.getVersion()) {
+						customer.incrementVersion();
 					}
 				}
 			}
@@ -166,15 +166,15 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 
 	@Action(block = BlockingScope.ACTION)
-	public PersistTask<Client> addClient() {
+	public PersistTask<Customer> addCustomer() {
 		clearSearchField();
-		Client client = new Client();
-		PersistTask<Client> result = new PersistTask<Client>(getDaoService(), Client.class, client);
-		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+		Customer customer = new Customer();
+		PersistTask<Customer> result = new PersistTask<Customer>(getDaoService(), Customer.class, customer);
+		result.addTaskListener(new TaskListener.Adapter<Customer, Void>() {
 
 			@Override
-			public void succeeded(TaskEvent<Client> event) {
-				addClientModel(new ClientModel(event.getValue()));
+			public void succeeded(TaskEvent<Customer> event) {
+				addCustomerModel(new CustomerModel(event.getValue()));
 			}
 
 		});
@@ -182,16 +182,16 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 	
 	/**
-	 * Add the given {@link Client} to the table's list.
+	 * Add the given {@link Customer} to the table's list.
 	 * 
-	 * @param client The client to remove
+	 * @param customer The customer to remove
 	 */
-	private void addClientModel(ClientModel clientModel) {
+	private void addCustomerModel(CustomerModel customerModel) {
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
-			getItemList().add(clientModel);
-			setSelectedItemRow(clientModel);
-			ClientTablePanel.this.transferFocus();
+			getItemList().add(customerModel);
+			setSelectedItemRow(customerModel);
+			CustomerTablePanel.this.transferFocus();
 			setDirty(true);
 		} finally {
 			getItemList().getReadWriteLock().writeLock().unlock();
@@ -199,21 +199,21 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.ACTION)
-	public DeleteTask<Client> deleteClient() {
+	public DeleteTask<Customer> deleteCustomer() {
 		int n = JOptionPane.showConfirmDialog(
 				SwingUtilities.windowForComponent(this),
-				getResourceMap().getString("deleteClient.confirmDialog.text"),
-				getResourceMap().getString("deleteClient.Action.text"),
+				getResourceMap().getString("deleteCustomer.confirmDialog.text"),
+				getResourceMap().getString("deleteCustomer.Action.text"),
 				JOptionPane.WARNING_MESSAGE,
 				JOptionPane.OK_CANCEL_OPTION);
 		if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
-		final ClientModel selectedModel = getSelectedItem();
-		DeleteTask<Client> result = new DeleteTask<Client>(getDaoService(), Client.class, selectedModel.getEntity());
-		result.addTaskListener(new TaskListener.Adapter<Client, Void>() {
+		final CustomerModel selectedModel = getSelectedItem();
+		DeleteTask<Customer> result = new DeleteTask<Customer>(getDaoService(), Customer.class, selectedModel.getEntity());
+		result.addTaskListener(new TaskListener.Adapter<Customer, Void>() {
 
 			@Override
-			public void succeeded(TaskEvent<Client> event) {
-				deleteClientModel(selectedModel);
+			public void succeeded(TaskEvent<Customer> event) {
+				deleteCustomerModel(selectedModel);
 			}
 
 		});
@@ -221,17 +221,17 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 	
 	/**
-	 * Remove the given Client from the table's list.
+	 * Remove the given Customer from the table's list.
 	 * 
-	 * @param client The client to remove
+	 * @param customer The customer to remove
 	 */
-	private void deleteClientModel(ClientModel clientModel) {
+	private void deleteCustomerModel(CustomerModel customerModel) {
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
 			int lastSelectedRowIndex = getEventSelectionModel().getMinSelectionIndex();
-			// delete all video files for the selected client
-			getVideoFileManager().deleteVideoFiles(clientModel.getEntity());
-			getItemList().remove(clientModel);
+			// delete all video files for the selected customer
+			getVideoFileManager().deleteVideoFiles(customerModel.getEntity());
+			getItemList().remove(customerModel);
 			// select previous record
 			if (lastSelectedRowIndex > 0) {
 				setSelectedItemRow(lastSelectedRowIndex - 1);
@@ -242,44 +242,44 @@ public class ClientTablePanel extends AbstractTablePanel<ClientModel> {
 	}
 
 	@Action(enabledProperty = ROW_SELECTED, block = BlockingScope.APPLICATION)
-	public RefreshEntityTask<Client> refreshClient() {
-		final ClientModel selectedModel = getSelectedItem();
+	public RefreshEntityTask<Customer> refreshCustomer() {
+		final CustomerModel selectedModel = getSelectedItem();
 		if (selectedModel.isDirty() && isDirty()) {
 			int n = JOptionPane.showConfirmDialog(
 					SwingUtilities.windowForComponent(this),
-					getResourceMap().getString("refreshClient.confirmDialog.text"),
-					getResourceMap().getString("refreshClient.Action.text"),
+					getResourceMap().getString("refreshCustomer.confirmDialog.text"),
+					getResourceMap().getString("refreshCustomer.Action.text"),
 					JOptionPane.WARNING_MESSAGE,
 					JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.CANCEL_OPTION || n == JOptionPane.CLOSED_OPTION) return null;
 		}
-		return new RefreshEntityTask<Client>(getDaoService(), Client.class, getSelectedItem().getEntity()) {
+		return new RefreshEntityTask<Customer>(getDaoService(), Customer.class, getSelectedItem().getEntity()) {
 
 			@Override
-			protected Client doInBackground() throws Exception {
-				Client client = super.doInBackground();
-				// refresh file cache for newly added clients
+			protected Customer doInBackground() throws Exception {
+				Customer customer = super.doInBackground();
+				// refresh file cache for newly added customers
 				getItemList().getReadWriteLock().writeLock().lock();
 				try {
-					selectedModel.setEntity(client);
+					selectedModel.setEntity(customer);
 					selectedModel.setDirty(false);
 				} finally {
 					getItemList().getReadWriteLock().writeLock().unlock();
 				}
-				return client;
+				return customer;
 			}
 
 			@Override
 			protected void failed(Throwable throwable) {
 				if (throwable instanceof NoResultException) {
-					ClientTablePanel outerInstance = ClientTablePanel.this;
+					CustomerTablePanel outerInstance = CustomerTablePanel.this;
 					JOptionPane.showMessageDialog( 
 						SwingUtilities.windowForComponent(outerInstance),
-						outerInstance.getResourceMap().getString("refreshClient.errorDialog.text"),
-						outerInstance.getResourceMap().getString("refreshClient.errorDialog.title"),
+						outerInstance.getResourceMap().getString("refreshCustomer.errorDialog.text"),
+						outerInstance.getResourceMap().getString("refreshCustomer.errorDialog.title"),
 						JOptionPane.WARNING_MESSAGE
 					);
-					deleteClientModel(selectedModel);
+					deleteCustomerModel(selectedModel);
 				} else {
 					super.failed(throwable);
 				}

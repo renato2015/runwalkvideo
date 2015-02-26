@@ -37,7 +37,7 @@ import com.runwalk.video.ui.AbstractEntityModelConnector;
 public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends SerializableEntity<?>>> extends AbstractPanel {
 
 	public static final String ROW_SELECTED = "rowSelected";
-	public static final String CLIENT_SELECTED = "clientSelected";
+	public static final String CLIENT_SELECTED = "customerSelected";
 
 	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String EVENT_LIST = "itemList";

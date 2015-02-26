@@ -21,14 +21,14 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `analysis`;
 CREATE TABLE IF NOT EXISTS `analysis` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `clientid` int(10) NOT NULL,
+  `customerid` int(10) NOT NULL,
   `articleid` bigint(20) DEFAULT NULL,
   `date` timestamp NULL DEFAULT NULL,
   `movieid` bigint(20) DEFAULT NULL,
   `statuscode` int(4) DEFAULT NULL,
   `comments` text,
   PRIMARY KEY (`id`),
-  KEY `client_fk` (`clientid`),
+  KEY `customer_fk` (`customerid`),
   KEY `article_fk` (`articleid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=19035 ;
 

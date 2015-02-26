@@ -5,7 +5,7 @@
 	<packaging>jar</packaging>
 	<version>0.5-SNAPSHOT</version>
 	<name>runwalk-video</name>
-	<url>http://www.runwalk.be</url>
+	<url>https://www.runwalk.be</url>
 	<description>Beheer van klanten en loopanalyses</description>
 	<inceptionYear>2008</inceptionYear>
 	<scm>
@@ -15,7 +15,7 @@
 	</scm>
 	<organization>
 		<name>Runwalk Herentals</name>
-		<url>http://www.runwalk.be</url>
+		<url>https://www.runwalk.be</url>
 	</organization>
 	<developers>
 		<developer>
@@ -148,7 +148,7 @@
 						<keypass>${keystore.password}</keypass>
 						<storepass>${keystore.password}</storepass>
 						<!--storetype>fillme</storetype -->
-						<alias>jdc</alias>
+						<alias>jks</alias>
 						<validity>180</validity>
 
 						<!-- only required for generating the keystore -->
@@ -343,6 +343,25 @@
 										<ignore />
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											aspectj-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.4,)
+										</versionRange>
+										<goals>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -442,7 +461,7 @@
 		<dependency>
 			<groupId>net.java.dev.glazedlists</groupId>
 			<artifactId>glazedlists_java15</artifactId>
-			<version>1.9.0</version>
+			<version>1.9.1</version>
 		</dependency>
 		<!-- Persistence libraries -->
 		<dependency>
@@ -555,7 +574,7 @@
 		<keystore.dnameSt>Antwerp</keystore.dnameSt>
 		<keystore.dnameC>Belgium</keystore.dnameC>
 		<keystore.dnameOu>None</keystore.dnameOu>
-		<keystore.location>${basedir}/src/main/jnlp/runwalk-video.keys</keystore.location>
+		<keystore.location>${basedir}/src/main/jnlp/runwalk-video.jks</keystore.location>
 		<keystore.password>yourPwd</keystore.password>
 		<!-- JNLP file generation properties -->
 		<mainClass>com.runwalk.video.RunwalkVideoApp</mainClass>
