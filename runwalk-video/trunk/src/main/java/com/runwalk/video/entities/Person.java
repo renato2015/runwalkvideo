@@ -11,13 +11,12 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name = "phppos_people")
+@Table(name = "ospos_people")
 @DiscriminatorColumn(name=Person.TYPE)
 @AttributeOverride(name=Person.ID, column=@Column(name=Person.PERSON_ID))
 public abstract class Person extends SerializableEntity<Person> {
@@ -41,8 +40,10 @@ public abstract class Person extends SerializableEntity<Person> {
 	private String emailAddress;
 	@Column(name = "phone_number")
 	private String phoneNumber;
-	@Column(name = "birthdate")
-	@Temporal(value = TemporalType.DATE)
+	//@Column(name = "birthdate")
+	//@Temporal(value = TemporalType.DATE)
+	@Transient
+	// TODO map to real column
 	private Date birthDate;
 	@Column(name = "gender")
 	@Enumerated(EnumType.ORDINAL)
@@ -140,7 +141,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	public boolean equals(Object obj) {
 		boolean result = false;
 		if (obj != null && getClass() == obj.getClass()) {
-			Client other = (Client) obj;
+			Customer other = (Customer) obj;
 			return Objects.equals(getFirstname(), other.getFirstname()) &&
 				Objects.equals(getName(), other.getName()) &&
 				Objects.equals(getBirthdate(), other.getBirthdate()) &&
@@ -159,7 +160,7 @@ public abstract class Person extends SerializableEntity<Person> {
 	}
 	
 	/**
-	 * Enum for denoting the gender of the client
+	 * Enum for denoting the gender of the customer
 	 * 
 	 * WARNING: this field is mapped to the database by ordinal.
 	 * Changing the order of declaration of the constants will change the parsed values in the application!

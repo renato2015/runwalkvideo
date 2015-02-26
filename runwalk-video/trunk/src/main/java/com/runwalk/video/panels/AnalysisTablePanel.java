@@ -43,13 +43,13 @@ import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.ItemDao;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.entities.RecordingStatus;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
-import com.runwalk.video.model.ClientModel;
+import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.AbstractTask;
 import com.runwalk.video.tasks.CompressVideoFilesTask;
@@ -80,13 +80,13 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	private final VideoFileManager videoFileManager;
 
-	private final ClientTablePanel clientTablePanel;
+	private final CustomerTablePanel customerTablePanel;
 
 	private final DaoService daoService;
 
 	private final SettingsManager appSettings;
 
-	private Boolean clientSelected = false;
+	private Boolean customerSelected = false;
 
 	private EventList<Item> articleList = GlazedLists.eventListOf();
 
@@ -96,12 +96,12 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	private AutoCompleteCellEditor<Item> itemTableCellEditor;
 
-	public AnalysisTablePanel(ClientTablePanel clientTablePanel,
+	public AnalysisTablePanel(CustomerTablePanel customerTablePanel,
 			UndoableEditListener undoableEditListener, 
 			SettingsManager appSettings, VideoFileManager videoFileManager,
 			DaoService daoService) {
 		super(new MigLayout("fill, nogrid"));
-		this.clientTablePanel = clientTablePanel;
+		this.customerTablePanel = customerTablePanel;
 		this.appSettings = appSettings;
 		this.videoFileManager = videoFileManager;
 		this.daoService = daoService;
@@ -153,13 +153,13 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		enableCommentsBinding.setSourceUnreadableValue(false);
 		bindingGroup.addBinding(enableCommentsBinding);
 
-		BeanProperty<ClientTablePanel, Boolean> isClientSelected = BeanProperty.create(ROW_SELECTED);
-		BeanProperty<AnalysisTablePanel, Boolean> clientSelected = BeanProperty.create(CLIENT_SELECTED);
-		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> clientSelectedBinding = 
-			Bindings.createAutoBinding(UpdateStrategy.READ, getClientTablePanel(), isClientSelected, this, clientSelected);
-		clientSelectedBinding.setSourceNullValue(false);
-		clientSelectedBinding.setSourceUnreadableValue(false);
-		bindingGroup.addBinding(clientSelectedBinding);
+		BeanProperty<CustomerTablePanel, Boolean> isCustomerSelected = BeanProperty.create(ROW_SELECTED);
+		BeanProperty<AnalysisTablePanel, Boolean> customerSelected = BeanProperty.create(CLIENT_SELECTED);
+		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> customerSelectedBinding = 
+			Bindings.createAutoBinding(UpdateStrategy.READ, getCustomerTablePanel(), isCustomerSelected, this, customerSelected);
+		customerSelectedBinding.setSourceNullValue(false);
+		customerSelectedBinding.setSourceUnreadableValue(false);
+		bindingGroup.addBinding(customerSelectedBinding);
 
 		ELProperty<AnalysisTablePanel, Boolean> recorded = ELProperty.create("${rowSelected && selectedItem.recordingsEmpty && selectedVideoFilePresent}");
 		BeanProperty<AnalysisTablePanel, Boolean> selectedItemRecorded = BeanProperty.create(SELECTED_ITEM_RECORDED);
@@ -169,7 +169,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		selectedItemRecordedBinding.setTargetNullValue(false);
 		bindingGroup.addBinding(selectedItemRecordedBinding);
 		
-		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && not empty clientTablePanel.selectedItem.emailAddress}");
+		ELProperty<AnalysisTablePanel, Boolean> isAddFeedbackEnabled = ELProperty.create("${rowSelected && not empty customerTablePanel.selectedItem.emailAddress}");
 		BeanProperty<AnalysisTablePanel, Boolean> analysisSelected = BeanProperty.create(ADD_ANALYSIS_FOR_FEEDBACK_ENABLED);
 		Binding<? extends AbstractTablePanel<?>, Boolean, AnalysisTablePanel, Boolean> addAnalysisForFeedbackBinding = 
 			Bindings.createAutoBinding(UpdateStrategy.READ, this, isAddFeedbackEnabled, this, analysisSelected);
@@ -223,19 +223,19 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 	@Action(enabledProperty = CLIENT_SELECTED, block = BlockingScope.ACTION)
 	public PersistTask<Analysis> addAnalysis(ActionEvent event) {
 		// insert a new analysis record
-		final ClientModel selectedModel = getClientTablePanel().getSelectedItem();
-		final Client selectedClient = selectedModel.getEntity();
+		final CustomerModel selectedModel = getCustomerTablePanel().getSelectedItem();
+		final Customer selectedCustomer = selectedModel.getEntity();
 		if (("".equals(selectedModel.getName()) || selectedModel.getName() == null)
-				&& ("".equals(selectedModel.getOrganization()) || selectedClient.getOrganization() == null)) {
+				&& ("".equals(selectedModel.getOrganization()) || selectedCustomer.getOrganization() == null)) {
 			JOptionPane.showMessageDialog(SwingUtilities
 					.windowForComponent(this),
 					getResourceMap().getString("addAnalysis.errorDialog.text"),
 					getResourceMap().getString("addAnalysis.Action.text"),
 					JOptionPane.ERROR_MESSAGE);
-			getLogger().warn("Attempt to insert analysis for " + selectedClient + " failed.");
+			getLogger().warn("Attempt to insert analysis for " + selectedCustomer + " failed.");
 			return null;
 		} 
-		Analysis analysis = createAnalysisForEvent(event, selectedClient);
+		Analysis analysis = createAnalysisForEvent(event, selectedCustomer);
 		PersistTask<Analysis> result = new PersistTask<Analysis>(getDaoService(), Analysis.class, analysis);
 		result.addTaskListener(new TaskListener.Adapter<Analysis, Void>() {
 
@@ -248,7 +248,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		return result;
 	}
 	
-	private void addAnalysisModel(final ClientModel selectedModel, Analysis result) {
+	private void addAnalysisModel(final CustomerModel selectedModel, Analysis result) {
 		getItemList().getReadWriteLock().writeLock().lock();
 		try {
 			AnalysisModel analysisModel = new AnalysisModel(selectedModel, result);
@@ -259,12 +259,12 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		}
 	}
 
-	private Analysis createAnalysisForEvent(ActionEvent event, final Client selectedClient) {
+	private Analysis createAnalysisForEvent(ActionEvent event, final Customer selectedCustomer) {
 		Analysis analysis;
 		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand())) {
-			analysis = new Analysis(selectedClient, getSelectedItem().getEntity(), getDateForFeedback());
+			analysis = new Analysis(selectedCustomer, getSelectedItem().getEntity(), getDateForFeedback());
 		} else {
-			analysis = new Analysis(selectedClient);
+			analysis = new Analysis(selectedCustomer);
 		}
 		return analysis;
 	}
@@ -378,9 +378,9 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 						Item oldItem = getSelectedItem().getItem();
 						if (newItem != oldItem) {
 							getSelectedItem().setItem(newItem);
-							Client selectedClient = clientTablePanel.getSelectedItem().getEntity();
+							Customer selectedCustomer = customerTablePanel.getSelectedItem().getEntity();
 							AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
-									selectedClient, oldItem, newItem, getAppSettings().getEmployeeId()));
+									selectedCustomer, oldItem, newItem, getAppSettings().getEmployeeId()));
 						}
 					}
 				} finally {
@@ -423,7 +423,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		progressionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
 		progressionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
 		progressionTableCellEditor.setClickCountToStart(1);
-		JComboBoxTableCellRenderer comboBoxTableCellRenderer = new JComboBoxTableCellRenderer();
+		JComboBoxTableCellRenderer<Item> comboBoxTableCellRenderer = new JComboBoxTableCellRenderer<Item>(Item.class);
 		getTable().getColumnModel().getColumn(2).setCellRenderer(comboBoxTableCellRenderer);
 		comboBoxTableCellRenderer.setFont(SettingsManager.MAIN_FONT);
 		getTable().getColumnModel().getColumn(2).setCellEditor(progressionTableCellEditor);
@@ -446,16 +446,16 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		return selectedVideoFilePresent;
 	}
 
-	public boolean isClientSelected() {
-		return clientSelected;
+	public boolean isCustomerSelected() {
+		return customerSelected;
 	}
 
-	public void setClientSelected(boolean clientSelected) {
-		this.firePropertyChange(CLIENT_SELECTED, this.clientSelected, this.clientSelected = clientSelected);
+	public void setCustomerSelected(boolean customerSelected) {
+		this.firePropertyChange(CLIENT_SELECTED, this.customerSelected, this.customerSelected = customerSelected);
 	}
 
-	public ClientTablePanel getClientTablePanel() {
-		return clientTablePanel;
+	public CustomerTablePanel getCustomerTablePanel() {
+		return customerTablePanel;
 	}
 
 	public SettingsManager getAppSettings() {

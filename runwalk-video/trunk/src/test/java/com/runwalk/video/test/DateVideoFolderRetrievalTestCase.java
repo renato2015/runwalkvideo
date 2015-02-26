@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import junit.framework.TestCase;
 
 import com.runwalk.video.entities.Analysis;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.DateVideoFolderRetrievalStrategy;
 
@@ -20,8 +20,8 @@ public class DateVideoFolderRetrievalTestCase extends TestCase {
 	public void testDateVideoFolderStructure() throws Exception {
 		DateVideoFolderRetrievalStrategy dateVideoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy(DATE_FORMAT_STRING);
 		// create entities
-		Client testClient = new Client("vermeulen", "joske");
-		Analysis testAnalysis = new Analysis(testClient);
+		Customer testCustomer = new Customer("vermeulen", "joske");
+		Analysis testAnalysis = new Analysis(testCustomer);
 		Recording testRecording = new Recording(testAnalysis);
 		// retrieve video folder for the created recording
 		File videoFolder = dateVideoFolderRetrievalStrategy.getVideoFolder(VIDEO_FOLDER, testRecording);

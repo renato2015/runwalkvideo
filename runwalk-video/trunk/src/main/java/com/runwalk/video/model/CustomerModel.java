@@ -8,9 +8,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.City;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 
-public class ClientModel extends AbstractEntityModel<Client> {
+public class CustomerModel extends AbstractEntityModel<Customer> {
 	
 	public static final String NAME = "name";
 	public static final String FIRSTNAME = "firstname";
@@ -24,19 +24,19 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	
 	private List<AnalysisModel> analysisModels = Lists.newArrayList();
 	
-	public ClientModel(Client client, boolean update) {
-		super(client);
+	public CustomerModel(Customer customer, boolean update) {
+		super(customer);
 		if (update) {
 			updateLastAnalysisDate();
 		}
 	}
 	
-	public ClientModel(Client client) {
-		this(client, true);
+	public CustomerModel(Customer customer) {
+		this(customer, true);
 	}
 	
-	public ClientModel(Client client, Date lastAnalysisDate) {
-		this(client, false);
+	public CustomerModel(Customer customer, Date lastAnalysisDate) {
+		this(customer, false);
 		this.lastAnalysisDate = lastAnalysisDate;
 	}
 	
@@ -54,8 +54,8 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	
 	public void addAnalysisModels(List<Analysis> analyses) {
 		for (Analysis analysis : analyses) {
-			if (getEntity().equals(analysis.getClient())) {
-				analysis.setClient(getEntity());
+			if (getEntity().equals(analysis.getCustomer())) {
+				analysis.setCustomer(getEntity());
 				getAnalyses().add(analysis);
 				analysisModels.add(new AnalysisModel(this, analysis));
 			}
@@ -157,7 +157,7 @@ public class ClientModel extends AbstractEntityModel<Client> {
 	}
 
 	@Override
-	public void setEntity(Client entity) {
+	public void setEntity(Customer entity) {
 		updateLastAnalysisDate();
 		super.setEntity(entity);
 	}

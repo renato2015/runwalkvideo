@@ -16,15 +16,15 @@ import javax.persistence.Transient;
 
 @Entity
 @SuppressWarnings("serial")
-@DiscriminatorValue(Client.PERSON_TYPE)
+@DiscriminatorValue(Customer.PERSON_TYPE)
 @Inheritance(strategy=InheritanceType.JOINED)
-@Table(name = "phppos_customers")
-public class Client extends Person {
+@Table(name = "ospos_customers")
+public class Customer extends Person {
 	
 	// discriminator value for customer
 	public static final String PERSON_TYPE = "0";
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "customer")
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	
 	@Column(name = "account_number")
@@ -33,9 +33,9 @@ public class Client extends Person {
 	@Transient
 	private String organization;
 	
-	public Client() { }
+	public Customer() { }
 	
-	public Client(String name, String firstName) {
+	public Customer(String name, String firstName) {
 		setFirstname(firstName);
 		setName(name);
 	}

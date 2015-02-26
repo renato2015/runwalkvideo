@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="phppos_items_sizes")
+@Table(name="ospos_items_sizes")
 public class ItemSize implements Serializable {
 
 	@Id

@@ -21,11 +21,11 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	
 	public static final String COMMENTS = "comments";
 
-	private ClientModel clientModel;
+	private CustomerModel customerModel;
 	
-	public AnalysisModel(ClientModel clientModel, Analysis entity) {
+	public AnalysisModel(CustomerModel customerModel, Analysis entity) {
 		super(entity);
-		this.clientModel = clientModel;
+		this.customerModel = customerModel;
 	}
 	
 	/**
@@ -74,7 +74,7 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	}
 
 	public Item getItem() {
-		return getEntity().getArticle();
+		return getEntity().getItem();
 	}
 
 	public Long getFeedbackId() {
@@ -94,8 +94,8 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	}
 
 	public void setItem(Item article) {
-		firePropertyChange(ARTICLE, getEntity().getArticle(), article);
-		getEntity().setArticle(article);
+		firePropertyChange(ARTICLE, getEntity().getItem(), article);
+		getEntity().setItem(article);
 	}
 
 	public void setCreationDate(Date creationDate) {
@@ -124,12 +124,12 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	
 	@Override
 	public void setDirty(boolean dirty) {
-		clientModel.setDirty(dirty);
+		customerModel.setDirty(dirty);
 	}
 
 	@Override
 	public boolean isDirty() {
-		return clientModel.isDirty();
+		return customerModel.isDirty();
 	}
 
 	@Override

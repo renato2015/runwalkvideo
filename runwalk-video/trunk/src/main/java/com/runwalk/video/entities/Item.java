@@ -14,7 +14,7 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name = "phppos_items")
+@Table(name = "ospos_items")
 public class Item implements Serializable {
 	
 	@Id
@@ -31,8 +31,8 @@ public class Item implements Serializable {
 	private String description;
 
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="subcategory_id", nullable=false )
-	private ItemSubcategory subcategory;
+	@JoinColumn(name="item_category_id", nullable=false )
+	private ItemCategory itemCategory;
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="item_size_id")
@@ -60,8 +60,8 @@ public class Item implements Serializable {
 		return this.description;
 	}
 
-	public ItemSubcategory getSubcategory() {
-		return subcategory;
+	public ItemCategory getItemCategory() {
+		return itemCategory;
 	}
 	
 	public ItemSize getItemSize() {

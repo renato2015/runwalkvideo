@@ -18,7 +18,7 @@ import javax.persistence.TemporalType;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name="phppos_sales_suspended")
+@Table(name="ospos_sales_suspended")
 public class SuspendedSale implements Serializable {
 	
 	@Id
@@ -32,7 +32,7 @@ public class SuspendedSale implements Serializable {
 	
 	@ManyToOne
 	@JoinColumn(name="customer_id", nullable=false )
-	private Client client;
+	private Customer customer;
 	
 	@Column(name="employee_id")
 	private Long employeeId;
@@ -50,8 +50,8 @@ public class SuspendedSale implements Serializable {
 	
 	public SuspendedSale() {}
 
-	public SuspendedSale(Client client, Long employeeId) {
-		this.client = client;
+	public SuspendedSale(Customer customer, Long employeeId) {
+		this.customer = customer;
 		this.employeeId = employeeId;
 	}
 	
@@ -71,12 +71,12 @@ public class SuspendedSale implements Serializable {
 		this.saleTime = saleTime;
 	}
 
-	public Client getClient() {
-		return client;
+	public Customer getCustomer() {
+		return customer;
 	}
 
-	public void setClient(Client client) {
-		this.client = client;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	public List<SuspendedSaleItem> getSaleItems() {

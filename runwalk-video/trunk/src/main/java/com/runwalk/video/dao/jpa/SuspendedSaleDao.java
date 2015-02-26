@@ -7,7 +7,7 @@ import javax.persistence.TypedQuery;
 
 import org.jdesktop.swingx.calendar.DateUtils;
 
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.SuspendedSale;
 
 public class SuspendedSaleDao extends JpaDao<SuspendedSale> {
@@ -16,11 +16,11 @@ public class SuspendedSaleDao extends JpaDao<SuspendedSale> {
 		super(SuspendedSale.class, entityManagerFactory);
 	}
 
-	public SuspendedSale getSuspendedSaleByClient(Client client) {
+	public SuspendedSale getSuspendedSaleByCustomer(Customer customer) {
 		TypedQuery<SuspendedSale> query = createEntityManager().createQuery(
 				"SELECT suspendedSale from " + getTypeParameter().getSimpleName() + " suspendedSale WHERE "
-						+ "suspendedSale.client.id = :clientId AND suspendedSale.saleTime >= :minSaleTime", SuspendedSale.class);
-		query.setParameter("clientId", client.getId());
+						+ "suspendedSale.customer.id = :customerId AND suspendedSale.saleTime >= :minSaleTime", SuspendedSale.class);
+		query.setParameter("customerId", customer.getId());
 		query.setParameter("minSaleTime", DateUtils.startOfDay(new Date()));
 		return query.getSingleResult();
 	}

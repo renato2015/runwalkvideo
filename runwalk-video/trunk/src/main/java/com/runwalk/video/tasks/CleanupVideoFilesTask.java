@@ -7,8 +7,6 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import com.google.common.collect.Lists;
-import com.runwalk.video.dao.Dao;
-import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.entities.Recording;
 import com.runwalk.video.io.VideoFileManager;
 

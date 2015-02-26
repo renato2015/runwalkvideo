@@ -27,12 +27,12 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="phppos_analysis")
+@Table(name="ospos_analysis")
 public class Analysis extends SerializableEntity<Analysis> {
 
 	public final static String COMMENTS = "comments";
 	
-	public final static String ARTICLE = "article";
+	public final static String ITEM = "item";
 	
 	public final static String CREATION_DATE = "creationDate";
 		
@@ -42,16 +42,16 @@ public class Analysis extends SerializableEntity<Analysis> {
 	private Long id;
 	
 	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
-	@JoinColumn(name="clientid", nullable=false )
-	private Client client;
+	@JoinColumn(name="person_id", nullable=false )
+	private Customer customer;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "analysis")
 	@JoinFetch(JoinFetchType.OUTER)
 	private List<Recording> recordings = new ArrayList<Recording>();
 	
 	@OneToOne
-	@JoinColumn(name="articleid")
-	private Item article;
+	@JoinColumn(name="item_id")
+	private Item item;
 	
 	@Column(name="date")
 	@Temporal(value=TemporalType.TIMESTAMP)
@@ -70,29 +70,32 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@Column(name="feedback_token")
 	private String tokenId;
 	
+	@Column(name="appointment_cancelled")
+	private boolean appointmentCancelled;
+	
 	protected Analysis() { }
 	
-	public Analysis(Client client) {
+	public Analysis(Customer customer) {
 		creationDate = new Date();
-		this.client = client;
+		this.customer = customer;
 	}
 	
-	public Analysis(Client client, Analysis analysis, Date creationDate) {
-		this.client = client;
+	public Analysis(Customer customer, Analysis analysis, Date creationDate) {
+		this.customer = customer;
 		this.creationDate = creationDate;
 		this.feedbackId = analysis.getId();
 	}
 
-	public Client getClient() {
-		return client;
+	public Customer getCustomer() {
+		return customer;
 	}
 	
-	public void setClient(Client client) {
-		this.client = client;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
-	public Item getArticle() {
-		return article;
+	public Item getItem() {
+		return item;
 	}
 	
 	public Date getCreationDate() {
@@ -111,8 +114,8 @@ public class Analysis extends SerializableEntity<Analysis> {
 		this.comments = comments;
 	}
 	
-	public void setArticle(Item article) {
-		this.article = article;
+	public void setItem(Item item) {
+		this.item = item;
 	}
 
 	public List<Recording> getRecordings() {
@@ -176,14 +179,14 @@ public class Analysis extends SerializableEntity<Analysis> {
 		if (obj != null && getClass() == obj.getClass()) {
 			Analysis other = (Analysis) obj;
 			result = getId() != null ? getId().equals(other.getId()) : other.getId() == null;
-//			result &= getClient() != null ? getClient().equals(other.getClient()) : result;
+//			result &= getCustomer() != null ? getCustomer().equals(other.getCustomer()) : result;
 		}
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "Analysis [client=" + client.getFirstname() + " " + client.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
+		return "Analysis [customer=" + customer.getFirstname() + " " + customer.getName() + ", creationDate=" + creationDate	+ ", id=" + id + "]";	
 	}
 
 	public enum Progression {

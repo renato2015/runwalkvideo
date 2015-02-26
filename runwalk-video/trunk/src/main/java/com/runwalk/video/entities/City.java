@@ -1,34 +1,29 @@
 package com.runwalk.video.entities;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 
-@SuppressWarnings("serial")
-@Entity
-@Table(name = "phppos_cities")
-public class City extends SerializableEntity<City> {
+@Embeddable
+public class City implements Comparable<City> {
 	
-	@Column(name="code")
-	private Integer code;
+	@Column(name="zip")
+	private String code;
 
-	@Column(name="name")
+	@Column(name="city")
 	private String name;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	private State state;
+
+	@Embedded
+	private State state = new State();
 
 	public City() {	}
 	
-	public City(int code, String name) {
-		super();
+	public City(String code, String name) {
 		this.name = name;
 		this.code = code;
 	}
 
-	public Integer getCode() {
+	public String getCode() {
 		return this.code;
 	}
 
@@ -36,7 +31,22 @@ public class City extends SerializableEntity<City> {
 		return this.name;
 	}
 	
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
+
 	public State getState() {
+		if (state == null) {
+			state = new State();
+		}
 		return state;
 	}
 
@@ -61,7 +71,6 @@ public class City extends SerializableEntity<City> {
 			City other = (City) obj;
 			result = getCode() != null ? getCode().equals(other.getCode()) : other.getCode() == null;
 			result &= getName() != null ? getName().equals(other.getName()) : other.getName() == null;
-			result &= getId() != null ? getId().equals(other.getId()) : result;
 		}
 		return result;
 	}

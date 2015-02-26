@@ -48,8 +48,8 @@ import com.runwalk.video.panels.AbstractPanel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AbstractTablePanel.ClickHandler;
 import com.runwalk.video.panels.AnalysisTablePanel;
-import com.runwalk.video.panels.ClientInfoPanel;
-import com.runwalk.video.panels.ClientTablePanel;
+import com.runwalk.video.panels.CustomerInfoPanel;
+import com.runwalk.video.panels.CustomerTablePanel;
 import com.runwalk.video.panels.RecordingTablePanel;
 import com.runwalk.video.panels.StatusPanel;
 import com.runwalk.video.settings.SettingsManager;
@@ -58,7 +58,7 @@ import com.runwalk.video.tasks.RefreshTask;
 import com.runwalk.video.tasks.UploadLogFilesTask;
 import com.runwalk.video.ui.AnalysisModelTableFormat;
 import com.runwalk.video.ui.AppInternalFrame;
-import com.runwalk.video.ui.ClientModelTableFormat;
+import com.runwalk.video.ui.CustomerModelTableFormat;
 import com.runwalk.video.ui.RecordingModelTableFormat;
 import com.runwalk.video.ui.VideoMenuBar;
 import com.runwalk.video.ui.WindowManager;
@@ -86,12 +86,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	private static final String DIRTY = "dirty";
 
 	private List<AbstractPanel> panels = new ArrayList<AbstractPanel>();
-	private ClientTablePanel clientTablePanel;
+	private CustomerTablePanel customerTablePanel;
 	private AnalysisTablePanel analysisTablePanel;
 	private RecordingTablePanel recordingTablePanel;
-	private ClientInfoPanel clientInfoPanel;
+	private CustomerInfoPanel customerInfoPanel;
 	private MediaControls mediaControls;
-	private Containable clientMainView;
+	private Containable customerMainView;
 	private VideoMenuBar menuBar;
 	private StatusPanel statusPanel;
 	private ApplicationActions applicationActions;
@@ -184,13 +184,13 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 	 */
 	protected void startup() {
 		// create common application actions class
-		applicationActions = new ApplicationActions(getVideoFileManager());
+		applicationActions = new ApplicationActions();
 		statusPanel = new StatusPanel();
-		clientTablePanel = new ClientTablePanel(getVideoFileManager(), getDaoService());
-		addTablePanel(clientTablePanel);
-		clientInfoPanel = new ClientInfoPanel(getClientTablePanel(), createUndoableEditListener());
-		addTablePanel(clientInfoPanel);
-		analysisTablePanel = new AnalysisTablePanel(getClientTablePanel(), createUndoableEditListener(), 
+		customerTablePanel = new CustomerTablePanel(getVideoFileManager(), getDaoService());
+		addTablePanel(customerTablePanel);
+		customerInfoPanel = new CustomerInfoPanel(getCustomerTablePanel(), createUndoableEditListener());
+		addTablePanel(customerInfoPanel);
+		analysisTablePanel = new AnalysisTablePanel(getCustomerTablePanel(), createUndoableEditListener(), 
 				settingsManager, getVideoFileManager(), getDaoService());
 		addTablePanel(analysisTablePanel);
 		recordingTablePanel = new RecordingTablePanel(getSettingsManager(), getVideoFileManager(), getDaoService());
@@ -213,7 +213,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 				getAnalysisTablePanel());
 		mediaControls.startVideoCapturer();
 		// set tableformats for the two last panels
-		clientTablePanel.setTableFormat(new ClientModelTableFormat(clientTablePanel.getResourceMap()));
+		customerTablePanel.setTableFormat(new CustomerModelTableFormat(customerTablePanel.getResourceMap()));
 		analysisTablePanel.setTableFormat(new AnalysisModelTableFormat(analysisTablePanel.getResourceMap(), getVideoFileManager()));
 		analysisTablePanel.registerClickHandler(new ClickHandler<AnalysisModel>() {
 			
@@ -237,12 +237,12 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		});
 		//recordingTablePanel.registerClickHandler(getMediaControls().getClickHandler());
 		// create the main panel that holds customer and analysis controls & info
-		clientMainView = createMainView();
+		customerMainView = createMainView();
 		// add all internal frames here!!!
 		getMainFrame().setJMenuBar(getMenuBar());
 		// add the window to the WINDOW menu
 		windowManager.addWindow(getMediaControls());
-		windowManager.addWindow(getClientMainView());
+		windowManager.addWindow(getCustomerMainView());
 		// create a custom property to support saving internalframe sessions state
 		getContext().getSessionStorage().putProperty(AppInternalFrame.class, new AppInternalFrame.InternalFrameProperty());
 		// show the main frame, all its session settings from the last time will be restored
@@ -379,7 +379,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 	@org.jdesktop.application.Action(block = Task.BlockingScope.APPLICATION)
 	public Task<Boolean, Void> refresh() {
-		return new RefreshTask(getDaoService(), getClientTablePanel(), getAnalysisTablePanel(), getVideoFileManager());
+		return new RefreshTask(getDaoService(), getCustomerTablePanel(), getAnalysisTablePanel(), getVideoFileManager());
 	}
 
 	@org.jdesktop.application.Action
@@ -406,7 +406,7 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 
 		// set layout and add everything to the frame
 		mainPanel.setLayout(new MigLayout("fill, nogrid, flowy, insets 10"));
-		mainPanel.add(getClientTablePanel(), "growx");
+		mainPanel.add(getCustomerTablePanel(), "growx");
 		mainPanel.add(tabPanel, "height :280:, growx");
 		mainPanel.add(getStatusPanel(), "height 30!, gapleft push");
 		//mainPanel.setMinimumSize(new Dimension(minimumWidth, MAIN_PANEL_MIN_HEIGHT));
@@ -435,8 +435,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return applicationActions;
 	}
 
-	public Containable getClientMainView() {
-		return clientMainView;
+	public Containable getCustomerMainView() {
+		return customerMainView;
 	}
 
 	public VideoMenuBar getMenuBar() {
@@ -447,8 +447,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return scrollableDesktopPane;
 	}
 
-	public ClientTablePanel getClientTablePanel() {
-		return clientTablePanel;
+	public CustomerTablePanel getCustomerTablePanel() {
+		return customerTablePanel;
 	}
 
 	public StatusPanel getStatusPanel() {
@@ -463,8 +463,8 @@ public class RunwalkVideoApp extends SingleFrameApplication implements Applicati
 		return recordingTablePanel;
 	}
 
-	public ClientInfoPanel getClientInfoPanel() {
-		return clientInfoPanel;
+	public CustomerInfoPanel getCustomerInfoPanel() {
+		return customerInfoPanel;
 	}
 
 	public MediaControls getMediaControls() {

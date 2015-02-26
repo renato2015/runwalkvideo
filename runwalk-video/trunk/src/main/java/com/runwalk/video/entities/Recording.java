@@ -20,7 +20,7 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="movies")
+@Table(name="recordings")
 public class Recording extends SerializableEntity<Recording> {
 	
 	public static final String RECORDING_STATUS = "recordingStatus";
@@ -35,7 +35,7 @@ public class Recording extends SerializableEntity<Recording> {
 	private Long id;
 	
 	@ManyToOne/*(cascade={CascadeType.MERGE, CascadeType.REFRESH})*/
-	@JoinColumn(name="analysisid", nullable=false)
+	@JoinColumn(name="analysis_id", nullable=false)
 	private Analysis analysis;
 
 	@Column(name = "newfilename")
@@ -53,20 +53,20 @@ public class Recording extends SerializableEntity<Recording> {
 
 	public Recording(Analysis analysis) {
 		// TODO should move this logic out of here!!
-		Client client = analysis.getClient();
+		Customer customer = analysis.getCustomer();
 		int totalRecordings = 0;
-		for (Analysis an : client.getAnalyses()) {
+		for (Analysis an : customer.getAnalyses()) {
 			totalRecordings += an.getRecordings().size();
 		}
-		this.videoFileName = buildFileName(analysis.getClient(), analysis.getCreationDate(), totalRecordings);
+		this.videoFileName = buildFileName(analysis.getCustomer(), analysis.getCreationDate(), totalRecordings);
 		this.analysis = analysis;
 	}
 	
-	private String buildFileName(Client client, Date creationDate, int totalRecordings) {
+	private String buildFileName(Customer customer, Date creationDate, int totalRecordings) {
 		String date = AppUtil.formatDate(creationDate, AppUtil.FILENAME_DATE_FORMATTER);
 		String prefix = totalRecordings == 0 ? "" : totalRecordings + "_";
-		return new StringBuilder(prefix).append(client.getName()).append("_")
-				.append(client.getFirstname()).append("_").append(date)
+		return new StringBuilder(prefix).append(customer.getName()).append("_")
+				.append(customer.getFirstname()).append("_").append(date)
 				.append(Recording.VIDEO_CONTAINER_FORMAT)
 				.toString().replaceAll(" ", "_");
 	}

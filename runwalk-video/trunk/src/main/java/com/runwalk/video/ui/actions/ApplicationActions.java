@@ -1,7 +1,6 @@
 package com.runwalk.video.ui.actions;
 
 import java.awt.Toolkit;
-import java.io.File;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -10,11 +9,8 @@ import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Task;
-import org.jdesktop.application.Task.BlockingScope;
 
 import com.runwalk.video.core.PropertyChangeSupport;
-import com.runwalk.video.io.VideoFileManager;
 
 public class ApplicationActions implements PropertyChangeSupport {
 	private static final String REDO_ENABLED = "redoEnabled";
@@ -22,8 +18,6 @@ public class ApplicationActions implements PropertyChangeSupport {
 	private UndoManager undo = new UndoManager();
 	private boolean undoEnabled;
 	private boolean redoEnabled;
-	
-	private VideoFileManager videoFileManager;
 	
 	private class MyUndoableEditListener implements UndoableEditListener {
 		public void undoableEditHappened(UndoableEditEvent e) {
@@ -33,10 +27,6 @@ public class ApplicationActions implements PropertyChangeSupport {
 		}
 	}
 	
-	public ApplicationActions(VideoFileManager videoFileManager) {
-		this.videoFileManager = videoFileManager;
-	}
-
 	public MyUndoableEditListener getUndoableEditListener() {
 		return new MyUndoableEditListener();
 	}

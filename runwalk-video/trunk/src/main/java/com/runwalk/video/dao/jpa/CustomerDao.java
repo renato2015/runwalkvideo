@@ -11,36 +11,36 @@ import org.eclipse.persistence.config.HintValues;
 import org.eclipse.persistence.config.QueryHints;
 
 import com.runwalk.video.dao.Dao;
-import com.runwalk.video.entities.Client;
-import com.runwalk.video.model.ClientModel;
+import com.runwalk.video.entities.Customer;
+import com.runwalk.video.model.CustomerModel;
 
 /**
- * This {@link Dao} defines some specialized behavior for the {@link Client} entity.
+ * This {@link Dao} defines some specialized behavior for the {@link Customer} entity.
  * 
  * @author Jeroen Peelaerts
  */
-public class ClientDao extends JpaDao<Client> {
+public class CustomerDao extends JpaDao<Customer> {
 
-	public ClientDao(EntityManagerFactory entityManagerFactory) {
-		super(Client.class, entityManagerFactory);
+	public CustomerDao(EntityManagerFactory entityManagerFactory) {
+		super(Customer.class, entityManagerFactory);
 	}
 	
-	public List<ClientModel> getAllAsModels() {
-		TypedQuery<ClientModel> query = createEntityManager().createQuery("SELECT NEW com.runwalk.video.model.ClientModel(client, MAX(analyses.creationDate)) FROM " + getTypeParameter().getSimpleName() + " client LEFT OUTER JOIN client.analyses analyses GROUP BY client.id", ClientModel.class);
+	public List<CustomerModel> getAllAsModels() {
+		TypedQuery<CustomerModel> query = createEntityManager().createQuery("SELECT NEW com.runwalk.video.model.CustomerModel(customer, MAX(analyses.creationDate)) FROM " + getTypeParameter().getSimpleName() + " customer LEFT OUTER JOIN customer.analyses analyses GROUP BY customer.id", CustomerModel.class);
 		return query.getResultList();
 	}
 
 	@Override
-	public List<Client> getAll() {
-		TypedQuery<Client> query = createEntityManager().createQuery("SELECT client FROM " + getTypeParameter().getSimpleName() + " client", Client.class)
+	public List<Customer> getAll() {
+		TypedQuery<Customer> query = createEntityManager().createQuery("SELECT customer FROM " + getTypeParameter().getSimpleName() + " customer", Customer.class)
 		.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 
 	@Override
-	public void persist(Client item) {
+	public void persist(Customer item) {
 		super.persist(item);
-		// remove client from second level cache
+		// remove customer from second level cache
 		evictFromCache(item.getId());
 	}
 
@@ -49,15 +49,15 @@ public class ClientDao extends JpaDao<Client> {
 	 * collections are not always loaded correctly.
 	 * 
 	 * @param id The id to search for
-	 * @return The returned client
+	 * @return The returned customer
 	 */
 	@Override
-	public Client getById(Object id) {
+	public Customer getById(Object id) {
 		evictFromCache(id);
-		TypedQuery<Client> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
+		TypedQuery<Customer> query = createEntityManager().createQuery("SELECT DISTINCT e FROM " + getTypeParameter().getSimpleName() + " e " +
 				"WHERE e.id = :id", getTypeParameter())
 				.setParameter("id", id)
-		.setHint(QueryHints.LEFT_FETCH, "client.analyses.recordings")
+		.setHint(QueryHints.LEFT_FETCH, "customer.analyses.recordings")
 		.setHint(QueryHints.REFRESH, HintValues.TRUE)
 		//.setHint(QueryHints.REFRESH_CASCADE, CascadePolicy.CascadeAllParts)
 		.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS)

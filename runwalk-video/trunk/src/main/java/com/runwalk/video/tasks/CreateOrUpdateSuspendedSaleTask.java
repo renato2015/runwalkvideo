@@ -6,7 +6,7 @@ import javax.persistence.NoResultException;
 
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.SuspendedSaleDao;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.SuspendedSale;
 import com.runwalk.video.entities.SuspendedSaleItem;
@@ -17,13 +17,13 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 	private final DaoService daoService;
 	private final Item oldItem;
 	private final Item newItem;
-	private final Client client;
+	private final Customer customer;
 	private final Long employeeId;
 	
-	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Client client, Item oldItem, Item newItem, Long employeeId) {
+	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Customer customer, Item oldItem, Item newItem, Long employeeId) {
 		super("createOrUpdateSuspendedSale");
 		this.daoService = daoService;
-		this.client = client;
+		this.customer = customer;
 		this.oldItem = oldItem;
 		this.newItem = newItem;
 		this.employeeId = employeeId;
@@ -32,10 +32,10 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 	@Override
 	protected Void doInBackground() throws Exception {
 		message("startMessage");
-		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getClient());
+		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getCustomer());
 		replaceSuspendedSaleItems(suspendedSale);
 		if (getNewItem() != null) {
-			SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getClient());
+			SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getCustomer());
 			SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getNewItem());
 			suspendedSale.getSaleItems().add(suspendedSaleItem);
 			suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
@@ -57,12 +57,12 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		}
 	}
 	
-	private SuspendedSale findOrCreateSuspendedSale(Client client) {
+	private SuspendedSale findOrCreateSuspendedSale(Customer customer) {
 		SuspendedSaleDao suspendedSaleDao = getDaoService().getDao(SuspendedSale.class);
 		try {
-			return suspendedSaleDao.getSuspendedSaleByClient(client);
+			return suspendedSaleDao.getSuspendedSaleByCustomer(customer);
 		} catch (NoResultException e) {
-			SuspendedSale suspendedSale = new SuspendedSale(client, employeeId);
+			SuspendedSale suspendedSale = new SuspendedSale(customer, employeeId);
 			suspendedSaleDao.persist(suspendedSale);
 			return suspendedSale;
 		}
@@ -72,8 +72,8 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		return daoService;
 	}
 
-	public Client getClient() {
-		return client;
+	public Customer getCustomer() {
+		return customer;
 	}
 
 	public Item getNewItem() {

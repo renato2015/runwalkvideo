@@ -2,6 +2,7 @@ package com.runwalk.video.tasks;
 
 import java.awt.Robot;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -13,17 +14,18 @@ import ca.odell.glazedlists.CollectionList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 
+import com.google.common.collect.Sets;
 import com.runwalk.video.RunwalkVideoApp;
 import com.runwalk.video.dao.DaoService;
 import com.runwalk.video.dao.jpa.AnalysisDao;
-import com.runwalk.video.dao.jpa.ClientDao;
+import com.runwalk.video.dao.jpa.CustomerDao;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.City;
-import com.runwalk.video.entities.Client;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.glazedlists.LazyCollectionModel;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
-import com.runwalk.video.model.ClientModel;
+import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.panels.AbstractTablePanel;
 import com.runwalk.video.panels.AnalysisTablePanel;
 
@@ -36,15 +38,15 @@ import com.runwalk.video.panels.AnalysisTablePanel;
 public class RefreshTask extends AbstractTask<Boolean, Void> {
 
 	private final DaoService daoService;
-	private final AbstractTablePanel<ClientModel> clientTablePanel;
+	private final AbstractTablePanel<CustomerModel> customerTablePanel;
 	private final AnalysisTablePanel analysisTablePanel;
 	private final VideoFileManager videoFileManager;
 
-	public RefreshTask(DaoService daoService, AbstractTablePanel<ClientModel> clientTablePanel, AnalysisTablePanel analysisTablePanel,
+	public RefreshTask(DaoService daoService, AbstractTablePanel<CustomerModel> customerTablePanel, AnalysisTablePanel analysisTablePanel,
 			VideoFileManager videoFileManager) {
 		super("refresh");
 		this.daoService = daoService;
-		this.clientTablePanel = clientTablePanel;
+		this.customerTablePanel = customerTablePanel;
 		this.analysisTablePanel = analysisTablePanel;
 		this.videoFileManager = videoFileManager;
 	}
@@ -54,47 +56,47 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		try {
 			message("startMessage");
 			// get all cities from the db
-			List<City> allCities = getDaoService().getDao(City.class).getAll();
+			Set<City> allCities = Sets.newHashSet(getDaoService().getDao(City.class).getAll());
 			final EventList<City> cityList = GlazedLists.eventList(allCities);
-			// get all clients from the db
-			ClientDao clientDao = getDaoService().getDao(Client.class);
-			List<ClientModel> clientModels = clientDao.getAllAsModels();
-			final EventList<ClientModel> clientList = GlazedLists.eventList(clientModels);
+			// get all customers from the db
+			CustomerDao customerDao = getDaoService().getDao(Customer.class);
+			List<CustomerModel> customerModels = customerDao.getAllAsModels();
+			final EventList<CustomerModel> customerList = GlazedLists.eventList(customerModels);
 			//final EventList<Item> articleList = GlazedLists.eventList(allArticles);
 			SwingUtilities.invokeAndWait(new Runnable() {
 
 				public void run() {
-					RunwalkVideoApp.getApplication().getClientInfoPanel().setItemList(cityList);
-					// get client table panel and inject data
-					getClientTablePanel().setItemList(clientList);
-					final EventList<ClientModel> selectedClients = getClientTablePanel().getEventSelectionModel().getSelected();
+					RunwalkVideoApp.getApplication().getCustomerInfoPanel().setItemList(cityList);
+					// get customer table panel and inject data
+					getCustomerTablePanel().setItemList(customerList);
+					final EventList<CustomerModel> selectedCustomers = getCustomerTablePanel().getEventSelectionModel().getSelected();
 					
 					final AnalysisDao analysisDao = daoService.getDao(Analysis.class);
-					CollectionList<ClientModel, AnalysisModel> selectedClientAnalyses = new CollectionList<ClientModel, AnalysisModel>(selectedClients, 
-							new LazyCollectionModel<Client, Analysis, ClientModel, AnalysisModel>(getTaskService(), ClientModel.ANALYSES) {
+					CollectionList<CustomerModel, AnalysisModel> selectedCustomerAnalyses = new CollectionList<CustomerModel, AnalysisModel>(selectedCustomers, 
+							new LazyCollectionModel<Customer, Analysis, CustomerModel, AnalysisModel>(getTaskService(), CustomerModel.ANALYSES) {
 						
-						public List<AnalysisModel> getLoadedChildren(ClientModel client) {
-							return client.getAnalysisModels();
+						public List<AnalysisModel> getLoadedChildren(CustomerModel customer) {
+							return customer.getAnalysisModels();
 						}
 						
-                        public List<Analysis> loadChildren(Client client) {
-                        	List<Analysis> analysesByClient = analysisDao.getAnalysesByClient(client);
-                        	getVideoFileManager().refreshCache(analysesByClient);
-							return analysesByClient;
+                        public List<Analysis> loadChildren(Customer customer) {
+                        	List<Analysis> analysesByCustomer = analysisDao.getAnalysesByCustomer(customer);
+                        	getVideoFileManager().refreshCache(analysesByCustomer);
+							return analysesByCustomer;
                         }
                        
-                        public void refreshParent(ClientModel clientModel, List<Analysis> analyses) {
+                        public void refreshParent(CustomerModel customerModel, List<Analysis> analyses) {
                         	try {
-                        		clientList.getReadWriteLock().writeLock().lock();
-                        		clientModel.addAnalysisModels(analyses);
-                        		getClientTablePanel().getObservableElementList().elementChanged(clientModel);
+                        		customerList.getReadWriteLock().writeLock().lock();
+                        		customerModel.addAnalysisModels(analyses);
+                        		getCustomerTablePanel().getObservableElementList().elementChanged(customerModel);
                         	} finally {
-                        		clientList.getReadWriteLock().writeLock().unlock();
+                        		customerList.getReadWriteLock().writeLock().unlock();
                         	}
                         }
 
                     });
-					getAnalysisTablePanel().setItemList(selectedClientAnalyses, clientTablePanel);
+					getAnalysisTablePanel().setItemList(selectedCustomerAnalyses, customerTablePanel);
 				}
 
 			});
@@ -112,8 +114,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 		return daoService;
 	}
 	
-	private AbstractTablePanel<ClientModel> getClientTablePanel() {
-		return clientTablePanel;
+	private AbstractTablePanel<CustomerModel> getCustomerTablePanel() {
+		return customerTablePanel;
 	}
 
 	private AnalysisTablePanel getAnalysisTablePanel() {

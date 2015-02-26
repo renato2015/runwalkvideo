@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="phppos_sales_suspended_items_taxes")
+@Table(name="ospos_sales_suspended_items_taxes")
 public class SuspendedSaleItemTax {
 
 	public static final String DEFAULT_VAT_NAME = "VAT";
