@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import junit.framework.TestCase;
 
@@ -21,7 +22,7 @@ public class DateVideoFolderRetrievalTestCase extends TestCase {
 		DateVideoFolderRetrievalStrategy dateVideoFolderRetrievalStrategy = new DateVideoFolderRetrievalStrategy(DATE_FORMAT_STRING);
 		// create entities
 		Customer testCustomer = new Customer("vermeulen", "joske");
-		Analysis testAnalysis = new Analysis(testCustomer);
+		Analysis testAnalysis = new Analysis(testCustomer, new Date());
 		Recording testRecording = new Recording(testAnalysis);
 		// retrieve video folder for the created recording
 		File videoFolder = dateVideoFolderRetrievalStrategy.getVideoFolder(VIDEO_FOLDER, testRecording);

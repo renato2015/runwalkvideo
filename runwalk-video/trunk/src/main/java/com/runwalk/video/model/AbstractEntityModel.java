@@ -51,7 +51,6 @@ public class AbstractEntityModel<T extends SerializableEntity<? super T>> extend
 	}
 
 	public void setDirty(boolean dirty) {
-		//firePropertyChange(DIRTY, this.dirty, this.dirty = dirty);
 		this.dirty = dirty;
 	}
 

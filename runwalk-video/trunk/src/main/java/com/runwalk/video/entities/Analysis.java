@@ -28,14 +28,12 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="ospos_analysis")
-public class Analysis extends SerializableEntity<Analysis> {
+public class Analysis extends CalendarSlot<Analysis> {
 
 	public final static String COMMENTS = "comments";
 	
 	public final static String ITEM = "item";
 	
-	public final static String CREATION_DATE = "creationDate";
-		
 	@Id
 	@Column(name="id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -53,9 +51,13 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@JoinColumn(name="item_id")
 	private Item item;
 	
-	@Column(name="date")
+	@Column(name="creation_date")
 	@Temporal(value=TemporalType.TIMESTAMP)
 	private Date creationDate;
+	
+	@Column(name="feedback_date")
+	@Temporal(value=TemporalType.TIMESTAMP)
+	private Date feedbackDate;
 
 	@Lob
 	private String comments;
@@ -70,19 +72,18 @@ public class Analysis extends SerializableEntity<Analysis> {
 	@Column(name="feedback_token")
 	private String tokenId;
 	
-	@Column(name="appointment_cancelled")
-	private boolean appointmentCancelled;
-	
 	protected Analysis() { }
 	
-	public Analysis(Customer customer) {
-		creationDate = new Date();
+	public Analysis(Customer customer, Date creationDate) {
+		super(creationDate);
+		this.creationDate = creationDate;
 		this.customer = customer;
 	}
 	
-	public Analysis(Customer customer, Analysis analysis, Date creationDate) {
+	public Analysis(Customer customer, Analysis analysis, Date creationDate, Date startDate) {
+		super(startDate);
+		creationDate = new Date();
 		this.customer = customer;
-		this.creationDate = creationDate;
 		this.feedbackId = analysis.getId();
 	}
 
@@ -104,6 +105,14 @@ public class Analysis extends SerializableEntity<Analysis> {
 	
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+	
+	public Date getFeedbackDate() {
+		return feedbackDate;
+	}
+
+	public void setFeedbackDate(Date feedbackDate) {
+		this.feedbackDate = feedbackDate;
 	}
 
 	public String getComments() {

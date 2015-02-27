@@ -19,14 +19,16 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 	private final Item newItem;
 	private final Customer customer;
 	private final Long employeeId;
+	private final Long locationId;
 	
-	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Customer customer, Item oldItem, Item newItem, Long employeeId) {
+	public CreateOrUpdateSuspendedSaleTask(DaoService daoService, Customer customer, Item oldItem, Item newItem, Long employeeId, Long locationId) {
 		super("createOrUpdateSuspendedSale");
 		this.daoService = daoService;
 		this.customer = customer;
 		this.oldItem = oldItem;
 		this.newItem = newItem;
 		this.employeeId = employeeId;
+		this.locationId = locationId;
 	}
 
 	@Override
@@ -62,7 +64,7 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		try {
 			return suspendedSaleDao.getSuspendedSaleByCustomer(customer);
 		} catch (NoResultException e) {
-			SuspendedSale suspendedSale = new SuspendedSale(customer, employeeId);
+			SuspendedSale suspendedSale = new SuspendedSale(customer, employeeId, locationId);
 			suspendedSaleDao.persist(suspendedSale);
 			return suspendedSale;
 		}

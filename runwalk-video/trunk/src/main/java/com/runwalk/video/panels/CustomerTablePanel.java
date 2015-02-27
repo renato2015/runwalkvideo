@@ -1,7 +1,12 @@
 package com.runwalk.video.panels;
 
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import javax.persistence.NoResultException;
 import javax.swing.BorderFactory;
@@ -18,9 +23,11 @@ import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Task;
 import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.application.TaskEvent;
 import org.jdesktop.application.TaskListener;
+import org.jdesktop.swingx.calendar.DateUtils;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
@@ -29,10 +36,13 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 import com.runwalk.video.dao.Dao;
 import com.runwalk.video.dao.DaoService;
+import com.runwalk.video.dao.jpa.AnalysisDao;
+import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Customer;
 import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
+import com.runwalk.video.tasks.CalendarSlotSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.RefreshEntityTask;
@@ -49,6 +59,8 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 	private static final String DELETE_CLIENT_ACTION = "deleteCustomer";
 
 	private static final String ADD_CLIENT_ACTION = "addCustomer";
+
+	private static final String SYNC_CALENDAR_SLOTS_ACTION = "syncCalendarSlots";
 
 	private final JTextField searchField;
 	private final TextComponentMatcherEditor<CustomerModel> matcherEditor;
@@ -86,7 +98,7 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 		JButton saveButton = new JButton(getAction(SAVE_ACTION));
 		saveButton.setFont(SettingsManager.MAIN_FONT);
 		add(saveButton);
-
+		
 		final Icon search = getResourceMap().getIcon("searchPanel.searchIcon");
 		final Icon searchOverlay = getResourceMap().getIcon("searchPanel.searchOverlayIcon");
 
@@ -282,6 +294,39 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 					deleteCustomerModel(selectedModel);
 				} else {
 					super.failed(throwable);
+				}
+			}
+
+		};
+	}
+	
+	@Action(block=BlockingScope.ACTION)
+	public Task<?, ?> syncCalendarSlots() throws InterruptedException, ExecutionException {
+		final Window parentWindow = SwingUtilities.getWindowAncestor(CustomerTablePanel.this);
+		return new CalendarSlotSyncTask<Analysis>(parentWindow, 
+				Analysis.class, new Callable<List<Analysis>>() {
+
+					// callback function so task can remain generic
+					public List<Analysis> call() throws Exception {
+						Date date = DateUtils.startOfDay(new Date());
+						AnalysisDao dao = getDaoService().getDao(Analysis.class);
+						return dao.getAnalysesAfterStartDate(date);
+					}
+					
+				}, getItemList()) {
+
+			@Override
+			public void succeeded(List<Analysis> analyses) {
+				for(Analysis analysis : analyses) {
+					// find detached entity and apply modifications
+					getItemList().getReadWriteLock().writeLock().lock();
+					try {
+						setSelectedItemRow(new CustomerModel(analysis.getCustomer()));
+					} finally {
+						getItemList().getReadWriteLock().writeLock().unlock();
+					}
+					// force customer refresh...
+					invokeAction(REFRESH_CLIENT_ACTION, getActionMap(), parentWindow);
 				}
 			}
 

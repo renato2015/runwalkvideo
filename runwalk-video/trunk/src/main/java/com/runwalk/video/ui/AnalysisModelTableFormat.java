@@ -22,7 +22,7 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 	
 	public Object getColumnValue(final AnalysisModel analysisModel, int column) {
 		switch(column) {
-		case 0: return analysisModel.getCreationDate();
+		case 0: return analysisModel.getStartDate();
 		case 1: return analysisModel.getItem();
 		case 2: return analysisModel.getProgression();
 		case 3: return analysisModel.getDuration();	
@@ -43,7 +43,7 @@ public class AnalysisModelTableFormat extends AbstractTableFormat<AnalysisModel>
 			analysisModel.setItem((Item) editedValue);
 		}
 		if (column == 0) {
-			analysisModel.setCreationDate((Date) editedValue);
+			analysisModel.setStartDate((Date) editedValue);
 		} else if (column == 2) {
 			analysisModel.setProgression((Progression) editedValue);
 		}
