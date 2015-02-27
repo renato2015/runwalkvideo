@@ -1,5 +1,6 @@
 package com.runwalk.video.dao.jpa;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManagerFactory;
@@ -19,6 +20,14 @@ public class AnalysisDao extends JpaDao<Analysis> {
 				"SELECT analysis FROM " + getTypeParameter().getSimpleName() + " analysis "
 					+ "LEFT JOIN FETCH analysis.recordings WHERE analysis.customer = :customer ", Analysis.class);
 		query.setParameter("customer", customer);
+		return query.getResultList();
+	}
+	
+	public List<Analysis> getAnalysesAfterStartDate(Date startDate) {
+		TypedQuery<Analysis> query = createEntityManager().createQuery(
+				"SELECT analysis FROM " + getTypeParameter().getSimpleName() + " analysis "
+					+ "WHERE analysis.startDate >= :startDate", Analysis.class);
+		query.setParameter("startDate", startDate);
 		return query.getResultList();
 	}
 

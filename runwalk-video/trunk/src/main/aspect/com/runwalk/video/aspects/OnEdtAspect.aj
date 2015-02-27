@@ -9,6 +9,7 @@ import java.util.concurrent.FutureTask;
 import javax.swing.SwingUtilities;
 
 import com.runwalk.video.core.OnEdt;
+import com.runwalk.video.ui.CalendarSlotDialog;
 
 public aspect OnEdtAspect {
 	

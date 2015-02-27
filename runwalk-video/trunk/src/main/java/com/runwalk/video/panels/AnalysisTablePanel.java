@@ -261,10 +261,11 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 
 	private Analysis createAnalysisForEvent(ActionEvent event, final Customer selectedCustomer) {
 		Analysis analysis;
+		Date creationDate = new Date();
 		if (ADD_ANALYSIS_FOR_FEEDBACK_ACTION.equals(event.getActionCommand())) {
-			analysis = new Analysis(selectedCustomer, getSelectedItem().getEntity(), getDateForFeedback());
+			analysis = new Analysis(selectedCustomer, getSelectedItem().getEntity(), creationDate, getDateForFeedback());
 		} else {
-			analysis = new Analysis(selectedCustomer);
+			analysis = new Analysis(selectedCustomer, creationDate);
 		}
 		return analysis;
 	}
@@ -380,7 +381,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 							getSelectedItem().setItem(newItem);
 							Customer selectedCustomer = customerTablePanel.getSelectedItem().getEntity();
 							AnalysisTablePanel.this.getTaskService().execute(new CreateOrUpdateSuspendedSaleTask(getDaoService(), 
-									selectedCustomer, oldItem, newItem, getAppSettings().getEmployeeId()));
+									selectedCustomer, oldItem, newItem, getAppSettings().getEmployeeId(), getAppSettings().getLocationId()));
 						}
 					}
 				} finally {

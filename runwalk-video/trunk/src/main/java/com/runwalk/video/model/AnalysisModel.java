@@ -17,6 +17,8 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 
 	public static final String CREATION_DATE = "creationDate";
 
+	public static final String START_DATE = "startDate";
+	
 	public static final String PROGRESSION = "progression";
 	
 	public static final String COMMENTS = "comments";
@@ -68,6 +70,14 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public Date getCreationDate() {
 		return getEntity().getCreationDate();
 	}
+	
+	public Date getFeedbackDate() {
+		return getEntity().getFeedbackDate();
+	}
+	
+	public Date getStartDate() {
+		return getEntity().getStartDate();
+	}
 
 	public String getComments() {
 		return getEntity().getComments();
@@ -101,6 +111,11 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public void setCreationDate(Date creationDate) {
 		firePropertyChange(CREATION_DATE, getEntity().getCreationDate(), creationDate);
 		getEntity().setCreationDate(creationDate);
+	}
+	
+	public void setStartDate(Date startDate) {
+		firePropertyChange(START_DATE, getEntity().getStartDate(), startDate);
+		getEntity().setStartDate(startDate);
 	}
 
 	public void setProgression(Progression progression) {
@@ -136,6 +151,5 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public String toString() {
 		return getEntity().toString();
 	}
-	
-	
+
 }

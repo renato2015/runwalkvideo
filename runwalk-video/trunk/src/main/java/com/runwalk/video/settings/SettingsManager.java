@@ -325,6 +325,10 @@ public class SettingsManager {
 		return getSettings().employeeId;
 	}
 	
+	public Long getLocationId() {
+		return getSettings().locationId;
+	}
+	
 	@XmlRootElement
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class Settings {
@@ -349,6 +353,8 @@ public class SettingsManager {
 		private String uncompressedVideoDir;
 		
 		private Long employeeId = 1L;
+		
+		private Long locationId = 1L;
 		
 		private DatabaseSettings databaseSettings = DatabaseSettings.JDBC_DEFAULT;
 		

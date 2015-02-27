@@ -33,18 +33,19 @@ public class VideoMenuBar extends JMenuBar implements ApplicationActionConstants
 
 	public VideoMenuBar() {
 		// TODO generate file menu using the tablePanels list here!
-		JSeparator separator = new JSeparator();
 		JMenu fileMenu = new  JMenu(getResourceMap().getString("fileMenu.text"));
 		JMenuItem newCustomerMenuItem = new JMenuItem(getApplication().getCustomerTablePanel().getAction("addCustomer"));
 		fileMenu.add(newCustomerMenuItem);
 		JMenuItem deleteCustomerMenuItem = new JMenuItem(getApplication().getCustomerTablePanel().getAction("deleteCustomer"));
 		fileMenu.add(deleteCustomerMenuItem);
-		fileMenu.add(separator);
 
 		JMenuItem createAnalysisItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("addAnalysis"));
 		fileMenu.add(createAnalysisItem);
 		JMenuItem deleteAnalysisItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("deleteAnalysis"));
 		fileMenu.add(deleteAnalysisItem);
+		
+		JMenuItem syncCalendarSlotsMenuItem = new JMenuItem(getApplication().getCustomerTablePanel().getAction("syncCalendarSlots"));
+		fileMenu.add(syncCalendarSlotsMenuItem);
 
 		fileMenu.add(new JSeparator());
 		JMenuItem showVideoFileItem = new JMenuItem( getApplication().getAnalysisTablePanel().getAction("showVideoFile"));

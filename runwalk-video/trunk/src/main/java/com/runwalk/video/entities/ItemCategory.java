@@ -9,29 +9,29 @@ import javax.persistence.Table;
 
 @Entity
 @SuppressWarnings("serial")
-@Table(name="phppos_categories")
+@Table(name="ospos_items_categories")
 public class ItemCategory implements Serializable {
 	
 	@Id
 	@Column(name="id")
 	private Long id;
 
-	@Column(name="name")
-	private String name;
+	@Column(name="description")
+	private String description;
 	
-	@Column(name="publish")
-	private boolean publish;
+	@Column(name="deleted")
+	private boolean deleted;
 
 	public Long getId() {
 		return id;
 	}
 
-	public String getName() {
-		return this.name;
+	public String getDescription() {
+		return this.description;
 	}
 
-	public boolean isPublish() {
-		return this.publish;
+	public boolean isDeleted() {
+		return this.deleted;
 	}
 
 }

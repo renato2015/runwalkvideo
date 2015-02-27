@@ -37,6 +37,9 @@ public class SuspendedSale implements Serializable {
 	@Column(name="employee_id")
 	private Long employeeId;
 	
+	@Column(name="location_id")
+	private Long locationId;
+	
 	@OneToMany
 	@JoinColumn(name="sale_id")
 	private List<SuspendedSaleItem> saleItems;
@@ -50,9 +53,10 @@ public class SuspendedSale implements Serializable {
 	
 	public SuspendedSale() {}
 
-	public SuspendedSale(Customer customer, Long employeeId) {
+	public SuspendedSale(Customer customer, Long employeeId, Long locationId) {
 		this.customer = customer;
 		this.employeeId = employeeId;
+		this.locationId = locationId;
 	}
 	
 	public Long getId() {
@@ -61,6 +65,10 @@ public class SuspendedSale implements Serializable {
 	
 	public Long getEmployeeId() {
 		return employeeId;
+	}
+	
+	public Long getLocationId() {
+		return locationId;
 	}
 
 	public Date getSaleTime() {
