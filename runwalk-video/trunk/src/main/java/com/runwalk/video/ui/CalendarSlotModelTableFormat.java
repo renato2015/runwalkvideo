@@ -44,6 +44,7 @@ public class CalendarSlotModelTableFormat<T extends CalendarSlotModel<?>> extend
 			// should remove from previous customer and mark both dirty!!
 			CustomerModel customerModel = (CustomerModel) editedValue;
 			if (customerModel != calendarSlotModel.getCustomerModel()) {
+				// might be needed to lock here
 				if (calendarSlotModel instanceof AnalysisModel) {
 					AnalysisModel analysisModel = (AnalysisModel) calendarSlotModel;
 					boolean result = calendarSlotModel.getCustomerModel().removeAnalysisModel(analysisModel);

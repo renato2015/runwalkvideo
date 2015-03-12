@@ -6,6 +6,9 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
+import org.eclipse.persistence.config.HintValues;
+import org.eclipse.persistence.config.QueryHints;
+
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Customer;
 import com.runwalk.video.model.AnalysisModel;
@@ -29,6 +32,7 @@ public class AnalysisDao extends JpaDao<Analysis> {
 				"SELECT NEW com.runwalk.video.model.AnalysisModel(analysis.customer, analysis) FROM " + getTypeParameter().getSimpleName() + " analysis "
 					+ "WHERE analysis.startDate >= :startDate AND analysis.feedbackId IS NULL", AnalysisModel.class);
 		query.setParameter("startDate", startDate);
+		query.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();
 	}
 

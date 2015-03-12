@@ -18,17 +18,17 @@ import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.model.CalendarSlotModel;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.panels.AbstractTablePanel;
-import com.runwalk.video.panels.CalendarSlotModelTablePanel;
+import com.runwalk.video.panels.CalendarSlotTablePanel;
 import com.runwalk.video.panels.CustomerTablePanel;
 import com.runwalk.video.ui.CalendarSlotModelTableFormat;
 
-public class CalendarSlotModelSyncTask<T extends CalendarSlotModel<?>> extends AbstractTask<List<T>, Void> {
+public class CalendarSlotSyncTask<T extends CalendarSlotModel<?>> extends AbstractTask<List<T>, Void> {
 
 	private final Callable<List<T>> calendarSlotListTask;
 
 	private final Class<T> itemClass;
 
-	public CalendarSlotModelSyncTask(Class<T> itemClass, Callable<List<T>> calendarSlotListTask) {
+	public CalendarSlotSyncTask(Class<T> itemClass, Callable<List<T>> calendarSlotListTask) {
 		super("syncToDatabase");
 		this.calendarSlotListTask = calendarSlotListTask;
 		this.itemClass = itemClass;
@@ -46,13 +46,13 @@ public class CalendarSlotModelSyncTask<T extends CalendarSlotModel<?>> extends A
 	 * @return <code>false</code> if the dialog was dismissed and the result of the user actions should be discarded
 	 */
 	public JDialog showCalendarSlotDialog(final EventList<T> calendarSlotList, final AbstractTablePanel<CustomerModel> customerModelTablePanel) {
+		final Window windowAncestor = SwingUtilities.getWindowAncestor(customerModelTablePanel);
 		final EventList<CustomerModel> customerModelList = customerModelTablePanel.getItemList();
-		final CalendarSlotModelTablePanel<T> calendarSlotModelTablePanel = new CalendarSlotModelTablePanel<T>(customerModelList);
+		final CalendarSlotTablePanel<T> calendarSlotModelTablePanel = new CalendarSlotTablePanel<T>(customerModelList);
 		calendarSlotModelTablePanel.setTableFormat(new CalendarSlotModelTableFormat<T>(calendarSlotModelTablePanel.getResourceMap()));
 		calendarSlotModelTablePanel.setItemList(calendarSlotList);
-		final Window windowAncestor = SwingUtilities.getWindowAncestor(customerModelTablePanel);
 		JDialog calendarSlotDialog = new JDialog(windowAncestor);
-		String title = calendarSlotModelTablePanel.getResourceMap().getString("calendarSlotDialog.title");
+		String title = calendarSlotModelTablePanel.getResourceMap().getString("calendarSlotModelTablePanel.title");
 		calendarSlotDialog.setTitle(title); // NOI18N
 		calendarSlotDialog.add(calendarSlotModelTablePanel);
 		calendarSlotDialog.setVisible(true);
@@ -62,23 +62,27 @@ public class CalendarSlotModelSyncTask<T extends CalendarSlotModel<?>> extends A
 			@Override
 			public void windowClosed(WindowEvent paramWindowEvent) {
 				T selectedItem = calendarSlotModelTablePanel.getSelectedItem();
-				// find detached entity and apply modifications
-				customerModelList.getReadWriteLock().writeLock().lock();
-				try {
-					CustomerModel customerModel = selectedItem.getCustomerModel();
-					int rowIndex = customerModelList.indexOf(customerModel);
-					// new customer, add it to the list
-					if (rowIndex < 0) {
-						customerModelList.add(customerModel);
-						customerModelTablePanel.setSelectedItemRow(customerModel);
-					} else {
-						customerModelTablePanel.setSelectedItemRow(rowIndex);
+				if (selectedItem != null) {
+					// find detached entity and apply modifications
+					customerModelList.getReadWriteLock().writeLock().lock();
+					try {
+						CustomerModel customerModel = selectedItem.getCustomerModel();
+						int rowIndex = customerModelList.indexOf(customerModel);
+						// new customer, add it to the list
+						if (rowIndex < 0) {
+							customerModelList.add(customerModel);
+							customerModelTablePanel.setSelectedItemRow(customerModel);
+						} else {
+							customerModelTablePanel.setSelectedItemRow(rowIndex);
+						}
+					} finally {
+						customerModelList.getReadWriteLock().writeLock().unlock();
 					}
-				} finally {
-					customerModelList.getReadWriteLock().writeLock().unlock();
+					// save entity if it was modified
+					if (selectedItem.isDirty()) {
+						customerModelTablePanel.invokeAction(CustomerTablePanel.SAVE_ACTION, windowAncestor);
+					}
 				}
-				// force customer save...
-				customerModelTablePanel.invokeAction(CustomerTablePanel.SAVE_ACTION, windowAncestor);
 			}
 			
 		});

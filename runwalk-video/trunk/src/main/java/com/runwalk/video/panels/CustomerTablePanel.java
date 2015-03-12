@@ -42,7 +42,7 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.tasks.CalendarSlotModelSyncTask;
+import com.runwalk.video.tasks.CalendarSlotSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.RefreshEntityTask;
@@ -303,7 +303,7 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncCalendarSlots() throws InterruptedException, ExecutionException {
 		clearSearchField();
-		return new CalendarSlotModelSyncTask<AnalysisModel>(AnalysisModel.class, new Callable<List<AnalysisModel>>() {
+		return new CalendarSlotSyncTask<AnalysisModel>(AnalysisModel.class, new Callable<List<AnalysisModel>>() {
 
 					// callback function so task can remain generic
 					public List<AnalysisModel> call() throws Exception {

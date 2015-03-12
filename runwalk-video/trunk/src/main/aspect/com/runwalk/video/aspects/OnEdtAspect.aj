@@ -9,7 +9,7 @@ import java.util.concurrent.FutureTask;
 import javax.swing.SwingUtilities;
 
 import com.runwalk.video.core.OnEdt;
-import com.runwalk.video.panels.CalendarSlotModelTablePanel;
+import com.runwalk.video.panels.CalendarSlotTablePanel;
 
 public aspect OnEdtAspect {
 	
