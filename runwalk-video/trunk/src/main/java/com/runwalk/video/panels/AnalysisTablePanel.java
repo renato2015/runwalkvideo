@@ -424,7 +424,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		progressionTableCellEditor.getAutoCompleteSupport().setBeepOnStrictViolation(false);
 		progressionTableCellEditor.getAutoCompleteSupport().setFirstItem(null);
 		progressionTableCellEditor.setClickCountToStart(1);
-		JComboBoxTableCellRenderer<Item> comboBoxTableCellRenderer = new JComboBoxTableCellRenderer<Item>(Item.class);
+		JComboBoxTableCellRenderer<Progression> comboBoxTableCellRenderer = new JComboBoxTableCellRenderer<Progression>(Progression.class);
 		getTable().getColumnModel().getColumn(2).setCellRenderer(comboBoxTableCellRenderer);
 		comboBoxTableCellRenderer.setFont(SettingsManager.MAIN_FONT);
 		getTable().getColumnModel().getColumn(2).setCellEditor(progressionTableCellEditor);

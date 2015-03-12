@@ -3,7 +3,6 @@ package com.runwalk.video.ui;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.CountDownLatch;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,7 +27,7 @@ import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 import com.runwalk.video.core.AppComponent;
-import com.runwalk.video.entities.CalendarSlot;
+import com.runwalk.video.model.CalendarSlotModel;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
@@ -37,11 +36,9 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDialog {
+public class CalendarSlotDialog<T extends CalendarSlotModel<?>> extends JDialog {
 	
 	private static final String SAVE_ACTION = "save";
-	
-	private final CountDownLatch dismissSignal;
 	
 	private final DefaultEventSelectionModel<T> eventSelectionModel;
 	
@@ -49,7 +46,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 
 	private EventList<T> selected;
 	
-	public CalendarSlotDialog(Window parentWindow, final CountDownLatch dismissSignal, EventList<T> calendarSlots, EventList<CustomerModel> customerModelList) {
+	public CalendarSlotDialog(Window parentWindow, EventList<T> calendarSlots, EventList<CustomerModel> customerModelList) {
 		super(parentWindow);
 		addWindowListener(new WindowAdapter() {
 
@@ -60,7 +57,6 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 
 		});
 		this.customerModelList = customerModelList;
-		this.dismissSignal = dismissSignal;
 		setLayout(new MigLayout("insets dialog"));
 		setTitle(getResourceMap().getString("calendarSlotDialog.title")); // NOI18N
 		String borderTitle = getResourceMap().getString("calendarSlotDialog.border.title");
@@ -72,7 +68,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		calendarSlotTable.setShowGrid(false);
 		calendarSlotTable.setFont(SettingsManager.MAIN_FONT);
 		// create a table format
-		CalendarSlotTableFormat tableFormat = new CalendarSlotTableFormat(getResourceMap());
+		CalendarSlotModelTableFormat<T> tableFormat = new CalendarSlotModelTableFormat<T>(getResourceMap());
 		// create a sorted list
 		SortedList<T> sortedCalendarSlots = SortedList.create(calendarSlots);
 		sortedCalendarSlots.setMode(SortedList.AVOID_MOVING_ELEMENTS);
@@ -96,6 +92,7 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		add(okButton, "right align");
 		pack();
 		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
 	
 	private void initialiseTableColumnModel(TableColumnModel columnModel) {
@@ -103,12 +100,14 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		columnModel.getColumn(0).setPreferredWidth(70);
 		columnModel.getColumn(1).setCellRenderer(new DateTableCellRenderer(AppUtil.HOUR_MINUTE_FORMATTER));
 		columnModel.getColumn(1).setPreferredWidth(30);
-		columnModel.getColumn(2).setPreferredWidth(40);
-		columnModel.getColumn(3).setPreferredWidth(20);
-		AutoCompleteCellEditor<CustomerModel> clientTableCellEditor = AutoCompleteSupport.createTableCellEditor(getCustomerList());
-		clientTableCellEditor.setClickCountToStart(1);
-		columnModel.getColumn(3).setCellRenderer(new JComboBoxTableCellRenderer<CustomerModel>(CustomerModel.class));
-		columnModel.getColumn(3).setCellEditor(clientTableCellEditor);
+		columnModel.getColumn(2).setPreferredWidth(60);
+		AutoCompleteCellEditor<CustomerModel> customerTableCellEditor = AutoCompleteSupport.createTableCellEditor(getCustomerList());
+		customerTableCellEditor.setClickCountToStart(1);
+		customerTableCellEditor.getComponent().setFont(SettingsManager.MAIN_FONT);
+		JComboBoxTableCellRenderer<CustomerModel> customerTableCellRenderer = new JComboBoxTableCellRenderer<CustomerModel>(CustomerModel.class);
+		customerTableCellRenderer.setFont(SettingsManager.MAIN_FONT);
+		columnModel.getColumn(3).setCellRenderer(customerTableCellRenderer);
+		columnModel.getColumn(3).setCellEditor(customerTableCellEditor);
 		columnModel.getColumn(3).setPreferredWidth(150);
 	}
 	
@@ -116,10 +115,8 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 	public void save() {
 		selected = eventSelectionModel.getSelected();
 		//eventSelectionModel.dispose();
-		customerModelList.dispose();
 		customerModelList = null;
 		setVisible(false);
-		getDismissSignal().countDown();
 		dispose();
 	}
 	
@@ -131,8 +128,4 @@ public class CalendarSlotDialog<T extends CalendarSlot<? super T>> extends JDial
 		return selected;
 	}
 
-	private CountDownLatch getDismissSignal() {
-		return dismissSignal;
-	}
-	
 }

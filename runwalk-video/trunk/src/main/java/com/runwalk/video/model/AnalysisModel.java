@@ -6,10 +6,11 @@ import java.util.List;
 import com.google.common.collect.Iterables;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Analysis.Progression;
+import com.runwalk.video.entities.Customer;
 import com.runwalk.video.entities.Item;
 import com.runwalk.video.entities.Recording;
 
-public class AnalysisModel extends AbstractEntityModel<Analysis> {
+public class AnalysisModel extends CalendarSlotModel<Analysis> {
 	
 	public final static String RECORDING_COUNT = "recordingCount";
 	
@@ -28,6 +29,11 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public AnalysisModel(CustomerModel customerModel, Analysis entity) {
 		super(entity);
 		this.customerModel = customerModel;
+	}
+	
+	public AnalysisModel(Customer customer, Analysis entity) {
+		super(entity);
+		this.customerModel = new CustomerModel(customer, true);
 	}
 	
 	/**
@@ -66,7 +72,16 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	public List<Recording> getRecordings() {
 		return getEntity().getRecordings();
 	}
-
+	
+	public CustomerModel getCustomerModel() {
+		return customerModel;
+	}
+	
+	public void setCustomerModel(CustomerModel customerModel) {
+		this.customerModel = customerModel;
+		getEntity().setCustomer(customerModel.getEntity());
+	}
+	
 	public Date getCreationDate() {
 		return getEntity().getCreationDate();
 	}
@@ -93,6 +108,10 @@ public class AnalysisModel extends AbstractEntityModel<Analysis> {
 	
 	public boolean isFeedbackRecord() {
 		return getFeedbackId() != null;
+	}
+
+	public boolean isCancelled() {
+		return getEntity().isCancelled();
 	}
 
 	public Progression getProgression() {

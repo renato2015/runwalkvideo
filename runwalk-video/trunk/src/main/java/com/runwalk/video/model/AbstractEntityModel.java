@@ -6,7 +6,7 @@ import com.runwalk.video.entities.SerializableEntity;
 
 public class AbstractEntityModel<T extends SerializableEntity<? super T>> extends AbstractBean implements Comparable<AbstractEntityModel<T>> {
 	
-	public static final String DIRTY = "dirty";
+	public static final String DIRTY = "dirty"; 
 	
 	public static final String ENTITY = "entity";
 	

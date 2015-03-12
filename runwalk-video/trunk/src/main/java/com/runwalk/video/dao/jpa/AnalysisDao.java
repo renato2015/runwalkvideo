@@ -8,6 +8,7 @@ import javax.persistence.TypedQuery;
 
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Customer;
+import com.runwalk.video.model.AnalysisModel;
 
 public class AnalysisDao extends JpaDao<Analysis> {
 
@@ -23,10 +24,10 @@ public class AnalysisDao extends JpaDao<Analysis> {
 		return query.getResultList();
 	}
 	
-	public List<Analysis> getAnalysesAfterStartDate(Date startDate) {
-		TypedQuery<Analysis> query = createEntityManager().createQuery(
-				"SELECT analysis FROM " + getTypeParameter().getSimpleName() + " analysis "
-					+ "WHERE analysis.startDate >= :startDate", Analysis.class);
+	public List<AnalysisModel> getAnalysesAfterStartDateAsModels(Date startDate) {
+		TypedQuery<AnalysisModel> query = createEntityManager().createQuery(
+				"SELECT NEW com.runwalk.video.model.AnalysisModel(analysis.customer, analysis) FROM " + getTypeParameter().getSimpleName() + " analysis "
+					+ "WHERE analysis.startDate >= :startDate AND analysis.feedbackId IS NULL", AnalysisModel.class);
 		query.setParameter("startDate", startDate);
 		return query.getResultList();
 	}

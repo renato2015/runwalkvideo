@@ -122,12 +122,13 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 		getEventSelectionModel().clearSelection();
 	}
 
-	public void setSelectedItemRow(T selectedItem) {
+	public int setSelectedItemRow(T selectedItem) {
 		int rowIndex = getItemList().indexOf(selectedItem);
 		if (rowIndex > -1) {
 			getEventSelectionModel().getTogglingSelected().add(selectedItem);
 			getTable().scrollRectToVisible(getTable().getCellRect(rowIndex, 0, true));
 		}
+		return rowIndex;
 	}
 
 	public void setSelectedItemRow(int row) {

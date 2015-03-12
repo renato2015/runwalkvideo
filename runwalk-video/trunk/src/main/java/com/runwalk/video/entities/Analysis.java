@@ -28,7 +28,7 @@ import org.eclipse.persistence.annotations.JoinFetchType;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="ospos_analysis")
-public class Analysis extends CalendarSlot<Analysis> {
+public class Analysis extends SerializableEntity<Analysis> {
 
 	public final static String COMMENTS = "comments";
 	
@@ -58,6 +58,10 @@ public class Analysis extends CalendarSlot<Analysis> {
 	@Column(name="feedback_date")
 	@Temporal(value=TemporalType.TIMESTAMP)
 	private Date feedbackDate;
+	
+	@Column(name="start_date")
+	@Temporal(value=TemporalType.TIMESTAMP)
+	private Date startDate;
 
 	@Lob
 	private String comments;
@@ -72,17 +76,23 @@ public class Analysis extends CalendarSlot<Analysis> {
 	@Column(name="feedback_token")
 	private String tokenId;
 	
+	@Column(name="appointment_extref")
+	private String appointmentExtref;
+	
+	@Column(name="appointment_cancelled")
+	private boolean cancelled;
+	
 	protected Analysis() { }
 	
 	public Analysis(Customer customer, Date creationDate) {
-		super(creationDate);
+		this.startDate = creationDate;
 		this.creationDate = creationDate;
 		this.customer = customer;
 	}
 	
 	public Analysis(Customer customer, Analysis analysis, Date creationDate, Date startDate) {
-		super(startDate);
-		creationDate = new Date();
+		this.startDate = startDate;
+		this.creationDate = creationDate;
 		this.customer = customer;
 		this.feedbackId = analysis.getId();
 	}
@@ -172,6 +182,30 @@ public class Analysis extends CalendarSlot<Analysis> {
 	
 	public String getTokenId() {
 		return tokenId;
+	}
+	
+	public Date getStartDate() {
+		return startDate;
+	}
+	
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+	
+	public String getAppointmentExtref() {
+		return appointmentExtref;
+	}
+
+	public void setAppointmentExtref(String appointmentExtref) {
+		this.appointmentExtref = appointmentExtref;
+	}
+
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 
 	@Override

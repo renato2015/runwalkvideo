@@ -75,8 +75,8 @@ public class RefreshTask extends AbstractTask<Boolean, Void> {
 					CollectionList<CustomerModel, AnalysisModel> selectedCustomerAnalyses = new CollectionList<CustomerModel, AnalysisModel>(selectedCustomers, 
 							new LazyCollectionModel<Customer, Analysis, CustomerModel, AnalysisModel>(getTaskService(), CustomerModel.ANALYSES) {
 						
-						public List<AnalysisModel> getLoadedChildren(CustomerModel customer) {
-							return customer.getAnalysisModels();
+						public List<AnalysisModel> getLoadedChildren(CustomerModel customerModel) {
+							return customerModel.getAnalysisModels();
 						}
 						
                         public List<Analysis> loadChildren(Customer customer) {
