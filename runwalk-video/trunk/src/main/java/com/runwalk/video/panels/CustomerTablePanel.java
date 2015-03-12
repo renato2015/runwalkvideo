@@ -307,6 +307,7 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncCalendarSlots() throws InterruptedException, ExecutionException {
 		final Window parentWindow = SwingUtilities.getWindowAncestor(CustomerTablePanel.this);
+		clearSearchField();
 		return new CalendarSlotSyncTask<AnalysisModel>(parentWindow, 
 				AnalysisModel.class, new Callable<List<AnalysisModel>>() {
 
