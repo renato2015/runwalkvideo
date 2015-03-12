@@ -32,13 +32,13 @@ import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 @AppComponent
-public class CalendarSlotModelTablePanel<T extends CalendarSlotModel<?>> extends AbstractTablePanel<T> {
+public class CalendarSlotTablePanel<T extends CalendarSlotModel<?>> extends AbstractTablePanel<T> {
 	
 	private static final String SAVE_SLOTS_ACTION = "saveSlots";
 	
 	private EventList<CustomerModel> customerModelList;
 
-	public CalendarSlotModelTablePanel(EventList<CustomerModel> customerModelList) {
+	public CalendarSlotTablePanel(EventList<CustomerModel> customerModelList) {
 		this.customerModelList = customerModelList;
 		setLayout(new MigLayout("insets dialog"));
 		String borderTitle = getResourceMap().getString("calendarSlotDialog.border.title");
@@ -59,9 +59,9 @@ public class CalendarSlotModelTablePanel<T extends CalendarSlotModel<?>> extends
 		
 		BindingGroup bindingGroup = new BindingGroup();
 		// comments JTextArea binding
-		BeanProperty<CalendarSlotModelTablePanel<?>, String> selectedItemComments = BeanProperty.create("selectedItem.comments");
+		BeanProperty<CalendarSlotTablePanel<?>, String> selectedItemComments = BeanProperty.create("selectedItem.comments");
 		BeanProperty<JTextArea, String> jTextAreaValue = BeanProperty.create("text");
-		Binding<? extends CalendarSlotModelTablePanel<?>, String, JTextArea, String> commentsBinding = 
+		Binding<? extends CalendarSlotTablePanel<?>, String, JTextArea, String> commentsBinding = 
 				Bindings.createAutoBinding(UpdateStrategy.READ, this, selectedItemComments, comments, jTextAreaValue);
 		bindingGroup.addBinding(commentsBinding);
 		bindingGroup.bind();
