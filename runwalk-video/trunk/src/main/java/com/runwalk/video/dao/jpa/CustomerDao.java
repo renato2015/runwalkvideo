@@ -26,7 +26,10 @@ public class CustomerDao extends JpaDao<Customer> {
 	}
 	
 	public List<CustomerModel> getAllAsModels() {
-		TypedQuery<CustomerModel> query = createEntityManager().createQuery("SELECT NEW com.runwalk.video.model.CustomerModel(customer, MAX(analyses.creationDate)) FROM " + getTypeParameter().getSimpleName() + " customer LEFT OUTER JOIN customer.analyses analyses GROUP BY customer.id", CustomerModel.class);
+		TypedQuery<CustomerModel> query = createEntityManager().createQuery("SELECT NEW "
+				+ "com.runwalk.video.model.CustomerModel(customer, MAX(analyses.startDate)) FROM " + 
+				getTypeParameter().getSimpleName() + " customer LEFT OUTER JOIN customer.analyses analyses "
+						+ "WHERE analyses.feedbackId IS NULL GROUP BY customer.id", CustomerModel.class);
 		return query.getResultList();
 	}
 

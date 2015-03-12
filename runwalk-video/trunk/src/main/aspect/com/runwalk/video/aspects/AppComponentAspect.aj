@@ -103,7 +103,7 @@ public aspect AppComponentAspect {
 				if (action instanceof ApplicationAction) {
 					((ApplicationAction) action).setSelected(newValue);
 				} else {
-					action.putValue(javax.swing.Action.SELECTED_KEY, newValue);
+					action.putV<alue(javax.swing.Action.SELECTED_KEY, newValue);
 				}
 			}*/
 			action.actionPerformed(actionEvent);

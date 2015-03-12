@@ -45,10 +45,10 @@ public class CustomerModel extends AbstractEntityModel<Customer> {
 		Analysis analysis = analysisModel.getEntity();
 		analysisModels.add(analysisModel);
 		boolean result = getAnalyses().add(analysis);
-		firePropertyChange(ANALYSIS_COUNT, size, size + 1);
 		if (analysis.getFeedbackId() == null) {
-			lastAnalysisDate = analysis.getCreationDate();
+			lastAnalysisDate = analysis.getStartDate();
 		}
+		firePropertyChange(ANALYSIS_COUNT, size, size + 1);
 		return result;
 	}
 	
@@ -67,12 +67,11 @@ public class CustomerModel extends AbstractEntityModel<Customer> {
 		boolean result = false;
 		if (analysisModel != null) {
 			int size = getAnalysesCount();
+			result = analysisModels.remove(analysisModel);
 			Analysis analysis = analysisModel.getEntity();
-			result = getAnalyses().remove(analysis);
-			if (result) {
-				firePropertyChange(ANALYSIS_COUNT, size, size - 1);
-				updateLastAnalysisDate();
-			}
+			result &= getAnalyses().remove(analysis);
+			updateLastAnalysisDate();
+			firePropertyChange(ANALYSIS_COUNT, size, size - 1);
 		}
 		return result;
 	}
@@ -84,7 +83,7 @@ public class CustomerModel extends AbstractEntityModel<Customer> {
 	private void updateLastAnalysisDate() {
 		Date lastAnalysisDate = null;
 		if (!getAnalyses().isEmpty()) {
-			lastAnalysisDate = getLastAnalysis().getCreationDate();
+			lastAnalysisDate = getLastAnalysis().getStartDate();
 		}
 		this.lastAnalysisDate = lastAnalysisDate;
 	}

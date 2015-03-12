@@ -3,6 +3,8 @@ package com.runwalk.video.panels;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -40,12 +42,14 @@ import com.runwalk.video.dao.jpa.AnalysisDao;
 import com.runwalk.video.entities.Analysis;
 import com.runwalk.video.entities.Customer;
 import com.runwalk.video.io.VideoFileManager;
+import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
 import com.runwalk.video.tasks.CalendarSlotSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.RefreshEntityTask;
+import com.runwalk.video.ui.CalendarSlotDialog;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
@@ -303,36 +307,66 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncCalendarSlots() throws InterruptedException, ExecutionException {
 		final Window parentWindow = SwingUtilities.getWindowAncestor(CustomerTablePanel.this);
-		return new CalendarSlotSyncTask<Analysis>(parentWindow, 
-				Analysis.class, new Callable<List<Analysis>>() {
+		return new CalendarSlotSyncTask<AnalysisModel>(parentWindow, 
+				AnalysisModel.class, new Callable<List<AnalysisModel>>() {
 
 					// callback function so task can remain generic
-					public List<Analysis> call() throws Exception {
+					public List<AnalysisModel> call() throws Exception {
 						Date date = DateUtils.startOfDay(new Date());
 						AnalysisDao dao = getDaoService().getDao(Analysis.class);
-						return dao.getAnalysesAfterStartDate(date);
+						List<AnalysisModel> analysisModels = dao.getAnalysesAfterStartDateAsModels(date);
+						// replace with existing object references
+						for (AnalysisModel analysisModel : analysisModels) {
+							for (CustomerModel customerModel : getObservableElementList()) {
+								if (customerModel.equals(analysisModel.getCustomerModel())) {
+									// link with customerModel in the list
+									analysisModel.setCustomerModel(customerModel);
+								}
+							}
+						}
+						return analysisModels;
 					}
 					
-				}, getItemList()) {
+				}) {
 
 			@Override
-			public void succeeded(List<Analysis> analyses) {
-				for(Analysis analysis : analyses) {
-					// find detached entity and apply modifications
-					getItemList().getReadWriteLock().writeLock().lock();
-					try {
-						setSelectedItemRow(new CustomerModel(analysis.getCustomer()));
-					} finally {
-						getItemList().getReadWriteLock().writeLock().unlock();
-					}
-					// force customer refresh...
-					invokeAction(REFRESH_CLIENT_ACTION, getActionMap(), parentWindow);
+			public void succeeded(final List<AnalysisModel> analysisModelList) {
+				if (!analysisModelList.isEmpty()) {
+					final CalendarSlotDialog<AnalysisModel> showCalendarSlotDialog = showCalendarSlotDialog(parentWindow, 
+							GlazedLists.eventList(analysisModelList), getItemList());
+					showCalendarSlotDialog.addWindowListener(new WindowAdapter() {
+						
+						@Override
+						public void windowClosed(WindowEvent paramWindowEvent) {
+							for(AnalysisModel calendarSlotModel : showCalendarSlotDialog.getSelected()) {
+								// find detached entity and apply modifications
+								getItemList().getReadWriteLock().writeLock().lock();
+								try {
+									CustomerModel customerModel = calendarSlotModel.getCustomerModel();
+									int rowIndex = getItemList().indexOf(customerModel);
+									// new customer, add it to the list
+									if (rowIndex < 0) {
+										getItemList().add(customerModel);
+										setSelectedItemRow(customerModel);
+									} else {
+										setSelectedItemRow(rowIndex);
+									}
+								} finally {
+									getItemList().getReadWriteLock().writeLock().unlock();
+								}
+								// force customer save...
+								invokeAction(SAVE_ACTION, parentWindow);
+							}
+						}
+						
+					});
+					
 				}
 			}
 
 		};
 	}
-
+	
 	private void clearSearchField() {
 		searchField.setText("");
 	}
