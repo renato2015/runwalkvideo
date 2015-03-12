@@ -105,7 +105,7 @@ public abstract class AbstractTablePanel<T extends AbstractEntityModel<? extends
 		this(null);
 	}
 
-	abstract void initialiseTableColumnModel();
+	public abstract void initialiseTableColumnModel();
 
 	public boolean isRowSelected() {
 		return rowSelected;
