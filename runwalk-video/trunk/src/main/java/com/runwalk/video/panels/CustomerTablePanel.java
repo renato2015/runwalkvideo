@@ -1,10 +1,7 @@
 package com.runwalk.video.panels;
 
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -45,18 +42,17 @@ import com.runwalk.video.io.VideoFileManager;
 import com.runwalk.video.model.AnalysisModel;
 import com.runwalk.video.model.CustomerModel;
 import com.runwalk.video.settings.SettingsManager;
-import com.runwalk.video.tasks.CalendarSlotSyncTask;
+import com.runwalk.video.tasks.CalendarSlotModelSyncTask;
 import com.runwalk.video.tasks.DeleteTask;
 import com.runwalk.video.tasks.PersistTask;
 import com.runwalk.video.tasks.RefreshEntityTask;
-import com.runwalk.video.ui.CalendarSlotDialog;
 import com.runwalk.video.ui.table.DateTableCellRenderer;
 import com.runwalk.video.util.AppUtil;
 
 @SuppressWarnings("serial")
 public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 
-	private static final String SAVE_ACTION = "save";
+	public static final String SAVE_ACTION = "save";
 
 	private static final String REFRESH_CLIENT_ACTION = "refreshCustomer";
 
@@ -64,7 +60,7 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 
 	private static final String ADD_CLIENT_ACTION = "addCustomer";
 
-	private static final String SYNC_CALENDAR_SLOTS_ACTION = "syncCalendarSlots";
+//	private static final String SYNC_CALENDAR_SLOTS_ACTION = "syncCalendarSlots";
 
 	private final JTextField searchField;
 	private final TextComponentMatcherEditor<CustomerModel> matcherEditor;
@@ -306,10 +302,8 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 	
 	@Action(block=BlockingScope.ACTION)
 	public Task<?, ?> syncCalendarSlots() throws InterruptedException, ExecutionException {
-		final Window parentWindow = SwingUtilities.getWindowAncestor(CustomerTablePanel.this);
 		clearSearchField();
-		return new CalendarSlotSyncTask<AnalysisModel>(parentWindow, 
-				AnalysisModel.class, new Callable<List<AnalysisModel>>() {
+		return new CalendarSlotModelSyncTask<AnalysisModel>(AnalysisModel.class, new Callable<List<AnalysisModel>>() {
 
 					// callback function so task can remain generic
 					public List<AnalysisModel> call() throws Exception {
@@ -333,35 +327,7 @@ public class CustomerTablePanel extends AbstractTablePanel<CustomerModel> {
 			@Override
 			public void succeeded(final List<AnalysisModel> analysisModelList) {
 				if (!analysisModelList.isEmpty()) {
-					final CalendarSlotDialog<AnalysisModel> showCalendarSlotDialog = showCalendarSlotDialog(parentWindow, 
-							GlazedLists.eventList(analysisModelList), getItemList());
-					showCalendarSlotDialog.addWindowListener(new WindowAdapter() {
-						
-						@Override
-						public void windowClosed(WindowEvent paramWindowEvent) {
-							for(AnalysisModel calendarSlotModel : showCalendarSlotDialog.getSelected()) {
-								// find detached entity and apply modifications
-								getItemList().getReadWriteLock().writeLock().lock();
-								try {
-									CustomerModel customerModel = calendarSlotModel.getCustomerModel();
-									int rowIndex = getItemList().indexOf(customerModel);
-									// new customer, add it to the list
-									if (rowIndex < 0) {
-										getItemList().add(customerModel);
-										setSelectedItemRow(customerModel);
-									} else {
-										setSelectedItemRow(rowIndex);
-									}
-								} finally {
-									getItemList().getReadWriteLock().writeLock().unlock();
-								}
-								// force customer save...
-								invokeAction(SAVE_ACTION, parentWindow);
-							}
-						}
-						
-					});
-					
+					showCalendarSlotDialog(GlazedLists.eventList(analysisModelList), CustomerTablePanel.this);
 				}
 			}
 
