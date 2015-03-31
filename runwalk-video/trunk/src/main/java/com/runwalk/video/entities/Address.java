@@ -28,7 +28,7 @@ public class Address implements Serializable {
 	
 	public City getCity() {
 		if (city == null) {
-			this.city = new City();
+			city = new City();
 		}
 		return city;
 	}
@@ -38,6 +38,9 @@ public class Address implements Serializable {
 	}
 	
 	public String getPostalcode() {
+		if (city == null) {
+			city = new City();
+		}
 		return city.getCode();
 	}
 	
