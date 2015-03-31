@@ -37,7 +37,7 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		SuspendedSale suspendedSale = findOrCreateSuspendedSale(getCustomer());
 		replaceSuspendedSaleItems(suspendedSale);
 		if (getNewItem() != null) {
-			SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getCustomer());
+			SuspendedSaleItem suspendedSaleItem = new SuspendedSaleItem(suspendedSale, getNewItem(), getCustomer(), locationId);
 			SuspendedSaleItemTax suspendedSaleItemTax = new SuspendedSaleItemTax(suspendedSale, getNewItem());
 			suspendedSale.getSaleItems().add(suspendedSaleItem);
 			suspendedSale.getSaleItemTaxes().add(suspendedSaleItemTax);
@@ -64,7 +64,7 @@ public class CreateOrUpdateSuspendedSaleTask extends AbstractTask<Void, Void> {
 		try {
 			return suspendedSaleDao.getSuspendedSaleByCustomer(customer);
 		} catch (NoResultException e) {
-			SuspendedSale suspendedSale = new SuspendedSale(customer, employeeId, locationId);
+			SuspendedSale suspendedSale = new SuspendedSale(customer, employeeId);
 			suspendedSaleDao.persist(suspendedSale);
 			return suspendedSale;
 		}
