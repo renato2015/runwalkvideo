@@ -35,14 +35,18 @@ public class SuspendedSaleItem implements Serializable {
 	
 	@Column(name="discount_percent")
 	private BigDecimal discountPercent = DEFAULT_DISCOUNT;
-	
+
+	@Column(name="item_location")
+	private Long locationId;
+
 	public SuspendedSaleItem() { }
 
-	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Customer customer) {
+	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item, Customer customer, Long locationId) {
 		this(suspendedSale, item);
 		quantity = DEFAULT_QUANTITY;
 		costPrice = item.getCostPrice();
 		unitPrice = item.getUnitPrice();
+		this.locationId = locationId;
 	}
 
 	public SuspendedSaleItem(SuspendedSale suspendedSale, Item item) {
