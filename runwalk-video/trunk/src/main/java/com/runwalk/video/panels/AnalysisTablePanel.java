@@ -226,7 +226,7 @@ public class AnalysisTablePanel extends AbstractTablePanel<AnalysisModel> {
 		final CustomerModel selectedModel = getCustomerTablePanel().getSelectedItem();
 		final Customer selectedCustomer = selectedModel.getEntity();
 		if (("".equals(selectedModel.getName()) || selectedModel.getName() == null)
-				&& ("".equals(selectedModel.getOrganization()) || selectedCustomer.getOrganization() == null)) {
+				&& ("".equals(selectedModel.getOrganization()) || selectedCustomer.getCompanyName() == null)) {
 			JOptionPane.showMessageDialog(SwingUtilities
 					.windowForComponent(this),
 					getResourceMap().getString("addAnalysis.errorDialog.text"),

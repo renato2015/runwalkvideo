@@ -152,7 +152,7 @@ public class CustomerModel extends AbstractEntityModel<Customer> {
 	}
 	
 	public String getOrganization() {
-		return getEntity().getOrganization();
+		return getEntity().getCompanyName();
 	}
 
 	@Override
