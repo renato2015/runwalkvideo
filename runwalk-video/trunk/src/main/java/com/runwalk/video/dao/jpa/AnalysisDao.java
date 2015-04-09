@@ -30,7 +30,7 @@ public class AnalysisDao extends JpaDao<Analysis> {
 	public List<AnalysisModel> getAnalysesAfterStartDateAsModels(Date startDate) {
 		TypedQuery<AnalysisModel> query = createEntityManager().createQuery(
 				"SELECT NEW com.runwalk.video.model.AnalysisModel(analysis.customer, analysis) FROM " + getTypeParameter().getSimpleName() + " analysis "
-					+ "WHERE analysis.startDate >= :startDate AND analysis.feedbackId IS NULL", AnalysisModel.class);
+					+ "WHERE analysis.startDate >= :startDate AND analysis.feedbackId IS NULL AND analysis.appointmentExtref IS NOT NULL", AnalysisModel.class);
 		query.setParameter("startDate", startDate);
 		query.setHint(QueryHints.REFRESH, HintValues.TRUE);
 		return query.getResultList();

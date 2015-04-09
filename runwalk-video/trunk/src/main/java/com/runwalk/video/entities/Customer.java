@@ -12,7 +12,6 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @SuppressWarnings("serial")
@@ -28,10 +27,10 @@ public class Customer extends Person {
 	private List<Analysis> analyses = new ArrayList<Analysis>();
 	
 	@Column(name = "account_number")
-	private String taxNumber;
+	private String accountNumber;
 
-	@Transient
-	private String organization;
+	@Column(name = "company_name")
+	private String companyName;
 	
 	public Customer() { }
 	
@@ -40,12 +39,12 @@ public class Customer extends Person {
 		setName(name);
 	}
 	
-	public String getTaxNumber() {
-		return this.taxNumber;
+	public String getAccountNumbe() {
+		return this.accountNumber;
 	}
 
-	public void setTaxNumber(String taxNumber) {
-		this.taxNumber = taxNumber;
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
 	}
 	
 	public List<Analysis> getAnalyses() {
@@ -68,12 +67,12 @@ public class Customer extends Person {
 		this.analyses = analyses;
 	}
 
-	public String getOrganization() {
-		return organization;
+	public String getCompanyName() {
+		return companyName;
 	}
 
-	public void setOrganization(String organization) {
-		this.organization = organization;
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
 	}
 
 }

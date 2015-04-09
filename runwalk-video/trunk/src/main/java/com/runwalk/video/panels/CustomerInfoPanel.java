@@ -140,32 +140,32 @@ public class CustomerInfoPanel extends AbstractPanel {
 		bindingGroup.addBinding(enabledBinding);
 		add(nameField, "wrap");
 
-		JLabel organizationLabel = new JLabel();
-		organizationLabel.setFont(SettingsManager.MAIN_FONT);
-		organizationLabel.setText(getResourceMap().getString("organisationLabel.text")); // NOI18N
-		add(organizationLabel);
+		JLabel companyNameLabel = new JLabel();
+		companyNameLabel.setFont(SettingsManager.MAIN_FONT);
+		companyNameLabel.setText(getResourceMap().getString("companyNameLabel.text")); // NOI18N
+		add(companyNameLabel);
 
-		JTextField organisationField = new JTextField();
-		organisationField.getDocument().addUndoableEditListener(undoListener);
-		BeanProperty<CustomerTablePanel, String> organization = BeanProperty.create("selectedItem.entity.organization");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, organization, organisationField, TEXT);
+		JTextField companyNameField = new JTextField();
+		companyNameField.getDocument().addUndoableEditListener(undoListener);
+		BeanProperty<CustomerTablePanel, String> companyName = BeanProperty.create("selectedItem.entity.companyName");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, companyName, companyNameField, TEXT);
 		valueBinding.setConverter(new FirstCharacterToUpperCaseConverter());
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, organisationField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, companyNameField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
-		organisationField.setFont(SettingsManager.MAIN_FONT);
-		add(organisationField);
+		companyNameField.setFont(SettingsManager.MAIN_FONT);
+		add(companyNameField);
 
-		JLabel taxLabel = new JLabel();
-		taxLabel.setFont(SettingsManager.MAIN_FONT);
-		taxLabel.setText(getResourceMap().getString("taxNoLabel.text"));
-		add(taxLabel, "split");
+		JLabel accountNumberLabel = new JLabel();
+		accountNumberLabel.setFont(SettingsManager.MAIN_FONT);
+		accountNumberLabel.setText(getResourceMap().getString("accountNumberLabel.text"));
+		add(accountNumberLabel, "split");
 
-		JTextField taxField = new JTextField();
-		taxField.getDocument().addUndoableEditListener(undoListener);
-		taxField.setFont(SettingsManager.MAIN_FONT);
-		BeanProperty<CustomerTablePanel, String> taxNumber = BeanProperty.create("selectedItem.entity.taxNumber");
-		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, taxNumber, taxField, TEXT);
+		JTextField accountNumberField = new JTextField();
+		accountNumberField.getDocument().addUndoableEditListener(undoListener);
+		accountNumberField.setFont(SettingsManager.MAIN_FONT);
+		BeanProperty<CustomerTablePanel, String> accountNumber = BeanProperty.create("selectedItem.entity.accountNumber");
+		valueBinding = Bindings.createAutoBinding(UpdateStrategy.READ_WRITE, customerTablePanel, accountNumber, accountNumberField, TEXT);
 		valueBinding.setValidator(new Validator<String> () {
 
 			public Validator<String>.Result validate(String arg) {
@@ -179,9 +179,9 @@ public class CustomerInfoPanel extends AbstractPanel {
 			}
 		});
 		bindingGroup.addBinding(valueBinding);
-		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, taxField, ENABLED);
+		enabledBinding = Bindings.createAutoBinding(UpdateStrategy.READ, customerTablePanel, ITEM_SELECTED, accountNumberField, ENABLED);
 		bindingGroup.addBinding(enabledBinding);
-		add(taxField, "wrap, grow");
+		add(accountNumberField, "wrap, grow");
 
 		JLabel emailLabel = new JLabel();
 		emailLabel.setFont(SettingsManager.MAIN_FONT);

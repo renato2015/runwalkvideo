@@ -16,7 +16,9 @@ public class City implements Comparable<City> {
 	@Embedded
 	private State state = new State();
 
-	public City() {	}
+	public City() {	
+		this("", "");
+	}
 	
 	public City(String code, String name) {
 		this.name = name;
